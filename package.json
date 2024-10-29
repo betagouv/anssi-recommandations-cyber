@@ -4,7 +4,7 @@
   "description": "Une interface permettant d'interroger Albert, le modèle IA, chargé avec des guides de l'ANSSI",
   "main": "serveur/index.ts",
   "scripts": {
-    "start:dev": "ts-node serveur/index.ts"
+    "start:dev": "npx concurrently -n 'SERVEUR,FRONT' 'npx ts-node serveur/index.ts' 'npx vite build --watch --minify false --config front/vite.config.mts'"
   },
   "author": "Thibaud Marazano",
   "license": "Apache-2.0",
@@ -13,8 +13,12 @@
     "express": "^4.21.1"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.4.1",
+    "@tsconfig/svelte": "^3.0.0",
     "@types/express": "^5.0.0",
+    "svelte": "^4.2.19",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vite": "^4.5.5"
   }
 }
