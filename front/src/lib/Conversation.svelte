@@ -1,6 +1,6 @@
 <script lang="ts">
     import iconeFleche from '../assets/fleche_haut.svg';
-    let demande: string = 'Comment stocker des mots de passes ?';
+    let demande: string = '';
 
     type Message = {
         paragraphes: {
