@@ -1,12 +1,13 @@
 <script lang="ts">
+  import Conversation from "./lib/Conversation.svelte";
 </script>
 
 <main>
-  <h1>Composant Svelte</h1>
+  <Conversation />
 </main>
 
 <style>
-  h1 {
-    color: red;
+  main {
+    padding: 120px;
   }
 </style>
