@@ -4,7 +4,10 @@
   "description": "Une interface permettant d'interroger Albert, le modèle IA, chargé avec des guides de l'ANSSI",
   "main": "serveur/index.ts",
   "scripts": {
-    "start:dev": "npx concurrently -n 'SERVEUR,FRONT' 'npx ts-node serveur/index.ts' 'npx vite build --watch --minify false --config front/vite.config.mts'"
+    "start:dev": "npx concurrently -n 'SERVEUR,FRONT' 'npx ts-node serveur/index.ts' 'npx vite build --watch --minify false --config front/vite.config.mts'",
+    "start": "node dist/index.js",
+    "build": "npx tsc && npx vite build --config front/vite.config.mts",
+    "install": "npm run build"
   },
   "author": "Thibaud Marazano",
   "license": "Apache-2.0",
