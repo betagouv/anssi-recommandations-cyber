@@ -28,9 +28,11 @@ app.post("/api/demande", async (requete: Request, reponse: Response) => {
     const json: ReponseAPIAlbert = await donnees.json();
 
     const donneesReponse = json.data.map((d) => ({
+        score: d.score,
         contenu: d.chunk.content,
         document: d.chunk.metadata.document_name
     }));
+
     reponse.send(donneesReponse);
 });
 

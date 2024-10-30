@@ -6,6 +6,7 @@
         paragraphes: {
             contenu: string;
             documentAssocie?: string[];
+            score?: number;
         }[]
         expediteur: 'Moi' | 'Serveur';
     }
@@ -24,7 +25,7 @@
         })).json();
 
 
-        messages = [...messages, {paragraphes: reponse.map(r => ({contenu: r.contenu, documentAssocie: r.document})), expediteur: 'Serveur'}];
+        messages = [...messages, {paragraphes: reponse.map(r => ({contenu: r.contenu, documentAssocie: r.document, score: r.score})), expediteur: 'Serveur'}];
         demande = '';
     };
 </script>
@@ -39,6 +40,9 @@
                     <span>{bloc.contenu}</span>
                     {#if document}
                         <a href="/document/{document}">({document})</a>
+                    {/if}
+                    {#if bloc.score}
+                        <span class="score">{(bloc.score * 100.0).toFixed(2)}%</span>
                     {/if}
                 </p>
             {/each}
@@ -103,5 +107,13 @@
     form {
         display: flex;
         justify-content: end;
+    }
+
+    .score {
+        background: #6A6AF4;
+        padding: 4px;
+        border-radius: 4px;
+        font-size: 10px;
+        color: white;
     }
 </style>
