@@ -1,5 +1,6 @@
 <script lang="ts">
     import SvelteMarkdown from 'svelte-markdown';
+    import {tick} from "svelte";
 
     let demande: string = '';
 
@@ -38,6 +39,12 @@
         }];
         enAttente = false;
     };
+
+    $: {
+        if(messages.length) {
+            tick().then(() => document.querySelector(".fin-conversation").scrollIntoView({behavior: "smooth"}));
+        }
+    }
 </script>
 
 <div class="conteneur-messages">
@@ -47,16 +54,20 @@
             {#if message.scoreMoyen}
                 <span class="score">Score : {(message.scoreMoyen * 100).toFixed(1)}%</span>
             {/if}
-            <p>
+            <p class="contenu-message">
                 <SvelteMarkdown source={message.contenu}/>
                 {#if message.documentsAssocies}
+                    <div class="conteneur-source">
+                        <span>Sources: </span>
                     {#each message.documentsAssocies as document}
                         <a href="/document/{document}">({document})</a>
                     {/each}
+                    </div>
                 {/if}
             </p>
         </div>
     {/each}
+    <p class="fin-conversation"></p>
 </div>
 {#if enAttente}
     <div class="conteneur-loader">
@@ -85,6 +96,8 @@
         border-left: 4px solid #6A6AF4;
         margin-left: 20px;
         position: relative;
+        background: #303030;
+        border-radius: 8px;
     }
 
     .message p {
@@ -92,23 +105,25 @@
     }
 
     .message.estUtilisateur {
-        border-radius: 8px;
         align-self: end;
-        background: #F1F1F1;
         padding-left: 13px;
         border: none;
         margin-left: 0;
     }
 
+    :global(.message.estUtilisateur .contenu-message p) {
+        margin: 0;
+    }
+
     input {
         border-radius: 8px;
-        background: #F1F1F1;
         width: 100%;
-        max-width: 660px;
         border: none;
         padding: 13px 18px;
         text-align: right;
         outline: none;
+        background: #303030;
+        color: white;
     }
 
     input:focus-visible {
@@ -122,6 +137,10 @@
     form {
         display: flex;
         justify-content: end;
+        position: fixed;
+        width: calc(100% - 240px);
+        left: 120px;
+        bottom: 48px;
     }
 
     .conteneur-loader {
@@ -166,5 +185,35 @@
         color: white;
         font-weight: bold;
         border-radius: 4px;
+    }
+
+    .fin-conversation {
+        margin: 0;
+        visibility: hidden;
+        height: 0;
+    }
+
+    .conteneur-source {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .conteneur-source span {
+        font-size: 0.8rem;
+    }
+
+    .conteneur-source a {
+        font-size: 0.7rem;
+        background: #6A6AF4;
+        padding: 2px 4px;
+        color: white;
+        font-weight: bold;
+        border-radius: 4px;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
     }
 </style>
