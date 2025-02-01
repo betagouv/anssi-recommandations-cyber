@@ -20,23 +20,46 @@
         messages = [...messages, {contenu, expediteur: 'Moi'}];
         demande = '';
 
-        const reponse = await (await fetch('/api/demande', {
+        const reponse = await fetch('/api/demande', {
             method: 'post',
             headers: {
-                Accept: 'application/json',
+                Accept: 'text/event-stream',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({demande: contenu})
-        })).json();
+        });
 
-        const reponseAvecRecommandation = reponse.reponse.replaceAll(/(R\d+)/g, "**$1**");
+        if (!reponse.body) throw new Error("Erreur de lecture de body");
+
+        let scoreMoyen = 0;
+        let sources = [];
+        for (let paire of reponse.headers.entries()) {
+            if (paire[0] === 'x-score-moyen') {
+                scoreMoyen = parseFloat(paire[1]);
+            } else if (paire[0] === 'x-sources') {
+                sources = JSON.parse(paire[1]);
+            }
+        }
+
+        const lecteur = reponse.body.getReader();
+        const decodeur = new TextDecoder();
 
         messages = [...messages, {
-            contenu: reponseAvecRecommandation,
-            documentsAssocies: reponse.sources,
-            scoreMoyen: reponse.scoreMoyen,
-            expediteur: 'Serveur'
-        }];
+                contenu: "",
+                documentsAssocies: sources,
+                scoreMoyen,
+                expediteur: 'Serveur'
+            }];
+
+        while (true) {
+            const { value, done } = await lecteur.read();
+            if (done) break;
+            const chunk = decodeur.decode(value, { stream: true });
+            let dernierMessage = messages[messages.length - 1];
+            dernierMessage.contenu += chunk;
+            messages = [...messages.slice(0, messages.length - 1), dernierMessage]
+        }
+
         enAttente = false;
     };
 
@@ -55,7 +78,7 @@
                 <span class="score">Score : {(message.scoreMoyen * 100).toFixed(1)}%</span>
             {/if}
             <p class="contenu-message">
-                <SvelteMarkdown source={message.contenu}/>
+                <SvelteMarkdown source={message.contenu.replaceAll(/(R\d+)/g, "**$1**")}/>
                 {#if message.documentsAssocies}
                     <div class="conteneur-source">
                         <span>Sources: </span>
