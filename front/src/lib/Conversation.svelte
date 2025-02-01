@@ -124,6 +124,7 @@
         outline: none;
         background: #303030;
         color: white;
+        font-family: "Marianne";
     }
 
     input:focus-visible {
