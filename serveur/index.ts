@@ -26,7 +26,6 @@ app.post("/api/demande", async (requete: Request, reponse: Response) => {
     const chunksRAG = jsonRAG.data.map(d => d.chunk.content).join("\n\n\n");
     const sources = [...new Set(jsonRAG.data.map(d => d.chunk.metadata.document_name))];
 
-    const prompt = `Réponds à la question suivante en te basant sur les documents ci-dessous : ${demandeUtilisateur}\n\nDocuments :\n\n${chunksRAG}`;
     const donneesLLM = await fetch(`${process.env.ALBERT_URL_BASE}/v1/chat/completions`, {
         method: 'post',
         headers: {
@@ -35,7 +34,11 @@ app.post("/api/demande", async (requete: Request, reponse: Response) => {
             Authorization: `Bearer ${process.env.ALBERT_CLE_API}`
         },
         body: JSON.stringify({
-            messages: [{role: 'user', content: prompt}],
+            messages: [
+                { role: 'system',
+                    content: 'Tu réponds à des questions en te basant sur des documents. Certaines recommandations sont annotées (RXX), si possible, merci de les citer. Merci de résumer ta réponse à la fin.' },
+                { role: 'user', content: `Question: ${demandeUtilisateur}\nDocuments: ${chunksRAG}` }
+            ],
             model: 'AgentPublic/llama3-instruct-8b',
             stream: false,
             n: 1
