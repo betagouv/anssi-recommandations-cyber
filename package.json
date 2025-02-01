@@ -4,15 +4,17 @@
   "description": "Une interface permettant d'interroger Albert, le modèle IA, chargé avec des guides de l'ANSSI",
   "main": "serveur/index.ts",
   "scripts": {
-    "start:dev": "npx concurrently -n 'SERVEUR,FRONT' 'npx ts-node serveur/index.ts' 'npx vite build --watch --minify false --config front/vite.config.mts'",
+    "start:dev": "npx concurrently -n 'SERVEUR,FRONT' 'node --watch --import tsx --env-file .env serveur/index.ts' 'npx vite build --watch --minify false --config front/vite.config.mts'",
     "start": "node dist/index.js",
     "build": "npx tsc && npx vite build --config front/vite.config.mts",
     "install": "npm run build"
   },
   "author": "Thibaud Marazano",
   "license": "Apache-2.0",
+  "engines": {
+    "node": "^20.0.0"
+  },
   "dependencies": {
-    "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "svelte-markdown": "^0.4.1"
   },
@@ -21,7 +23,7 @@
     "@tsconfig/svelte": "^3.0.0",
     "@types/express": "^5.0.0",
     "svelte": "^4.2.19",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vite": "^4.5.5"
   }

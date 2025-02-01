@@ -1,8 +1,5 @@
 import express, {Express, Request, Response} from "express";
-import dotenv from "dotenv";
 import {ReponseAPIAlbert} from "./types";
-
-dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
