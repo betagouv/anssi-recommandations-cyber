@@ -1,6 +1,5 @@
 <script lang="ts">
     import SvelteMarkdown from 'svelte-markdown';
-    import iconeFleche from '../assets/fleche_haut.svg';
 
     let demande: string = '';
 
@@ -28,8 +27,9 @@
             body: JSON.stringify({ demande: contenu })
         })).json();
 
+        const reponseAvecRecommandation = reponse.reponse.replaceAll(/(R\d+)/g, "**$1**");
 
-        messages = [...messages, {contenu: reponse.reponse, documentsAssocies: reponse.sources, expediteur: 'Serveur'}];
+        messages = [...messages, {contenu: reponseAvecRecommandation, documentsAssocies: reponse.sources, expediteur: 'Serveur'}];
         enAttente = false;
     };
 </script>
