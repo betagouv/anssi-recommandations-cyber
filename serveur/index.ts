@@ -9,6 +9,7 @@ app.use(express.static('public'));
 
 app.post("/api/demande", async (requete: Request, reponse: Response) => {
     const demandeUtilisateur = requete.body.demande;
+    const k = 3;
     const donneesRAG = await fetch(`${process.env.ALBERT_URL_BASE}/v1/search`, {
         method: 'post',
         headers: {
@@ -17,7 +18,7 @@ app.post("/api/demande", async (requete: Request, reponse: Response) => {
             Authorization: `Bearer ${process.env.ALBERT_CLE_API}`
         },
         body: JSON.stringify({
-            k: 3,
+            k,
             collections: [process.env.ALBERT_ID_COLLECTION_DOCUMENT],
             prompt: demandeUtilisateur
         })
@@ -25,6 +26,7 @@ app.post("/api/demande", async (requete: Request, reponse: Response) => {
     const jsonRAG: ReponseAPIAlbert = await donneesRAG.json();
     const chunksRAG = jsonRAG.data.map(d => d.chunk.content).join("\n\n\n");
     const sources = [...new Set(jsonRAG.data.map(d => d.chunk.metadata.document_name))];
+    const scoreMoyen = jsonRAG.data.reduce((acc, val) => acc + val.score, 0) / jsonRAG.data.length;
 
     const donneesLLM = await fetch(`${process.env.ALBERT_URL_BASE}/v1/chat/completions`, {
         method: 'post',
@@ -50,7 +52,8 @@ app.post("/api/demande", async (requete: Request, reponse: Response) => {
 
     reponse.send({
         reponse: donneesReponse.choices[0].message.content,
-        sources
+        sources,
+        scoreMoyen
     });
 });
 
