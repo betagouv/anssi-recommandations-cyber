@@ -13,6 +13,8 @@
   }
 
   main {
-    padding: 120px;
+    padding: var(--marge);
+    padding-top: 120px;
+    padding-bottom: 120px;
   }
 </style>
