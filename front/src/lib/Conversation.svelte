@@ -1,6 +1,7 @@
 <script lang="ts">
     import SvelteMarkdown from 'svelte-markdown';
     import {tick} from "svelte";
+    import {documents} from "./documents";
 
     let demande: string = '';
 
@@ -88,8 +89,9 @@
                 {#if message.documentsAssocies}
                     <div class="conteneur-source">
                         <span>Sources: </span>
-                        {#each message.documentsAssocies as document}
-                            <a href="/document/{document}">({document})</a>
+                        {#each message.documentsAssocies as idDocument}
+                            {@const document = documents[idDocument]}
+                            <a href={document.url} target="_blank">{document.label}</a>
                         {/each}
                     </div>
                 {/if}
