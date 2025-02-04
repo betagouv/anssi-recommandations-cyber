@@ -112,6 +112,10 @@
 </form>
 
 <style>
+    :root {
+        --marge: 120px;
+    }
+
     .conteneur-messages {
         display: flex;
         flex-direction: column;
@@ -126,7 +130,6 @@
         gap: 16px;
         padding: 13px 11px 13px 32px;
         border-left: 4px solid #6A6AF4;
-        margin-left: 20px;
         position: relative;
         background: #303030;
         border-radius: 8px;
@@ -157,6 +160,7 @@
         background: #303030;
         color: white;
         font-family: "Marianne";
+        box-shadow: 0px 4px 12px 0px rgba(0, 0, 18, 0.16);
     }
 
     input:focus-visible {
@@ -171,8 +175,8 @@
         display: flex;
         justify-content: end;
         position: fixed;
-        width: calc(100% - 240px);
-        left: 120px;
+        width: calc(100% - 2 * var(--marge));
+        left: var(--marge);
         bottom: 48px;
     }
 
@@ -252,10 +256,10 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: calc(100% - 240px);
+        width: calc(100% - 2 * var(--marge));
         background: #212121;
         z-index: 1;
-        padding: 16px 120px;
+        padding: 16px var(--marge);
         border-bottom: 1px solid #6A6AF4;
         cursor: pointer;
     }
@@ -278,5 +282,11 @@
 
     .chunk {
         font-size: 0.8rem;
+    }
+
+    @media screen and (max-width: 1000px) {
+        :root {
+            --marge: 16px;
+        }
     }
 </style>
