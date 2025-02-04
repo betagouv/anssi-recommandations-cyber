@@ -45,16 +45,16 @@
         const decodeur = new TextDecoder();
 
         messages = [...messages, {
-                contenu: "",
-                documentsAssocies: sources,
-                scoreMoyen,
-                expediteur: 'Serveur'
-            }];
+            contenu: "",
+            documentsAssocies: sources,
+            scoreMoyen,
+            expediteur: 'Serveur'
+        }];
 
         while (true) {
-            const { value, done } = await lecteur.read();
+            const {value, done} = await lecteur.read();
             if (done) break;
-            const chunk = decodeur.decode(value, { stream: true });
+            const chunk = decodeur.decode(value, {stream: true});
             let dernierMessage = messages[messages.length - 1];
             dernierMessage.contenu += chunk;
             messages = [...messages.slice(0, messages.length - 1), dernierMessage]
@@ -64,11 +64,25 @@
     };
 
     $: {
-        if(messages.length) {
+        if (messages.length) {
             tick().then(() => document.querySelector(".fin-conversation").scrollIntoView({behavior: "smooth"}));
         }
     }
 </script>
+
+<details>
+    <summary>Ceci est une preuve de concept développée par l’équipe RecosCyber (Lab+BTI) à des fins de test strictement
+        interne. Merci de ne pas communiquer l’URL à l’extérieur de l’Agence.
+        <br><b>ℹ️ En savoir plus</b>
+    </summary>
+    <p>Ce POC a été développé par l’équipe RecosCyber en vue de tester l’utilisation de l’API Albert.</p>
+    <p>L’objectif est de vérifier la faisabilité et l’opportunité de mettre à disposition des bénéficiaires de l’Agence
+        (spécialistes ou non) un moteur de recherche capable de fournir des réponses en langage naturel et références
+        précises, en réponse à leurs questions, à partir des publications de l’Agence et de ses partenaires.</p>
+    <p>L’équipe RecoCyber travaille étroitement avec la DINUM (ETALAB / Alliance) en vue d’améliorer le fonctionnement
+        de l’API Albert afin de permettre de réponses plus précises/fiables et la sécurité des données.</p>
+    <p>Vous souhaitez contacter l’équipe RecoCyber ? Ecrivez à <a href="mailto:recosCyber@ssi.gouv.fr">recosCyber@ssi.gouv.fr</a></p>
+</details>
 
 <div class="conteneur-messages">
     {#each messages as message, idx (idx)}
@@ -82,12 +96,15 @@
                 {#if message.documentsAssocies}
                     <div class="conteneur-source">
                         <span>Sources: </span>
-                    {#each message.documentsAssocies as document}
-                        <a href="/document/{document}">({document})</a>
-                    {/each}
+                        {#each message.documentsAssocies as document}
+                            <a href="/document/{document}">({document})</a>
+                        {/each}
                     </div>
                 {/if}
             </p>
+            {#if message.expediteur === 'Serveur'}
+                <p class="disclaimer-reponse"><i>Les réponses générées l’ont été en utilisant un modèle d’IA à des fins de test et n’engagent pas l’ANSSI.</i></p>
+            {/if}
         </div>
     {/each}
     <p class="fin-conversation"></p>
@@ -239,5 +256,33 @@
         overflow: hidden;
         text-overflow: ellipsis;
         display: block;
+    }
+
+    details {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: calc(100% - 240px);
+        background: #212121;
+        z-index: 1;
+        padding: 16px 120px;
+        border-bottom: 1px solid #6A6AF4;
+        cursor: pointer;
+    }
+
+    summary {
+        list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+
+    a {
+        color: #6A6AF4;
+    }
+
+    .disclaimer-reponse {
+        font-size: 0.7rem;
     }
 </style>
