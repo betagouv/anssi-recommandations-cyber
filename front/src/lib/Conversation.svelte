@@ -9,6 +9,7 @@
         documentsAssocies?: string[];
         expediteur: 'Moi' | 'Serveur';
         scoreMoyen?: number;
+        chunks?: string[];
     }
 
     let messages: Message[] = [];
@@ -20,45 +21,24 @@
         messages = [...messages, {contenu, expediteur: 'Moi'}];
         demande = '';
 
-        const reponse = await fetch('/api/demande', {
+        const reponse = await (await fetch('/api/demande', {
             method: 'post',
             headers: {
-                Accept: 'text/event-stream',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({demande: contenu})
-        });
+        })).json();
 
-        if (!reponse.body) throw new Error("Erreur de lecture de body");
-
-        let scoreMoyen = 0;
-        let sources = [];
-        for (let paire of reponse.headers.entries()) {
-            if (paire[0] === 'x-score-moyen') {
-                scoreMoyen = parseFloat(paire[1]);
-            } else if (paire[0] === 'x-sources') {
-                sources = JSON.parse(paire[1]);
-            }
-        }
-
-        const lecteur = reponse.body.getReader();
-        const decodeur = new TextDecoder();
+        const reponseAvecRecommandation = reponse.reponse.replaceAll(/(R\d+)/g, "**$1**");
 
         messages = [...messages, {
-            contenu: "",
-            documentsAssocies: sources,
-            scoreMoyen,
+            contenu: reponseAvecRecommandation,
+            documentsAssocies: reponse.sources,
+            scoreMoyen: reponse.scoreMoyen,
+            chunks: reponse.chunks,
             expediteur: 'Serveur'
         }];
-
-        while (true) {
-            const {value, done} = await lecteur.read();
-            if (done) break;
-            const chunk = decodeur.decode(value, {stream: true});
-            let dernierMessage = messages[messages.length - 1];
-            dernierMessage.contenu += chunk;
-            messages = [...messages.slice(0, messages.length - 1), dernierMessage]
-        }
 
         enAttente = false;
     };
@@ -92,6 +72,18 @@
                 <span class="score">Score : {(message.scoreMoyen * 100).toFixed(1)}%</span>
             {/if}
             <p class="contenu-message">
+                {#if message.chunks}
+                    {#each message.chunks as chunk, index}
+                        <p class="chunk">
+                            <span>Chunk № {index + 1}</span>
+                            <SvelteMarkdown source={chunk.replaceAll(/(R\d+)/g, "**$1**")}/>
+                            <SvelteMarkdown source="___"/>
+                        </p>
+                    {/each}
+                {/if}
+                {#if message.expediteur === 'Serveur'}
+                    <span>Réponse LLM :</span>
+                {/if}
                 <SvelteMarkdown source={message.contenu.replaceAll(/(R\d+)/g, "**$1**")}/>
                 {#if message.documentsAssocies}
                     <div class="conteneur-source">
@@ -217,9 +209,7 @@
     }
 
     .score {
-        position: absolute;
-        top: 0;
-        left: 32px;
+        width: fit-content;
         font-size: 0.7rem;
         background: #6A6AF4;
         padding: 2px 4px;
@@ -284,5 +274,9 @@
 
     .disclaimer-reponse {
         font-size: 0.7rem;
+    }
+
+    .chunk {
+        font-size: 0.8rem;
     }
 </style>
