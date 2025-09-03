@@ -1,0 +1,23 @@
+# Amazon Q
+.amazonq/
+
+# Python
+__pycache__/
+
+
+# Virtual environments
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+
+# Testing
+.pytest_cache/
+
+# Environment variables
+.env
+.env.local
