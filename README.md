@@ -27,6 +27,14 @@ En mode développement :
 env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
 ```
 
+### 💬 Comment rechercher les paragraphes en lien avec une question ?
+
+Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande suivante :
+
+```shell
+curl -X POST http://0.0.0.0:8000/recherche -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+```
+
 ## 🤝 Contribuer
 
 Le formattage automatique s'effectue avec la commande : `ruff format`.
