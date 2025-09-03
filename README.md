@@ -10,6 +10,11 @@ Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv
 Dès lors, l'environnement est activable via `source .venv/bin/activate`.
 Les dépendances déclarées sont installables via `uv sync`.
 
+## Comment Définir mes variables d'environnement ?
+
+Il faut créer à la racine du projet un fichier `.env`.
+A minima, ce fichier devra défnir les variables déclarées dans le fichier `.env.template`.
+
 ## Comment tester ?
 
 Dans un environnement virtuel, lancer `pytest`.
@@ -19,7 +24,7 @@ Dans un environnement virtuel, lancer `pytest`.
 En mode développement :
 
 ```shell
-uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
+env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
 ```
 
 ## Contribuer
