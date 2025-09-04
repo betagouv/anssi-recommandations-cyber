@@ -21,3 +21,11 @@ def route_recherche(
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
 ) -> str:
     return client_albert.recherche_paragraphes(request.question)
+
+
+@app.post("/pose_question")
+def route_pose_question(
+    request: QuestionRequete,
+    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+) -> str:
+    return client_albert.pose_question(request.question)

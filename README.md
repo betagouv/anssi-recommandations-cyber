@@ -35,6 +35,13 @@ Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter
 curl -X POST http://0.0.0.0:8000/recherche -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
+### 💬 Comment poser une question à Albert ?
+Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande suivante :
+
+```shell
+curl -X POST http://0.0.0.0:8000/pose_question -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+```
+
 ## 🤝 Contribuer
 
 Le formattage automatique s'effectue avec la commande : `ruff format`.
