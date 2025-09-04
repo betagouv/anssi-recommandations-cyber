@@ -17,6 +17,7 @@ class ClientAlbert:
     - une API HTTP "classique"
     - une API qui suit le format OpenAI
     """
+
     def __init__(self) -> None:
         self.base_url: str = BASE_URL_ALBERT
         self.api_key: Optional[str] = ALBERT_API_KEY
