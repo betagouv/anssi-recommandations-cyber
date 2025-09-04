@@ -9,6 +9,7 @@ dependencies = [
     "openai",
     "pytest",
     "requests",
+    "streamlit",
     "typing",
     "uvicorn"
 ]

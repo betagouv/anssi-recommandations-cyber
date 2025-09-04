@@ -27,6 +27,18 @@ En mode développement :
 env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
 ```
 
+## 🖥️ Comment lancer l'interface graphique ?
+
+Une fois l'application `uvicorn` lancée, il faut exécuter la commande suivante :
+```shell
+streamlit run src/streamlit_app.py
+```
+puis ouvrir son navigateur à l'adresse suivante : 
+http://localhost:8501`
+Vous pourrez alors poser une question à Albert directement depuis l'interface.
+
+## </> Comment tester les routes de l'application en ligne de commande ?
+
 ### 💬 Comment rechercher les paragraphes en lien avec une question ?
 
 Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande suivante :
