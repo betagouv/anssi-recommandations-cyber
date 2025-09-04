@@ -8,7 +8,7 @@ def test_route_sante() -> None:
     """Vérifie que l'application FastAPI fonctionne"""
     client: TestClient = TestClient(app)
 
-    response = client.get("/health")
+    response = client.get("/sante")
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
