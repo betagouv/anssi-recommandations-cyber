@@ -55,13 +55,18 @@ host="$(grep HOST .env | cut -d'=' -f2)"
 port="$(grep PORT .env | cut -d'=' -f2)"
 endpoint="http://${host}:${port}"
 ```
+Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande listée en fonction du besoin.
 
 ### Rechercher les paragraphes en lien avec une question
 
-Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande suivante :
-
 ```shell
 curl -X POST "${endpoint}/recherche" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+```
+
+### Poser une question
+
+```shell
+curl -X POST "${endpoint}/pose_question" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
 ## 🤝 Contribuer
