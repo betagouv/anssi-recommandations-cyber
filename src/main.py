@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from typing import Dict
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
+from schemas.reponses import ReponseQuestion
 
 app: FastAPI = FastAPI()
 
@@ -27,5 +28,5 @@ def route_recherche(
 def route_pose_question(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
-) -> str:
+) -> ReponseQuestion:
     return client_albert.pose_question(request.question)

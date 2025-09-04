@@ -2,6 +2,7 @@ import requests
 from typing import Optional
 from pathlib import Path
 from openai import OpenAI
+from schemas.reponses import ReponseQuestion
 from config import (
     ALBERT_API_KEY,
     BASE_URL_ALBERT,
@@ -37,7 +38,7 @@ class ClientAlbert:
             [result["chunk"]["content"] for result in response.json()["data"]]
         )
 
-    def pose_question(self, question: str) -> str:
+    def pose_question(self, question: str) -> ReponseQuestion:
         chunks = self.recherche_paragraphes(question)
         prompt = self.PROMPT_SYSTEM.format(prompt=question, chunks=chunks)
         response = self.client.chat.completions.create(
@@ -46,4 +47,8 @@ class ClientAlbert:
             stream=False,
         )
 
-        return response.choices[0].message.content
+        return ReponseQuestion(
+            reponse=response.choices[0].message.content,
+            paragraphs=chunks,
+            question=question
+        )
