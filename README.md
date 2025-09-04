@@ -1,8 +1,8 @@
-# Recommandations cyber ANSSI
+# 🔐 Recommandations cyber ANSSI
 
 Une interface permettant d'interroger [Albert](https://albert.etalab.gouv.fr), le modèle IA, chargé avec des guides de l'ANSSI.
 
-## Comment installer ?
+## 📦 Comment installer ?
 
 Il faut installer deux dépendances systèmes, `python` et `uv`.
 Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv`.
@@ -10,16 +10,16 @@ Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv
 Dès lors, l'environnement est activable via `source .venv/bin/activate`.
 Les dépendances déclarées sont installables via `uv sync`.
 
-## Comment Définir mes variables d'environnement ?
+## ⚙️ Comment Définir mes variables d'environnement ?
 
 Il faut créer à la racine du projet un fichier `.env`.
 A minima, ce fichier devra défnir les variables déclarées dans le fichier `.env.template`.
 
-## Comment tester ?
+## 🧪 Comment tester ?
 
 Dans un environnement virtuel, lancer `pytest`.
 
-## Comment lancer l'application ?
+## 🚀 Comment lancer l'application ?
 
 En mode développement :
 
@@ -27,6 +27,6 @@ En mode développement :
 env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
 ```
 
-## Contribuer
+## 🤝 Contribuer
 
 Le formattage automatique s'effectue avec la commande : `ruff format`.
