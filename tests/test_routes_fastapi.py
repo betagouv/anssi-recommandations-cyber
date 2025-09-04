@@ -14,7 +14,7 @@ def test_route_sante() -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_route_recherche() -> None:
+def test_route_recherche_repond_correctement() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
     mock_client: Mock = Mock(spec=ClientAlbert)
     mock_client.recherche_paragraphes.return_value = "Réponse de test d'Albert"
@@ -25,6 +25,21 @@ def test_route_recherche() -> None:
         response = client.post("/recherche", json={"question": "Ma question test"})
 
         assert response.status_code == 200
+        mock_client.recherche_paragraphes.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_route_recherche_donnees_correctes() -> None:
+    """Vérifie que l'endpoint recherche fonctionne"""
+    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client.recherche_paragraphes.return_value = "Réponse de test d'Albert"
+
+    app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    try:
+        client: TestClient = TestClient(app)
+        response = client.post("/recherche", json={"question": "Ma question test"})
         resultat = response.json()
         assert isinstance(resultat, str)
 
