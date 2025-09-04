@@ -10,7 +10,7 @@ def fabrique_client_albert() -> ClientAlbert:
     return ClientAlbert()
 
 
-@app.get("/health")
+@app.get("/sante")
 def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
 
