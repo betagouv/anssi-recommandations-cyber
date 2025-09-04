@@ -1,5 +1,5 @@
 [project]
-name = "Recommandations cyber"
+name = "RecommandationsCyber"
 version = "0.1.0"
 description = "Une interface permettant d'interroger [Albert](https://albert.etalab.gouv.fr), le modèle IA, chargé avec des guides de l'ANSSI."
 requires-python = ">=3.13"
