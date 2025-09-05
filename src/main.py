@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends
 from typing import Dict
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
+from config import HOST, PORT
 
 app: FastAPI = FastAPI()
 
@@ -27,7 +28,7 @@ def route_recherche(
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
-        port=8000,
+        host=HOST,
+        port=PORT,
         reload=True,
     )
