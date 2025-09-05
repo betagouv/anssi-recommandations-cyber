@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends
 from typing import Dict
 from client_albert import ClientAlbert
@@ -21,3 +22,12 @@ def route_recherche(
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
 ) -> str:
     return client_albert.recherche_paragraphes(request.question)
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+    )

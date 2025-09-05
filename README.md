@@ -33,7 +33,7 @@ Dans un environnement virtuel, lancer `pytest`.
 #### Directement sur l'hôte
 
 ```shell
-env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
+env $(cat .env) python src/main.py
 ```
 
 #### Dans un conteneur
@@ -43,7 +43,7 @@ podman container run --rm -it \
     --network=host \
     --volume $(pwd):/app \
     localhost:mqc \
-    bash -c "env \$(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src"
+    bash -c "env \$(cat .env) python src/main.py"
 ```
 
 ## 💬 Comment utiliser l'application ?
