@@ -9,8 +9,10 @@ dependencies = [
     "openai",
     "pytest",
     "requests",
+    "streamlit",
     "typing",
-    "uvicorn"
+    "uvicorn",
+    "websockets"
 ]
 
 [dependency-groups]

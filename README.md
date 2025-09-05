@@ -48,6 +48,8 @@ podman container run --rm -it \
 
 ## 💬 Comment utiliser l'application ?
 
+### 1. Déterminer l'adresse de l'application
+
 Il faut récupérer l'adresse où l'application est exposée (en fonction des paramètres d'environnements) :
 
 ```shell
@@ -55,15 +57,27 @@ host="$(grep HOST .env | cut -d'=' -f2)"
 port="$(grep PORT .env | cut -d'=' -f2)"
 endpoint="http://${host}:${port}"
 ```
-Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande listée en fonction du besoin.
 
-### Rechercher les paragraphes en lien avec une question
+### 2. Accéder à l'interface graphique
+
+L'interface Streamlit est accessible via le chemin `/ui`.\
+Ouvrez simplement dans votre navigateur :
+
+    ${endpoint}/ui
+
+Exemple en local (avec `HOST=127.0.0.1`, `PORT=8000`) :
+
+    http://127.0.0.1:8000/ui
+
+### 3. Utiliser directement les routes API
+
+#### Rechercher les paragraphes en lien avec une question
 
 ```shell
 curl -X POST "${endpoint}/recherche" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
-### Poser une question
+#### Poser une question
 
 ```shell
 curl -X POST "${endpoint}/pose_question" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
