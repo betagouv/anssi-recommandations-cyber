@@ -5,8 +5,14 @@ from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
 from config import HOST, PORT
 from schemas.reponses import ReponseQuestion
+from ui_integration import (
+    route_proxy_streamlit_http,
+    route_proxy_streamlit_ws,
+    lifespan,
+)
 
-app: FastAPI = FastAPI()
+
+app: FastAPI = FastAPI(lifespan=lifespan)
 
 
 def fabrique_client_albert() -> ClientAlbert:
@@ -32,6 +38,14 @@ def route_pose_question(
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
 ) -> ReponseQuestion:
     return client_albert.pose_question(request.question)
+
+
+app.api_route(
+    "/ui/{path:path}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+)(route_proxy_streamlit_http)
+
+app.websocket("/ui/{path:path}")(route_proxy_streamlit_ws)
 
 
 if __name__ == "__main__":
