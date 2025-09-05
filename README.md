@@ -27,7 +27,9 @@ En mode développement :
 env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
 ```
 
-### 💬 Comment rechercher les paragraphes en lien avec une question ?
+## 💬 Comment utiliser l'application ?
+
+### Rechercher les paragraphes en lien avec une question
 
 Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande suivante :
 
