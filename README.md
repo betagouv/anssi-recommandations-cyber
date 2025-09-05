@@ -4,11 +4,18 @@ Une interface permettant d'interroger [Albert](https://albert.etalab.gouv.fr), l
 
 ## 📦 Comment installer ?
 
+### Directement sur l'hôte
+
 Il faut installer deux dépendances systèmes, `python` et `uv`.
 Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv`.
 
 Dès lors, l'environnement est activable via `source .venv/bin/activate`.
 Les dépendances déclarées sont installables via `uv sync`.
+
+### Dans un conteneur
+
+On fournit une recette pour produire une image de conteneur.\
+Pour construire l'image, il faut lancer `docker build -t localhost:mqc .`.
 
 ## ⚙️ Comment Définir mes variables d'environnement ?
 
@@ -21,10 +28,22 @@ Dans un environnement virtuel, lancer `pytest`.
 
 ## 🚀 Comment lancer l'application ?
 
-En mode développement :
+### En mode développement
+
+#### Directement sur l'hôte
 
 ```shell
 env $(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src
+```
+
+#### Dans un conteneur
+
+```shell
+podman container run --rm -it \
+    --network=host \
+    --volume $(pwd):/app \
+    localhost:mqc \
+    bash -c "env \$(cat .env) uvicorn main:app --reload --host 0.0.0.0 --port 8000 --app-dir src"
 ```
 
 ## 💬 Comment utiliser l'application ?
