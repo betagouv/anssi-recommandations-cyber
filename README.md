@@ -48,12 +48,20 @@ podman container run --rm -it \
 
 ## 💬 Comment utiliser l'application ?
 
+Il faut récupérer l'adresse où l'application est exposée (en fonction des paramètres d'environnements) :
+
+```shell
+host="$(grep HOST .env | cut -d'=' -f2)"
+port="$(grep PORT .env | cut -d'=' -f2)"
+endpoint="http://${host}:${port}"
+```
+
 ### Rechercher les paragraphes en lien avec une question
 
 Une fois l'application démarrée, il faut ouvrir un autre terminal et exécuter la commande suivante :
 
 ```shell
-curl -X POST http://0.0.0.0:8000/recherche -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+curl -X POST "${endpoint}/recherche" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
 ## 🤝 Contribuer
