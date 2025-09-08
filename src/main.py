@@ -1,6 +1,7 @@
 import uvicorn
 import gradio as gr
 from fastapi import FastAPI, Depends
+from fastapi.responses import RedirectResponse
 from typing import Dict
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
@@ -38,6 +39,11 @@ def route_pose_question(
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
 ) -> ReponseQuestion:
     return client_albert.pose_question(request.question)
+
+
+@app.get("/")
+def redirige_vers_gradio():
+    return RedirectResponse("/ui")
 
 
 if __name__ == "__main__":
