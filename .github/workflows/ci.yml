@@ -1,0 +1,37 @@
+name: L'intégration continue
+permissions: {}
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Construction de MesQuestionsCyber
+    env:
+      ALBERT_API_KEY: secret
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cloner le dépôt Git
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Installer les dépendances
+        run: uv sync
+
+      - name: Contrôler le format du code
+        run: uv run ruff check
+
+      - name: Exécuter les tests
+        run: uv run pytest
