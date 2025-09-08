@@ -60,7 +60,7 @@ endpoint="http://${host}:${port}"
 
 ### 2. Accéder à l'interface graphique
 
-L'interface Streamlit est accessible via le chemin `/ui`.\
+L'interface Gradio est accessible via le chemin `/ui`.\
 Ouvrez simplement dans votre navigateur :
 
     ${endpoint}/ui

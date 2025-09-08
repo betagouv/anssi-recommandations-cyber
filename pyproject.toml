@@ -5,14 +5,13 @@ description = "Une interface permettant d'interroger [Albert](https://albert.eta
 requires-python = ">=3.13"
 dependencies = [
     "fastapi",
+    "gradio",
     "httpx",
     "openai",
     "pytest",
     "requests",
-    "streamlit",
     "typing",
     "uvicorn",
-    "websockets"
 ]
 
 [dependency-groups]
