@@ -1,18 +1,18 @@
 import uvicorn
+import gradio as gr
 from fastapi import FastAPI, Depends
 from typing import Dict
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
 from config import HOST, PORT
 from schemas.reponses import ReponseQuestion
-from ui_integration import (
-    route_proxy_streamlit_http,
-    route_proxy_streamlit_ws,
-    lifespan,
-)
+from gradio_app import cree_interface_gradio
 
 
-app: FastAPI = FastAPI(lifespan=lifespan)
+app: FastAPI = FastAPI()
+
+interface_gradio = cree_interface_gradio(app)
+app = gr.mount_gradio_app(app, interface_gradio, path="/ui")
 
 
 def fabrique_client_albert() -> ClientAlbert:
@@ -38,14 +38,6 @@ def route_pose_question(
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
 ) -> ReponseQuestion:
     return client_albert.pose_question(request.question)
-
-
-app.api_route(
-    "/ui/{path:path}",
-    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
-)(route_proxy_streamlit_http)
-
-app.websocket("/ui/{path:path}")(route_proxy_streamlit_ws)
 
 
 if __name__ == "__main__":
