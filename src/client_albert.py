@@ -41,12 +41,26 @@ class ClientAlbert:
         response: requests.Response = session.post(
             f"{self.base_url}/search", json=payload
         )
-        return "\n\n\n".join(
-            [result["chunk"]["content"] for result in response.json()["data"]]
-        )
+        data = response.json()
+
+        paragraphes = []
+        for result in data.get("data", []):
+            chunk = result.get("chunk", {})
+            metadonnees = chunk.get("metadata", {})
+            paragraphes.append(
+                {
+                    "contenu": chunk.get("content", ""),
+                    "url": metadonnees.get("source_url", ""),
+                    "score": result.get("score", ""),
+                    "numero_page": metadonnees.get("page", ""),
+                    "nom_document": metadonnees.get("document_name", ""),
+                }
+            )
+        return {"paragraphes": paragraphes}
 
     def pose_question(self, question: str) -> ReponseQuestion:
-        chunks = self.recherche_paragraphes(question)
+        search_result = self.recherche_paragraphes(question)
+        chunks = "\n\n\n".join([p["content"] for p in search_result["paragraphes"]])
         prompt = self.PROMPT_SYSTEM.format(prompt=question, chunks=chunks)
         response = self.client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],

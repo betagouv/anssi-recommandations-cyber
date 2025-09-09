@@ -2,7 +2,7 @@ import uvicorn
 import gradio as gr
 from fastapi import FastAPI, Depends
 from fastapi.responses import RedirectResponse
-from typing import Dict
+from typing import Dict, List, Any
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
 from config import HOST, PORT
@@ -29,7 +29,7 @@ def route_sante() -> Dict[str, str]:
 def route_recherche(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
-) -> str:
+) -> Dict[str, List[Dict[str, Any]]]:
     return client_albert.recherche_paragraphes(request.question)
 
 
