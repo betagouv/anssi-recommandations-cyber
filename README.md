@@ -24,9 +24,31 @@ A minima, ce fichier devra défnir les variables déclarées dans le fichier `.e
 
 ## 🧪 Comment tester ?
 
-Dans un environnement virtuel, lancer `pytest`.
+### Tests unitaires 
+
+Dans un environnement virtuel, lancer `pytest tests/unitaire/`.
+Pour s'assurer de lire les variables d'environnement, il faut exécuter:
+
+```shell
+`export $(cat .env) && pytest tests/unitaire/`
+```
+### Tests d'intégration
+
+Pour lancer les tests d'intégration, il est nécessaire d'avoir une instance PostgreSQL démarrée, voir section suivante.
+
+```shell
+export $(cat .env) && pytest -m integration
+```
 
 ## 🚀 Comment lancer l'application ?
+
+### Prérequis : PostgreSQL
+
+L'application nécessite une base PostgreSQL. Lancez-la avec Docker en utilisant vos variables d'environnement :
+
+```shell
+export $(cat .env) && docker run -d --name postgres -e POSTGRES_DB="$DB_NAME" -e POSTGRES_PASSWORD="$DB_PASSWORD" -p "$DB_PORT:5432" postgres:15
+```
 
 ### En mode développement
 
