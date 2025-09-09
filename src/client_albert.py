@@ -70,6 +70,6 @@ class ClientAlbert:
 
         return ReponseQuestion(
             reponse=response.choices[0].message.content,
-            paragraphs=chunks,
+            paragraphes=chunks,
             question=question,
         )

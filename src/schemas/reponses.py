@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 class ReponseQuestion(BaseModel):
     reponse: str
-    paragraphs: str
+    paragraphes: str
     question: str

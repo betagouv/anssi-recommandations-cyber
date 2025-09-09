@@ -12,7 +12,7 @@ def pose_question_gradio(question: str, app) -> tuple[str, str]:
         response = client.post("/pose_question", json={"question": question})
         if response.status_code == 200:
             data = response.json()
-            return data["reponse"], data["paragraphs"]
+            return data["reponse"], data["paragraphes"]
         else:
             return f"Erreur {response.status_code}", ""
     except Exception as e:
