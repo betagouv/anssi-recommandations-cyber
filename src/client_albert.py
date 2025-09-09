@@ -3,12 +3,7 @@ from typing import Optional
 from pathlib import Path
 from openai import OpenAI
 from schemas.reponses import ReponseQuestion
-from config import (
-    ALBERT_API_KEY,
-    BASE_URL_ALBERT,
-    COLLECTION_ID_ANSSI_LAB,
-    MODELE_REPONSE_ALBERT,
-)
+from config import recupere_configuration
 
 from schemas.reponses import Paragraphe
 
@@ -22,8 +17,11 @@ class ClientAlbert:
     """
 
     def __init__(self) -> None:
-        self.base_url: str = BASE_URL_ALBERT
-        self.api_key: Optional[str] = ALBERT_API_KEY
+        configuration = recupere_configuration()
+        self.base_url: str = configuration["BASE_URL_ALBERT"]
+        self.api_key: Optional[str] = configuration["ALBERT_API_KEY"]
+        self.id_collection = configuration["COLLECTION_ID_ANSSI_LAB"]
+        self.modele_reponse = configuration["MODELE_REPONSE_ALBERT"]
         self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
         self.charge_prompt()
 
@@ -35,7 +33,7 @@ class ClientAlbert:
         session: requests.Session = requests.session()
         session.headers = {"Authorization": f"Bearer {self.api_key}"}
         payload = {
-            "collections": [COLLECTION_ID_ANSSI_LAB],
+            "collections": [self.id_collection],
             "k": 5,
             "prompt": question,
             "method": "semantic",
@@ -70,7 +68,7 @@ class ClientAlbert:
         )
         response = self.client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model=MODELE_REPONSE_ALBERT,
+            model=self.modele_reponse,
             stream=False,
         )
 

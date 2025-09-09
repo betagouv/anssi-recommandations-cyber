@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
-from config import HOST, PORT
+from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
 
@@ -47,6 +47,9 @@ def redirige_vers_gradio():
 
 
 if __name__ == "__main__":
+    configuration = recupere_configuration()
+    HOST = configuration["HOST"]
+    PORT = configuration["PORT"]
     uvicorn.run(
         "main:app",
         host=HOST,
