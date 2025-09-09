@@ -55,7 +55,15 @@ def test_route_pose_question_repond_correctement() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
     mock_reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
-        paragraphes="Chunks de test",
+        paragraphes=[
+            {
+                "score_similarite": 0.75,
+                "numero_page": 29,
+                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "contenu": "Contenu du paragraphe 1",
+            }
+        ],
         question="Qui es-tu",
     )
 
@@ -75,11 +83,26 @@ def test_route_pose_question_repond_correctement() -> None:
 
 
 def test_route_pose_question_retourne_donnees_correctes() -> None:
-    """Vérifie que l'endpoint retourne un objet ReponseComplete"""
+    """Vérifie que l'endpoint retourne un objet ReponseQuestion avec paragraphes structurés"""
 
     mock_reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
-        paragraphes="Chunks de test",
+        paragraphes=[
+            {
+                "score_similarite": 0.75,
+                "numero_page": 29,
+                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "contenu": "Contenu du paragraphe 1",
+            },
+            {
+                "score_similarite": 0.72,
+                "numero_page": 15,
+                "url": "https://cyber.gouv.fr/sites/default/files/2017/01/guide_hygiene_informatique_anssi.pdf",
+                "nom_document": "guide_hygiene_informatique_anssi.pdf",
+                "contenu": "Contenu du paragraphe 2",
+            },
+        ],
         question="Qui es-tu",
     )
 
@@ -92,12 +115,27 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
         response = client.post("/pose_question", json={"question": "Qui es-tu"})
         resultat = response.json()
 
-        # Vérifier la structure ReponseComplete
+        # Vérifier la structure ReponseQuestion avec paragraphes structurés
         assert "reponse" in resultat
         assert "paragraphes" in resultat
         assert "question" in resultat
         assert resultat["reponse"] == "Réponse de test d'Albert"
-        assert resultat["paragraphes"] == "Chunks de test"
+        assert isinstance(resultat["paragraphes"], list)
+        assert len(resultat["paragraphes"]) == 2
+
+        # Vérifier le premier paragraphe
+        p1 = resultat["paragraphes"][0]
+        assert p1["score_similarite"] == 0.75
+        assert p1["numero_page"] == 29
+        assert (
+            p1["url"]
+            == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+        )
+        assert (
+            p1["nom_document"]
+            == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+        )
+        assert p1["contenu"] == "Contenu du paragraphe 1"
         assert resultat["question"] == "Qui es-tu"
 
         mock_client.pose_question.assert_called_once()
