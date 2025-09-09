@@ -10,9 +10,6 @@ on:
 jobs:
   build:
     name: Construction de MesQuestionsCyber
-    env:
-      ALBERT_API_KEY: secret
-
     runs-on: ubuntu-latest
 
     steps:

@@ -9,4 +9,3 @@ PORT: int = int(os.getenv("PORT", "8000"))
 
 COLLECTION_ID_ANSSI_LAB: int = int(os.getenv("COLLECTION_ID_ANSSI_LAB"))
 ALBERT_API_KEY: str = os.getenv("ALBERT_API_KEY")
-assert ALBERT_API_KEY, "ALBERT_API_KEY doit être définie"
