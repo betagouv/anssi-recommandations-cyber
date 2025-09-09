@@ -18,7 +18,7 @@ def test_route_sante() -> None:
 def test_route_recherche_repond_correctement() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
     mock_client: Mock = Mock(spec=ClientAlbert)
-    mock_client.recherche_paragraphes.return_value = {"paragraphs": []}
+    mock_client.recherche_paragraphes.return_value = {"paragraphes": []}
 
     app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
     try:
@@ -35,7 +35,7 @@ def test_route_recherche_repond_correctement() -> None:
 def test_route_recherche_donnees_correctes() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
     mock_client: Mock = Mock(spec=ClientAlbert)
-    mock_client.recherche_paragraphes.return_value = {"paragraphs": []}
+    mock_client.recherche_paragraphes.return_value = {"paragraphes": []}
 
     app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
     try:
@@ -43,7 +43,7 @@ def test_route_recherche_donnees_correctes() -> None:
         response = client.post("/recherche", json={"question": "Ma question test"})
         resultat = response.json()
         assert isinstance(resultat, dict)
-        assert "paragraphs" in resultat
+        assert "paragraphes" in resultat
 
         mock_client.recherche_paragraphes.assert_called_once()
 
@@ -55,7 +55,7 @@ def test_route_pose_question_repond_correctement() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
     mock_reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
-        paragraphs="Chunks de test",
+        paragraphes="Chunks de test",
         question="Qui es-tu",
     )
 
@@ -79,7 +79,7 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 
     mock_reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
-        paragraphs="Chunks de test",
+        paragraphes="Chunks de test",
         question="Qui es-tu",
     )
 
@@ -94,10 +94,10 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 
         # Vérifier la structure ReponseComplete
         assert "reponse" in resultat
-        assert "paragraphs" in resultat
+        assert "paragraphes" in resultat
         assert "question" in resultat
         assert resultat["reponse"] == "Réponse de test d'Albert"
-        assert resultat["paragraphs"] == "Chunks de test"
+        assert resultat["paragraphes"] == "Chunks de test"
         assert resultat["question"] == "Qui es-tu"
 
         mock_client.pose_question.assert_called_once()
@@ -108,7 +108,7 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
     """Vérifie que l'endpoint recherche retourne toutes les métadonnées pour chaque paragraphe"""
     mock_result = {
-        "paragraphs": [
+        "paragraphes": [
             {
                 "content": "Contenu du paragraphe 1",
                 "source_url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
@@ -128,9 +128,9 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
         response = client.post("/recherche", json={"question": "Ma question test"})
 
         resultat = response.json()
-        assert "paragraphs" in resultat
-        assert len(resultat["paragraphs"]) == 1
-        p1 = resultat["paragraphs"][0]
+        assert "paragraphes" in resultat
+        assert len(resultat["paragraphes"]) == 1
+        p1 = resultat["paragraphes"][0]
         assert p1["content"] == "Contenu du paragraphe 1"
         assert (
             p1["source_url"]
