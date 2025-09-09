@@ -8,6 +8,7 @@ dependencies = [
     "gradio",
     "httpx",
     "openai",
+    "psycopg2-binary",
     "pytest",
     "requests",
     "typing",

@@ -28,6 +28,19 @@ Dans un environnement virtuel, lancer `pytest`.
 
 ## 🚀 Comment lancer l'application ?
 
+### Prérequis : PostgreSQL
+
+L'application nécessite une base PostgreSQL. Lancez-la avec Docker en utilisant vos variables d'environnement :
+
+```shell
+env $(cat .env) sh -c 'docker run --rm --detach \
+    --name mes-questions-cyber-bdd \
+    --network=host \
+    --env POSTGRES_DB="$DB_NAME" \
+    --env POSTGRES_PASSWORD="$DB_PASSWORD" \
+    postgres:15'
+```
+
 ### En mode développement
 
 #### Directement sur l'hôte
