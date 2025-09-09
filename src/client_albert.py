@@ -10,6 +10,8 @@ from config import (
     MODELE_REPONSE_ALBERT,
 )
 
+from schemas.reponses import Paragraphe
+
 
 class ClientAlbert:
     """
@@ -48,20 +50,24 @@ class ClientAlbert:
             chunk = result.get("chunk", {})
             metadonnees = chunk.get("metadata", {})
             paragraphes.append(
-                {
-                    "contenu": chunk.get("content", ""),
-                    "url": metadonnees.get("source_url", ""),
-                    "score": result.get("score", ""),
-                    "numero_page": metadonnees.get("page", ""),
-                    "nom_document": metadonnees.get("document_name", ""),
-                }
+                Paragraphe(
+                    contenu=chunk.get("content", ""),
+                    url=metadonnees.get("source_url", ""),
+                    score_similarite=result.get("score", 0.0),
+                    numero_page=metadonnees.get("page", 0),
+                    nom_document=metadonnees.get("document_name", ""),
+                )
             )
+
         return {"paragraphes": paragraphes}
 
     def pose_question(self, question: str) -> ReponseQuestion:
-        search_result = self.recherche_paragraphes(question)
-        chunks = "\n\n\n".join([p["content"] for p in search_result["paragraphes"]])
-        prompt = self.PROMPT_SYSTEM.format(prompt=question, chunks=chunks)
+        resultat_recherche = self.recherche_paragraphes(question)
+        paragraphes = resultat_recherche["paragraphes"]
+        paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
+        prompt = self.PROMPT_SYSTEM.format(
+            prompt=question, chunks=paragraphes_concatenes
+        )
         response = self.client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model=MODELE_REPONSE_ALBERT,
@@ -70,6 +76,6 @@ class ClientAlbert:
 
         return ReponseQuestion(
             reponse=response.choices[0].message.content,
-            paragraphes=chunks,
+            paragraphes=paragraphes,
             question=question,
         )
