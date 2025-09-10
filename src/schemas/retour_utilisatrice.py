@@ -20,6 +20,10 @@ class RetourUtilisatrice(BaseModel):
         return self
 
 
+class RetourUtilisatriceAvecId(RetourUtilisatrice):
+    id_interaction: str
+
+
 class InterractionEvaluee(BaseModel):
     reponse_question: ReponseQuestion
     retour_utilisatrice: Optional[RetourUtilisatrice] = None

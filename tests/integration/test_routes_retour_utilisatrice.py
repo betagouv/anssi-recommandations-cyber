@@ -1,6 +1,11 @@
 from unittest.mock import Mock
 import pytest
-from main import route_pose_question
+from starlette.testclient import TestClient
+from main import (
+    route_pose_question,
+    app,
+    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
+)
 from schemas.requetes import QuestionRequete
 from schemas.reponses import ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -64,3 +69,96 @@ def test_gestionnaire_lit_interactions_sauvegardees(adaptateur_test):
     assert interaction_lue.reponse_question.question == "Test question"
     assert interaction_lue.reponse_question.reponse == "Test réponse"
     assert interaction_lue.retour_utilisatrice is None
+
+
+@pytest.mark.integration
+def test_route_retour_accepte_retour_utilisatrice_et_renvoie_200():
+    mock_gestionnaire = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_gestionnaire.ajoute_retour_utilisatrice.return_value = True
+
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_gestionnaire
+
+    try:
+        client = TestClient(app)
+
+        payload = {
+            "id_interaction": "test-id-123",
+            "pouce_leve": True,
+            "commentaire": "Très utile, merci !",
+        }
+
+        response = client.post("/retour", json=payload)
+
+        assert response.status_code == 200
+        mock_gestionnaire.ajoute_retour_utilisatrice.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.integration
+def test_route_retour_renvoie_donnees_retour_utilisatrice():
+    mock_gestionnaire = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_gestionnaire.ajoute_retour_utilisatrice.return_value = True
+
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_gestionnaire
+
+    try:
+        client = TestClient(app)
+
+        payload = {
+            "id_interaction": "test-id-123",
+            "pouce_leve": True,
+            "commentaire": "Très utile, merci !",
+        }
+
+        response = client.post("/retour", json=payload)
+        data = response.json()
+
+        assert data["succes"] is True
+        assert data["commentaire"] == "Très utile, merci !"
+        mock_gestionnaire.ajoute_retour_utilisatrice.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.integration
+def test_route_retour_puis_lecture_avec_le_gestionnaire_et_verification_des_donnes(
+    adaptateur_test,
+):
+    reponse_question = ReponseQuestion(
+        reponse="Test réponse", paragraphes=[], question="Test question"
+    )
+    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: adaptateur_test
+
+    try:
+        client = TestClient(app)
+
+        payload = {
+            "id_interaction": id_interaction,
+            "pouce_leve": True,
+            "commentaire": "Excellent, très clair !",
+        }
+
+        _ = client.post("/retour", json=payload)
+
+        retour_sauvegarde = adaptateur_test.lit_interaction(
+            id_interaction
+        ).retour_utilisatrice
+
+        assert retour_sauvegarde is not None
+        assert retour_sauvegarde.pouce_leve is True
+        assert retour_sauvegarde.commentaire == "Excellent, très clair !"
+        assert retour_sauvegarde.horodatage is not None
+
+    finally:
+        app.dependency_overrides.clear()
