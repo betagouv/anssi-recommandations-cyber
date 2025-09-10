@@ -70,3 +70,22 @@ def test_recuperation_statistiques(adaptateur_test):
     assert stats["total_interactions"] == 2
     assert stats["total_retours"] == 2
     assert stats["pouces_leves"] == 1
+
+
+def test_lit_interaction(adaptateur_test):
+    reponse_question = ReponseQuestion(
+        reponse="Test réponse", paragraphes=[], question="Test question"
+    )
+    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+
+    interaction_lue = adaptateur_test.lit_interaction(id_interaction)
+
+    assert interaction_lue is not None
+    assert interaction_lue.reponse_question.question == "Test question"
+    assert interaction_lue.reponse_question.reponse == "Test réponse"
+    assert interaction_lue.retour_utilisatrice is None
+
+
+def test_lit_interaction_inexistante(adaptateur_test):
+    interaction_lue = adaptateur_test.lit_interaction("id-inexistant")
+    assert interaction_lue is None

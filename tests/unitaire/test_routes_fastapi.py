@@ -1,7 +1,12 @@
 from fastapi.testclient import TestClient
 from unittest.mock import Mock
-from main import app, fabrique_client_albert
+from main import (
+    app,
+    fabrique_client_albert,
+    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
+)
 from client_albert import ClientAlbert
+from adaptateurs.adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 from schemas.reponses import ReponseQuestion
 
 
@@ -70,7 +75,13 @@ def test_route_pose_question_repond_correctement() -> None:
     mock_client: Mock = Mock(spec=ClientAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
+    mock_adaptateur: Mock = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_adaptateur.sauvegarde_interaction.return_value = "test-id-123"
+
     app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_adaptateur
     try:
         client: TestClient = TestClient(app)
         response = client.post("/pose_question", json={"question": "Qui es-tu"})
@@ -109,7 +120,13 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
     mock_client: Mock = Mock(spec=ClientAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
+    mock_adaptateur: Mock = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_adaptateur.sauvegarde_interaction.return_value = "test-id-456"
+
     app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_adaptateur
     try:
         client: TestClient = TestClient(app)
         response = client.post("/pose_question", json={"question": "Qui es-tu"})

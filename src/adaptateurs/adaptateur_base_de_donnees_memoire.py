@@ -1,5 +1,5 @@
 import uuid
-from typing import Dict
+from typing import Dict, Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, InterractionEvaluee
 from schemas.reponses import ReponseQuestion
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
@@ -22,13 +22,18 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
     ) -> bool:
         if identifiant_interaction not in self._interactions:
             return False
-        
+
         interaction = self._interactions[identifiant_interaction]
         interaction_mise_a_jour = InterractionEvaluee(
             reponse_question=interaction.reponse_question, retour_utilisatrice=retour
         )
         self._interactions[identifiant_interaction] = interaction_mise_a_jour
         return True
+
+    def lit_interaction(
+        self, identifiant_interaction: str
+    ) -> Optional[InterractionEvaluee]:
+        return self._interactions.get(identifiant_interaction)
 
     def obtient_statistiques(self) -> Dict[str, int]:
         total_interactions = len(self._interactions)

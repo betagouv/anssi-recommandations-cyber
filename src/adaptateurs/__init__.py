@@ -4,6 +4,6 @@ from .adaptateur_base_de_donnees_memoire import AdaptateurBaseDeDonneesEnMemoire
 
 __all__ = [
     "AdaptateurBaseDeDonnees",
-    "AdaptateurBaseDeDonneesPostgres", 
-    "AdaptateurBaseDeDonneesEnMemoire"
+    "AdaptateurBaseDeDonneesPostgres",
+    "AdaptateurBaseDeDonneesEnMemoire",
 ]
