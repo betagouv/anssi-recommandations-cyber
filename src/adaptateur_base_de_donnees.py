@@ -74,6 +74,23 @@ class AdaptateurBaseDeDonnees:
             )
         return True
 
+    def lit_interaction(
+        self, identifiant_interaction: str
+    ) -> Optional[InterractionEvaluee]:
+        """Récupère une interaction par son ID."""
+        with self._connexion.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as curseur:
+            curseur.execute(
+                "SELECT interaction_evaluee_json FROM interactions WHERE id_interaction = %s",
+                (identifiant_interaction,),
+            )
+            ligne = curseur.fetchone()
+            if not ligne:
+                return None
+
+        return InterractionEvaluee.model_validate(ligne["interaction_evaluee_json"])
+
     def obtient_statistiques(self) -> Dict[str, int]:
         with self._connexion.cursor() as curseur:
             curseur.execute("SELECT COUNT(*) FROM interactions")
