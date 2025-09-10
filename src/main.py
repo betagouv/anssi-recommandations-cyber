@@ -1,6 +1,6 @@
 import uvicorn
 import gradio as gr
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert
@@ -9,6 +9,7 @@ from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
 from adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
+from schemas.retour_utilisatrice import RetourUtilisatrice, RetourUtilisatriceAvecId
 
 
 app: FastAPI = FastAPI()
@@ -51,6 +52,27 @@ def route_pose_question(
     reponse = client_albert.pose_question(request.question)
     adaptateur_base_de_donnes.sauvegarde_interaction(reponse)
     return reponse
+
+
+@app.post("/retour")
+def route_retour(
+    request: RetourUtilisatriceAvecId,
+    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ),
+) -> Dict[str, Any]:
+    retour = RetourUtilisatrice(
+        pouce_leve=request.pouce_leve, commentaire=request.commentaire
+    )
+
+    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
+        request.id_interaction, retour
+    )
+
+    if not succes:
+        raise HTTPException(status_code=404, detail="Interaction non trouvée")
+
+    return {"succes": True, "commentaire": request.commentaire}
 
 
 @app.get("/")
