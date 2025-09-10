@@ -8,6 +8,7 @@ from schemas.requetes import QuestionRequete
 from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
+from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesPostgres
 
 
 app: FastAPI = FastAPI()
@@ -18,6 +19,12 @@ app = gr.mount_gradio_app(app, interface_gradio, path="/ui")
 
 def fabrique_client_albert() -> ClientAlbert:
     return ClientAlbert()
+
+
+def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
+    AdaptateurBaseDeDonnees
+):
+    return AdaptateurBaseDeDonneesPostgres(recupere_configuration()["NOM_BDD"])
 
 
 @app.get("/sante")
@@ -37,8 +44,13 @@ def route_recherche(
 def route_pose_question(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ),
 ) -> ReponseQuestion:
-    return client_albert.pose_question(request.question)
+    reponse = client_albert.pose_question(request.question)
+    adaptateur_base_de_donnes.sauvegarde_interaction(reponse)
+    return reponse
 
 
 @app.get("/")

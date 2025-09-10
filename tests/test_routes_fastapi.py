@@ -1,8 +1,13 @@
 from fastapi.testclient import TestClient
-from unittest.mock import Mock
-from main import app, fabrique_client_albert
+from unittest.mock import Mock, patch
+from main import (
+    app,
+    fabrique_client_albert,
+    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
+)
 from client_albert import ClientAlbert
 from schemas.reponses import ReponseQuestion
+from adaptateurs import AdaptateurBaseDeDonnees
 
 
 def test_route_sante() -> None:
@@ -70,21 +75,31 @@ def test_route_pose_question_repond_correctement() -> None:
     mock_client: Mock = Mock(spec=ClientAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
+    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
+
     app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
-    try:
-        client: TestClient = TestClient(app)
-        response = client.post("/pose_question", json={"question": "Qui es-tu"})
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_adaptateur
 
-        assert response.status_code == 200
-        mock_client.pose_question.assert_called_once()
+    with patch("main.recupere_configuration") as mock_conf:
+        mock_conf.return_value = {
+            "NOM_BDD": "test",
+        }
 
-    finally:
-        app.dependency_overrides.clear()
+        try:
+            client: TestClient = TestClient(app)
+            response = client.post("/pose_question", json={"question": "Qui es-tu"})
+
+            assert response.status_code == 200
+            mock_client.pose_question.assert_called_once()
+
+        finally:
+            app.dependency_overrides.clear()
 
 
 def test_route_pose_question_retourne_donnees_correctes() -> None:
-    """Vérifie que l'endpoint retourne un objet ReponseQuestion avec paragraphes structurés"""
-
     mock_reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
@@ -106,41 +121,54 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
         question="Qui es-tu",
     )
 
-    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client = Mock(spec=ClientAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
+    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
+
     app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
-    try:
-        client: TestClient = TestClient(app)
-        response = client.post("/pose_question", json={"question": "Qui es-tu"})
-        resultat = response.json()
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_adaptateur
 
-        # Vérifier la structure ReponseQuestion avec paragraphes structurés
-        assert "reponse" in resultat
-        assert "paragraphes" in resultat
-        assert "question" in resultat
-        assert resultat["reponse"] == "Réponse de test d'Albert"
-        assert isinstance(resultat["paragraphes"], list)
-        assert len(resultat["paragraphes"]) == 2
+    with patch("main.recupere_configuration") as mock_conf:
+        mock_conf.return_value = {
+            "NOM_BDD": "test",
+        }
 
-        # Vérifier le premier paragraphe
-        p1 = resultat["paragraphes"][0]
-        assert p1["score_similarite"] == 0.75
-        assert p1["numero_page"] == 29
-        assert (
-            p1["url"]
-            == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-        )
-        assert (
-            p1["nom_document"]
-            == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-        )
-        assert p1["contenu"] == "Contenu du paragraphe 1"
-        assert resultat["question"] == "Qui es-tu"
+        try:
+            client_http = TestClient(app)
+            response = client_http.post(
+                "/pose_question", json={"question": "Qui es-tu"}
+            )
+            resultat = response.json()
 
-        mock_client.pose_question.assert_called_once()
-    finally:
-        app.dependency_overrides.clear()
+            assert "reponse" in resultat
+            assert "paragraphes" in resultat
+            assert "question" in resultat
+            assert resultat["reponse"] == "Réponse de test d'Albert"
+            assert isinstance(resultat["paragraphes"], list)
+            assert len(resultat["paragraphes"]) == 2
+
+            p1 = resultat["paragraphes"][0]
+            assert p1["score_similarite"] == 0.75
+            assert p1["numero_page"] == 29
+            assert (
+                p1["url"]
+                == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+            )
+            assert (
+                p1["nom_document"]
+                == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+            )
+            assert p1["contenu"] == "Contenu du paragraphe 1"
+            assert resultat["question"] == "Qui es-tu"
+
+            mock_client.pose_question.assert_called_once()
+            mock_adaptateur.sauvegarde_interaction.assert_called_once()
+        finally:
+            app.dependency_overrides.clear()
 
 
 def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:

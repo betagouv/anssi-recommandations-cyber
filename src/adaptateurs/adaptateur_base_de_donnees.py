@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict
-from schemas.retour_utilisatrice import RetourUtilisatrice
+from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.reponses import ReponseQuestion
 
 
