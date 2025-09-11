@@ -10,6 +10,7 @@ dependencies = [
     "openai",
     "psycopg2-binary",
     "pytest",
+    "pyjwt",
     "requests",
     "typing",
     "uvicorn",

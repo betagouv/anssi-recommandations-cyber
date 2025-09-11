@@ -34,6 +34,10 @@ def recupere_configuration():
     UTILISATEUR_BDD: str = config_postgres["user"]
     MOT_DE_PASSE_BDD: str = config_postgres["password"]
 
+    JWT_CLE_SECRETE: str = os.getenv("JWT_CLE_SECRETE")
+    JWT_HEURE_EXPIRATION: int = int(os.getenv("JWT_HEURE_EXPIRATION", "24"))
+    JWT_COOKIES_SECURISE: bool = bool(os.getenv("JWT_COOKIES_SECURISE").lower())
+
     return {
         "BASE_URL_ALBERT": BASE_URL_ALBERT,
         "COLLECTION_NOM_ANSSI_LAB": COLLECTION_NOM_ANSSI_LAB,
@@ -47,4 +51,7 @@ def recupere_configuration():
         "NOM_BDD": NOM_BDD,
         "UTILISATEUR_BDD": UTILISATEUR_BDD,
         "MOT_DE_PASSE_BDD": MOT_DE_PASSE_BDD,
+        "JWT_CLE_SECRETE": JWT_CLE_SECRETE,
+        "JWT_HEURE_EXPIRATION": JWT_HEURE_EXPIRATION,
+        "JWT_COOKIES_SECURISE": JWT_COOKIES_SECURISE,
     }

@@ -16,7 +16,8 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
 
         data = response.json()
 
-        interaction_id = response.headers.get("X-Interaction-Id", "")
+        cookies = response.cookies
+        interaction_token = cookies.get("interaction_token", "")
 
         sources_html = (
             """
@@ -53,16 +54,13 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
                 + "\n"
             )
 
-        return data.get("reponse", ""), sources_html, interaction_id
+        return data.get("reponse", ""), sources_html, interaction_token
 
     except Exception as e:
         return f"Erreur : {str(e)}", "", ""
 
 
 def cree_interface_gradio(app):
-    def pose_question_handler(question: str) -> tuple[str, str]:
-        return pose_question_gradio(question, app)
-
     css_cache_footer = "footer { display: none !important; }"
     with gr.Blocks(title="🔐 Assistant Cyber ANSSI", css=css_cache_footer) as interface:
         gr.Markdown("# 🔐 Assistant Cyber ANSSI")
@@ -97,34 +95,39 @@ def cree_interface_gradio(app):
                 placeholder="Dites-nous ce que vous pensez de cette réponse...",
                 lines=2,
             )
-            envoyer_retour_utilisatrice_btn = gr.Button("Envoyer le retour", variant="primary")
+            envoyer_retour_utilisatrice_btn = gr.Button(
+                "Envoyer le retour", variant="primary"
+            )
             retour_utilisatrice_status = gr.HTML()
 
-        interaction_id_state = gr.State()
+        etat_token_interaction = gr.State()
 
         def pose_question_avec_retour_utilisatrice(question: str):
-            reponse, sources, interaction_id = pose_question_gradio(question, app)
-            return reponse, sources, gr.Group(visible=True), interaction_id, ""
+            reponse, sources, token_interaction = pose_question_gradio(question, app)
+            return reponse, sources, gr.Group(visible=True), token_interaction, ""
 
         def envoyer_retour_utilisatrice(
-            interaction_id: str, pouce_leve: bool, commentaire: str
+            token_interaction: str, pouce_leve: bool, commentaire: str
         ):
-            if not interaction_id:
+            if not token_interaction:
                 return "Erreur : Aucune interaction à évaluer"
+
             try:
                 client = TestClient(app)
                 payload = {
-                    "pouce_leve": bool(pouce_leve),
-                    "commentaire": (commentaire.strip() or None)
-                    if commentaire is not None
-                    else None,
+                    "pouce_leve": pouce_leve,
+                    "commentaire": commentaire.strip() if commentaire.strip() else None,
                 }
-                response = client.post(f"/retour/{interaction_id}", json=payload)
+                reponse = client.post(
+                    "/retour",
+                    json=payload,
+                    cookies={"interaction_token": token_interaction},
+                )
 
-                if response.status_code == 200:
+                if reponse.status_code == 200:
                     return "✅ Merci pour votre retour !"
                 else:
-                    return f"❌ Erreur lors de l'envoi : {response.status_code}"
+                    return f"❌ Erreur lors de l'envoi : {reponse.status_code}"
             except Exception as e:
                 return f"❌ Erreur : {str(e)}"
 
@@ -135,24 +138,26 @@ def cree_interface_gradio(app):
                 reponse_output,
                 sources_output,
                 retour_utilisatrice_section,
-                interaction_id_state,
+                etat_token_interaction,
                 retour_utilisatrice_status,
             ],
         )
 
         pouce_haut_btn.click(
-            fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, True, comm),
-            inputs=[interaction_id_state, commentaire_input],
+            fn=lambda token, comm: envoyer_retour_utilisatrice(token, True, comm),
+            inputs=[etat_token_interaction, commentaire_input],
             outputs=[retour_utilisatrice_status],
         )
+
         pouce_bas_btn.click(
-            fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, False, comm),
-            inputs=[interaction_id_state, commentaire_input],
+            fn=lambda token, comm: envoyer_retour_utilisatrice(token, False, comm),
+            inputs=[etat_token_interaction, commentaire_input],
             outputs=[retour_utilisatrice_status],
         )
+
         envoyer_retour_utilisatrice_btn.click(
-            fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, True, comm),
-            inputs=[interaction_id_state, commentaire_input],
+            fn=lambda token, comm: envoyer_retour_utilisatrice(token, True, comm),
+            inputs=[etat_token_interaction, commentaire_input],
             outputs=[retour_utilisatrice_status],
         )
 
