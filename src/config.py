@@ -18,6 +18,10 @@ def recupere_configuration():
     UTILISATEUR_BD: str = os.getenv("DB_USER")
     MOT_DE_PASSE_BD: str = os.getenv("DB_PASSWORD")
 
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
+    JWT_EXPIRATION_HOURS: int = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
+    JWT_SECURE_COOKIES: bool = bool(os.getenv("JWT_SECURE_COOKIES").lower())
+
     return {
         "BASE_URL_ALBERT": BASE_URL_ALBERT,
         "COLLECTION_NOM_ANSSI_LAB": COLLECTION_NOM_ANSSI_LAB,
@@ -31,4 +35,7 @@ def recupere_configuration():
         "NOM_BD": NOM_BD,
         "UTILISATEUR_BD": UTILISATEUR_BD,
         "MOT_DE_PASSE_BD": MOT_DE_PASSE_BD,
+        "JWT_SECRET_KEY": JWT_SECRET_KEY,
+        "JWT_EXPIRATION_HOURS": JWT_EXPIRATION_HOURS,
+        "JWT_SECURE_COOKIES": JWT_SECURE_COOKIES,
     }
