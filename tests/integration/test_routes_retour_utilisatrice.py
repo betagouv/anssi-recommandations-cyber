@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import pytest
 from starlette.testclient import TestClient
 from main import (
@@ -13,6 +13,10 @@ from client_albert import ClientAlbert
 from tests.integration.test_adaptateur_postgres_retour_utilisatrice import (
     adaptateur_test,
 )
+import jwt
+from datetime import datetime, timedelta, UTC
+
+TEST_JWT_SECRET = "test-secret-key-for-ci-cd-only-123456789"
 
 
 @pytest.mark.integration
@@ -72,7 +76,9 @@ def test_gestionnaire_lit_interactions_sauvegardees(adaptateur_test):
 
 
 @pytest.mark.integration
-def test_route_retour_accepte_retour_utilisatrice_et_renvoie_200():
+@patch("main.recupere_configuration")
+def test_route_retour_accepte_retour_utilisatrice_et_renvoie_200(mock_config):
+    mock_config.return_value = {"JWT_SECRET_KEY": TEST_JWT_SECRET}
     mock_gestionnaire = Mock(spec=AdaptateurBaseDeDonnees)
     mock_gestionnaire.ajoute_retour_utilisatrice.return_value = True
 
@@ -83,13 +89,20 @@ def test_route_retour_accepte_retour_utilisatrice_et_renvoie_200():
     try:
         client = TestClient(app)
 
+        payload_jwt = {
+            "interaction_id": "test-id-123",
+            "exp": datetime.now(UTC) + timedelta(hours=24),
+        }
+        token = jwt.encode(payload_jwt, TEST_JWT_SECRET, algorithm="HS256")
+
         payload = {
-            "id_interaction": "test-id-123",
             "pouce_leve": True,
             "commentaire": "Très utile, merci !",
         }
 
-        response = client.post("/retour", json=payload)
+        response = client.post(
+            "/retour", json=payload, cookies={"interaction_token": token}
+        )
 
         assert response.status_code == 200
         mock_gestionnaire.ajoute_retour_utilisatrice.assert_called_once()
@@ -99,7 +112,9 @@ def test_route_retour_accepte_retour_utilisatrice_et_renvoie_200():
 
 
 @pytest.mark.integration
-def test_route_retour_renvoie_donnees_retour_utilisatrice():
+@patch("main.recupere_configuration")
+def test_route_retour_renvoie_donnees_retour_utilisatrice(mock_config):
+    mock_config.return_value = {"JWT_SECRET_KEY": TEST_JWT_SECRET}
     mock_gestionnaire = Mock(spec=AdaptateurBaseDeDonnees)
     mock_gestionnaire.ajoute_retour_utilisatrice.return_value = True
 
@@ -110,13 +125,20 @@ def test_route_retour_renvoie_donnees_retour_utilisatrice():
     try:
         client = TestClient(app)
 
+        payload_jwt = {
+            "interaction_id": "test-id-123",
+            "exp": datetime.now(UTC) + timedelta(hours=24),
+        }
+        token = jwt.encode(payload_jwt, TEST_JWT_SECRET, algorithm="HS256")
+
         payload = {
-            "id_interaction": "test-id-123",
             "pouce_leve": True,
             "commentaire": "Très utile, merci !",
         }
 
-        response = client.post("/retour", json=payload)
+        response = client.post(
+            "/retour", json=payload, cookies={"interaction_token": token}
+        )
         data = response.json()
 
         assert data["succes"] is True
@@ -128,9 +150,13 @@ def test_route_retour_renvoie_donnees_retour_utilisatrice():
 
 
 @pytest.mark.integration
+@patch("main.recupere_configuration")
 def test_route_retour_puis_lecture_avec_le_gestionnaire_et_verification_des_donnes(
+    mock_config,
     adaptateur_test,
 ):
+    mock_config.return_value = {"JWT_SECRET_KEY": TEST_JWT_SECRET}
+
     reponse_question = ReponseQuestion(
         reponse="Test réponse", paragraphes=[], question="Test question"
     )
@@ -143,13 +169,18 @@ def test_route_retour_puis_lecture_avec_le_gestionnaire_et_verification_des_donn
     try:
         client = TestClient(app)
 
+        payload_jwt = {
+            "interaction_id": id_interaction,
+            "exp": datetime.now(UTC) + timedelta(hours=24),
+        }
+        token = jwt.encode(payload_jwt, TEST_JWT_SECRET, algorithm="HS256")
+
         payload = {
-            "id_interaction": id_interaction,
             "pouce_leve": True,
             "commentaire": "Excellent, très clair !",
         }
 
-        _ = client.post("/retour", json=payload)
+        _ = client.post("/retour", json=payload, cookies={"interaction_token": token})
 
         retour_sauvegarde = adaptateur_test.lit_interaction(
             id_interaction

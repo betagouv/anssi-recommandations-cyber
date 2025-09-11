@@ -1,15 +1,18 @@
 import uvicorn
 import gradio as gr
-from fastapi import FastAPI, Depends, HTTPException
+import jwt
+from datetime import datetime, timedelta, UTC
+from fastapi import FastAPI, Depends, HTTPException, Response, Request
 from fastapi.responses import RedirectResponse
 from typing import Dict, List, Any
+from functools import lru_cache
 from client_albert import ClientAlbert
 from schemas.requetes import QuestionRequete
 from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesPostgres
-from schemas.retour_utilisatrice import RetourUtilisatrice, RetourUtilisatriceAvecId
+from schemas.retour_utilisatrice import RetourUtilisatrice
 
 
 app: FastAPI = FastAPI()
@@ -22,6 +25,7 @@ def fabrique_client_albert() -> ClientAlbert:
     return ClientAlbert()
 
 
+@lru_cache()
 def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
     AdaptateurBaseDeDonnees
 ):
@@ -48,25 +52,54 @@ def route_pose_question(
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
+    response: Response = None,
 ) -> ReponseQuestion:
     reponse = client_albert.pose_question(request.question)
-    adaptateur_base_de_donnes.sauvegarde_interaction(reponse)
+    id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse)
+
+    if response is not None:
+        configuration = recupere_configuration()
+        payload = {
+            "interaction_id": id_interaction,
+            "exp": datetime.now(UTC)
+            + timedelta(hours=configuration["JWT_EXPIRATION_HOURS"]),
+        }
+        token = jwt.encode(payload, configuration["JWT_SECRET_KEY"], algorithm="HS256")
+        response.set_cookie(
+            key="interaction_token",
+            value=token,
+            httponly=True,
+            secure=configuration["JWT_SECURE_COOKIES"],
+            samesite="lax",
+        )
     return reponse
 
 
 @app.post("/retour")
 def route_retour(
-    request: RetourUtilisatriceAvecId,
+    request: RetourUtilisatrice,
+    http_request: Request,
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> Dict[str, Any]:
-    retour = RetourUtilisatrice(
-        pouce_leve=request.pouce_leve, commentaire=request.commentaire
-    )
+    token = http_request.cookies.get("interaction_token")
+    if not token:
+        raise HTTPException(status_code=400, detail="Token d'interaction manquant")
+
+    try:
+        configuration = recupere_configuration()
+        payload = jwt.decode(
+            token, configuration["JWT_SECRET_KEY"], algorithms=["HS256"]
+        )
+        id_interaction = payload["interaction_id"]
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expiré")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token invalide")
 
     succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
-        request.id_interaction, retour
+        id_interaction, request
     )
 
     if not succes:
