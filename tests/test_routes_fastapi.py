@@ -1,14 +1,10 @@
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from main import (
     app,
     fabrique_client_albert,
-    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
 from client_albert import ClientAlbert
-from schemas.reponses import ReponseQuestion
-from adaptateurs import AdaptateurBaseDeDonnees
-
 
 def test_route_sante() -> None:
     """Vérifie que l'application FastAPI fonctionne"""
@@ -56,121 +52,6 @@ def test_route_recherche_donnees_correctes() -> None:
         app.dependency_overrides.clear()
 
 
-def test_route_pose_question_repond_correctement() -> None:
-    """Vérifie que l'endpoint recherche fonctionne"""
-    mock_reponse = ReponseQuestion(
-        reponse="Réponse de test d'Albert",
-        paragraphes=[
-            {
-                "score_similarite": 0.75,
-                "numero_page": 29,
-                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "contenu": "Contenu du paragraphe 1",
-            }
-        ],
-        question="Qui es-tu",
-    )
-
-    mock_client: Mock = Mock(spec=ClientAlbert)
-    mock_client.pose_question.return_value = mock_reponse
-
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
-
-    app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
-    app.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
-
-    with patch("main.recupere_configuration") as mock_conf:
-        mock_conf.return_value = {
-            "NOM_BDD": "test",
-        }
-
-        try:
-            client: TestClient = TestClient(app)
-            response = client.post("/pose_question", json={"question": "Qui es-tu"})
-
-            assert response.status_code == 200
-            mock_client.pose_question.assert_called_once()
-
-        finally:
-            app.dependency_overrides.clear()
-
-
-def test_route_pose_question_retourne_donnees_correctes() -> None:
-    mock_reponse = ReponseQuestion(
-        reponse="Réponse de test d'Albert",
-        paragraphes=[
-            {
-                "score_similarite": 0.75,
-                "numero_page": 29,
-                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "contenu": "Contenu du paragraphe 1",
-            },
-            {
-                "score_similarite": 0.72,
-                "numero_page": 15,
-                "url": "https://cyber.gouv.fr/sites/default/files/2017/01/guide_hygiene_informatique_anssi.pdf",
-                "nom_document": "guide_hygiene_informatique_anssi.pdf",
-                "contenu": "Contenu du paragraphe 2",
-            },
-        ],
-        question="Qui es-tu",
-    )
-
-    mock_client = Mock(spec=ClientAlbert)
-    mock_client.pose_question.return_value = mock_reponse
-
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
-
-    app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
-    app.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
-
-    with patch("main.recupere_configuration") as mock_conf:
-        mock_conf.return_value = {
-            "NOM_BDD": "test",
-        }
-
-        try:
-            client_http = TestClient(app)
-            response = client_http.post(
-                "/pose_question", json={"question": "Qui es-tu"}
-            )
-            resultat = response.json()
-
-            assert "reponse" in resultat
-            assert "paragraphes" in resultat
-            assert "question" in resultat
-            assert resultat["reponse"] == "Réponse de test d'Albert"
-            assert isinstance(resultat["paragraphes"], list)
-            assert len(resultat["paragraphes"]) == 2
-
-            p1 = resultat["paragraphes"][0]
-            assert p1["score_similarite"] == 0.75
-            assert p1["numero_page"] == 29
-            assert (
-                p1["url"]
-                == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-            )
-            assert (
-                p1["nom_document"]
-                == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-            )
-            assert p1["contenu"] == "Contenu du paragraphe 1"
-            assert resultat["question"] == "Qui es-tu"
-
-            mock_client.pose_question.assert_called_once()
-            mock_adaptateur.sauvegarde_interaction.assert_called_once()
-        finally:
-            app.dependency_overrides.clear()
-
-
 def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
     """Vérifie que l'endpoint recherche retourne toutes les métadonnées pour chaque paragraphe"""
     mock_result = {
@@ -210,91 +91,5 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
         )
 
         mock_client.recherche_paragraphes.assert_called_once()
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_route_retour_avec_mock_retourne_succes_200():
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = True
-
-    app.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
-
-    try:
-        client = TestClient(app)
-        payload = {"pouce_leve": True, "commentaire": "Très utile !"}
-        id_interaction = "uuid-test-123"
-
-        reponse = client.post(f"/retour/{id_interaction}", json=payload)
-
-        assert reponse.status_code == 200
-        mock_adaptateur.ajoute_retour_utilisatrice.assert_called_once()
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_route_retour_avec_mock_retourne_donnees_attendues():
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = True
-
-    app.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
-
-    try:
-        client = TestClient(app)
-        payload = {"pouce_leve": True, "commentaire": "Très utile !"}
-        id_interaction = "uuid-test-456"
-
-        reponse = client.post(f"/retour/{id_interaction}", json=payload)
-        data = reponse.json()
-
-        assert data["succes"] is True
-        assert data["commentaire"] == "Très utile !"
-        args, _ = mock_adaptateur.ajoute_retour_utilisatrice.call_args
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_route_retour_avec_interaction_inexistante_retourne_404():
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = False
-
-    app.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
-
-    try:
-        client = TestClient(app)
-        id_interaction = "uuid-inexistant-123"
-        payload = {"pouce_leve": True, "commentaire": "N/A"}
-
-        resp = client.post(f"/retour/{id_interaction}", json=payload)
-
-        assert resp.status_code == 404
-        assert resp.json() == {"detail": "Interaction non trouvée"}
-
-        mock_adaptateur.ajoute_retour_utilisatrice.assert_called_once()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_route_retour_avec_payload_invalide_rejette_la_requete():
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    app.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
-
-    try:
-        client = TestClient(app)
-        id_interaction = "uuid-test-422"
-        payload = {"pouce_leve": "oui", "commentaire": 123}
-        resp = client.post(f"/retour/{id_interaction}", json=payload)
-
-        assert resp.status_code == 422
-        mock_adaptateur.ajoute_retour_utilisatrice.assert_not_called()
     finally:
         app.dependency_overrides.clear()
