@@ -17,8 +17,8 @@ from schemas.retour_utilisatrice import RetourUtilisatrice
 
 app: FastAPI = FastAPI()
 
-interface_gradio = cree_interface_gradio(app)
-app = gr.mount_gradio_app(app, interface_gradio, path="/ui")
+interface_gradio, auth_func = cree_interface_gradio(app)
+app = gr.mount_gradio_app(app, interface_gradio, path="/ui", auth=auth_func)
 
 
 def fabrique_client_albert() -> ClientAlbert:

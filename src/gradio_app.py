@@ -61,6 +61,17 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
 
 def cree_interface_gradio(app):
     css_cache_footer = "footer { display: none !important; }"
+
+    def authentifier(username, password):
+        from config import recupere_configuration
+
+        config = recupere_configuration()
+
+        admin_user = config.get("GRADIO_ADMIN_USER")
+        admin_pass = config.get("GRADIO_ADMIN_PASSWORD")
+
+        return username == admin_user and password == admin_pass
+
     with gr.Blocks(title="🔐 Assistant Cyber ANSSI", css=css_cache_footer) as interface:
         gr.Markdown("# 🔐 Assistant Cyber ANSSI")
         gr.Markdown(
@@ -158,4 +169,4 @@ def cree_interface_gradio(app):
             outputs=[feedback_status],
         )
 
-    return interface
+    return interface, authentifier

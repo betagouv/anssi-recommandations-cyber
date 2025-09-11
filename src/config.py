@@ -21,6 +21,8 @@ def recupere_configuration():
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
     JWT_EXPIRATION_HOURS: int = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
     JWT_SECURE_COOKIES: bool = bool(os.getenv("JWT_SECURE_COOKIES").lower())
+    GRADIO_ADMIN_USER: str = os.getenv("GRADIO_ADMIN_USER")
+    GRADIO_ADMIN_PASSWORD: str = os.getenv("GRADIO_ADMIN_PASSWORD")
 
     return {
         "BASE_URL_ALBERT": BASE_URL_ALBERT,
@@ -38,4 +40,6 @@ def recupere_configuration():
         "JWT_SECRET_KEY": JWT_SECRET_KEY,
         "JWT_EXPIRATION_HOURS": JWT_EXPIRATION_HOURS,
         "JWT_SECURE_COOKIES": JWT_SECURE_COOKIES,
+        "GRADIO_ADMIN_USER": GRADIO_ADMIN_USER,
+        "GRADIO_ADMIN_PASSWORD": GRADIO_ADMIN_PASSWORD,
     }
