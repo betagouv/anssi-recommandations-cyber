@@ -24,9 +24,25 @@ A minima, ce fichier devra défnir les variables déclarées dans le fichier `.e
 
 ## 🧪 Comment tester ?
 
+### Tests unitaires 
+
 Dans un environnement virtuel, lancer `pytest`.
 
 ## 🚀 Comment lancer l'application ?
+
+### Prérequis : PostgreSQL
+
+L'application nécessite une base PostgreSQL. Lancez-la avec Docker en utilisant vos variables d'environnement :
+
+```shell
+env $(cat .env) && docker run \
+  --detach \
+  --name postgres \
+  --env POSTGRES_DB="$DB_NAME" \
+  --env POSTGRES_PASSWORD="$DB_PASSWORD" \
+  --publish "$DB_PORT:5432" \
+  postgres:15
+```
 
 ### En mode développement
 
