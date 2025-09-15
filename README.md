@@ -52,7 +52,7 @@ env $(cat .env) python src/main.py
 #### Dans un conteneur
 
 ```shell
-podman container run --rm -it \
+docker container run --rm -it \
     --network=host \
     --volume $(pwd):/app \
     localhost:mqc \
