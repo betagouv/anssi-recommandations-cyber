@@ -1,5 +1,5 @@
 import uuid
-from typing import Dict
+from typing import Dict, Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.reponses import ReponseQuestion
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
@@ -29,6 +29,9 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
         )
         self._interactions[identifiant_interaction] = interaction_mise_a_jour
         return True
+
+    def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+        return self._interactions.get(identifiant_interaction)
 
     def obtient_statistiques(self) -> Dict[str, int]:
         total_interactions = len(self._interactions)

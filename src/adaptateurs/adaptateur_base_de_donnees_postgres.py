@@ -1,7 +1,7 @@
 import uuid
 import psycopg2
 import psycopg2.extras
-from typing import Dict
+from typing import Dict, Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.reponses import ReponseQuestion
 from config import recupere_configuration_postgres
@@ -64,6 +64,20 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
                 (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
             )
         return True
+
+    def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+        with self._connexion.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as curseur:
+            curseur.execute(
+                "SELECT contenu FROM interactions WHERE id_interaction = %s",
+                (identifiant_interaction,),
+            )
+            ligne = curseur.fetchone()
+            if not ligne:
+                return None
+
+        return Interaction.model_validate(ligne["contenu"])
 
     def obtient_statistiques(self) -> Dict[str, int]:
         with self._connexion.cursor() as curseur:

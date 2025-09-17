@@ -128,3 +128,43 @@ def test_recuperation_statistiques_sans_retour_utilisateur(adaptateur_test):
     assert stats["total_interactions"] == 1
     assert stats["total_retours"] == 0
     assert stats["pouces_leves"] == 0
+
+
+def test_lit_interaction_existante(adaptateur_test):
+    reponse_question = ReponseQuestion(
+        reponse="Réponse test", paragraphes=[], question="Question test"
+    )
+    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+
+    interaction = adaptateur_test.lit_interaction(id_interaction)
+
+    assert interaction is not None
+    assert interaction.reponse_question.reponse == "Réponse test"
+    assert interaction.reponse_question.question == "Question test"
+    assert interaction.retour_utilisatrice is None
+
+
+def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test):
+    reponse_question = ReponseQuestion(
+        reponse="Réponse test", paragraphes=[], question="Question test"
+    )
+    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+
+    retour = RetourUtilisatrice(pouce_leve=True, commentaire="Excellent")
+    adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
+
+    interaction = adaptateur_test.lit_interaction(id_interaction)
+
+    assert interaction is not None
+    assert interaction.reponse_question.reponse == "Réponse test"
+    assert interaction.retour_utilisatrice is not None
+    assert interaction.retour_utilisatrice.pouce_leve is True
+    assert interaction.retour_utilisatrice.commentaire == "Excellent"
+
+
+def test_lit_interaction_inexistante(adaptateur_test):
+    id_inexistant = "id-inexistant"
+
+    interaction = adaptateur_test.lit_interaction(id_inexistant)
+
+    assert interaction is None
