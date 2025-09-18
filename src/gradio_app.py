@@ -10,13 +10,13 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
 
     try:
         client = TestClient(app)
-        response = client.post("/pose_question", json={"question": question})
-        if response.status_code != 200:
-            return f"Erreur {response.status_code}", "", ""
+        reponse_client = client.post("/pose_question", json={"question": question})
+        if reponse_client.status_code != 200:
+            return f"Erreur {reponse_client.status_code}", "", ""
 
-        data = response.json()
+        donnees = reponse_client.json()
 
-        interaction_id = data.get("interaction_id", "")
+        interaction_id = donnees.get("interaction_id", "")
 
         sources_html = (
             """
@@ -28,7 +28,7 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
         )
 
         # Construction des sources en HTML échappé pour éviter tout rendu Markdown.
-        for i, paragraphe in enumerate(data.get("paragraphes", []), 1):
+        for i, paragraphe in enumerate(donnees.get("paragraphes", []), 1):
             url = paragraphe.get("url", "") or ""
             page = (
                 paragraphe.get("numero_page", "") + 1
@@ -53,7 +53,7 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
                 + "\n"
             )
 
-        return data.get("reponse", ""), sources_html, interaction_id
+        return donnees.get("reponse", ""), sources_html, interaction_id
 
     except Exception as e:
         return f"Erreur : {str(e)}", "", ""
@@ -74,7 +74,7 @@ def cree_interface_gradio(app):
                 lines=2,
             )
 
-        submit_btn = gr.Button("Poser la question", variant="primary")
+        bouton_envoye = gr.Button("Poser la question", variant="primary")
 
         with gr.Row():
             with gr.Column():
@@ -82,14 +82,14 @@ def cree_interface_gradio(app):
                     label="Réponse", lines=10, interactive=False
                 )
             with gr.Column():
-                sources_output = gr.HTML(label="Sources consultées")
+                sources = gr.HTML(label="Sources consultées")
 
         with gr.Group(visible=False) as retour_utilisatrice_section:
             gr.Markdown("### Votre avis sur cette réponse")
             with gr.Row():
                 pouce_haut_btn = gr.Button("👍 Utile", variant="secondary")
                 pouce_bas_btn = gr.Button("👎 Pas utile", variant="secondary")
-            commentaire_input = gr.Textbox(
+            commentaire_saisi = gr.Textbox(
                 label="Commentaire (optionnel)",
                 placeholder="Dites-nous ce que vous pensez de cette réponse...",
                 lines=2,
@@ -99,7 +99,7 @@ def cree_interface_gradio(app):
             )
             retour_utilisatrice_status = gr.HTML()
 
-        interaction_id_state = (
+        interaction_id_etat = (
             gr.State()
         )  # permet de conserver cette valeur tant que la page n'est pas rafraîchie
 
@@ -132,31 +132,31 @@ def cree_interface_gradio(app):
             except Exception as e:
                 return f"❌ Erreur : {str(e)}"
 
-        submit_btn.click(
+        bouton_envoye.click(
             fn=pose_question_avec_retour_utilisatrice,
             inputs=[question_input],
             outputs=[
                 reponse_output,
-                sources_output,
+                sources,
                 retour_utilisatrice_section,
-                interaction_id_state,
+                interaction_id_etat,
                 retour_utilisatrice_status,
             ],
         )
 
         pouce_haut_btn.click(
             fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, True, comm),
-            inputs=[interaction_id_state, commentaire_input],
+            inputs=[interaction_id_etat, commentaire_saisi],
             outputs=[retour_utilisatrice_status],
         )
         pouce_bas_btn.click(
             fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, False, comm),
-            inputs=[interaction_id_state, commentaire_input],
+            inputs=[interaction_id_etat, commentaire_saisi],
             outputs=[retour_utilisatrice_status],
         )
         envoyer_retour_utilisatrice_btn.click(
             fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, True, comm),
-            inputs=[interaction_id_state, commentaire_input],
+            inputs=[interaction_id_etat, commentaire_saisi],
             outputs=[retour_utilisatrice_status],
         )
 
