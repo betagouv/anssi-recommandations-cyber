@@ -23,3 +23,8 @@ class RetourUtilisatrice(BaseModel):
 class Interaction(BaseModel):
     reponse_question: ReponseQuestion
     retour_utilisatrice: Optional[RetourUtilisatrice] = None
+
+
+class DonneesCreationRetourUtilisateur(BaseModel):
+    id_interaction_rattachee: str
+    retour: RetourUtilisatrice

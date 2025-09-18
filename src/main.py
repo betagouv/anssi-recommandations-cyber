@@ -9,7 +9,10 @@ from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesPostgres
-from schemas.retour_utilisatrice import RetourUtilisatrice
+from schemas.retour_utilisatrice import (
+    RetourUtilisatrice,
+    DonneesCreationRetourUtilisateur,
+)
 
 
 app: FastAPI = FastAPI()
@@ -51,30 +54,27 @@ def route_pose_question(
 ) -> ReponseQuestion:
     reponse_question = client_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
-    reponse_json = JSONResponse(reponse_question.model_dump())
-    reponse_json.headers["X-Interaction-Id"] = id_interaction
-    return reponse_json
+    body = reponse_question.model_dump()
+    body["interaction_id"] = id_interaction
+    return JSONResponse(body)
 
 
-@app.post("/retour/{interaction_id}")
+@app.post("/retour")
 def route_retour(
-    interaction_id: str,
-    request: RetourUtilisatrice,
+    body: DonneesCreationRetourUtilisateur,
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> Dict[str, Any]:
     retour = RetourUtilisatrice(
-        pouce_leve=request.pouce_leve, commentaire=request.commentaire
+        pouce_leve=body.retour.pouce_leve, commentaire=body.retour.commentaire
     )
-    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
-        interaction_id, retour
-    )
+    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(body.id_interaction_rattachee, retour)
 
     if not succes:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
 
-    return {"succes": True, "commentaire": request.commentaire}
+    return {"succes": True, "commentaire": body.retour.commentaire}
 
 
 @app.get("/")
