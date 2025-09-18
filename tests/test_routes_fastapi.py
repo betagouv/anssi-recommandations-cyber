@@ -224,10 +224,14 @@ def test_route_retour_avec_mock_retourne_succes_200():
 
     try:
         client = TestClient(app)
-        payload = {"pouce_leve": True, "commentaire": "Très utile !"}
-        id_interaction = "uuid-test-123"
-
-        reponse = client.post(f"/retour/{id_interaction}", json=payload)
+        payload = {
+            "id_interaction_rattachee": "id-123",
+            "retour": {
+                "pouce_leve": True,
+                "commentaire": "Très utile",
+            },
+        }
+        reponse = client.post("/retour", json=payload)
 
         assert reponse.status_code == 200
         mock_adaptateur.ajoute_retour_utilisatrice.assert_called_once()
@@ -245,10 +249,15 @@ def test_route_retour_avec_mock_retourne_donnees_attendues():
 
     try:
         client = TestClient(app)
-        payload = {"pouce_leve": True, "commentaire": "Très utile !"}
-        id_interaction = "uuid-test-456"
+        payload = {
+            "id_interaction_rattachee": "id-123",
+            "retour": {
+                "pouce_leve": True,
+                "commentaire": "Très utile !",
+            },
+        }
 
-        reponse = client.post(f"/retour/{id_interaction}", json=payload)
+        reponse = client.post("/retour", json=payload)
         data = reponse.json()
 
         assert data["succes"] is True
@@ -268,10 +277,15 @@ def test_route_retour_avec_interaction_inexistante_retourne_404():
 
     try:
         client = TestClient(app)
-        id_interaction = "uuid-inexistant-123"
-        payload = {"pouce_leve": True, "commentaire": "N/A"}
+        payload = {
+            "id_interaction_rattachee": "id-123",
+            "retour": {
+                "pouce_leve": True,
+                "commentaire": "Très utile",
+            },
+        }
 
-        resp = client.post(f"/retour/{id_interaction}", json=payload)
+        resp = client.post("/retour", json=payload)
 
         assert resp.status_code == 404
         assert resp.json() == {"detail": "Interaction non trouvée"}
@@ -290,11 +304,38 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete():
 
     try:
         client = TestClient(app)
-        id_interaction = "uuid-test-422"
-        payload = {"pouce_leve": "oui", "commentaire": 123}
-        resp = client.post(f"/retour/{id_interaction}", json=payload)
+        payload = {
+            "id": 23,
+            "retour": {
+                "pouce_leve": True,
+                "commentaire": "Très utile",
+            },
+        }
+        resp = client.post("/retour", json=payload)
 
         assert resp.status_code == 422
         mock_adaptateur.ajoute_retour_utilisatrice.assert_not_called()
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_pose_question_retourne_id_dans_body():
+    reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
+    mock_client = Mock()
+    mock_client.pose_question.return_value = reponse
+    mock_db = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_db.sauvegarde_interaction.return_value = "id-123"
+
+    app.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    app.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_db
+    try:
+        client = TestClient(app)
+        r = client.post("/pose_question", json={"question": "Q?"})
+        j = r.json()
+        assert r.status_code == 200
+        assert j["reponse"] == "ok"
+        assert j["interaction_id"] == "id-123"
     finally:
         app.dependency_overrides.clear()

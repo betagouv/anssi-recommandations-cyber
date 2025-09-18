@@ -16,7 +16,7 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
 
         data = response.json()
 
-        interaction_id = response.headers.get("X-Interaction-Id", "")
+        interaction_id = data.get("interaction_id", "")
 
         sources_html = (
             """
@@ -60,9 +60,6 @@ def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
 
 
 def cree_interface_gradio(app):
-    def pose_question_handler(question: str) -> tuple[str, str]:
-        return pose_question_gradio(question, app)
-
     css_cache_footer = "footer { display: none !important; }"
     with gr.Blocks(title="🔐 Assistant Cyber ANSSI", css=css_cache_footer) as interface:
         gr.Markdown("# 🔐 Assistant Cyber ANSSI")
@@ -97,10 +94,14 @@ def cree_interface_gradio(app):
                 placeholder="Dites-nous ce que vous pensez de cette réponse...",
                 lines=2,
             )
-            envoyer_retour_utilisatrice_btn = gr.Button("Envoyer le retour", variant="primary")
+            envoyer_retour_utilisatrice_btn = gr.Button(
+                "Envoyer le retour", variant="primary"
+            )
             retour_utilisatrice_status = gr.HTML()
 
-        interaction_id_state = gr.State()
+        interaction_id_state = (
+            gr.State()
+        )  # permet de conserver cette valeur tant que la page n'est pas rafraîchie
 
         def pose_question_avec_retour_utilisatrice(question: str):
             reponse, sources, interaction_id = pose_question_gradio(question, app)
@@ -114,12 +115,15 @@ def cree_interface_gradio(app):
             try:
                 client = TestClient(app)
                 payload = {
-                    "pouce_leve": bool(pouce_leve),
-                    "commentaire": (commentaire.strip() or None)
-                    if commentaire is not None
-                    else None,
+                    "id_interaction_rattachee": interaction_id,
+                    "retour": {
+                        "pouce_leve": bool(pouce_leve),
+                        "commentaire": (commentaire.strip() or None)
+                        if commentaire is not None
+                        else None,
+                    },
                 }
-                response = client.post(f"/retour/{interaction_id}", json=payload)
+                response = client.post("/retour", json=payload)
 
                 if response.status_code == 200:
                     return "✅ Merci pour votre retour !"
