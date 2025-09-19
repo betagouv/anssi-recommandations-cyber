@@ -13,8 +13,5 @@ Format attendu :
 - ✅ Une réponse directe et synthétique à la question.
 - 🔗 Mention explicite des documents sources utilisés (par ex. "cyber.gouv.fr" ou le nom du guide).
 
-Question :
-{prompt}
-
 Documents :
 {chunks}

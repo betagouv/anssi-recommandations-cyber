@@ -63,15 +63,20 @@ class ClientAlbert:
         resultat_recherche = self.recherche_paragraphes(question)
         paragraphes = resultat_recherche["paragraphes"]
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
-        prompt = self.PROMPT_SYSTEM.format(
-            prompt=question, chunks=paragraphes_concatenes
-        )
+
+        messages = [
+            {"role": "system", "content": self.PROMPT_SYSTEM},
+            {
+                "role": "user",
+                "content": f"Question :\n{question}\n\nDocuments :\n{paragraphes_concatenes}",
+            },
+        ]
+
         response = self.client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             model=self.modele_reponse,
             stream=False,
         )
-
         return ReponseQuestion(
             reponse=response.choices[0].message.content,
             paragraphes=paragraphes,
