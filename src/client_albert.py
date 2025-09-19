@@ -59,30 +59,27 @@ class ClientAlbert:
 
         return {"paragraphes": paragraphes}
 
-    def pose_question(self, question: str) -> ReponseQuestion:
+    def pose_question(
+        self, question: str, prompt_surcharge: Optional[str] = None
+    ) -> ReponseQuestion:
         resultat_recherche = self.recherche_paragraphes(question)
         paragraphes = resultat_recherche["paragraphes"]
         paragraphes_concatenes = "\n\n\n".join(p.contenu for p in paragraphes)
 
-        messages = [
-            {"role": "system", "content": self.PROMPT_SYSTEM},
-            {
-                "role": "user",
-                "content": f"Question :\n{question}\n\nDocuments :\n{paragraphes_concatenes}",
-            },
-        ]
+        prompt_system = prompt_surcharge if prompt_surcharge else self.PROMPT_SYSTEM
+        question_utilisatrice = (
+            f"Question :\n{question}\n\nDocuments :\n{paragraphes_concatenes}"
+        )
 
+        messages = [
+            {"role": "system", "content": prompt_system},
+            {"role": "user", "content": question_utilisatrice},
+        ]
         response = self.client.chat.completions.create(
             messages=messages,
             model=self.modele_reponse,
             stream=False,
         )
-        return ReponseQuestion(
-            reponse=response.choices[0].message.content,
-            paragraphes=paragraphes,
-            question=question,
-        )
-
         return ReponseQuestion(
             reponse=response.choices[0].message.content,
             paragraphes=paragraphes,
