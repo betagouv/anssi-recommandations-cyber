@@ -4,7 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert
-from schemas.requetes import QuestionRequete
+from schemas.requetes import QuestionRequete, QuestionRequeteAvecSurcharge
 from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
@@ -53,6 +53,23 @@ def route_pose_question(
     ),
 ) -> ReponseQuestion:
     reponse_question = client_albert.pose_question(request.question)
+    id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
+    body = reponse_question.model_dump()
+    body["interaction_id"] = id_interaction
+    return JSONResponse(body)
+
+
+@app.post("/pose_question_dev_debug")
+def route_pose_question_dev(
+    request: QuestionRequeteAvecSurcharge,
+    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ),
+) -> ReponseQuestion:
+    reponse_question = client_albert.pose_question(
+        request.question, prompt_surcharge=request.prompt_surcharge
+    )
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
     body = reponse_question.model_dump()
     body["interaction_id"] = id_interaction

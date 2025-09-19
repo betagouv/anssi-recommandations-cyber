@@ -55,3 +55,12 @@ def test_pose_question_utilise_prompt_system_par_defaut(monkeypatch):
     assert r.reponse == "ok"
     msgs = captureur["kwargs"]["messages"]
     assert msgs[0]["role"] == "system" and msgs[0]["content"] == "DEFAUT_PROMPT"
+
+
+def test_pose_question_utilise_prompt_surcharge_quand_present(monkeypatch):
+    c, captureur = _setup_client(monkeypatch)
+
+    _ = c.pose_question("Quelle est la question ?", prompt_surcharge="SURCHARGE_X")
+    kwargs = captureur["kwargs"]
+    msgs = kwargs["messages"]
+    assert msgs[0]["role"] == "system" and msgs[0]["content"] == "SURCHARGE_X"
