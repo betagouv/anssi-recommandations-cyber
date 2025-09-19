@@ -69,7 +69,9 @@ def route_retour(
     retour = RetourUtilisatrice(
         pouce_leve=body.retour.pouce_leve, commentaire=body.retour.commentaire
     )
-    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(body.id_interaction_rattachee, retour)
+    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
+        body.id_interaction_rattachee, retour
+    )
 
     if not succes:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
