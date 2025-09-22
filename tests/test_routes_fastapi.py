@@ -2,6 +2,9 @@ from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 from main import (
     app,
+)
+
+from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
 from client_albert import ClientAlbert, fabrique_client_albert
