@@ -30,11 +30,11 @@ def recupere_configuration_postgres(
     database: str = "postgres",
 ) -> Dict[str, Union[str, int]]:
     return dict(
-        host=os.getenv("DB_HOST", "localhost"),
-        database=database,
-        user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", "postgres"),
+        hote=os.getenv("DB_HOST", "localhost"),
         port=int(os.getenv("DB_PORT", "5432")),
+        utilisateur=os.getenv("DB_USER", "postgres"),
+        mot_de_passe=os.getenv("DB_PASSWORD", "postgres"),
+        nom=database,
     )
 
 
@@ -50,14 +50,7 @@ def recupere_configuration() -> Configuration:
     configuration_postgres = recupere_configuration_postgres(
         os.getenv("DB_NAME", "anssi_retours")
     )
-
-    configuration_base_de_donnees = BaseDeDonnees(
-        hote=configuration_postgres["host"],
-        port=configuration_postgres["port"],
-        utilisateur=configuration_postgres["user"],
-        mot_de_passe=configuration_postgres["password"],
-        nom=configuration_postgres["database"],
-    )
+    configuration_base_de_donnees = BaseDeDonnees(**configuration_postgres)
 
     return Configuration(
         albert=configuration_albert,
