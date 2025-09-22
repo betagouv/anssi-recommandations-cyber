@@ -74,14 +74,14 @@ class ClientAlbert:
         prompt = self.PROMPT_SYSTEM.format(
             prompt=question, chunks=paragraphes_concatenes
         )
-        response = self.client.chat.completions.create(
+        reponse = self.client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model=self.modele_reponse,
             stream=False,
         )
 
         return ReponseQuestion(
-            reponse=response.choices[0].message.content,
+            reponse=reponse.choices[0].message.content,
             paragraphes=paragraphes,
             question=question,
         )
