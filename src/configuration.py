@@ -3,25 +3,25 @@ from typing import Dict, Union
 from typing_extensions import NamedTuple
 
 
-class ConfigurationAlbert(NamedTuple):
-    base_url_albert: str
-    modele_reponse_albert: str
-    albert_api_key: str
+class Albert(NamedTuple):
+    base_url: str
+    modele_reponse: str
+    api_key: str
     collection_nom_anssi_lab: str
     collection_id_anssi_lab: int
 
 
-class ConfigurationBDD(NamedTuple):
-    hote_bdd: str
-    port_bdd: int
-    utilisateur_bdd: str
-    mot_de_passe_bdd: str
-    nom_bdd: str
+class BaseDeDonnees(NamedTuple):
+    hote: str
+    port: int
+    utilisateur: str
+    mot_de_passe: str
+    nom: str
 
 
 class Configuration(NamedTuple):
-    configuration_albert: ConfigurationAlbert
-    configuration_base_de_donnees: ConfigurationBDD
+    albert: Albert
+    base_de_donnees: BaseDeDonnees
     host: str
     port: int
 
@@ -58,25 +58,25 @@ def recupere_configuration() -> Configuration:
     utilisateur_bdd: str = config_postgres["user"]
     mot_de_passe_bdd: str = config_postgres["password"]
 
-    albert_cfg = ConfigurationAlbert(
-        base_url_albert=base_url_albert,
-        modele_reponse_albert=modele_reponse_albert,
-        albert_api_key=albert_api_key,
+    albert_cfg = Albert(
+        base_url=base_url_albert,
+        modele_reponse=modele_reponse_albert,
+        api_key=albert_api_key,
         collection_nom_anssi_lab=collection_nom_anssi_lab,
         collection_id_anssi_lab=collection_id_anssi_lab,
     )
 
-    bdd_cfg = ConfigurationBDD(
-        hote_bdd=hote_bdd,
-        port_bdd=port_bdd,
-        utilisateur_bdd=utilisateur_bdd,
-        mot_de_passe_bdd=mot_de_passe_bdd,
-        nom_bdd=nom_bdd,
+    bdd_cfg = BaseDeDonnees(
+        hote=hote_bdd,
+        port=port_bdd,
+        utilisateur=utilisateur_bdd,
+        mot_de_passe=mot_de_passe_bdd,
+        nom=nom_bdd,
     )
 
     return Configuration(
-        configuration_albert=albert_cfg,
-        configuration_base_de_donnees=bdd_cfg,
+        albert=albert_cfg,
+        base_de_donnees=bdd_cfg,
         host=host,
         port=port,
     )

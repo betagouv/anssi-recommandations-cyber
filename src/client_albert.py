@@ -31,8 +31,8 @@ class ClientAlbert:
         client_openai: OpenAI,
         client_http: requests.Session,
     ) -> None:
-        self.id_collection = configuration.configuration_albert.collection_id_anssi_lab
-        self.modele_reponse = configuration.configuration_albert.modele_reponse_albert
+        self.id_collection = configuration.albert.collection_id_anssi_lab
+        self.modele_reponse = configuration.albert.modele_reponse
         self.client = client_openai
         self.charge_prompt()
         self.session = client_http
@@ -91,13 +91,13 @@ def fabrique_client_albert() -> ClientAlbert:
     configuration = recupere_configuration()
 
     client_openai = OpenAI(
-        base_url=configuration.configuration_albert.base_url_albert,
-        api_key=configuration.configuration_albert.albert_api_key,
+        base_url=configuration.albert.base_url,
+        api_key=configuration.albert.api_key,
     )
 
     client_http = ClientAlbertHttp(
-        base_url=configuration.configuration_albert.base_url_albert,
-        token=configuration.configuration_albert.albert_api_key,
+        base_url=configuration.albert.base_url,
+        token=configuration.albert.api_key,
     )
 
     return ClientAlbert(
