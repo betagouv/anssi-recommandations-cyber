@@ -111,5 +111,5 @@ def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
     AdaptateurBaseDeDonnees
 ):
     return AdaptateurBaseDeDonneesPostgres(
-        recupere_configuration().CONFIGURATION_BASE_DE_DONNEES.NOM_BDD
+        recupere_configuration().configuration_base_de_donnees.nom_bdd
     )

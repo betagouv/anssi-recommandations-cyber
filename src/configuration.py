@@ -4,26 +4,26 @@ from typing_extensions import NamedTuple
 
 
 class ConfigurationAlbert(NamedTuple):
-    BASE_URL_ALBERT: str
-    MODELE_REPONSE_ALBERT: str
-    ALBERT_API_KEY: str
-    COLLECTION_NOM_ANSSI_LAB: str
-    COLLECTION_ID_ANSSI_LAB: int
+    base_url_albert: str
+    modele_reponse_albert: str
+    albert_api_key: str
+    collection_nom_anssi_lab: str
+    collection_id_anssi_lab: int
 
 
 class ConfigurationBDD(NamedTuple):
-    HOTE_BDD: str
-    PORT_BDD: int
-    UTILISATEUR_BDD: str
-    MOT_DE_PASSE_BDD: str
-    NOM_BDD: str
+    hote_bdd: str
+    port_bdd: int
+    utilisateur_bdd: str
+    mot_de_passe_bdd: str
+    nom_bdd: str
 
 
 class Configuration(NamedTuple):
-    CONFIGURATION_ALBERT: ConfigurationAlbert
-    CONFIGURATION_BASE_DE_DONNEES: ConfigurationBDD
-    HOST: str
-    PORT: int
+    configuration_albert: ConfigurationAlbert
+    configuration_base_de_donnees: ConfigurationBDD
+    host: str
+    port: int
 
 
 def recupere_configuration_postgres(
@@ -39,44 +39,44 @@ def recupere_configuration_postgres(
 
 
 def recupere_configuration() -> Configuration:
-    BASE_URL_ALBERT: str = "https://albert.api.etalab.gouv.fr/v1"
-    COLLECTION_NOM_ANSSI_LAB: str = "ANSSI_test"
-    MODELE_REPONSE_ALBERT: str = "albert-large"
+    base_url_albert: str = "https://albert.api.etalab.gouv.fr/v1"
+    collection_nom_anssi_lab: str = "ANSSI_test"
+    modele_reponse_albert: str = "albert-large"
 
-    HOST: str = os.getenv("HOST", "127.0.0.1")
-    PORT: int = int(os.getenv("PORT", "8000"))
+    host: str = os.getenv("HOST", "127.0.0.1")
+    port: int = int(os.getenv("PORT", "8000"))
 
-    COLLECTION_ID_ANSSI_LAB: int = int(os.getenv("COLLECTION_ID_ANSSI_LAB"))
-    ALBERT_API_KEY: str = os.getenv("ALBERT_API_KEY")
+    collection_id_anssi_lab: int = int(os.getenv("COLLECTION_ID_ANSSI_LAB"))
+    albert_api_key: str = os.getenv("ALBERT_API_KEY")
 
     config_postgres = recupere_configuration_postgres(
         os.getenv("DB_NAME", "anssi_retours")
     )
-    HOTE_BDD: str = config_postgres["host"]
-    PORT_BDD: int = config_postgres["port"]
-    NOM_BDD: str = config_postgres["database"]
-    UTILISATEUR_BDD: str = config_postgres["user"]
-    MOT_DE_PASSE_BDD: str = config_postgres["password"]
+    hote_bdd: str = config_postgres["host"]
+    port_bdd: int = config_postgres["port"]
+    nom_bdd: str = config_postgres["database"]
+    utilisateur_bdd: str = config_postgres["user"]
+    mot_de_passe_bdd: str = config_postgres["password"]
 
     albert_cfg = ConfigurationAlbert(
-        BASE_URL_ALBERT=BASE_URL_ALBERT,
-        MODELE_REPONSE_ALBERT=MODELE_REPONSE_ALBERT,
-        ALBERT_API_KEY=ALBERT_API_KEY,
-        COLLECTION_NOM_ANSSI_LAB=COLLECTION_NOM_ANSSI_LAB,
-        COLLECTION_ID_ANSSI_LAB=COLLECTION_ID_ANSSI_LAB,
+        base_url_albert=base_url_albert,
+        modele_reponse_albert=modele_reponse_albert,
+        albert_api_key=albert_api_key,
+        collection_nom_anssi_lab=collection_nom_anssi_lab,
+        collection_id_anssi_lab=collection_id_anssi_lab,
     )
 
     bdd_cfg = ConfigurationBDD(
-        HOTE_BDD=HOTE_BDD,
-        PORT_BDD=PORT_BDD,
-        UTILISATEUR_BDD=UTILISATEUR_BDD,
-        MOT_DE_PASSE_BDD=MOT_DE_PASSE_BDD,
-        NOM_BDD=NOM_BDD,
+        hote_bdd=hote_bdd,
+        port_bdd=port_bdd,
+        utilisateur_bdd=utilisateur_bdd,
+        mot_de_passe_bdd=mot_de_passe_bdd,
+        nom_bdd=nom_bdd,
     )
 
     return Configuration(
-        CONFIGURATION_ALBERT=albert_cfg,
-        CONFIGURATION_BASE_DE_DONNEES=bdd_cfg,
-        HOST=HOST,
-        PORT=PORT,
+        configuration_albert=albert_cfg,
+        configuration_base_de_donnees=bdd_cfg,
+        host=host,
+        port=port,
     )

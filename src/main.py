@@ -79,8 +79,8 @@ def redirige_vers_gradio():
 
 if __name__ == "__main__":
     configuration = recupere_configuration()
-    HOST = configuration.HOST
-    PORT = configuration.PORT
+    HOST = configuration.host
+    PORT = configuration.port
     uvicorn.run(
         "main:app",
         host=HOST,
