@@ -12,6 +12,10 @@ jobs:
     name: Construction de MesQuestionsCyber
     runs-on: ubuntu-latest
 
+    env:
+      ALBERT_API_KEY: une-fausse-clef
+      COLLECTION_ID_ANSSI_LAB: 42
+
     steps:
       - name: Cloner le dépôt Git
         uses: actions/checkout@v4
