@@ -24,7 +24,7 @@ app = gr.mount_gradio_app(app, interface_gradio, path="/ui")
 def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
     AdaptateurBaseDeDonnees
 ):
-    return AdaptateurBaseDeDonneesPostgres(recupere_configuration()["NOM_BDD"])
+    return AdaptateurBaseDeDonneesPostgres(recupere_configuration().NOM_BDD)
 
 
 @app.get("/sante")
@@ -82,8 +82,8 @@ def redirige_vers_gradio():
 
 if __name__ == "__main__":
     configuration = recupere_configuration()
-    HOST = configuration["HOST"]
-    PORT = configuration["PORT"]
+    HOST = configuration.HOST
+    PORT = configuration.PORT
     uvicorn.run(
         "main:app",
         host=HOST,

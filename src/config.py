@@ -1,5 +1,21 @@
 import os
 from typing import Dict, Union
+from typing_extensions import NamedTuple
+
+
+class Configuration(NamedTuple):
+    BASE_URL_ALBERT: str
+    COLLECTION_NOM_ANSSI_LAB: str
+    MODELE_REPONSE_ALBERT: str
+    HOST: str
+    PORT: int
+    COLLECTION_ID_ANSSI_LAB: int
+    ALBERT_API_KEY: str
+    HOTE_BDD: str
+    PORT_BDD: int
+    NOM_BDD: str
+    UTILISATEUR_BDD: str
+    MOT_DE_PASSE_BDD: str
 
 
 def recupere_configuration_postgres(
@@ -14,7 +30,7 @@ def recupere_configuration_postgres(
     )
 
 
-def recupere_configuration():
+def recupere_configuration() -> Configuration:
     BASE_URL_ALBERT: str = "https://albert.api.etalab.gouv.fr/v1"
     COLLECTION_NOM_ANSSI_LAB: str = "ANSSI_test"
     MODELE_REPONSE_ALBERT: str = "albert-large"
@@ -34,17 +50,17 @@ def recupere_configuration():
     UTILISATEUR_BDD: str = config_postgres["user"]
     MOT_DE_PASSE_BDD: str = config_postgres["password"]
 
-    return {
-        "BASE_URL_ALBERT": BASE_URL_ALBERT,
-        "COLLECTION_NOM_ANSSI_LAB": COLLECTION_NOM_ANSSI_LAB,
-        "MODELE_REPONSE_ALBERT": MODELE_REPONSE_ALBERT,
-        "HOST": HOST,
-        "PORT": PORT,
-        "COLLECTION_ID_ANSSI_LAB": COLLECTION_ID_ANSSI_LAB,
-        "ALBERT_API_KEY": ALBERT_API_KEY,
-        "HOTE_BDD": HOTE_BDD,
-        "PORT_BDD": PORT_BDD,
-        "NOM_BDD": NOM_BDD,
-        "UTILISATEUR_BDD": UTILISATEUR_BDD,
-        "MOT_DE_PASSE_BDD": MOT_DE_PASSE_BDD,
-    }
+    return Configuration(
+        BASE_URL_ALBERT=BASE_URL_ALBERT,
+        COLLECTION_NOM_ANSSI_LAB=COLLECTION_NOM_ANSSI_LAB,
+        MODELE_REPONSE_ALBERT=MODELE_REPONSE_ALBERT,
+        HOST=HOST,
+        PORT=PORT,
+        COLLECTION_ID_ANSSI_LAB=COLLECTION_ID_ANSSI_LAB,
+        ALBERT_API_KEY=ALBERT_API_KEY,
+        HOTE_BDD=HOTE_BDD,
+        PORT_BDD=PORT_BDD,
+        NOM_BDD=NOM_BDD,
+        UTILISATEUR_BDD=UTILISATEUR_BDD,
+        MOT_DE_PASSE_BDD=MOT_DE_PASSE_BDD,
+    )
