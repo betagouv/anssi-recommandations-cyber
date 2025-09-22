@@ -4,11 +4,17 @@ from typing_extensions import NamedTuple
 
 
 class Albert(NamedTuple):
-    base_url: str
-    modele_reponse: str
-    api_key: str
-    collection_nom_anssi_lab: str
-    collection_id_anssi_lab: int
+    class Client(NamedTuple):
+        api_key: str
+        base_url: str
+
+    class Parametres(NamedTuple):
+        modele_reponse: str
+        collection_nom_anssi_lab: str
+        collection_id_anssi_lab: int
+
+    client: Client
+    parametres: Parametres
 
 
 class BaseDeDonnees(NamedTuple):
@@ -40,11 +46,15 @@ def recupere_configuration_postgres(
 
 def recupere_configuration() -> Configuration:
     configuration_albert = Albert(
-        base_url="https://albert.api.etalab.gouv.fr/v1",
-        modele_reponse="albert-large",
-        api_key=os.getenv("ALBERT_API_KEY"),
-        collection_nom_anssi_lab="ANSSI_test",
-        collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB")),
+        client=Albert.Client(
+            base_url="https://albert.api.etalab.gouv.fr/v1",
+            api_key=os.getenv("ALBERT_API_KEY"),
+        ),
+        parametres=Albert.Parametres(
+            modele_reponse="albert-large",
+            collection_nom_anssi_lab="ANSSI_test",
+            collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB")),
+        ),
     )
 
     configuration_postgres = recupere_configuration_postgres(

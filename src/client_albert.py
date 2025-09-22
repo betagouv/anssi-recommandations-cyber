@@ -2,7 +2,7 @@ import requests
 from pathlib import Path
 from openai import OpenAI
 from schemas.reponses import ReponseQuestion
-from configuration import recupere_configuration, Configuration
+from configuration import recupere_configuration, Albert
 from schemas.reponses import Paragraphe
 
 
@@ -27,12 +27,12 @@ class ClientAlbert:
 
     def __init__(
         self,
-        configuration: Configuration,
+        configuration: Albert.Parametres,
         client_openai: OpenAI,
         client_http: requests.Session,
     ) -> None:
-        self.id_collection = configuration.albert.collection_id_anssi_lab
-        self.modele_reponse = configuration.albert.modele_reponse
+        self.id_collection = configuration.collection_id_anssi_lab
+        self.modele_reponse = configuration.modele_reponse
         self.client = client_openai
         self.charge_prompt()
         self.session = client_http
@@ -91,17 +91,17 @@ def fabrique_client_albert() -> ClientAlbert:
     configuration = recupere_configuration()
 
     client_openai = OpenAI(
-        base_url=configuration.albert.base_url,
-        api_key=configuration.albert.api_key,
+        base_url=configuration.albert.client.base_url,
+        api_key=configuration.albert.client.api_key,
     )
 
     client_http = ClientAlbertHttp(
-        base_url=configuration.albert.base_url,
-        token=configuration.albert.api_key,
+        base_url=configuration.albert.client.base_url,
+        token=configuration.albert.client.api_key,
     )
 
     return ClientAlbert(
-        configuration=configuration,
+        configuration=configuration.albert.parametres,
         client_openai=client_openai,
         client_http=client_http,
     )
