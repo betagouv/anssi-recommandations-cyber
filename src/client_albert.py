@@ -2,7 +2,7 @@ import requests
 from pathlib import Path
 from openai import OpenAI
 from schemas.reponses import ReponseQuestion
-from config import recupere_configuration, Configuration
+from configuration import recupere_configuration, Configuration
 from schemas.reponses import Paragraphe
 
 

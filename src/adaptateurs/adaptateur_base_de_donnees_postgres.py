@@ -4,7 +4,7 @@ import psycopg2.extras
 from typing import Dict, Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.reponses import ReponseQuestion
-from config import recupere_configuration_postgres, recupere_configuration
+from configuration import recupere_configuration_postgres, recupere_configuration
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 
