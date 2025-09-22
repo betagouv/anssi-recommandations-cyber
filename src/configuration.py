@@ -39,44 +39,29 @@ def recupere_configuration_postgres(
 
 
 def recupere_configuration() -> Configuration:
-    base_url_albert: str = "https://albert.api.etalab.gouv.fr/v1"
-    collection_nom_anssi_lab: str = "ANSSI_test"
-    modele_reponse_albert: str = "albert-large"
+    configuration_albert = Albert(
+        base_url="https://albert.api.etalab.gouv.fr/v1",
+        modele_reponse="albert-large",
+        api_key=os.getenv("ALBERT_API_KEY"),
+        collection_nom_anssi_lab="ANSSI_test",
+        collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB")),
+    )
 
-    host: str = os.getenv("HOST", "127.0.0.1")
-    port: int = int(os.getenv("PORT", "8000"))
-
-    collection_id_anssi_lab: int = int(os.getenv("COLLECTION_ID_ANSSI_LAB"))
-    albert_api_key: str = os.getenv("ALBERT_API_KEY")
-
-    config_postgres = recupere_configuration_postgres(
+    configuration_postgres = recupere_configuration_postgres(
         os.getenv("DB_NAME", "anssi_retours")
     )
-    hote_bdd: str = config_postgres["host"]
-    port_bdd: int = config_postgres["port"]
-    nom_bdd: str = config_postgres["database"]
-    utilisateur_bdd: str = config_postgres["user"]
-    mot_de_passe_bdd: str = config_postgres["password"]
 
-    albert_cfg = Albert(
-        base_url=base_url_albert,
-        modele_reponse=modele_reponse_albert,
-        api_key=albert_api_key,
-        collection_nom_anssi_lab=collection_nom_anssi_lab,
-        collection_id_anssi_lab=collection_id_anssi_lab,
-    )
-
-    bdd_cfg = BaseDeDonnees(
-        hote=hote_bdd,
-        port=port_bdd,
-        utilisateur=utilisateur_bdd,
-        mot_de_passe=mot_de_passe_bdd,
-        nom=nom_bdd,
+    configuration_base_de_donnees = BaseDeDonnees(
+        hote=configuration_postgres["host"],
+        port=configuration_postgres["port"],
+        utilisateur=configuration_postgres["user"],
+        mot_de_passe=configuration_postgres["password"],
+        nom=configuration_postgres["database"],
     )
 
     return Configuration(
-        albert=albert_cfg,
-        base_de_donnees=bdd_cfg,
-        host=host,
-        port=port,
+        albert=configuration_albert,
+        base_de_donnees=configuration_base_de_donnees,
+        host=os.getenv("HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT", "8000")),
     )
