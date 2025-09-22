@@ -3,19 +3,27 @@ from typing import Dict, Union
 from typing_extensions import NamedTuple
 
 
-class Configuration(NamedTuple):
+class ConfigurationAlbert(NamedTuple):
     BASE_URL_ALBERT: str
-    COLLECTION_NOM_ANSSI_LAB: str
     MODELE_REPONSE_ALBERT: str
-    HOST: str
-    PORT: int
-    COLLECTION_ID_ANSSI_LAB: int
     ALBERT_API_KEY: str
+    COLLECTION_NOM_ANSSI_LAB: str
+    COLLECTION_ID_ANSSI_LAB: int
+
+
+class ConfigurationBDD(NamedTuple):
     HOTE_BDD: str
     PORT_BDD: int
-    NOM_BDD: str
     UTILISATEUR_BDD: str
     MOT_DE_PASSE_BDD: str
+    NOM_BDD: str
+
+
+class Configuration(NamedTuple):
+    CONFIGURATION_ALBERT: ConfigurationAlbert
+    CONFIGURATION_BASE_DE_DONNEES: ConfigurationBDD
+    HOST: str
+    PORT: int
 
 
 def recupere_configuration_postgres(
@@ -50,17 +58,25 @@ def recupere_configuration() -> Configuration:
     UTILISATEUR_BDD: str = config_postgres["user"]
     MOT_DE_PASSE_BDD: str = config_postgres["password"]
 
-    return Configuration(
+    albert_cfg = ConfigurationAlbert(
         BASE_URL_ALBERT=BASE_URL_ALBERT,
-        COLLECTION_NOM_ANSSI_LAB=COLLECTION_NOM_ANSSI_LAB,
         MODELE_REPONSE_ALBERT=MODELE_REPONSE_ALBERT,
-        HOST=HOST,
-        PORT=PORT,
-        COLLECTION_ID_ANSSI_LAB=COLLECTION_ID_ANSSI_LAB,
         ALBERT_API_KEY=ALBERT_API_KEY,
+        COLLECTION_NOM_ANSSI_LAB=COLLECTION_NOM_ANSSI_LAB,
+        COLLECTION_ID_ANSSI_LAB=COLLECTION_ID_ANSSI_LAB,
+    )
+
+    bdd_cfg = ConfigurationBDD(
         HOTE_BDD=HOTE_BDD,
         PORT_BDD=PORT_BDD,
-        NOM_BDD=NOM_BDD,
         UTILISATEUR_BDD=UTILISATEUR_BDD,
         MOT_DE_PASSE_BDD=MOT_DE_PASSE_BDD,
+        NOM_BDD=NOM_BDD,
+    )
+
+    return Configuration(
+        CONFIGURATION_ALBERT=albert_cfg,
+        CONFIGURATION_BASE_DE_DONNEES=bdd_cfg,
+        HOST=HOST,
+        PORT=PORT,
     )
