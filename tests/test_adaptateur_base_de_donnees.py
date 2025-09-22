@@ -8,7 +8,7 @@ from adaptateurs import (
 )
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.reponses import ReponseQuestion, Paragraphe
-from config import recupere_configuration_postgres
+from configuration import recupere_configuration_postgres
 
 
 def cree_connexion_postgres() -> psycopg2.extensions.connection:

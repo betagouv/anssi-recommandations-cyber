@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.requetes import QuestionRequete
-from config import recupere_configuration
+from configuration import recupere_configuration
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees
