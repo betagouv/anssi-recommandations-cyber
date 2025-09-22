@@ -4,7 +4,7 @@ import psycopg2.extras
 from typing import Dict, Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.reponses import ReponseQuestion
-from config import recupere_configuration_postgres
+from config import recupere_configuration_postgres, recupere_configuration
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 
@@ -105,3 +105,9 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def ferme_connexion(self) -> None:
         if self._connexion:
             self._connexion.close()
+
+
+def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
+    AdaptateurBaseDeDonnees
+):
+    return AdaptateurBaseDeDonneesPostgres(recupere_configuration().NOM_BDD)
