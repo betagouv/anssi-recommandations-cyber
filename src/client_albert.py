@@ -16,12 +16,12 @@ class ClientAlbert:
     - une API qui suit le format OpenAI
     """
 
-    def __init__(self, configuration: Configuration) -> None:
+    def __init__(self, configuration: Configuration, client_openai: OpenAI) -> None:
         self.base_url: str = configuration.BASE_URL_ALBERT
         self.api_key: Optional[str] = configuration.ALBERT_API_KEY
         self.id_collection = configuration.COLLECTION_ID_ANSSI_LAB
         self.modele_reponse = configuration.MODELE_REPONSE_ALBERT
-        self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
+        self.client = client_openai
         self.charge_prompt()
 
     def charge_prompt(self) -> None:
@@ -79,4 +79,8 @@ class ClientAlbert:
 
 
 def fabrique_client_albert() -> ClientAlbert:
-    return ClientAlbert(configuration=recupere_configuration())
+    configuration = recupere_configuration()
+    client_openai = OpenAI(
+        base_url=configuration.BASE_URL_ALBERT, api_key=configuration.ALBERT_API_KEY
+    )
+    return ClientAlbert(configuration=configuration, client_openai=client_openai)
