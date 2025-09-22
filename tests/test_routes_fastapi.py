@@ -2,10 +2,9 @@ from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 from main import (
     app,
-    fabrique_client_albert,
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
-from client_albert import ClientAlbert
+from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.reponses import ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
 

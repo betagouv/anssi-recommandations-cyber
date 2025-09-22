@@ -3,7 +3,7 @@ import gradio as gr
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
-from client_albert import ClientAlbert
+from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.requetes import QuestionRequete
 from config import recupere_configuration
 from schemas.reponses import ReponseQuestion
@@ -19,10 +19,6 @@ app: FastAPI = FastAPI()
 
 interface_gradio = cree_interface_gradio(app)
 app = gr.mount_gradio_app(app, interface_gradio, path="/ui")
-
-
-def fabrique_client_albert() -> ClientAlbert:
-    return ClientAlbert()
 
 
 def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
@@ -69,7 +65,9 @@ def route_retour(
     retour = RetourUtilisatrice(
         pouce_leve=body.retour.pouce_leve, commentaire=body.retour.commentaire
     )
-    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(body.id_interaction_rattachee, retour)
+    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
+        body.id_interaction_rattachee, retour
+    )
 
     if not succes:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")

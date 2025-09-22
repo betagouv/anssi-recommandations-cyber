@@ -77,3 +77,7 @@ class ClientAlbert:
             paragraphes=paragraphes,
             question=question,
         )
+
+
+def fabrique_client_albert() -> ClientAlbert:
+    return ClientAlbert()
