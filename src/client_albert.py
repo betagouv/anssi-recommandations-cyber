@@ -3,7 +3,7 @@ from typing import Optional
 from pathlib import Path
 from openai import OpenAI
 from schemas.reponses import ReponseQuestion
-from config import recupere_configuration
+from config import recupere_configuration, Configuration
 
 from schemas.reponses import Paragraphe
 
@@ -16,12 +16,11 @@ class ClientAlbert:
     - une API qui suit le format OpenAI
     """
 
-    def __init__(self) -> None:
-        configuration = recupere_configuration()
-        self.base_url: str = configuration["BASE_URL_ALBERT"]
-        self.api_key: Optional[str] = configuration["ALBERT_API_KEY"]
-        self.id_collection = configuration["COLLECTION_ID_ANSSI_LAB"]
-        self.modele_reponse = configuration["MODELE_REPONSE_ALBERT"]
+    def __init__(self, configuration: Configuration) -> None:
+        self.base_url: str = configuration.BASE_URL_ALBERT
+        self.api_key: Optional[str] = configuration.ALBERT_API_KEY
+        self.id_collection = configuration.COLLECTION_ID_ANSSI_LAB
+        self.modele_reponse = configuration.MODELE_REPONSE_ALBERT
         self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
         self.charge_prompt()
 
@@ -80,4 +79,4 @@ class ClientAlbert:
 
 
 def fabrique_client_albert() -> ClientAlbert:
-    return ClientAlbert()
+    return ClientAlbert(configuration=recupere_configuration())
