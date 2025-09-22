@@ -1,11 +1,20 @@
 import requests
-from typing import Optional
 from pathlib import Path
 from openai import OpenAI
 from schemas.reponses import ReponseQuestion
 from config import recupere_configuration, Configuration
-
 from schemas.reponses import Paragraphe
+
+
+class ClientAlbertHttp(requests.Session):
+    def __init__(self, base_url: str, token: str):
+        super().__init__()
+        self.base_url = base_url
+        self.headers = {"Authorization": f"Bearer {token}"}
+
+    def request(self, method: str, url: str, *args, **kwargs):
+        url = f"{self.base_url}{url}"
+        return super().request(method, url, *args, **kwargs)
 
 
 class ClientAlbert:
@@ -16,30 +25,30 @@ class ClientAlbert:
     - une API qui suit le format OpenAI
     """
 
-    def __init__(self, configuration: Configuration, client_openai: OpenAI) -> None:
-        self.base_url: str = configuration.BASE_URL_ALBERT
-        self.api_key: Optional[str] = configuration.ALBERT_API_KEY
+    def __init__(
+        self,
+        configuration: Configuration,
+        client_openai: OpenAI,
+        client_http: requests.Session,
+    ) -> None:
         self.id_collection = configuration.COLLECTION_ID_ANSSI_LAB
         self.modele_reponse = configuration.MODELE_REPONSE_ALBERT
         self.client = client_openai
         self.charge_prompt()
+        self.session = client_http
 
     def charge_prompt(self) -> None:
         template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
         self.PROMPT_SYSTEM: str = template_path.read_text(encoding="utf-8")
 
     def recherche_paragraphes(self, question: str) -> str:
-        session: requests.Session = requests.session()
-        session.headers = {"Authorization": f"Bearer {self.api_key}"}
         payload = {
             "collections": [self.id_collection],
             "k": 5,
             "prompt": question,
             "method": "semantic",
         }
-        response: requests.Response = session.post(
-            f"{self.base_url}/search", json=payload
-        )
+        response: requests.Response = self.session.post("/search", json=payload)
         data = response.json()
 
         paragraphes = []
@@ -80,7 +89,17 @@ class ClientAlbert:
 
 def fabrique_client_albert() -> ClientAlbert:
     configuration = recupere_configuration()
+
     client_openai = OpenAI(
         base_url=configuration.BASE_URL_ALBERT, api_key=configuration.ALBERT_API_KEY
     )
-    return ClientAlbert(configuration=configuration, client_openai=client_openai)
+
+    client_http = ClientAlbertHttp(
+        base_url=configuration.BASE_URL_ALBERT, token=configuration.ALBERT_API_KEY
+    )
+
+    return ClientAlbert(
+        configuration=configuration,
+        client_openai=client_openai,
+        client_http=client_http,
+    )
