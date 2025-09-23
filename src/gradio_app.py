@@ -1,16 +1,31 @@
 import html
+from pathlib import Path
 import gradio as gr
 from fastapi.testclient import TestClient
+from typing import Optional, Tuple
 
 
-def pose_question_gradio(question: str, app) -> tuple[str, str, str]:
+def _lit_prompt_defaut() -> str:
+    try:
+        p = Path("./templates/prompt_assistant_cyber.txt")
+        return p.read_text(encoding="utf-8")
+    except Exception:
+        return ""
+
+
+def pose_question_gradio(
+    question: str, app, prompt_txt: Optional[str]
+) -> Tuple[str, str, str]:
     """Interface Gradio pour poser une question à Albert via TestClient."""
     if not question.strip():
         return "Veuillez saisir une question", "", ""
 
     try:
         client = TestClient(app)
-        reponse_client = client.post("/pose_question", json={"question": question})
+        payload = {"question": question}
+        if prompt_txt:
+            payload["prompt"] = prompt_txt
+        reponse_client = client.post("/pose_question_avec_prompt", json=payload)
         if reponse_client.status_code != 200:
             return f"Erreur {reponse_client.status_code}", "", ""
 
@@ -63,16 +78,24 @@ def cree_interface_gradio(app):
     css_cache_footer = "footer { display: none !important; }"
     with gr.Blocks(title="🔐 Assistant Cyber ANSSI", css=css_cache_footer) as interface:
         gr.Markdown("# 🔐 Assistant Cyber ANSSI")
+
+        # Champ d'instructions plein largeur, prérempli depuis le fichier
+        prompt_input = gr.Textbox(
+            label="Instructions (optionnel)",
+            value=_lit_prompt_defaut(),
+            lines=12,
+            placeholder="Collez ici vos instructions pour surcharger le prompt système…",
+        )
+
         gr.Markdown(
             "Posez vos questions sur la cybersécurité basées sur les guides de l'ANSSI"
         )
 
-        with gr.Row():
-            question_input = gr.Textbox(
-                label="Votre question",
-                placeholder="Quelle est la bonne longueur pour un mot de passe ?",
-                lines=2,
-            )
+        question_input = gr.Textbox(
+            label="Votre question",
+            placeholder="Quelle est la bonne longueur pour un mot de passe ?",
+            lines=2,
+        )
 
         bouton_envoye = gr.Button("Poser la question", variant="primary")
 
@@ -103,9 +126,25 @@ def cree_interface_gradio(app):
             gr.State()
         )  # permet de conserver cette valeur tant que la page n'est pas rafraîchie
 
-        def pose_question_avec_retour_utilisatrice(question: str):
-            reponse, sources, interaction_id = pose_question_gradio(question, app)
+        def pose_question_avec_retour_utilisatrice(
+            question: str, prompt_txt: Optional[str]
+        ):
+            reponse, sources, interaction_id = pose_question_gradio(
+                question, app, prompt_txt
+            )
             return reponse, sources, gr.Group(visible=True), interaction_id, ""
+
+        bouton_envoye.click(
+            fn=pose_question_avec_retour_utilisatrice,
+            inputs=[question_input, prompt_input],
+            outputs=[
+                reponse_output,
+                sources,
+                retour_utilisatrice_section,
+                interaction_id_etat,
+                retour_utilisatrice_status,
+            ],
+        )
 
         def envoyer_retour_utilisatrice(
             interaction_id: str, pouce_leve: bool, commentaire: str
@@ -131,18 +170,6 @@ def cree_interface_gradio(app):
                     return f"❌ Erreur lors de l'envoi : {response.status_code}"
             except Exception as e:
                 return f"❌ Erreur : {str(e)}"
-
-        bouton_envoye.click(
-            fn=pose_question_avec_retour_utilisatrice,
-            inputs=[question_input],
-            outputs=[
-                reponse_output,
-                sources,
-                retour_utilisatrice_section,
-                interaction_id_etat,
-                retour_utilisatrice_status,
-            ],
-        )
 
         pouce_haut_btn.click(
             fn=lambda _id, comm: envoyer_retour_utilisatrice(_id, True, comm),
