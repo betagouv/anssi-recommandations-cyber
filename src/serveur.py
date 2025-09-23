@@ -17,9 +17,10 @@ from schemas.retour_utilisatrice import (
 from configuration import Mode
 
 racine = APIRouter()
+routeur_developpement = APIRouter()
 
 
-@racine.get("/sante")
+@routeur_developpement.get("/sante")
 def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
 
@@ -74,7 +75,11 @@ def redirige_vers_gradio():
 
 def fabrique_serveur(mode: Mode) -> FastAPI:
     serveur = FastAPI()
+
     serveur.include_router(racine)
+    if mode == Mode.DEVELOPPEMENT:
+        serveur.include_router(routeur_developpement)
+
     interface = cree_interface_gradio(serveur)
     serveur = gr.mount_gradio_app(serveur, interface, path="/ui")
 
