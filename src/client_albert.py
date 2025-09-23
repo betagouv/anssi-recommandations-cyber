@@ -30,16 +30,13 @@ class ClientAlbert:
         configuration: Albert.Parametres,
         client_openai: OpenAI,
         client_http: requests.Session,
+        prompt_systeme: str,
     ) -> None:
         self.id_collection = configuration.collection_id_anssi_lab
         self.modele_reponse = configuration.modele_reponse
         self.client = client_openai
-        self.charge_prompt()
+        self.PROMPT_SYSTEM = prompt_systeme
         self.session = client_http
-
-    def charge_prompt(self) -> None:
-        template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
-        self.PROMPT_SYSTEM: str = template_path.read_text(encoding="utf-8")
 
     def recherche_paragraphes(self, question: str) -> str:
         payload = {
@@ -107,8 +104,12 @@ def fabrique_client_albert() -> ClientAlbert:
         token=configuration.albert.client.api_key,
     )
 
+    template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
+    prompt_systeme: str = template_path.read_text(encoding="utf-8")
+
     return ClientAlbert(
         configuration=configuration.albert.parametres,
         client_openai=client_openai,
         client_http=client_http,
+        prompt_systeme=prompt_systeme,
     )

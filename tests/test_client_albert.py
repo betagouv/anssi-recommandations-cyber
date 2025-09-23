@@ -13,8 +13,15 @@ def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut():
 
     assert client_albert.client.__class__.__name__ == "OpenAI"
     assert client_albert.session.__class__.__name__ == "ClientAlbertHttp"
+    assert (
+        "Vous êtes un assistant spécialisé dans la cybersécurité et la conformité"
+        in client_albert.PROMPT_SYSTEM
+    )
 
 
+PROMPT_SYSTEME_ALTERNATIF = (
+    "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
+)
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 
@@ -55,6 +62,7 @@ def client(mock_client_openai, mock_client_http):
         configuration=FAUX_PARAMETRES_ALBERT,
         client_openai=mock_client_openai,
         client_http=mock_client_http,
+        prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
     )
 
 
@@ -74,11 +82,9 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
         messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
         messages_utilisatrice = list(filter(lambda m: m["role"] == "user", messages))
 
+        bout_de_prompt_systeme = PROMPT_SYSTEME_ALTERNATIF.split("\n\n")[0]
         assert len(messages_systeme) == 1
-        assert (
-            "Vous êtes un assistant spécialisé dans la cybersécurité et la conformité"
-            in messages_systeme[0]["content"]
-        )
+        assert bout_de_prompt_systeme in messages_systeme[0]["content"]
         assert len(messages_utilisatrice) == 1
         assert QUESTION in messages_utilisatrice[0]["content"]
 
