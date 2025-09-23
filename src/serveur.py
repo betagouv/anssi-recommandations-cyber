@@ -14,6 +14,7 @@ from schemas.retour_utilisatrice import (
     RetourUtilisatrice,
     DonneesCreationRetourUtilisateur,
 )
+from configuration import Mode
 
 racine = APIRouter()
 
@@ -71,7 +72,7 @@ def redirige_vers_gradio():
     return RedirectResponse("/ui")
 
 
-def fabrique_serveur() -> FastAPI:
+def fabrique_serveur(mode: Mode) -> FastAPI:
     serveur = FastAPI()
     serveur.include_router(racine)
     interface = cree_interface_gradio(serveur)

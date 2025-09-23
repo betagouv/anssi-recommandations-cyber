@@ -10,8 +10,9 @@ from adaptateurs.adaptateur_base_de_donnees_postgres import (
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.reponses import ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
+from configuration import Mode
 
-serveur = fabrique_serveur()
+serveur = fabrique_serveur(Mode.TEST)
 
 
 def test_route_sante() -> None:
