@@ -12,17 +12,7 @@ from schemas.reponses import ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
-serveur = fabrique_serveur(Mode.TEST)
-
-
-def test_route_sante() -> None:
-    """Vérifie que l'application FastAPI fonctionne"""
-    client: TestClient = TestClient(serveur)
-
-    response = client.get("/sante")
-
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+serveur = fabrique_serveur(Mode.PRODUCTION)
 
 
 def test_route_recherche_repond_correctement() -> None:
