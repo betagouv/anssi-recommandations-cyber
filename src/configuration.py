@@ -69,7 +69,7 @@ def recupere_configuration() -> Configuration:
         os.getenv("DB_NAME", "anssi_retours")
     )
     configuration_base_de_donnees = BaseDeDonnees(**configuration_postgres)
-    mode = Mode(os.getenv("MODE", "PRODUCTION"))
+    mode = Mode(os.getenv("MODE", "production"))
 
     return Configuration(
         albert=configuration_albert,
