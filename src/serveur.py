@@ -1,5 +1,5 @@
 import gradio as gr
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert, fabrique_client_albert
@@ -15,18 +15,15 @@ from schemas.retour_utilisatrice import (
     DonneesCreationRetourUtilisateur,
 )
 
-app: FastAPI = FastAPI()
-
-interface_gradio = cree_interface_gradio(app)
-app = gr.mount_gradio_app(app, interface_gradio, path="/ui")
+racine = APIRouter()
 
 
-@app.get("/sante")
+@racine.get("/sante")
 def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/recherche")
+@racine.post("/recherche")
 def route_recherche(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
@@ -34,7 +31,7 @@ def route_recherche(
     return client_albert.recherche_paragraphes(request.question)
 
 
-@app.post("/pose_question")
+@racine.post("/pose_question")
 def route_pose_question(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
@@ -49,7 +46,7 @@ def route_pose_question(
     return JSONResponse(body)
 
 
-@app.post("/retour")
+@racine.post("/retour")
 def route_retour(
     body: DonneesCreationRetourUtilisateur,
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
@@ -69,6 +66,15 @@ def route_retour(
     return {"succes": True, "commentaire": body.retour.commentaire}
 
 
-@app.get("/")
+@racine.get("/")
 def redirige_vers_gradio():
     return RedirectResponse("/ui")
+
+
+def fabrique_serveur() -> FastAPI:
+    serveur = FastAPI()
+    serveur.include_router(racine)
+    interface = cree_interface_gradio(serveur)
+    serveur = gr.mount_gradio_app(serveur, interface, path="/ui")
+
+    return serveur

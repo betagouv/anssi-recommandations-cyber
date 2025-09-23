@@ -80,7 +80,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
             in messages_systeme[0]["content"]
         )
         assert len(messages_utilisatrice) == 1
-        assert (QUESTION in messages_utilisatrice[0]["content"])
+        assert QUESTION in messages_utilisatrice[0]["content"]
 
 
 def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
