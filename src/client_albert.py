@@ -4,6 +4,7 @@ from openai import OpenAI
 from schemas.reponses import ReponseQuestion
 from configuration import recupere_configuration, Albert
 from schemas.reponses import Paragraphe
+from typing import Optional
 
 
 class ClientAlbertHttp(requests.Session):
@@ -64,14 +65,19 @@ class ClientAlbert:
 
         return {"paragraphes": paragraphes}
 
-    def pose_question(self, question: str) -> ReponseQuestion:
+    def pose_question(
+        self, question: str, prompt: Optional[str] = None
+    ) -> ReponseQuestion:
         resultat_recherche = self.recherche_paragraphes(question)
         paragraphes = resultat_recherche["paragraphes"]
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
+
+        prompt_systeme = prompt if prompt else self.PROMPT_SYSTEM
+
         messages = [
             {
                 "role": "system",
-                "content": self.PROMPT_SYSTEM.format(chunks=paragraphes_concatenes),
+                "content": prompt_systeme.format(chunks=paragraphes_concatenes),
             },
             {
                 "role": "user",

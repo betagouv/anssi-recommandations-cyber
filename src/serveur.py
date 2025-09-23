@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.requetes import QuestionRequete
+from schemas.requetes import QuestionRequete, QuestionRequeteAvecPrompt
 from schemas.reponses import ReponseQuestion
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -23,6 +23,21 @@ routeur_developpement = APIRouter()
 @routeur_developpement.get("/sante")
 def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+@routeur_developpement.post("/pose_question_avec_prompt")
+def route_pose_question_avec_prompt(
+    request: QuestionRequeteAvecPrompt,
+    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ),
+) -> ReponseQuestion:
+    reponse_question = client_albert.pose_question(request.question, request.prompt)
+    id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
+    body = reponse_question.model_dump()
+    body["interaction_id"] = id_interaction
+    return JSONResponse(body)
 
 
 @racine.post("/recherche")
