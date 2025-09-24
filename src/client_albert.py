@@ -39,7 +39,7 @@ class ClientAlbert:
         self.PROMPT_SYSTEM = prompt_systeme
         self.session = client_http
 
-    def recherche_paragraphes(self, question: str) -> str:
+    def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         payload = {
             "collections": [self.id_collection],
             "k": 5,
@@ -63,13 +63,12 @@ class ClientAlbert:
                 )
             )
 
-        return {"paragraphes": paragraphes}
+        return paragraphes
 
     def pose_question(
         self, question: str, prompt: Optional[str] = None
     ) -> ReponseQuestion:
-        resultat_recherche = self.recherche_paragraphes(question)
-        paragraphes = resultat_recherche["paragraphes"]
+        paragraphes = self.recherche_paragraphes(question)
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
 
         prompt_systeme = prompt if prompt else self.PROMPT_SYSTEM
