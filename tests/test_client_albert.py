@@ -71,7 +71,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
 ):
     with patch(
         "client_albert.ClientAlbert.recherche_paragraphes",
-        return_value={"paragraphes": []},
+        return_value=[],
     ):
         client.pose_question(QUESTION)
 
@@ -93,20 +93,19 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
     client, mock_client_openai
 ):
     FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
-    FAUX_DOCUMENTS = {
-        "paragraphes": [
-            Paragraphe(
-                score_similarite=0.5,
-                numero_page=1,
-                url="https://cyber.gouv.fr/document.pdf",
-                nom_document="Mon Guide Cyber",
-                contenu=FAUX_CONTENU,
-            )
-        ]
-    }
+    FAUX_PARAGRAPHES = [
+        Paragraphe(
+            score_similarite=0.5,
+            numero_page=1,
+            url="https://cyber.gouv.fr/document.pdf",
+            nom_document="Mon Guide Cyber",
+            contenu=FAUX_CONTENU,
+        )
+    ]
 
     with patch(
-        "client_albert.ClientAlbert.recherche_paragraphes", return_value=FAUX_DOCUMENTS
+        "client_albert.ClientAlbert.recherche_paragraphes",
+        return_value=FAUX_PARAGRAPHES,
     ):
         client.pose_question(QUESTION)
 

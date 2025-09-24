@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.requetes import QuestionRequete, QuestionRequeteAvecPrompt
-from schemas.reponses import ReponseQuestion
+from schemas.reponses import Paragraphe, ReponseQuestion
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
@@ -44,7 +44,7 @@ def route_pose_question_avec_prompt(
 def route_recherche(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
-) -> Dict[str, List[Dict[str, Any]]]:
+) -> list[Paragraphe]:
     return client_albert.recherche_paragraphes(request.question)
 
 
