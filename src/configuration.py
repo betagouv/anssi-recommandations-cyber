@@ -1,5 +1,4 @@
 import os
-from typing import Dict, Union
 from typing_extensions import NamedTuple
 from enum import StrEnum, auto
 
@@ -42,8 +41,8 @@ class Configuration(NamedTuple):
 
 def recupere_configuration_postgres(
     database: str = "postgres",
-) -> Dict[str, Union[str, int]]:
-    return dict(
+) -> BaseDeDonnees:
+    return BaseDeDonnees(
         hote=os.getenv("DB_HOST", "localhost"),
         port=int(os.getenv("DB_PORT", "5432")),
         utilisateur=os.getenv("DB_USER", "postgres"),
@@ -65,10 +64,9 @@ def recupere_configuration() -> Configuration:
         ),
     )
 
-    configuration_postgres = recupere_configuration_postgres(
+    configuration_base_de_donnees = recupere_configuration_postgres(
         os.getenv("DB_NAME", "anssi_retours")
     )
-    configuration_base_de_donnees = BaseDeDonnees(**configuration_postgres)
     mode = Mode(os.getenv("MODE", "production"))
 
     return Configuration(

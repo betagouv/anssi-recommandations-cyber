@@ -14,11 +14,11 @@ from configuration import recupere_configuration_postgres
 def cree_connexion_postgres() -> psycopg2.extensions.connection:
     config_postgres = recupere_configuration_postgres("postgres")
     return psycopg2.connect(
-        host=config_postgres["hote"],
-        database=config_postgres["nom"],
-        user=config_postgres["utilisateur"],
-        password=config_postgres["mot_de_passe"],
-        port=config_postgres["port"],
+        host=config_postgres.hote,
+        database=config_postgres.nom,
+        user=config_postgres.utilisateur,
+        password=config_postgres.mot_de_passe,
+        port=config_postgres.port,
     )
 
 

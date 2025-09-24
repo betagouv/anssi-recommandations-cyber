@@ -12,11 +12,11 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def __init__(self, nom_base_donnees: str) -> None:
         config_postgres = recupere_configuration_postgres(nom_base_donnees)
         self._connexion = psycopg2.connect(
-            host=config_postgres["hote"],
-            database=config_postgres["nom"],
-            user=config_postgres["utilisateur"],
-            password=config_postgres["mot_de_passe"],
-            port=config_postgres["port"],
+            host=config_postgres.hote,
+            database=config_postgres.nom,
+            user=config_postgres.utilisateur,
+            password=config_postgres.mot_de_passe,
+            port=config_postgres.port,
         )
         self._connexion.autocommit = True
         self._initialise_tables()
