@@ -8,7 +8,7 @@ from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.reponses import ReponseQuestion
+from schemas.client_albert import ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 

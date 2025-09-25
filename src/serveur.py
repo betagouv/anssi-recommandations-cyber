@@ -3,8 +3,8 @@ from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Dict, List, Any
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.requetes import QuestionRequete, QuestionRequeteAvecPrompt
-from schemas.reponses import Paragraphe, ReponseQuestion
+from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
+from schemas.client_albert import Paragraphe
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
