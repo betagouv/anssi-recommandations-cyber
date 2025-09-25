@@ -5,7 +5,7 @@ from openai import OpenAI
 
 from configuration import Albert
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.reponses import Paragraphe
+from schemas.client_albert import Paragraphe
 
 
 def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut():

@@ -1,9 +1,8 @@
 import requests
 from pathlib import Path
 from openai import OpenAI
-from schemas.reponses import ReponseQuestion
+from schemas.client_albert import Paragraphe, ReponseQuestion
 from configuration import recupere_configuration, Albert
-from schemas.reponses import Paragraphe
 from typing import Optional
 
 

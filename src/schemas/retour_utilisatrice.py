@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
 from typing import Optional
-from schemas.reponses import ReponseQuestion
+from schemas.client_albert import ReponseQuestion
 
 
 class RetourUtilisatrice(BaseModel):
