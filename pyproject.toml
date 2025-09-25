@@ -17,8 +17,14 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy",
     "ruff",
+    "types-requests",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true
+files = ["src/**/*.py"]
 
 [tool.pytest.ini_options]
 pythonpath = [

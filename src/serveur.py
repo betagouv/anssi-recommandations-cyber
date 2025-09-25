@@ -1,7 +1,7 @@
 import gradio as gr
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import RedirectResponse
-from typing import Dict, List, Any
+from typing import Dict, Any
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.client_albert import Paragraphe
@@ -35,9 +35,9 @@ def route_pose_question_avec_prompt(
 ) -> ReponseQuestion:
     reponse_question = client_albert.pose_question(request.question, request.prompt)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
-    body = reponse_question.model_dump()
-    body["interaction_id"] = id_interaction
-    return body
+    return ReponseQuestion(
+        **reponse_question.model_dump(), interaction_id=id_interaction
+    )
 
 
 @racine.post("/recherche")
@@ -58,9 +58,9 @@ def route_pose_question(
 ) -> ReponseQuestion:
     reponse_question = client_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
-    body = reponse_question.model_dump()
-    body["interaction_id"] = id_interaction
-    return body
+    return ReponseQuestion(
+        **reponse_question.model_dump(), interaction_id=id_interaction
+    )
 
 
 @racine.post("/retour")

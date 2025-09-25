@@ -2,6 +2,10 @@ import os
 from typing_extensions import NamedTuple
 from enum import StrEnum, auto
 
+# `mypy` ne comprend pas les classes imbriquées dans des `NamedTuple` (alors que c'est du `Python` valide...);
+# _c.f._ https://github.com/python/mypy/issues/15775 .
+# mypy: disable-error-code="misc, attr-defined, name-defined"
+
 
 class Albert(NamedTuple):
     class Client(NamedTuple):
@@ -60,7 +64,7 @@ def recupere_configuration() -> Configuration:
         parametres=Albert.Parametres(
             modele_reponse="albert-large",
             collection_nom_anssi_lab="ANSSI_test",
-            collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB")),
+            collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
         ),
     )
 
