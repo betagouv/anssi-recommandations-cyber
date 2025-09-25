@@ -1,9 +1,10 @@
 import requests
 from pathlib import Path
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from configuration import recupere_configuration, Albert
-from typing import Optional
+from typing import Optional, cast
 
 
 class ClientAlbertHttp(requests.Session):
@@ -12,8 +13,13 @@ class ClientAlbertHttp(requests.Session):
         self.base_url = base_url
         self.headers = {"Authorization": f"Bearer {token}"}
 
-    def request(self, method: str, url: str, *args, **kwargs):
-        url = f"{self.base_url}{url}"
+    def request(
+        self, method: str | bytes, url: str | bytes, *args, **kwargs
+    ) -> requests.Response:
+        if type(url) is str:
+            url = f"{self.base_url}{url}"
+        elif type(url) is bytes:
+            url = b"%b%b" % (self.base_url.encode("utf-8"), url)
         return super().request(method, url, *args, **kwargs)
 
 
@@ -31,7 +37,7 @@ class ClientAlbert:
 
     def __init__(
         self,
-        configuration: Albert.Parametres,
+        configuration: Albert.Parametres,  # type: ignore [name-defined]
         client_openai: OpenAI,
         client_http: requests.Session,
         prompt_systeme: str,
@@ -76,7 +82,7 @@ class ClientAlbert:
 
         prompt_systeme = prompt if prompt else self.PROMPT_SYSTEM
 
-        messages = [
+        messages: list[ChatCompletionMessageParam] = [
             {
                 "role": "system",
                 "content": prompt_systeme.format(chunks=paragraphes_concatenes),
@@ -93,7 +99,7 @@ class ClientAlbert:
             stream=False,
         ).choices
         reponse = (
-            propositions_albert[0].message.content
+            cast(str, propositions_albert[0].message.content)
             if len(propositions_albert) > 0
             else ClientAlbert.REPONSE_PAR_DEFAULT
         )
