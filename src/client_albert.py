@@ -25,6 +25,10 @@ class ClientAlbert:
     - une API qui suit le format OpenAI
     """
 
+    REPONSE_PAR_DEFAULT = (
+        "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
+    )
+
     def __init__(
         self,
         configuration: Albert.Parametres,
@@ -83,13 +87,19 @@ class ClientAlbert:
             },
         ]
 
-        reponse = self.client.chat.completions.create(
+        propositions_albert = self.client.chat.completions.create(
             messages=messages,
             model=self.modele_reponse,
             stream=False,
+        ).choices
+        reponse = (
+            propositions_albert[0].message.content
+            if len(propositions_albert) > 0
+            else ClientAlbert.REPONSE_PAR_DEFAULT
         )
+
         return ReponseQuestion(
-            reponse=reponse.choices[0].message.content,
+            reponse=reponse,
             paragraphes=paragraphes,
             question=question,
         )
