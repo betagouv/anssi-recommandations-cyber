@@ -62,8 +62,10 @@ def recupere_configuration() -> Configuration:
             api_key=os.getenv("ALBERT_API_KEY"),
         ),
         parametres=Albert.Parametres(
-            modele_reponse="albert-large",
-            collection_nom_anssi_lab="ANSSI_test",
+            modele_reponse=os.getenv("ALBERT_MODELE", "albert-large"),
+            collection_nom_anssi_lab=os.getenv(
+                "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
+            ),
             collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
         ),
     )
