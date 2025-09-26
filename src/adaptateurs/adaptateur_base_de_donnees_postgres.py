@@ -1,7 +1,7 @@
 import uuid
 import psycopg2
 import psycopg2.extras
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, cast
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.client_albert import ReponseQuestion
 from configuration import recupere_configuration_postgres, recupere_configuration
@@ -88,7 +88,9 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def obtient_statistiques(self) -> Dict[str, int]:
         with self._connexion.cursor() as curseur:
             curseur.execute("SELECT COUNT(*) FROM interactions")
-            total_interactions = curseur.fetchone()[0]
+            # Comme la requête nous retourne une seule colonne contenant un compte,
+            # on peut caster, puis interpréter comme un entier.
+            total_interactions = int(cast(Tuple[str], curseur.fetchone())[0])
 
             curseur.execute("SELECT contenu FROM interactions")
             lignes = curseur.fetchall()

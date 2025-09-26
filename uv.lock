@@ -885,6 +885,7 @@ dependencies = [
 dev = [
     { name = "mypy" },
     { name = "ruff" },
+    { name = "types-psycopg2" },
     { name = "types-requests" },
 ]
 
@@ -905,6 +906,7 @@ requires-dist = [
 dev = [
     { name = "mypy" },
     { name = "ruff" },
+    { name = "types-psycopg2" },
     { name = "types-requests" },
 ]
 
@@ -1056,6 +1058,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/92/e8/2a73ccf9874ec4c7638f172efc8972ceab13a0e3480b389d6ed822f7a822/typer-0.17.4.tar.gz", hash = "sha256:b77dc07d849312fd2bb5e7f20a7af8985c7ec360c45b051ed5412f64d8dc1580", size = 103734, upload-time = "2025-09-05T18:14:40.746Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/93/72/6b3e70d32e89a5cbb6a4513726c1ae8762165b027af569289e19ec08edd8/typer-0.17.4-py3-none-any.whl", hash = "sha256:015534a6edaa450e7007eba705d5c18c3349dcea50a6ad79a5ed530967575824", size = 46643, upload-time = "2025-09-05T18:14:39.166Z" },
+]
+
+[[package]]
+name = "types-psycopg2"
+version = "2.9.21.20250915"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/20/3dcb89df8d1661cf6c4c2d9f84d4ba94dde48559cdcf7b536a380a9c387f/types_psycopg2-2.9.21.20250915.tar.gz", hash = "sha256:bfeb8f54c32490e7b5edc46215ab4163693192bc90407b4a023822de9239f5c8", size = 26678, upload-time = "2025-09-15T03:01:08.863Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/4d/ebf1c72809a30150ad142074e1ad5101304f7569c0df2fa872906d76d0af/types_psycopg2-2.9.21.20250915-py3-none-any.whl", hash = "sha256:eefe5ccdc693fc086146e84c9ba437bb278efe1ef330b299a0cb71169dc6c55f", size = 24868, upload-time = "2025-09-15T03:01:07.613Z" },
 ]
 
 [[package]]
