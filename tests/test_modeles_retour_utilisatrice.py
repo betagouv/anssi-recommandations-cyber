@@ -1,5 +1,5 @@
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
-from schemas.reponses import ReponseQuestion, Paragraphe
+from schemas.client_albert import ReponseQuestion, Paragraphe
 import pytest
 
 

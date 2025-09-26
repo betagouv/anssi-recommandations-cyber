@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import List
 
 
 class Paragraphe(BaseModel):
@@ -12,5 +11,5 @@ class Paragraphe(BaseModel):
 
 class ReponseQuestion(BaseModel):
     reponse: str
-    paragraphes: List[Paragraphe]
+    paragraphes: list[Paragraphe]
     question: str

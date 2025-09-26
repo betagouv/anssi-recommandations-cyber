@@ -1,10 +1,10 @@
 import gradio as gr
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
-from fastapi.responses import RedirectResponse, JSONResponse
-from typing import Dict, List, Any
+from fastapi.responses import RedirectResponse
+from typing import Dict, Any
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.requetes import QuestionRequete, QuestionRequeteAvecPrompt
-from schemas.reponses import ReponseQuestion
+from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
+from schemas.client_albert import Paragraphe
 from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
@@ -35,16 +35,16 @@ def route_pose_question_avec_prompt(
 ) -> ReponseQuestion:
     reponse_question = client_albert.pose_question(request.question, request.prompt)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
-    body = reponse_question.model_dump()
-    body["interaction_id"] = id_interaction
-    return JSONResponse(body)
+    return ReponseQuestion(
+        **reponse_question.model_dump(), interaction_id=id_interaction
+    )
 
 
 @racine.post("/recherche")
 def route_recherche(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
-) -> Dict[str, List[Dict[str, Any]]]:
+) -> list[Paragraphe]:
     return client_albert.recherche_paragraphes(request.question)
 
 
@@ -58,9 +58,9 @@ def route_pose_question(
 ) -> ReponseQuestion:
     reponse_question = client_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
-    body = reponse_question.model_dump()
-    body["interaction_id"] = id_interaction
-    return JSONResponse(body)
+    return ReponseQuestion(
+        **reponse_question.model_dump(), interaction_id=id_interaction
+    )
 
 
 @racine.post("/retour")

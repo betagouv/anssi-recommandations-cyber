@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict, Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
-from schemas.reponses import ReponseQuestion
+from schemas.client_albert import ReponseQuestion
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 

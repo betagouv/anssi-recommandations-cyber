@@ -22,9 +22,11 @@ Pour construire l'image, il faut lancer `docker build -t localhost:mqc .`.
 Il faut créer à la racine du projet un fichier `.env`.
 A minima, ce fichier devra défnir les variables déclarées dans le fichier `.env.template`.
 
-## 🧪 Comment tester ?
+## 🧪 Comment valider ?
 
-Dans un environnement virtuel, lancer `pytest`.
+Dans un environnement virtuel :
+* lancer `mypy` pour vérifier la validité des annotations de types,
+* et lancer `pytest` pour valider le comportement à l'exécution.
 
 ## 🚀 Comment lancer l'application ?
 

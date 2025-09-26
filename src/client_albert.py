@@ -1,10 +1,10 @@
 import requests
 from pathlib import Path
 from openai import OpenAI
-from schemas.reponses import ReponseQuestion
+from openai.types.chat import ChatCompletionMessageParam
+from schemas.client_albert import Paragraphe, ReponseQuestion
 from configuration import recupere_configuration, Albert
-from schemas.reponses import Paragraphe
-from typing import Optional
+from typing import Optional, cast
 
 
 class ClientAlbertHttp(requests.Session):
@@ -13,8 +13,13 @@ class ClientAlbertHttp(requests.Session):
         self.base_url = base_url
         self.headers = {"Authorization": f"Bearer {token}"}
 
-    def request(self, method: str, url: str, *args, **kwargs):
-        url = f"{self.base_url}{url}"
+    def request(
+        self, method: str | bytes, url: str | bytes, *args, **kwargs
+    ) -> requests.Response:
+        if type(url) is str:
+            url = f"{self.base_url}{url}"
+        elif type(url) is bytes:
+            url = b"%b%b" % (self.base_url.encode("utf-8"), url)
         return super().request(method, url, *args, **kwargs)
 
 
@@ -26,9 +31,13 @@ class ClientAlbert:
     - une API qui suit le format OpenAI
     """
 
+    REPONSE_PAR_DEFAULT = (
+        "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
+    )
+
     def __init__(
         self,
-        configuration: Albert.Parametres,
+        configuration: Albert.Parametres,  # type: ignore [name-defined]
         client_openai: OpenAI,
         client_http: requests.Session,
         prompt_systeme: str,
@@ -39,7 +48,7 @@ class ClientAlbert:
         self.PROMPT_SYSTEM = prompt_systeme
         self.session = client_http
 
-    def recherche_paragraphes(self, question: str) -> str:
+    def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         payload = {
             "collections": [self.id_collection],
             "k": 5,
@@ -63,18 +72,17 @@ class ClientAlbert:
                 )
             )
 
-        return {"paragraphes": paragraphes}
+        return paragraphes
 
     def pose_question(
         self, question: str, prompt: Optional[str] = None
     ) -> ReponseQuestion:
-        resultat_recherche = self.recherche_paragraphes(question)
-        paragraphes = resultat_recherche["paragraphes"]
+        paragraphes = self.recherche_paragraphes(question)
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
 
         prompt_systeme = prompt if prompt else self.PROMPT_SYSTEM
 
-        messages = [
+        messages: list[ChatCompletionMessageParam] = [
             {
                 "role": "system",
                 "content": prompt_systeme.format(chunks=paragraphes_concatenes),
@@ -85,13 +93,19 @@ class ClientAlbert:
             },
         ]
 
-        reponse = self.client.chat.completions.create(
+        propositions_albert = self.client.chat.completions.create(
             messages=messages,
             model=self.modele_reponse,
             stream=False,
+        ).choices
+        reponse = (
+            cast(str, propositions_albert[0].message.content)
+            if len(propositions_albert) > 0
+            else ClientAlbert.REPONSE_PAR_DEFAULT
         )
+
         return ReponseQuestion(
-            reponse=reponse.choices[0].message.content,
+            reponse=reponse,
             paragraphes=paragraphes,
             question=question,
         )
