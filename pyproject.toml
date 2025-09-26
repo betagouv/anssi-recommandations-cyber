@@ -19,6 +19,7 @@ dependencies = [
 dev = [
     "mypy",
     "ruff",
+    "types-psycopg2",
     "types-requests",
 ]
 
