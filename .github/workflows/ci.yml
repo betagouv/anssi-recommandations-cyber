@@ -35,5 +35,8 @@ jobs:
       - name: Contrôler le format du code
         run: uv run ruff check
 
+      - name: Contrôler les types
+        run: uv run mypy
+
       - name: Exécuter les tests
         run: uv run pytest
