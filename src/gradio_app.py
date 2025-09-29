@@ -25,7 +25,7 @@ def pose_question_gradio(
         payload = {"question": question}
         if prompt_txt:
             payload["prompt"] = prompt_txt
-        reponse_client = client.post("/pose_question_avec_prompt", json=payload)
+        reponse_client = client.post("/api/pose_question_avec_prompt", json=payload)
         if reponse_client.status_code != 200:
             return f"Erreur {reponse_client.status_code}", "", ""
 
@@ -162,7 +162,7 @@ def cree_interface_gradio(app):
                         else None,
                     },
                 }
-                response = client.post("/retour", json=payload)
+                response = client.post("/api/retour", json=payload)
 
                 if response.status_code == 200:
                     return "✅ Merci pour votre retour !"

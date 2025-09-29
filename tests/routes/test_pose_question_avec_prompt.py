@@ -49,7 +49,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         try:
             client: TestClient = TestClient(serveur)
             response = client.post(
-                "/pose_question_avec_prompt",
+                "/debug/pose_question",
                 json={
                     "question": "Qui es-tu ?",
                     "prompt": "Vous êtes un assistant virtuel.",
@@ -68,7 +68,7 @@ def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> No
     client: TestClient = TestClient(serveur)
 
     response = client.post(
-        "/pose_question_avec_prompt",
+        "/debug/pose_question",
         json={"question": "Qui es-tu ?", "prompt": "Vous êtes un assistant virtuel."},
     )
 

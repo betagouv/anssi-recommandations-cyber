@@ -16,16 +16,16 @@ from schemas.retour_utilisatrice import (
 )
 from configuration import Mode
 
-racine = APIRouter()
-routeur_developpement = APIRouter()
+api = APIRouter(prefix="/api")
+api_developpement = APIRouter(prefix="/debug")
 
 
-@routeur_developpement.get("/sante")
+@api_developpement.get("/sante")
 def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
 
 
-@routeur_developpement.post("/pose_question_avec_prompt")
+@api_developpement.post("/pose_question")
 def route_pose_question_avec_prompt(
     request: QuestionRequeteAvecPrompt,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
@@ -40,7 +40,7 @@ def route_pose_question_avec_prompt(
     )
 
 
-@racine.post("/recherche")
+@api.post("/recherche")
 def route_recherche(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
@@ -48,7 +48,7 @@ def route_recherche(
     return client_albert.recherche_paragraphes(request.question)
 
 
-@racine.post("/pose_question")
+@api.post("/pose_question")
 def route_pose_question(
     request: QuestionRequete,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
@@ -63,7 +63,7 @@ def route_pose_question(
     )
 
 
-@racine.post("/retour")
+@api.post("/retour")
 def route_retour(
     body: DonneesCreationRetourUtilisateur,
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
@@ -83,7 +83,7 @@ def route_retour(
     return {"succes": True, "commentaire": body.retour.commentaire}
 
 
-@racine.get("/")
+@api.get("/")
 def redirige_vers_gradio():
     return RedirectResponse("/ui")
 
@@ -91,9 +91,9 @@ def redirige_vers_gradio():
 def fabrique_serveur(mode: Mode) -> FastAPI:
     serveur = FastAPI()
 
-    serveur.include_router(racine)
+    serveur.include_router(api)
     if mode == Mode.DEVELOPPEMENT:
-        serveur.include_router(routeur_developpement)
+        serveur.include_router(api_developpement)
 
     interface = cree_interface_gradio(serveur)
     serveur = gr.mount_gradio_app(serveur, interface, path="/ui")
