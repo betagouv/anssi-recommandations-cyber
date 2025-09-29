@@ -89,13 +89,13 @@ Exemple en local (avec `HOST=127.0.0.1`, `PORT=8000`) :
 #### Rechercher les paragraphes en lien avec une question
 
 ```shell
-curl -X POST "${endpoint}/recherche" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+curl -X POST "${endpoint}/api/recherche" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
 #### Poser une question
 
 ```shell
-curl -X POST "${endpoint}/pose_question" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+curl -X POST "${endpoint}/api/pose_question" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
 ## 🤝 Contribuer
