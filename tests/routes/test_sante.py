@@ -4,7 +4,7 @@ from configuration import Mode
 from serveur import fabrique_serveur
 
 
-def test_route_sante_est_exposee_en_developpement():
+def test_route_sante_est_exposee_en_developpement() -> None:
     serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
     client: TestClient = TestClient(serveur)
 
@@ -14,7 +14,7 @@ def test_route_sante_est_exposee_en_developpement():
     assert response.json() == {"status": "ok"}
 
 
-def test_route_sante_n_est_pas_exposee_en_production():
+def test_route_sante_n_est_pas_exposee_en_production() -> None:
     serveur = fabrique_serveur(Mode.PRODUCTION)
     client: TestClient = TestClient(serveur)
 
