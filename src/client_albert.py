@@ -3,7 +3,14 @@ from pathlib import Path
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletion
 from openai.types.chat.chat_completion import Choice
-from schemas.client_albert import Paragraphe, ReponseQuestion
+from schemas.client_albert import (
+    Paragraphe,
+    ReponseQuestion,
+    RecherchePayload,
+    ResultatRecherche,
+    RechercheChunk,
+    RechercheMetadonnees,
+)
 from configuration import recupere_configuration, Albert
 from typing import Optional, cast
 from openai.types import CompletionUsage
@@ -51,31 +58,30 @@ class ClientAlbert:
         self.client = client_openai
         self.PROMPT_SYSTEM = prompt_systeme
         self.session = client_http
+        self.temps_reponse_maximum_recherche_paragraphes = (
+            configuration.temps_reponse_maximum_recherche_paragraphes
+        )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
-        payload = {
-            "collections": [self.id_collection],
-            "k": 5,
-            "prompt": question,
-            "method": "semantic",
-        }
-        response: requests.Response = self.session.post("/search", json=payload)
-        data = response.json()
+        payload = RecherchePayload(
+            collections=[self.id_collection],
+            k=5,
+            prompt=question,
+            method="semantic",
+        )
 
+        data = self.recupere_data(payload)
         paragraphes = []
-        for result in data.get("data", []):
-            chunk = result.get("chunk", {})
-            metadonnees = chunk.get("metadata", {})
+        for result in data:
             paragraphes.append(
                 Paragraphe(
-                    contenu=chunk.get("content", ""),
-                    url=metadonnees.get("source_url", ""),
-                    score_similarite=result.get("score", 0.0),
-                    numero_page=metadonnees.get("page", 0),
-                    nom_document=metadonnees.get("document_name", ""),
+                    contenu=result.chunk.content,
+                    url=result.chunk.metadata.source_url,
+                    score_similarite=result.score,
+                    numero_page=result.chunk.metadata.page,
+                    nom_document=result.chunk.metadata.document_name,
                 )
             )
-
         return paragraphes
 
     def pose_question(
@@ -136,6 +142,43 @@ class ClientAlbert:
                 system_fingerprint=None,
             ).choices
             return aucune_proposition
+
+    def recupere_data(self, payload: RecherchePayload) -> list[ResultatRecherche]:
+        try:
+            response: requests.Response = self.session.post(
+                "/search",
+                json=payload._asdict(),
+                timeout=self.temps_reponse_maximum_recherche_paragraphes,
+            )
+            response.raise_for_status()
+            brut = response.json()
+
+            data = brut.get("data", [])
+            resultats: list[ResultatRecherche] = []
+            for r in data:
+                chunk_dict = r.get("chunk", {})
+                meta_dict = chunk_dict.get("metadata", {})
+
+                metadata = RechercheMetadonnees(
+                    source_url=meta_dict.get("source_url", ""),
+                    page=meta_dict.get("page", 0),
+                    document_name=meta_dict.get("document_name", ""),
+                )
+                chunk = RechercheChunk(
+                    content=chunk_dict.get("content", ""),
+                    metadata=metadata,
+                )
+                resultats.append(
+                    ResultatRecherche(
+                        chunk=chunk,
+                        score=r.get("score", 0.0),
+                    )
+                )
+
+        except requests.Timeout:
+            resultats = []
+
+        return resultats
 
 
 def fabrique_client_albert() -> ClientAlbert:

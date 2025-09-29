@@ -28,6 +28,7 @@ FAUX_PARAMETRES_ALBERT = Albert.Parametres(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="",
     collection_id_anssi_lab=42,
     temps_reponse_maximum_pose_question=10.0,
+    temps_reponse_maximum_recherche_paragraphes=1.0,
 )
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
@@ -167,7 +168,7 @@ def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien
         assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
 
 
-def test_pose_question_timeout_retourne_defaut():
+def test_pose_question_si_timeout_retourne_reponse_par_defaut():
     mock_openai = Mock()
     mock_openai.chat = Mock()
     mock_openai.chat.completions = Mock()
@@ -188,3 +189,46 @@ def test_pose_question_timeout_retourne_defaut():
         rep = client_avec_openai_timeout.pose_question("Question ?")
 
     assert rep.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+
+
+def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
+    mock_client_openai_sans_reponse, mock_client_http
+):
+    mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
+
+    client = ClientAlbert(
+        configuration=Albert.Parametres(
+            modele_reponse="x",
+            collection_nom_anssi_lab="",
+            collection_id_anssi_lab=1,
+            temps_reponse_maximum_pose_question=10.0,
+            temps_reponse_maximum_recherche_paragraphes=0.01,
+        ),
+        client_openai=mock_client_openai_sans_reponse,
+        client_http=mock_client_http,
+        prompt_systeme="PROMPT {chunks}",
+    )
+
+    paragraphes = client.recherche_paragraphes("Q ?")
+    assert paragraphes == []
+
+
+def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
+    mock_client_openai_sans_reponse, mock_client_http
+):
+    mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
+    client = ClientAlbert(
+        configuration=Albert.Parametres(
+            modele_reponse="x",
+            collection_nom_anssi_lab="",
+            collection_id_anssi_lab=1,
+            temps_reponse_maximum_pose_question=10.0,
+            temps_reponse_maximum_recherche_paragraphes=0.01,
+        ),
+        client_openai=mock_client_openai_sans_reponse,
+        client_http=mock_client_http,
+        prompt_systeme="PROMPT {chunks}",
+    )
+
+    retour = client.pose_question("Q ?")
+    assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
