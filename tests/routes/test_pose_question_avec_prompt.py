@@ -8,7 +8,7 @@ from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.client_albert import ReponseQuestion
+from schemas.client_albert import Paragraphe, ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
@@ -19,13 +19,13 @@ def test_route_pose_question_repond_correctement_en_developpement() -> None:
     mock_reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
-            {
-                "score_similarite": 0.75,
-                "numero_page": 29,
-                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "contenu": "Contenu du paragraphe 1",
-            }
+            Paragraphe(
+                score_similarite=0.75,
+                numero_page=29,
+                url="https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                nom_document="anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                contenu="Contenu du paragraphe 1",
+            )
         ],
         question="Qui es-tu ?",
     )
