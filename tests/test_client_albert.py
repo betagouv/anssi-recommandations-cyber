@@ -6,6 +6,7 @@ from openai import OpenAI
 from configuration import Albert
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.client_albert import Paragraphe
+from openai import APITimeoutError
 
 
 def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
@@ -26,6 +27,7 @@ FAUX_PARAMETRES_ALBERT = Albert.Parametres(  # type: ignore [attr-defined]
     modele_reponse="",
     collection_nom_anssi_lab="",
     collection_id_anssi_lab=42,
+    temps_reponse_maximum_pose_question=10.0,
 )
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
@@ -163,3 +165,26 @@ def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien
         retour = client_sans_reponse.pose_question(QUESTION)
 
         assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+
+
+def test_pose_question_timeout_retourne_defaut():
+    mock_openai = Mock()
+    mock_openai.chat = Mock()
+    mock_openai.chat.completions = Mock()
+    mock_openai.chat.completions.create = Mock(
+        side_effect=APITimeoutError(
+            "Simulation d'un délai de réponse trop long d'OpenAI."
+        )
+    )
+
+    client_avec_openai_timeout = ClientAlbert(
+        configuration=FAUX_PARAMETRES_ALBERT,
+        client_openai=mock_openai,
+        client_http=Mock(),
+        prompt_systeme="PROMPT {chunks}",
+    )
+
+    with patch.object(ClientAlbert, "recherche_paragraphes", return_value=[]):
+        rep = client_avec_openai_timeout.pose_question("Question ?")
+
+    assert rep.reponse == ClientAlbert.REPONSE_PAR_DEFAULT

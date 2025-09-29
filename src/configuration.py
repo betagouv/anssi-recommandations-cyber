@@ -16,6 +16,7 @@ class Albert(NamedTuple):
         modele_reponse: str
         collection_nom_anssi_lab: str
         collection_id_anssi_lab: int
+        temps_reponse_maximum_pose_question: float
 
     client: Client
     parametres: Parametres
@@ -67,6 +68,9 @@ def recupere_configuration() -> Configuration:
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
             collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
+            temps_reponse_maximum_pose_question=float(
+                os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_REPONSE_QUESTION", 15.0)
+            ),
         ),
     )
 
