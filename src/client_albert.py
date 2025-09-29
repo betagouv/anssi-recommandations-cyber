@@ -1,10 +1,14 @@
 import requests
 from pathlib import Path
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletion
+from openai.types.chat.chat_completion import Choice
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from configuration import recupere_configuration, Albert
 from typing import Optional, cast
+from openai.types import CompletionUsage
+import time
+from openai import APITimeoutError, APIConnectionError
 
 
 class ClientAlbertHttp(requests.Session):
@@ -93,11 +97,7 @@ class ClientAlbert:
             },
         ]
 
-        propositions_albert = self.client.chat.completions.create(
-            messages=messages,
-            model=self.modele_reponse,
-            stream=False,
-        ).choices
+        propositions_albert = self.recupere_propositions(messages)
         reponse = (
             cast(str, propositions_albert[0].message.content)
             if len(propositions_albert) > 0
@@ -110,6 +110,33 @@ class ClientAlbert:
             question=question,
         )
 
+    def recupere_propositions(
+        self, messages: list[ChatCompletionMessageParam]
+    ) -> list[Choice]:
+        try:
+            propositions_albert = self.client.chat.completions.create(
+                messages=messages,
+                model=self.modele_reponse,
+                stream=False,
+            ).choices
+            return propositions_albert
+
+        except (APITimeoutError, APIConnectionError):
+            aucune_proposition = ChatCompletion(
+                id="tmp-empty",
+                created=int(time.time()),
+                model=recupere_configuration().albert.parametres.modele_reponse,
+                object="chat.completion",
+                choices=[],
+                usage=CompletionUsage(
+                    prompt_tokens=0,
+                    completion_tokens=0,
+                    total_tokens=0,
+                ),
+                system_fingerprint=None,
+            ).choices
+            return aucune_proposition
+
 
 def fabrique_client_albert() -> ClientAlbert:
     configuration = recupere_configuration()
@@ -117,6 +144,7 @@ def fabrique_client_albert() -> ClientAlbert:
     client_openai = OpenAI(
         base_url=configuration.albert.client.base_url,
         api_key=configuration.albert.client.api_key,
+        timeout=configuration.albert.parametres.temps_reponse_maximum_pose_question,
     )
 
     client_http = ClientAlbertHttp(
