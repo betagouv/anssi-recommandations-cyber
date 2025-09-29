@@ -22,7 +22,7 @@ def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> 
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
 )
-FAUX_PARAMETRES_ALBERT = Albert.Parametres(
+FAUX_PARAMETRES_ALBERT = Albert.Parametres(  # type: ignore [attr-defined]
     modele_reponse="",
     collection_nom_anssi_lab="",
     collection_id_anssi_lab=42,

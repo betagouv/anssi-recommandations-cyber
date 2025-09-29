@@ -77,6 +77,7 @@ class TestInteraction:
             interaction.reponse_question.question
             == "Quelle est la longueur recommandée pour un mot de passe ?"
         )
+        assert interaction.retour_utilisatrice is not None
         assert interaction.retour_utilisatrice.pouce_leve is True
         assert interaction.retour_utilisatrice.commentaire == "Très utile"
 
