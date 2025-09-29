@@ -24,7 +24,6 @@ dev = [
 ]
 
 [tool.mypy]
-ignore_missing_imports = true
 files = ["src/**/*.py", "tests/**/*.py"]
 
 [tool.pytest.ini_options]
