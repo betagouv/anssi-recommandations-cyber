@@ -63,7 +63,7 @@ def test_route_pose_question_repond_correctement_en_developpement() -> None:
             serveur.dependency_overrides.clear()
 
 
-def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production():
+def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> None:
     serveur = fabrique_serveur(Mode.PRODUCTION)
     client: TestClient = TestClient(serveur)
 

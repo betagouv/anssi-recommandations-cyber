@@ -4,7 +4,7 @@ import pytest
 
 
 class TestRetourUtilisatrice:
-    def test_creation_complet(self):
+    def test_creation_complet(self) -> None:
         retour = RetourUtilisatrice(
             pouce_leve=True, commentaire="Réponse très claire et précise"
         )
@@ -13,35 +13,35 @@ class TestRetourUtilisatrice:
         assert retour.commentaire == "Réponse très claire et précise"
         assert retour.horodatage is not None
 
-    def test_creation_pouce_seul(self):
+    def test_creation_pouce_seul(self) -> None:
         retour = RetourUtilisatrice(pouce_leve=True)
 
         assert retour.pouce_leve is True
         assert retour.commentaire is None
         assert retour.horodatage is not None
 
-    def test_creation_commentaire_seul(self):
+    def test_creation_commentaire_seul(self) -> None:
         retour = RetourUtilisatrice(commentaire="Très utile")
 
         assert retour.pouce_leve is None
         assert retour.commentaire == "Très utile"
         assert retour.horodatage is not None
 
-    def test_creation_vide_echoue(self):
+    def test_creation_vide_echoue(self) -> None:
         with pytest.raises(
             ValueError,
             match="Au moins 'pouce_leve' ou 'commentaire' doit être renseigné",
         ):
             RetourUtilisatrice()
 
-    def test_creation_commentaire_vide_echoue(self):
+    def test_creation_commentaire_vide_echoue(self) -> None:
         with pytest.raises(
             ValueError,
             match="Au moins 'pouce_leve' ou 'commentaire' doit être renseigné",
         ):
             RetourUtilisatrice(commentaire="")
 
-    def test_creation_avec_valeurs_nulles_echoue(self):
+    def test_creation_avec_valeurs_nulles_echoue(self) -> None:
         with pytest.raises(
             ValueError,
             match="Au moins 'pouce_leve' ou 'commentaire' doit être renseigné",
@@ -50,7 +50,7 @@ class TestRetourUtilisatrice:
 
 
 class TestInteraction:
-    def test_creation_interaction(self):
+    def test_creation_interaction(self) -> None:
         paragraphe = Paragraphe(
             score_similarite=0.95,
             numero_page=10,
@@ -80,7 +80,7 @@ class TestInteraction:
         assert interaction.retour_utilisatrice.pouce_leve is True
         assert interaction.retour_utilisatrice.commentaire == "Très utile"
 
-    def test_creation_interaction_sans_retour_utilisatrice(self):
+    def test_creation_interaction_sans_retour_utilisatrice(self) -> None:
         paragraphe = Paragraphe(
             score_similarite=0.85,
             numero_page=5,

@@ -60,11 +60,11 @@ def adaptateur_test(request):
     yield from request.param()
 
 
-def test_initialisation_adaptateur_base_de_donnees(adaptateur_test):
+def test_initialisation_adaptateur_base_de_donnees(adaptateur_test) -> None:
     assert adaptateur_test is not None
 
 
-def test_sauvegarde_interaction(adaptateur_test):
+def test_sauvegarde_interaction(adaptateur_test) -> None:
     paragraphe = Paragraphe(
         score_similarite=0.95,
         numero_page=10,
@@ -85,7 +85,7 @@ def test_sauvegarde_interaction(adaptateur_test):
     assert isinstance(id_interaction, str)
 
 
-def test_ajout_retour_utilisatrice(adaptateur_test):
+def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Test réponse", paragraphes=[], question="Test question"
     )
@@ -97,7 +97,7 @@ def test_ajout_retour_utilisatrice(adaptateur_test):
     assert resultat is True
 
 
-def test_recuperation_statistiques(adaptateur_test):
+def test_recuperation_statistiques(adaptateur_test) -> None:
     reponse1 = ReponseQuestion(
         reponse="Réponse 1", paragraphes=[], question="Question 1"
     )
@@ -123,7 +123,7 @@ def test_recuperation_statistiques(adaptateur_test):
     assert stats["pouces_leves"] == 1
 
 
-def test_recuperation_statistiques_sans_retour_utilisateur(adaptateur_test):
+def test_recuperation_statistiques_sans_retour_utilisateur(adaptateur_test) -> None:
     reponse1 = ReponseQuestion(
         reponse="Réponse 1", paragraphes=[], question="Question 1"
     )
@@ -137,7 +137,7 @@ def test_recuperation_statistiques_sans_retour_utilisateur(adaptateur_test):
     assert stats["pouces_leves"] == 0
 
 
-def test_lit_interaction_existante(adaptateur_test):
+def test_lit_interaction_existante(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test", paragraphes=[], question="Question test"
     )
@@ -151,7 +151,7 @@ def test_lit_interaction_existante(adaptateur_test):
     assert interaction.retour_utilisatrice is None
 
 
-def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test):
+def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test", paragraphes=[], question="Question test"
     )
@@ -169,7 +169,7 @@ def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test):
     assert interaction.retour_utilisatrice.commentaire == "Excellent"
 
 
-def test_lit_interaction_inexistante(adaptateur_test):
+def test_lit_interaction_inexistante(adaptateur_test) -> None:
     id_inexistant = "id-inexistant"
 
     interaction = adaptateur_test.lit_interaction(id_inexistant)

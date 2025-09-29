@@ -206,7 +206,7 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
         serveur.dependency_overrides.clear()
 
 
-def test_route_retour_avec_mock_retourne_succes_200():
+def test_route_retour_avec_mock_retourne_succes_200() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
     mock_adaptateur.ajoute_retour_utilisatrice.return_value = True
 
@@ -231,7 +231,7 @@ def test_route_retour_avec_mock_retourne_succes_200():
         serveur.dependency_overrides.clear()
 
 
-def test_route_retour_avec_mock_retourne_donnees_attendues():
+def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
     mock_adaptateur.ajoute_retour_utilisatrice.return_value = True
 
@@ -259,7 +259,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues():
         serveur.dependency_overrides.clear()
 
 
-def test_route_retour_avec_interaction_inexistante_retourne_404():
+def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
     mock_adaptateur.ajoute_retour_utilisatrice.return_value = False
 
@@ -288,7 +288,7 @@ def test_route_retour_avec_interaction_inexistante_retourne_404():
         serveur.dependency_overrides.clear()
 
 
-def test_route_retour_avec_payload_invalide_rejette_la_requete():
+def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
@@ -311,7 +311,7 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete():
         serveur.dependency_overrides.clear()
 
 
-def test_pose_question_retourne_id_dans_body():
+def test_pose_question_retourne_id_dans_body() -> None:
     reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
     mock_client = Mock()
     mock_client.pose_question.return_value = reponse
