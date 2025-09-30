@@ -6,7 +6,7 @@ configuration = recupere_configuration()
 serveur = fabrique_serveur(configuration.mode)
 
 if __name__ == "__main__":
-    HOST = configuration.host
+    HOST = configuration.hote
     PORT = configuration.port
     uvicorn.run(
         "main:serveur",
