@@ -6,13 +6,13 @@ La partie client du service permettant d'interroger [Albert](https://albert.etal
 
 ### Directement sur l'hôte
 
-Il faut installer les dépendances système `node` et `npm`.
+Il faut installer les dépendances système `node` (la version à installer est spécifiée dans le fichier `.nvmrc`) et `npm`.
 Ensuite, il faut installer les dépendances avec `npm install`.
 
 ### Dans un conteneur
 
 On fournit une recette pour produire une image de conteneur.\
-Pour construire l'image, il faut lancer `docker build -t localhost/mqc/ui .`.
+Pour construire l'image, il faut lancer `docker build --build-arg NODE_VERSION=$(cat .nvmrc) -t localhost/mqc/ui .`.
 
 ## 🧪 Comment valider ?
 
