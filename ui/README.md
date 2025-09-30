@@ -6,7 +6,7 @@ La partie client du service permettant d'interroger [Albert](https://albert.etal
 
 ### Directement sur l'hôte
 
-Il faut installer la dépendance système `npm`.
+Il faut installer les dépendances système `node` et `npm`.
 Ensuite, il faut installer les dépendances avec `npm install`.
 
 ### Dans un conteneur
