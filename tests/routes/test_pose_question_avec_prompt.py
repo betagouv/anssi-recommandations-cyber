@@ -13,7 +13,7 @@ from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
 
-def test_route_pose_question_repond_correctement_en_developpement() -> None:
+def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() -> None:
     serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
 
     mock_reponse = ReponseQuestion(
