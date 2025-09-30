@@ -1,6 +1,5 @@
 import gradio as gr
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
-from fastapi.responses import RedirectResponse
 from typing import Dict, Any
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
@@ -81,11 +80,6 @@ def route_retour(
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
 
     return {"succes": True, "commentaire": body.retour.commentaire}
-
-
-@api.get("/")
-def redirige_vers_gradio():
-    return RedirectResponse("/ui")
 
 
 def fabrique_serveur(mode: Mode) -> FastAPI:
