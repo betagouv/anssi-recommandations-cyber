@@ -8,7 +8,7 @@ def test_route_sante_est_exposee_en_developpement() -> None:
     serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
     client: TestClient = TestClient(serveur)
 
-    response = client.get("/debug/sante")
+    response = client.get("/api/sante")
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
@@ -18,7 +18,7 @@ def test_route_sante_n_est_pas_exposee_en_production() -> None:
     serveur = fabrique_serveur(Mode.PRODUCTION)
     client: TestClient = TestClient(serveur)
 
-    response = client.get("/debug/sante")
+    response = client.get("/api/sante")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Not Found"}

@@ -49,7 +49,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         try:
             client: TestClient = TestClient(serveur)
             response = client.post(
-                "/debug/pose_question",
+                "/api/pose_question_avec_prompt",
                 json={
                     "question": "Qui es-tu ?",
                     "prompt": "Vous êtes un assistant virtuel.",
@@ -68,9 +68,13 @@ def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> No
     client: TestClient = TestClient(serveur)
 
     response = client.post(
-        "/debug/pose_question",
+        "/api/pose_question_avec_prompt",
         json={"question": "Qui es-tu ?", "prompt": "Vous êtes un assistant virtuel."},
     )
 
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
+    # Le code attendu n'est pas `404` parce qu'on a un "catch-all" qui sert du contenu statique,
+    # et pour lequel des requêtes POST sont invalides.
+    code_attendu = 405
+
+    assert response.status_code == code_attendu
+    assert response.json() == {"detail": "Method Not Allowed"}
