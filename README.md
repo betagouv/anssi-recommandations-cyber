@@ -15,7 +15,7 @@ Les dépendances déclarées sont installables via `uv sync`.
 ### Dans un conteneur
 
 On fournit une recette pour produire une image de conteneur.\
-Pour construire l'image, il faut lancer `docker build -t localhost:mqc .`.
+Pour construire l'image, il faut lancer `docker build -t localhost/mqc/api .`.
 
 ## ⚙️ Comment Définir mes variables d'environnement ?
 
@@ -57,7 +57,7 @@ env $(cat .env) python src/main.py
 docker container run --rm -it \
     --network=host \
     --volume $(pwd):/app \
-    localhost:mqc \
+    localhost/mqc/api \
     bash -c "env \$(cat .env) python src/main.py"
 ```
 
