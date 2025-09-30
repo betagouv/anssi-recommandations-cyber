@@ -1,5 +1,6 @@
 import gradio as gr
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
+from fastapi.staticfiles import StaticFiles
 from typing import Dict, Any
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
@@ -16,7 +17,7 @@ from schemas.retour_utilisatrice import (
 from configuration import Mode
 
 api = APIRouter(prefix="/api")
-api_developpement = APIRouter(prefix="/debug")
+api_developpement = APIRouter(prefix="/api")
 
 
 @api_developpement.get("/sante")
@@ -24,7 +25,7 @@ def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
 
 
-@api_developpement.post("/pose_question")
+@api_developpement.post("/pose_question_avec_prompt")
 def route_pose_question_avec_prompt(
     request: QuestionRequeteAvecPrompt,
     client_albert: ClientAlbert = Depends(fabrique_client_albert),
@@ -91,5 +92,9 @@ def fabrique_serveur(mode: Mode) -> FastAPI:
 
     interface = cree_interface_gradio(serveur)
     serveur = gr.mount_gradio_app(serveur, interface, path="/ui")
+
+    serveur.mount(
+        "/", StaticFiles(directory="ui/dist", html=True), name="interface utilisateur"
+    )
 
     return serveur

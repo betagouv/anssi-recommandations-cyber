@@ -75,6 +75,19 @@ endpoint="http://${host}:${port}"
 
 ### 2. Accéder à l'interface graphique
 
+#### 2.1 Interface "officielle"
+
+L'interface produite à partir du code [du dossier `ui/`](./ui) est accessible via le chemin `/`.\
+Ouvrez simplement dans votre navigateur :
+
+    ${endpoint}/
+
+Exemple en local (avec `HOST=127.0.0.1`, `PORT=8000`) :
+
+    http://127.0.0.1:8000/
+
+#### 2.2 Prototype Gradio
+
 L'interface Gradio est accessible via le chemin `/ui`.\
 Ouvrez simplement dans votre navigateur :
 
