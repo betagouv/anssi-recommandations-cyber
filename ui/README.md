@@ -47,4 +47,4 @@ Elle doit être distribuée par un serveur HTTP, et a besoin d'une API spécifiq
 
 ## 🤝 Contribuer
 
-Le formattage automatique s'effectue avec la commande : `npm run format`.
+Le formattage automatique s'effectue avec la commande : `npm run format:fix`.

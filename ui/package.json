@@ -10,7 +10,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
     "lint:check": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format": "prettier --write ."
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
