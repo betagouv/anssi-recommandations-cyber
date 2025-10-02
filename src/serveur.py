@@ -10,10 +10,7 @@ from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
-from schemas.retour_utilisatrice import (
-    RetourUtilisatrice,
-    DonneesCreationRetourUtilisateur,
-)
+from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
 from configuration import Mode
 
 api = APIRouter(prefix="/api")
@@ -70,11 +67,8 @@ def route_retour(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> Dict[str, Any]:
-    retour = RetourUtilisatrice(
-        pouce_leve=body.retour.pouce_leve, commentaire=body.retour.commentaire
-    )
     succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
-        body.id_interaction_rattachee, retour
+        body.id_interaction_rattachee, body.retour
     )
 
     if not succes:

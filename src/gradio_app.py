@@ -156,7 +156,7 @@ def cree_interface_gradio(app):
                 payload = {
                     "id_interaction_rattachee": interaction_id,
                     "retour": {
-                        "pouce_leve": bool(pouce_leve),
+                        "type": "positif" if pouce_leve else "negatif",
                         "commentaire": (commentaire.strip() or None)
                         if commentaire is not None
                         else None,
