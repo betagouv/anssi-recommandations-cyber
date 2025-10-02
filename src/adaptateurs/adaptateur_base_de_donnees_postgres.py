@@ -22,13 +22,12 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         self._initialise_tables()
 
     def _initialise_tables(self) -> None:
-        with self._connexion.cursor() as curseur:
-            curseur.execute("""
-                CREATE TABLE IF NOT EXISTS interactions (
-                    id_interaction TEXT PRIMARY KEY,
-                    contenu JSONB NOT NULL
-                )
-            """)
+        self._get_curseur().execute("""
+            CREATE TABLE IF NOT EXISTS interactions (
+                id_interaction TEXT PRIMARY KEY,
+                contenu JSONB NOT NULL
+            )
+        """)
 
     def sauvegarde_interaction(self, reponse_question: ReponseQuestion) -> str:
         identifiant_interaction = str(uuid.uuid4())
@@ -37,26 +36,23 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             reponse_question=reponse_question, retour_utilisatrice=None
         )
 
-        with self._connexion.cursor() as curseur:
-            curseur.execute(
-                "INSERT INTO interactions (id_interaction, contenu) VALUES (%s, %s)",
-                (identifiant_interaction, interaction.model_dump_json()),
-            )
+        self._get_curseur().execute(
+            "INSERT INTO interactions (id_interaction, contenu) VALUES (%s, %s)",
+            (identifiant_interaction, interaction.model_dump_json()),
+        )
         return identifiant_interaction
 
     def ajoute_retour_utilisatrice(
         self, identifiant_interaction: str, retour: RetourUtilisatrice
     ) -> bool:
-        with self._connexion.cursor(
-            cursor_factory=psycopg2.extras.RealDictCursor
-        ) as curseur:
-            curseur.execute(
-                "SELECT contenu FROM interactions WHERE id_interaction = %s",
-                (identifiant_interaction,),
-            )
-            ligne = curseur.fetchone()
-            if not ligne:
-                return False
+        curseur = self._get_curseur()
+        curseur.execute(
+            "SELECT contenu FROM interactions WHERE id_interaction = %s",
+            (identifiant_interaction,),
+        )
+        ligne = curseur.fetchone()
+        if not ligne:
+            return False
 
         interaction = Interaction.model_validate(ligne["contenu"])
 
@@ -64,26 +60,26 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             reponse_question=interaction.reponse_question, retour_utilisatrice=retour
         )
 
-        with self._connexion.cursor() as curseur:
-            curseur.execute(
-                "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-                (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
-            )
+        curseur.execute(
+            "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
+            (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
+        )
         return True
 
     def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
-        with self._connexion.cursor(
-            cursor_factory=psycopg2.extras.RealDictCursor
-        ) as curseur:
-            curseur.execute(
-                "SELECT contenu FROM interactions WHERE id_interaction = %s",
-                (identifiant_interaction,),
-            )
-            ligne = curseur.fetchone()
-            if not ligne:
-                return None
+        curseur = self._get_curseur()
+        curseur.execute(
+            "SELECT contenu FROM interactions WHERE id_interaction = %s",
+            (identifiant_interaction,),
+        )
+        ligne = curseur.fetchone()
+        if not ligne:
+            return None
 
         return Interaction.model_validate(ligne["contenu"])
+
+    def _get_curseur(self):
+        return self._connexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     def ferme_connexion(self) -> None:
         if self._connexion:
