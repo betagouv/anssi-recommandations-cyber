@@ -1,52 +1,43 @@
-from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
+from schemas.retour_utilisatrice import (
+    RetourNegatif,
+    RetourPositif,
+    RetourUtilisatrice,
+    Interaction,
+)
 from schemas.client_albert import ReponseQuestion, Paragraphe
 import pytest
 
 
 class TestRetourUtilisatrice:
-    def test_creation_complet(self) -> None:
-        retour = RetourUtilisatrice(
-            pouce_leve=True, commentaire="Réponse très claire et précise"
-        )
-
-        assert retour.pouce_leve is True
-        assert retour.commentaire == "Réponse très claire et précise"
+    def test_creation_retour_negatif_sans_commentaire_est_horodate(self) -> None:
+        retour = RetourPositif()
         assert retour.horodatage is not None
 
-    def test_creation_pouce_seul(self) -> None:
-        retour = RetourUtilisatrice(pouce_leve=True)
-
-        assert retour.pouce_leve is True
-        assert retour.commentaire is None
+    def test_creation_retour_positif_sans_commentaire_est_horodate(self) -> None:
+        retour = RetourPositif()
         assert retour.horodatage is not None
 
-    def test_creation_commentaire_seul(self) -> None:
-        retour = RetourUtilisatrice(commentaire="Très utile")
+    def test_creation_retour_negatif_avec_commentaire_contient_commentaire_et_est_horodate(
+        self,
+    ) -> None:
+        commentaire = "c'est pas terrible..."
+        retour = RetourNegatif(commentaire=commentaire)
 
-        assert retour.pouce_leve is None
-        assert retour.commentaire == "Très utile"
+        assert retour.commentaire == commentaire
         assert retour.horodatage is not None
 
-    def test_creation_vide_echoue(self) -> None:
-        with pytest.raises(
-            ValueError,
-            match="Au moins 'pouce_leve' ou 'commentaire' doit être renseigné",
-        ):
-            RetourUtilisatrice()
+    def test_creation_retour_positif_avec_commentaire_contient_commentaire_et_est_horodate(
+        self,
+    ) -> None:
+        commentaire = "c'est super !"
+        retour = RetourPositif(commentaire=commentaire)
 
-    def test_creation_commentaire_vide_echoue(self) -> None:
-        with pytest.raises(
-            ValueError,
-            match="Au moins 'pouce_leve' ou 'commentaire' doit être renseigné",
-        ):
-            RetourUtilisatrice(commentaire="")
+        assert retour.commentaire == commentaire
+        assert retour.horodatage is not None
 
-    def test_creation_avec_valeurs_nulles_echoue(self) -> None:
-        with pytest.raises(
-            ValueError,
-            match="Au moins 'pouce_leve' ou 'commentaire' doit être renseigné",
-        ):
-            RetourUtilisatrice(pouce_leve=None, commentaire=None)
+    def test_creation_retour_utilisatrice_directement_echoue(self) -> None:
+        with pytest.raises(TypeError):
+            RetourUtilisatrice()  # type: ignore [operator]
 
 
 class TestInteraction:
@@ -65,9 +56,7 @@ class TestInteraction:
             question="Quelle est la longueur recommandée pour un mot de passe ?",
         )
 
-        retour_utilisatrice = RetourUtilisatrice(
-            pouce_leve=True, commentaire="Très utile"
-        )
+        retour_utilisatrice = RetourPositif(commentaire="Très utile")
 
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=retour_utilisatrice
@@ -78,7 +67,6 @@ class TestInteraction:
             == "Quelle est la longueur recommandée pour un mot de passe ?"
         )
         assert interaction.retour_utilisatrice is not None
-        assert interaction.retour_utilisatrice.pouce_leve is True
         assert interaction.retour_utilisatrice.commentaire == "Très utile"
 
     def test_creation_interaction_sans_retour_utilisatrice(self) -> None:

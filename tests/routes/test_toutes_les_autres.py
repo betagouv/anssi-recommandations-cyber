@@ -219,7 +219,7 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
         payload = {
             "id_interaction_rattachee": "id-123",
             "retour": {
-                "pouce_leve": True,
+                "type": "positif",
                 "commentaire": "Très utile",
             },
         }
@@ -244,7 +244,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
         payload = {
             "id_interaction_rattachee": "id-123",
             "retour": {
-                "pouce_leve": True,
+                "type": "positif",
                 "commentaire": "Très utile !",
             },
         }
@@ -272,7 +272,7 @@ def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
         payload = {
             "id_interaction_rattachee": "id-123",
             "retour": {
-                "pouce_leve": True,
+                "type": "positif",
                 "commentaire": "Très utile",
             },
         }
@@ -299,7 +299,7 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
         payload = {
             "id": 23,
             "retour": {
-                "pouce_leve": True,
+                "type": "positif",
                 "commentaire": "Très utile",
             },
         }

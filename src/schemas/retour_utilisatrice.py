@@ -1,23 +1,37 @@
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional, Union
 from schemas.client_albert import ReponseQuestion
 
 
-class RetourUtilisatrice(BaseModel):
-    pouce_leve: Optional[bool] = None
+class AbstractRetourUtilisatrice(BaseModel):
+    def __new__(cls, *args, **kwargs):
+        """
+        On doit empêcher cette instanciation au runtime...
+        Mais on ne peut pas utiliser `abc.ABC` car cela n'empêcherait pas cette classe d'être instanciée directement (vu qu'elle n'a aucune méthode abstraite).
+
+        > A class containing at least one method declared with this decorator that hasn’t been overridden yet cannot be instantiated.
+        _c.f._ https://peps.python.org/pep-3119/
+        """
+        if cls is RetourUtilisatrice:
+            raise TypeError(
+                f"seul les enfants de '{cls.__name__}' ont vocation à être instanciés"
+            )
+        return object.__new__(cls)
+
     commentaire: Optional[str] = None
     horodatage: datetime = Field(default_factory=datetime.now)
 
-    @model_validator(mode="after")
-    def valide_au_moins_un_champ(self):
-        if self.pouce_leve is None and (
-            self.commentaire is None or self.commentaire.strip() == ""
-        ):
-            raise ValueError(
-                "Au moins 'pouce_leve' ou 'commentaire' doit être renseigné"
-            )
-        return self
+
+class RetourNegatif(AbstractRetourUtilisatrice):
+    type: Literal["negatif"] = "negatif"
+
+
+class RetourPositif(AbstractRetourUtilisatrice):
+    type: Literal["positif"] = "positif"
+
+
+type RetourUtilisatrice = Union[RetourNegatif, RetourPositif]
 
 
 class Interaction(BaseModel):
