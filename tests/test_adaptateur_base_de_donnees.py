@@ -97,46 +97,6 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     assert resultat is True
 
 
-def test_recuperation_statistiques(adaptateur_test) -> None:
-    reponse1 = ReponseQuestion(
-        reponse="Réponse 1", paragraphes=[], question="Question 1"
-    )
-    reponse2 = ReponseQuestion(
-        reponse="Réponse 2", paragraphes=[], question="Question 2"
-    )
-
-    id1 = adaptateur_test.sauvegarde_interaction(reponse1)
-    id2 = adaptateur_test.sauvegarde_interaction(reponse2)
-
-    adaptateur_test.ajoute_retour_utilisatrice(id1, RetourUtilisatrice(pouce_leve=True))
-    adaptateur_test.ajoute_retour_utilisatrice(
-        id2, RetourUtilisatrice(pouce_leve=False)
-    )
-
-    stats = adaptateur_test.obtient_statistiques()
-
-    assert "total_interactions" in stats
-    assert "total_retours" in stats
-    assert "pouces_leves" in stats
-    assert stats["total_interactions"] == 2
-    assert stats["total_retours"] == 2
-    assert stats["pouces_leves"] == 1
-
-
-def test_recuperation_statistiques_sans_retour_utilisateur(adaptateur_test) -> None:
-    reponse1 = ReponseQuestion(
-        reponse="Réponse 1", paragraphes=[], question="Question 1"
-    )
-
-    adaptateur_test.sauvegarde_interaction(reponse1)
-
-    stats = adaptateur_test.obtient_statistiques()
-
-    assert stats["total_interactions"] == 1
-    assert stats["total_retours"] == 0
-    assert stats["pouces_leves"] == 0
-
-
 def test_lit_interaction_existante(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test", paragraphes=[], question="Question test"

@@ -33,22 +33,5 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
     def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
         return self._interactions.get(identifiant_interaction)
 
-    def obtient_statistiques(self) -> Dict[str, int]:
-        total_interactions = len(self._interactions)
-        total_retours = 0
-        pouces_leves = 0
-
-        for interaction in self._interactions.values():
-            if interaction.retour_utilisatrice is not None:
-                total_retours += 1
-                if interaction.retour_utilisatrice.pouce_leve:
-                    pouces_leves += 1
-
-        return {
-            "total_interactions": total_interactions,
-            "total_retours": total_retours,
-            "pouces_leves": pouces_leves,
-        }
-
     def ferme_connexion(self) -> None:
         self._interactions.clear()

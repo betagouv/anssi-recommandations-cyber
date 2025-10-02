@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.client_albert import ReponseQuestion
 
@@ -17,10 +17,6 @@ class AdaptateurBaseDeDonnees(ABC):
 
     @abstractmethod
     def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
-        pass
-
-    @abstractmethod
-    def obtient_statistiques(self) -> Dict[str, int]:
         pass
 
     @abstractmethod
