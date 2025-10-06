@@ -15,11 +15,15 @@
 </script>
 
 <script lang="ts">
+  import { fade } from "svelte/transition";
+  import { tick } from "svelte";
+
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
   let messages: Message[] = $state([]);
   let question: string = $state("");
   let enAttenteDeReponse: boolean = $state(false);
+  let cibleScroll: HTMLDivElement | undefined = $state();
 
   async function soumetQuestion(e: Event) {
     enAttenteDeReponse = true;
@@ -30,6 +34,7 @@
       contenu: question,
       emetteur: "utilisateur",
     }];
+    await scrollVersDernierMessage();
 
     const endpoint = `${urlAPI}/api/pose_question`;
     const body = JSON.stringify({ question });
@@ -50,11 +55,18 @@
       references: retourApplication.paragraphes,
     }];
     enAttenteDeReponse = false;
+    await scrollVersDernierMessage();
   }
 
   const fermeBandeauInformation = () => {
     bandeauOuvert = false;
   };
+
+  const scrollVersDernierMessage = async() => {
+    await tick();
+    if(cibleScroll)
+      cibleScroll.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
 </script>
 
 <header>
@@ -74,7 +86,7 @@
 
   <div class="conversation">
     {#each messages as message, index (index)}
-      <div class="message" class:utilisateur={message.emetteur === "utilisateur"}>
+      <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
         <p>{message.contenu}</p>
       </div>
 
@@ -100,11 +112,12 @@
       {/if}
     {/each}
     {#if enAttenteDeReponse}
-      <div class="attente-reponse">
+      <div class="attente-reponse" transition:fade>
         <img src="./icons/loader.svg" alt="" />
         <span>Un instant... Je parcours les guides de l’ANSSI.</span>
       </div>
     {/if}
+    <div id="cible-scroll" bind:this={cibleScroll}></div>
   </div>
 
   <form onsubmit={soumetQuestion} class="question-utilisateur">
@@ -151,7 +164,11 @@
     font-size: 1rem;
     line-height: 1.5rem;
     max-width: 840px;
-    margin: 0 auto;
+    margin: 0 auto 48px;
+
+    #cible-scroll {
+      scroll-margin-bottom: 120px;
+    }
 
     .attente-reponse {
       display: flex;
