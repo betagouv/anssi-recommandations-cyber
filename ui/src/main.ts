@@ -6,7 +6,7 @@ import App from "./App.svelte";
 const app = mount(App, {
   target: document.getElementById("app")!,
   props: {
-    url_api: "http://localhost:3003",
+    urlAPI: "http://localhost:8080",
   },
 });
 

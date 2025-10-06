@@ -1,5 +1,5 @@
 <script lang="ts">
-  let {url_api}: {url_api: string} = $props();
+  let { urlAPI }: { urlAPI: string } = $props();
 
   type Paragraphe = {
     score_similarite: number,
@@ -18,7 +18,7 @@
       emetteur: "utilisateur",
     } ];
 
-    const endpoint = `${url_api}/api/pose_question`;
+    const endpoint = `${urlAPI}/api/pose_question`;
 
     const retourApplication = (await (await fetch(endpoint, {
       method: "POST",
