@@ -9,16 +9,18 @@
     contenu: string,
   };
 
-  let reponse: string;
-  let references: Paragraphe[];
-
   async function soumetQuestion(e: Event) {
     e.preventDefault();
     const question = ((e!.target as HTMLFormElement)!.elements[0] as HTMLInputElement)!.value;
 
+    messages = [...messages, {
+      contenu: question,
+      emetteur: "utilisateur",
+    } ];
+
     const endpoint = `${url_api}/api/pose_question`;
 
-    const retour_application = (await (await fetch(endpoint, {
+    const retourApplication = (await (await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,8 +28,11 @@
       body: JSON.stringify({ question }),
     })).json());
 
-    reponse = retour_application.reponse;
-    references = retour_application.paragraphes;
+    messages = [...messages, {
+      contenu: retourApplication.reponse,
+      emetteur: "systeme",
+      references: retourApplication.paragraphes,
+    }];
   }
 
   let bandeauOuvert = $state(true);
@@ -35,6 +40,14 @@
   function fermeBandeauInformation() {
     bandeauOuvert = false;
   }
+
+  type Message = {
+    contenu: string;
+    emetteur: "utilisateur" | "systeme";
+    references?: Paragraphe[];
+  };
+
+  let messages: Message[] = $state([]);
 </script>
 
 <header>
@@ -52,13 +65,19 @@
     </div>
   {/if}
 
-  <div>{reponse}</div>
+  <div class="conversation">
+    {#each messages as message, index (index)}
+      <div class="message" class:utilisateur={message.emetteur === "utilisateur"}>
+        <p>{message.contenu}</p>
+      </div>
 
-  <ul>{#each references as reference (`${reference.url}${reference.contenu}`)}
-    <li>
-      <a href="{reference.url}">{reference.nom_document}, p.{reference.numero_page}</a>
-    </li>
-  {/each}</ul>
+      {#if message.references}
+        {#each message.references as reference (`${reference.url}${reference.contenu}`)}
+          <a href="{reference.url}">{reference.nom_document}, p.{reference.numero_page}</a>
+        {/each}
+      {/if}
+    {/each}
+  </div>
 
   <form onsubmit={soumetQuestion}>
     <input placeholder="Posez votre question cyber"/>
@@ -91,6 +110,29 @@
       max-width: 1200px;
       box-sizing: border-box;
       margin: 0 auto;
+    }
+  }
+
+  .conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 32px 16px;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    max-width: 840px;
+    margin: 0 auto;
+
+    .message.utilisateur {
+      padding: 8px 16px;
+      border-radius: 24px;
+      background-color: #EEEEEE;
+      align-self: flex-end;
+      width: fit-content;
+      max-width: 600px;
+      box-sizing: border-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 </style>
