@@ -16,17 +16,18 @@
 
 <script lang="ts">
   let { urlAPI }: { urlAPI: string } = $props();
-  let bandeauOuvert = $state(true);
+  let bandeauOuvert: boolean = $state(true);
   let messages: Message[] = $state([]);
+  let question: string = $state("")
 
   async function soumetQuestion(e: Event) {
     e.preventDefault();
-    const question = ((e!.target as HTMLFormElement)!.elements[0] as HTMLInputElement)!.value;
+    if(!question) return;
 
     messages = [...messages, {
       contenu: question,
       emetteur: "utilisateur",
-    } ];
+    }];
 
     const endpoint = `${urlAPI}/api/pose_question`;
 
@@ -37,6 +38,8 @@
       },
       body: JSON.stringify({ question }),
     })).json());
+
+    question = "";
 
     messages = [...messages, {
       contenu: retourApplication.reponse,
@@ -94,9 +97,11 @@
     {/each}
   </div>
 
-  <form onsubmit={soumetQuestion}>
-    <input placeholder="Posez votre question cyber"/>
-    <input type="submit">
+  <form onsubmit={soumetQuestion} class="question-utilisateur">
+    <input placeholder="Posez votre question cyber" bind:value={question} type="text" />
+    <button type="submit">
+      <img src="./icons/fleche-envoi-message.svg" alt="" />
+    </button>
   </form>
 </main>
 
@@ -224,6 +229,52 @@
           margin: 16px 0;
         }
       }
+    }
+  }
+
+  .question-utilisateur {
+    padding: 0 16px 24px;
+    position: fixed;
+    max-width: 840px;
+    margin: 0 auto;
+    width: calc(100% - 32px);
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+
+    input[type="text"] {
+      padding: 12px;
+      width: 100%;
+      height: 64px;
+      box-sizing: border-box;
+      border-radius: 16px;
+      border: 1px solid #DDDDDD;
+      background: #F6F6F6;
+      text-overflow: ellipsis;
+      font-family: Marianne;
+      font-size: 1rem;
+      line-height: 1.5rem;
+
+      &::placeholder {
+        color: #666666;
+      }
+    }
+
+    button {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #E5E5E5;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 24px;
+      padding: 0;
+      position: absolute;
+      top: 12px;
+      right: 24px;
+      cursor: pointer;
     }
   }
 </style>
