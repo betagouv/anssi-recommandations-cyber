@@ -124,6 +124,7 @@
         </details>
       {/if}
     {/each}
+    <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
     {#if enAttenteDeReponse}
       <div class="attente-reponse" in:fade>
         <img src="./icons/loader.svg" alt="" />
@@ -355,5 +356,21 @@
     border: 1px solid #000091;
     background: #FFF;
     cursor: pointer;
+  }
+
+  .fondu-bas {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .fondu-bas.visible {
+    opacity: 1;
   }
 </style>
