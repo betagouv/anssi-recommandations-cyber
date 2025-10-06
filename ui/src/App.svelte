@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { tick } from "svelte";
+  import {onMount, tick} from "svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
@@ -24,6 +24,13 @@
   let question: string = $state("");
   let enAttenteDeReponse: boolean = $state(false);
   let cibleScroll: HTMLDivElement | undefined = $state();
+  let afficheBoutonScroll: boolean = $state(false);
+
+  onMount(() => {
+    window.addEventListener('scroll', gereScrollConversation, { passive: true });
+    gereScrollConversation();
+    return () => window.removeEventListener('scroll', gereScrollConversation);
+  });
 
   async function soumetQuestion(e: Event) {
     enAttenteDeReponse = true;
@@ -66,6 +73,12 @@
     await tick();
     if(cibleScroll)
       cibleScroll.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+
+  const SEUIL_AFFICHAGE_BOUTON_SCROLL = 100;
+  const gereScrollConversation = () => {
+    const distanceFromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+    afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
   }
 </script>
 
@@ -112,13 +125,19 @@
       {/if}
     {/each}
     {#if enAttenteDeReponse}
-      <div class="attente-reponse" transition:fade>
+      <div class="attente-reponse" in:fade>
         <img src="./icons/loader.svg" alt="" />
         <span>Un instant... Je parcours les guides de l’ANSSI.</span>
       </div>
     {/if}
     <div id="cible-scroll" bind:this={cibleScroll}></div>
   </div>
+
+  {#if afficheBoutonScroll}
+    <button class="bouton-scroll-rapide" onclick={scrollVersDernierMessage}>
+      <img src="./icons/fleche-bas-scroll.svg" alt="Flêche de scroll rapide" />
+    </button>
+  {/if}
 
   <form onsubmit={soumetQuestion} class="question-utilisateur">
     <input placeholder="Posez votre question cyber" bind:value={question} type="text" />
@@ -321,5 +340,20 @@
       right: 24px;
       cursor: pointer;
     }
+  }
+
+  .bouton-scroll-rapide {
+    position: fixed;
+    margin: 0 auto;
+    bottom: 115px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #000091;
+    background: #FFF;
+    cursor: pointer;
   }
 </style>
