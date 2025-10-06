@@ -30,8 +30,11 @@
   }
 </script>
 
+<header>
+  <h1>Mes Questions Cyber</h1>
+</header>
+
 <main>
-  <div>Mes Questions Cyber</div>
 
   <div>{reponse}</div>
 
