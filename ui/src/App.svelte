@@ -18,9 +18,11 @@
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
   let messages: Message[] = $state([]);
-  let question: string = $state("")
+  let question: string = $state("");
+  let enAttenteDeReponse: boolean = $state(false);
 
   async function soumetQuestion(e: Event) {
+    enAttenteDeReponse = true;
     e.preventDefault();
     if(!question) return;
 
@@ -30,22 +32,24 @@
     }];
 
     const endpoint = `${urlAPI}/api/pose_question`;
+    const body = JSON.stringify({ question });
+
+    question = "";
 
     const retourApplication = (await (await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question }),
+      body,
     })).json());
-
-    question = "";
 
     messages = [...messages, {
       contenu: retourApplication.reponse,
       emetteur: "systeme",
       references: retourApplication.paragraphes,
     }];
+    enAttenteDeReponse = false;
   }
 
   const fermeBandeauInformation = () => {
@@ -95,6 +99,12 @@
         </details>
       {/if}
     {/each}
+    {#if enAttenteDeReponse}
+      <div class="attente-reponse">
+        <img src="./icons/loader.svg" alt="" />
+        <span>Un instant... Je parcours les guides de l’ANSSI.</span>
+      </div>
+    {/if}
   </div>
 
   <form onsubmit={soumetQuestion} class="question-utilisateur">
@@ -142,6 +152,24 @@
     line-height: 1.5rem;
     max-width: 840px;
     margin: 0 auto;
+
+    .attente-reponse {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      img {
+        animation: rotation 1s linear infinite;
+      }
+    }
+
+    @keyframes rotation {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .message.utilisateur {
       padding: 8px 16px;
