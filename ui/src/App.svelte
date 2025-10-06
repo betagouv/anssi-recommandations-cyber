@@ -82,7 +82,7 @@
             {#each message.references as reference, index (index)}
               <div class="source">
                 <span>{reference.nom_document}</span>
-                <a href="{reference.url}">Page {reference.numero_page}</a>
+                <a href="{reference.url}">Page {reference.numero_page} <img src="./icons/lien-externe.svg" alt="" /></a>
                 {#if index !== message.references.length - 1}
                   <hr>
                 {/if}
@@ -196,6 +196,22 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
+
+        a {
+          color: #000091;
+          text-decoration: underline;
+          text-decoration-thickness: 2px;
+          text-underline-offset: 5px;
+          display: flex;
+          flex-direction: row;
+          gap: 8px;
+          align-items: baseline;
+
+          img {
+            width: 16px;
+            height: 16px;
+          }
+        }
 
         span {
           font-weight: bold;
