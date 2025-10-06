@@ -73,7 +73,10 @@
 
       {#if message.references}
         <details class="conteneur-sources">
-          <summary>Sources</summary>
+          <summary>
+            Sources
+            <img src="./icons/fleche-extension.svg" alt="" />
+          </summary>
 
           <div class="sources">
             {#each message.references as reference, index (index)}
@@ -151,11 +154,36 @@
       margin: 24px 0;
       padding: 16px;
       background-color: #F6F6F6;
+      &[open] {
+        summary {
+          img {
+            transform: rotate(180deg);
+          }
+        }
+      }
 
       summary {
         font-size: 1.25rem;
         font-weight: bold;
         line-height: 1.75rem;
+        user-select: none;
+        cursor: pointer;
+        position: relative;
+
+        img {
+          position: absolute;
+          top: 1px;
+          right: 0;
+          transition: transform 0.2s ease-in-out;
+        }
+
+        &::marker {
+          content: "";
+        }
+
+        &::-webkit-details-marker {
+          display: none;
+        }
       }
 
       .sources {
