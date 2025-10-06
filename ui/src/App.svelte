@@ -1,6 +1,4 @@
-<script lang="ts">
-  let { urlAPI }: { urlAPI: string } = $props();
-
+<script context="module" lang="ts">
   type Paragraphe = {
     score_similarite: number,
     numero_page: number,
@@ -8,6 +6,18 @@
     nom_document: string,
     contenu: string,
   };
+
+  type Message = {
+    contenu: string;
+    emetteur: "utilisateur" | "systeme";
+    references?: Paragraphe[];
+  };
+</script>
+
+<script lang="ts">
+  let { urlAPI }: { urlAPI: string } = $props();
+  let bandeauOuvert = $state(true);
+  let messages: Message[] = $state([]);
 
   async function soumetQuestion(e: Event) {
     e.preventDefault();
@@ -35,19 +45,9 @@
     }];
   }
 
-  let bandeauOuvert = $state(true);
-
-  function fermeBandeauInformation() {
+  const fermeBandeauInformation = () => {
     bandeauOuvert = false;
-  }
-
-  type Message = {
-    contenu: string;
-    emetteur: "utilisateur" | "systeme";
-    references?: Paragraphe[];
   };
-
-  let messages: Message[] = $state([]);
 </script>
 
 <header>
