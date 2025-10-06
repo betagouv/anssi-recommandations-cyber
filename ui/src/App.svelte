@@ -72,9 +72,21 @@
       </div>
 
       {#if message.references}
-        {#each message.references as reference (`${reference.url}${reference.contenu}`)}
-          <a href="{reference.url}">{reference.nom_document}, p.{reference.numero_page}</a>
-        {/each}
+        <details class="conteneur-sources">
+          <summary>Sources</summary>
+
+          <div class="sources">
+            {#each message.references as reference, index (index)}
+              <div class="source">
+                <span>{reference.nom_document}</span>
+                <a href="{reference.url}">Page {reference.numero_page}</a>
+                {#if index !== message.references.length - 1}
+                  <hr>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        </details>
       {/if}
     {/each}
   </div>
@@ -133,6 +145,41 @@
       box-sizing: border-box;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .conteneur-sources {
+      margin: 24px 0;
+      padding: 16px;
+      background-color: #F6F6F6;
+
+      summary {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.75rem;
+      }
+
+      .sources {
+        padding: 16px 32px 32px 32px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .source {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        span {
+          font-weight: bold;
+        }
+
+        hr {
+          width: 100%;
+          border: none;
+          border-top: 1px solid #DDDDDD;
+          margin: 16px 0;
+        }
+      }
     }
   }
 </style>
