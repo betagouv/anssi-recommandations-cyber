@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let url_api: string;
+  let {url_api}: {url_api: string} = $props();
 
   type Paragraphe = {
     score_similarite: number,
@@ -13,6 +13,7 @@
   let references: Paragraphe[];
 
   async function soumetQuestion(e: Event) {
+    e.preventDefault();
     const question = ((e!.target as HTMLFormElement)!.elements[0] as HTMLInputElement)!.value;
 
     const endpoint = `${url_api}/api/pose_question`;
@@ -44,7 +45,7 @@
     </li>
   {/each}</ul>
 
-  <form on:submit|preventDefault={soumetQuestion}>
+  <form onsubmit={soumetQuestion}>
     <input placeholder="Posez votre question cyber"/>
     <input type="submit">
   </form>
