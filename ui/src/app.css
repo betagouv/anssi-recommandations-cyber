@@ -2,4 +2,9 @@ body,
 html {
   font-family: "Marianne";
   margin: 0;
+  color: #3a3a3a;
+}
+
+p {
+  margin: 0;
 }
