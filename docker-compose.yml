@@ -1,0 +1,78 @@
+services:
+  mqc-backend:
+    build:
+      context: .
+      network: host
+    command: python src/main.py
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - dist-front:/app/ui/dist
+    ports:
+      - '${PORT}:${PORT}'
+    networks:
+      - mqc-network
+
+  mqc-frontend:
+    image: docker.io/node:24
+    env_file:
+      - .env
+    command: bash -c "npm install && npm run dev"
+    networks:
+      - mqc-network
+    working_dir: /app
+    volumes:
+      - ./ui:/app
+      - dist-front:/app/dist
+
+  mqc-db:
+    image: docker.io/postgres:15
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - mqc-network
+    ports:
+      - '5432:5432'
+    volumes:
+      - dbvol:/var/lib/postgresql/data
+
+#  test:
+#    <<: *configuration-base
+#    command: 'npm run test:watch'
+#    environment:
+#      - NODE_ENV=test
+#
+#  web:
+#    <<: *configuration-base
+#    tty: true
+#    command: bash -c "
+#      npx knex migrate:latest &&
+#      npx concurrently -n 'SERVEUR,FRONT SVELTE' -c 'blue.bold,magenta.underline'
+#      'SVELTE_DEV_LOCAL_AVEC_HOT_RELOAD=\"true\" npm run dev:back'
+#      'npm run dev:front'
+#      "
+#    environment:
+#      - NODE_ENV=development
+#    networks:
+#      - mss-network
+#      - lab-network
+#    ports:
+#      - '${PORT_MSS}:3000'
+#      - '9229:9229'
+#      - '3001:3001'
+#    depends_on:
+#      - mss-db
+
+networks:
+  mqc-network:
+
+volumes:
+#  node_modules:
+  dbvol:
+    driver: local
+  dist-front:
+    driver: local
