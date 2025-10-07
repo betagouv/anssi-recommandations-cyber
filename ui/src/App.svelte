@@ -16,7 +16,9 @@
 
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import {onMount, tick} from "svelte";
+  import { onMount, tick } from "svelte";
+  import { marked } from "marked";
+  import DOMPurify from "dompurify";
 
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
@@ -56,8 +58,9 @@
       body,
     })).json());
 
+    const contenuHTML = DOMPurify.sanitize(await marked.parse(retourApplication.reponse));
     messages = [...messages, {
-      contenu: retourApplication.reponse,
+      contenu: contenuHTML,
       emetteur: "systeme",
       references: retourApplication.paragraphes,
     }];
@@ -100,7 +103,12 @@
   <div class="conversation">
     {#each messages as message, index (index)}
       <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
-        <p>{message.contenu}</p>
+        {#if message.emetteur === "systeme"}
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          <p>{@html message.contenu}</p>
+        {:else}
+          <p>{message.contenu}</p>
+        {/if}
       </div>
 
       {#if message.references}
