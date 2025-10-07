@@ -35,7 +35,7 @@ Dans un environnement virtuel :
 L'application nécessite une base PostgreSQL. Lancez-la avec Docker en utilisant vos variables d'environnement :
 
 ```shell
-env $(cat .env) sh -c 'docker run --rm --detach \
+env $(cat .env) sh -c 'docker run --detach \
     --name mes-questions-cyber-bdd \
     --network=host \
     --env POSTGRES_DB="$DB_NAME" \
