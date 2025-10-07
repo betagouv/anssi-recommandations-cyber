@@ -2,6 +2,7 @@
     import { infobulle } from '../directives/infobulle';
     import { type AvisUtilisateur, storeAvisUtilisateur } from "../stores/avisUtilisateur.store";
     import {soumetsAvisUtilisateurAPI} from "../client.api";
+    import IconeNonDSFR from "./IconeNonDSFR.svelte";
 
     let { idInteraction }: { idInteraction: string } = $props();
     const avisUtilisateur: AvisUtilisateur | undefined = $derived.by(() => $storeAvisUtilisateur[idInteraction]);
@@ -32,15 +33,17 @@
             use:infobulle={"Réponse utile"}
             onclick={() => afficheAvisUtilisateur(true)}
             class:actif={avisUtilisateur && avisUtilisateur.positif}
+            aria-label="Réponse utile"
         >
-            <img src="./icons/pouce-like.svg" alt="Réponse utile" />
+            <IconeNonDSFR chemin="./icons/pouce-like.svg" />
         </button>
         <button
             use:infobulle={"Réponse inutile"}
             onclick={() => afficheAvisUtilisateur(false)}
             class:actif={avisUtilisateur && !avisUtilisateur.positif}
+            aria-label="Réponse pas utile"
         >
-            <img class="pas-utile" src="./icons/pouce-like.svg" alt="Réponse pas utile" />
+            <IconeNonDSFR chemin="./icons/pouce-like.svg" classe="pas-utile"/>
         </button>
     </div>
     {#if avisUtilisateur && !avisUtilisateur.soumis}
@@ -104,24 +107,22 @@
         width: 40px;
         height: 40px;
         padding: 8px;
-        border: 1px solid #DDDDDD;
+        border: 1px solid var(--lisere-grise);
         background: none;
         cursor: pointer;
+        color: var(--texte-action);
 
         &:hover {
           background: rgba(0, 0, 0, 0.04);
         }
 
         &.actif {
-          background: #000091;
-
-          img {
-            filter: brightness(0) invert(1);
-          }
+          background: var(--texte-action);
+          color: #F5F5FE;
         }
       }
 
-      .pas-utile {
+      :global(.pas-utile) {
         transform: rotate(180deg);
       }
     }

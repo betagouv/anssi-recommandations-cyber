@@ -19,6 +19,8 @@
   import { fade } from "svelte/transition";
   import { onMount, tick } from "svelte";
   import BandeauAvisUtilisateur from "./composants/BandeauAvisUtilisateur.svelte";
+  import { writable } from "svelte/store";
+  import IconeNonDSFR from "./composants/IconeNonDSFR.svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
@@ -83,19 +85,31 @@
     const distanceFromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
     afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
   }
+
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const darkModeStore = writable<boolean>(prefersDark);
+  darkModeStore.subscribe((isDarkMode: boolean) => {
+    document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
+  })
 </script>
 
 <header>
   <h1>Mes Questions Cyber</h1>
+  <label for="dark-mode">
+    <input type="checkbox" id="dark-mode" bind:checked={$darkModeStore}/>
+    <span>Dark mode</span>
+  </label>
 </header>
 
 <main>
   {#if bandeauOuvert}
     <div class="bandeau-information">
       <div class="contenu-bandeau-information">
-        <img src="./icons/information.svg" alt="" />
+        <IconeNonDSFR chemin="./icons/information.svg" />
         <div><b>Les réponses, générées à l'aide de l'intelligence artificielle souveraine de la direction interministérielle du numérique (DINUM), sont indicatives et n'engagent pas l'ANSSI.</b> Pour des résultats plus précis, consultez les sources citées dans les réponses proposées.</div>
-        <button onclick={fermeBandeauInformation}><img src="./icons/croix-fermeture.svg" alt="Fermeture du bandeau informatif"/></button>
+        <button onclick={fermeBandeauInformation} class="croix-fermeture">
+          <lab-anssi-icone nom="close-line" taille="sm"></lab-anssi-icone>
+        </button>
       </div>
     </div>
   {/if}
@@ -110,14 +124,17 @@
         <details class="conteneur-sources">
           <summary>
             Sources
-            <img src="./icons/fleche-extension.svg" alt="" />
+            <lab-anssi-icone nom="arrow-down-s-line" taille="md"></lab-anssi-icone>
           </summary>
 
           <div class="sources">
             {#each message.references as reference, index (index)}
               <div class="source">
                 <span>{reference.nom_document}</span>
-                <a href="{reference.url}#page={reference.numero_page}" target="_blank" rel="noopener">Page {reference.numero_page} <img src="./icons/lien-externe.svg" alt="" /></a>
+                <a href="{reference.url}#page={reference.numero_page}" target="_blank" rel="noopener">
+                  Page {reference.numero_page}
+                  <lab-anssi-icone nom="external-link-line" taille="sm"></lab-anssi-icone>
+                </a>
                 {#if index !== message.references.length - 1}
                   <hr>
                 {/if}
@@ -142,15 +159,15 @@
   </div>
 
   {#if afficheBoutonScroll}
-    <button class="bouton-scroll-rapide" onclick={scrollVersDernierMessage}>
-      <img src="./icons/fleche-bas-scroll.svg" alt="Flêche de scroll rapide" />
+    <button class="bouton-scroll-rapide" onclick={scrollVersDernierMessage} aria-label="Flêche de scroll rapide">
+      <lab-anssi-icone nom="arrow-down-line" taille="sm"></lab-anssi-icone>
     </button>
   {/if}
 
   <form onsubmit={soumetQuestion} class="question-utilisateur">
     <input placeholder="Posez votre question cyber" bind:value={question} type="text" />
     <button type="submit">
-      <img src="./icons/fleche-envoi-message.svg" alt="" />
+      <lab-anssi-icone nom="arrow-right-line" taille="md"></lab-anssi-icone>
     </button>
   </form>
 </main>
@@ -158,8 +175,8 @@
 <style lang="scss">
   .bandeau-information {
     padding: 12px 16px;
-    background-color: #E8EDFF;
-    color: #0063CB;
+    background-color: var(--fond-bandeau-info);
+    color: var(--texte-bandeau-info);
     font-size: 1rem;
     line-height: 1.5rem;
 
@@ -170,6 +187,7 @@
       &:hover{
         background: none;
       }
+      color: var(--texte-bandeau-info);
     }
 
     .contenu-bandeau-information {
@@ -218,7 +236,7 @@
     .message.utilisateur {
       padding: 8px 16px;
       border-radius: 24px;
-      background-color: #EEEEEE;
+      background-color: var(--fond-contraste);
       align-self: flex-end;
       width: fit-content;
       max-width: 600px;
@@ -230,10 +248,10 @@
     .conteneur-sources {
       margin: 24px 0;
       padding: 16px;
-      background-color: #F6F6F6;
+      background-color: var(--fond-grise);
       &[open] {
         summary {
-          img {
+          lab-anssi-icone {
             transform: rotate(180deg);
           }
         }
@@ -247,11 +265,12 @@
         cursor: pointer;
         position: relative;
 
-        img {
+        lab-anssi-icone {
+          color: var(--texte);
           position: absolute;
           top: 1px;
           right: 0;
-          transition: transform 0.2s ease-in-out;
+          transition: transform 0.2s ease-out;
         }
 
         &::marker {
@@ -275,7 +294,7 @@
         gap: 8px;
 
         a {
-          color: #000091;
+          color: var(--texte-action);
           text-decoration: underline;
           text-decoration-thickness: 2px;
           text-underline-offset: 5px;
@@ -297,7 +316,7 @@
         hr {
           width: 100%;
           border: none;
-          border-top: 1px solid #DDDDDD;
+          border-top: 1px solid var(--lisere-grise);
           margin: 16px 0;
         }
       }
@@ -320,15 +339,16 @@
       height: 64px;
       box-sizing: border-box;
       border-radius: 16px;
-      border: 1px solid #DDDDDD;
-      background: #F6F6F6;
+      border: 1px solid var(--lisere-grise);
+      background: var(--fond-grise);
       text-overflow: ellipsis;
       font-family: Marianne;
       font-size: 1rem;
       line-height: 1.5rem;
+      color: var(--texte);
 
       &::placeholder {
-        color: #666666;
+        color: var(--texte-grise);
       }
     }
 
@@ -336,7 +356,7 @@
       width: 40px;
       height: 40px;
       border-radius: 8px;
-      background: #E5E5E5;
+      background: var(--fond-grise-sombre);
       border: none;
       display: flex;
       align-items: center;
@@ -347,6 +367,7 @@
       top: 12px;
       right: 24px;
       cursor: pointer;
+      color: var(--texte-grise-inverse);
     }
   }
 
@@ -360,8 +381,9 @@
     padding: 8px;
     justify-content: center;
     align-items: center;
-    border: 1px solid #000091;
-    background: #FFF;
+    border: 1px solid var(--texte-action);
+    background: var(--fond);
+    color: var(--texte-action);
     cursor: pointer;
   }
 
@@ -372,7 +394,7 @@
     right: 0;
     height: 200px;
     pointer-events: none;
-    background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent);
+    background: linear-gradient(to top, var(--fond), transparent);
     opacity: 0;
     transition: opacity 0.2s ease;
   }
