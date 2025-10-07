@@ -11,6 +11,7 @@
     contenu: string;
     emetteur: "utilisateur" | "systeme";
     references?: Paragraphe[];
+    idInteraction?: string;
   };
 </script>
 
@@ -18,6 +19,7 @@
   import { fade } from "svelte/transition";
   import { onMount, tick } from "svelte";
   import { infobulle } from './directives/infobulle';
+  import { storeAvisUtilisateur } from "./stores/avisUtilisateur.store";
 
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
@@ -61,6 +63,7 @@
       contenu: retourApplication.reponse,
       emetteur: "systeme",
       references: retourApplication.paragraphes,
+      idInteraction: retourApplication.interaction_id,
     }];
     enAttenteDeReponse = false;
     await scrollVersDernierMessage();
@@ -80,6 +83,10 @@
   const gereScrollConversation = () => {
     const distanceFromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
     afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
+  }
+
+  const soumetAvisUtilisateur = async (idInteraction: string, positif: boolean) => {
+    storeAvisUtilisateur.ajouteAvis(idInteraction, {positif});
   }
 </script>
 
@@ -125,16 +132,25 @@
         </details>
       {/if}
       {#if message.emetteur === 'systeme'}
+        {@const idInteraction = message.idInteraction || ''}
         <div class="avis-utilisateur">
           <div class="texte-information-avis-utilisateur">
             <span class="titre-avis"><b>Votre avis est essentiel ! 🙌</b></span>
             <span>En partageant votre avis, vous participez à améliorer les réponses pour l’ensemble des utilisateurs.</span>
           </div>
           <div class="conteneur-emoji-avis">
-            <button use:infobulle={"Réponse utile"}>
+            <button
+              use:infobulle={"Réponse utile"}
+              onclick={() => soumetAvisUtilisateur(idInteraction, true)}
+              class:actif={$storeAvisUtilisateur[idInteraction] && $storeAvisUtilisateur[idInteraction].positif}
+            >
               <img src="./icons/pouce-like.svg" alt="Réponse utile" />
             </button>
-            <button use:infobulle={"Réponse inutile"}>
+            <button
+              use:infobulle={"Réponse inutile"}
+              onclick={() => soumetAvisUtilisateur(idInteraction, false)}
+              class:actif={$storeAvisUtilisateur[idInteraction] && !$storeAvisUtilisateur[idInteraction].positif}
+            >
               <img class="pas-utile" src="./icons/pouce-like.svg" alt="Réponse pas utile" />
             </button>
           </div>
@@ -419,6 +435,14 @@
 
         &:hover {
           background: rgba(0, 0, 0, 0.04);
+        }
+
+        &.actif {
+          background: #000091;
+
+          img {
+            filter: brightness(0) invert(1);
+          }
         }
       }
 
