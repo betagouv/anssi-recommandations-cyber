@@ -131,6 +131,22 @@
           </div>
         </details>
       {/if}
+      {#if message.emetteur === 'systeme'}
+        <div class="avis-utilisateur">
+          <div class="texte-information-avis-utilisateur">
+            <span class="titre-avis"><b>Votre avis est essentiel ! 🙌</b></span>
+            <span>En partageant votre avis, vous participez à améliorer les réponses pour l’ensemble des utilisateurs.</span>
+          </div>
+          <div class="conteneur-emoji-avis">
+            <button>
+              <img src="./icons/pouce-like.svg" alt="Réponse utile" />
+            </button>
+            <button>
+              <img class="pas-utile" src="./icons/pouce-like.svg" alt="Réponse pas utile" />
+            </button>
+          </div>
+        </div>
+      {/if}
     {/each}
     <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
     {#if enAttenteDeReponse}
@@ -380,5 +396,42 @@
 
   .fondu-bas.visible {
     opacity: 1;
+  }
+
+  .avis-utilisateur {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .texte-information-avis-utilisateur {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .titre-avis {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+      }
+    }
+
+    .conteneur-emoji-avis {
+
+      button {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        border: 1px solid #DDDDDD;
+        background: none;
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.04);
+        }
+      }
+
+      .pas-utile {
+        transform: rotate(180deg);
+      }
+    }
   }
 </style>
