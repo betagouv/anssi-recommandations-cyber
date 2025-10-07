@@ -16,9 +16,10 @@
 
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { onMount, tick } from "svelte";
   import { marked } from "marked";
   import DOMPurify from "dompurify";
+  import { onMount, tick } from "svelte";
+  import { infobulle } from './directives/infobulle';
 
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
@@ -138,10 +139,10 @@
             <span>En partageant votre avis, vous participez à améliorer les réponses pour l’ensemble des utilisateurs.</span>
           </div>
           <div class="conteneur-emoji-avis">
-            <button>
+            <button use:infobulle={"Réponse utile"}>
               <img src="./icons/pouce-like.svg" alt="Réponse utile" />
             </button>
-            <button>
+            <button use:infobulle={"Réponse inutile"}>
               <img class="pas-utile" src="./icons/pouce-like.svg" alt="Réponse pas utile" />
             </button>
           </div>
