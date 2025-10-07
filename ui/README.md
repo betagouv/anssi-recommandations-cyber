@@ -28,7 +28,7 @@ Dans un environnement virtuel :
 #### Directement sur l'hôte
 
 ```shell
-npm run dev
+env $(cat ../.env) npm run dev
 ```
 
 #### Dans un conteneur
@@ -37,7 +37,7 @@ npm run dev
 docker container run --rm -it \
     --volume $(pwd):/app \
     localhost/mqc/ui \
-    npm run dev
+    env $(cat ../.env) npm run dev
 ```
 
 ## 💬 Comment utiliser l'application ?
