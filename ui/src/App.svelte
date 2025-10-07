@@ -117,7 +117,7 @@
             {#each message.references as reference, index (index)}
               <div class="source">
                 <span>{reference.nom_document}</span>
-                <a href="{reference.url}">Page {reference.numero_page} <img src="./icons/lien-externe.svg" alt="" /></a>
+                <a href="{reference.url}#page={reference.numero_page}" target="_blank" rel="noopener">Page {reference.numero_page} <img src="./icons/lien-externe.svg" alt="" /></a>
                 {#if index !== message.references.length - 1}
                   <hr>
                 {/if}
