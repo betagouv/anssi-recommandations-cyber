@@ -18,8 +18,7 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import { onMount, tick } from "svelte";
-  import { infobulle } from './directives/infobulle';
-  import { storeAvisUtilisateur } from "./stores/avisUtilisateur.store";
+  import BandeauAvisUtilisateur from "./composants/BandeauAvisUtilisateur.svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
   let bandeauOuvert: boolean = $state(true);
@@ -84,10 +83,6 @@
     const distanceFromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
     afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
   }
-
-  const soumetAvisUtilisateur = async (idInteraction: string, positif: boolean) => {
-    storeAvisUtilisateur.ajouteAvis(idInteraction, {positif});
-  }
 </script>
 
 <header>
@@ -133,28 +128,7 @@
       {/if}
       {#if message.emetteur === 'systeme'}
         {@const idInteraction = message.idInteraction || ''}
-        <div class="avis-utilisateur">
-          <div class="texte-information-avis-utilisateur">
-            <span class="titre-avis"><b>Votre avis est essentiel ! 🙌</b></span>
-            <span>En partageant votre avis, vous participez à améliorer les réponses pour l’ensemble des utilisateurs.</span>
-          </div>
-          <div class="conteneur-emoji-avis">
-            <button
-              use:infobulle={"Réponse utile"}
-              onclick={() => soumetAvisUtilisateur(idInteraction, true)}
-              class:actif={$storeAvisUtilisateur[idInteraction] && $storeAvisUtilisateur[idInteraction].positif}
-            >
-              <img src="./icons/pouce-like.svg" alt="Réponse utile" />
-            </button>
-            <button
-              use:infobulle={"Réponse inutile"}
-              onclick={() => soumetAvisUtilisateur(idInteraction, false)}
-              class:actif={$storeAvisUtilisateur[idInteraction] && !$storeAvisUtilisateur[idInteraction].positif}
-            >
-              <img class="pas-utile" src="./icons/pouce-like.svg" alt="Réponse pas utile" />
-            </button>
-          </div>
-        </div>
+        <BandeauAvisUtilisateur {idInteraction} />
       {/if}
     {/each}
     <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
@@ -405,50 +379,5 @@
 
   .fondu-bas.visible {
     opacity: 1;
-  }
-
-  .avis-utilisateur {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    .texte-information-avis-utilisateur {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-
-      .titre-avis {
-        font-size: 1.125rem;
-        line-height: 1.75rem;
-      }
-    }
-
-    .conteneur-emoji-avis {
-
-      button {
-        width: 40px;
-        height: 40px;
-        padding: 8px;
-        border: 1px solid #DDDDDD;
-        background: none;
-        cursor: pointer;
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.04);
-        }
-
-        &.actif {
-          background: #000091;
-
-          img {
-            filter: brightness(0) invert(1);
-          }
-        }
-      }
-
-      .pas-utile {
-        transform: rotate(180deg);
-      }
-    }
   }
 </style>
