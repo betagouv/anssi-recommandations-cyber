@@ -14,8 +14,7 @@ Les dépendances déclarées sont installables via `uv sync`.
 
 ### Dans un conteneur
 
-On fournit une recette pour produire une image de conteneur.\
-Pour construire l'image, il faut lancer `docker build -t localhost/mqc/api .`.
+L'installation est gérée directement par Docker compose, il faut donc se reporter à la section [🚀 Comment lancer l'application ?](#-comment-lancer-lapplication-)
 
 ## ⚙️ Comment Définir mes variables d'environnement ?
 
@@ -30,19 +29,6 @@ Dans un environnement virtuel :
 
 ## 🚀 Comment lancer l'application ?
 
-### Prérequis : PostgreSQL
-
-L'application nécessite une base PostgreSQL. Lancez-la avec Docker en utilisant vos variables d'environnement :
-
-```shell
-env $(cat .env) sh -c 'docker run --detach \
-    --name mes-questions-cyber-bdd \
-    --network=host \
-    --env POSTGRES_DB="$DB_NAME" \
-    --env POSTGRES_PASSWORD="$DB_PASSWORD" \
-    postgres:15'
-```
-
 ### En mode développement
 
 #### Directement sur l'hôte
@@ -53,12 +39,9 @@ env $(cat .env) python src/main.py
 
 #### Dans un conteneur
 
+
 ```shell
-docker container run --rm -it \
-    --network=host \
-    --volume $(pwd):/app \
-    localhost/mqc/api \
-    bash -c "env \$(cat .env) python src/main.py"
+NODE_VERSION="$(cat ./ui/.nvmrc)" docker compose up
 ```
 
 ## 💬 Comment utiliser l'application ?

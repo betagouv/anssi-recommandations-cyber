@@ -1,0 +1,50 @@
+services:
+  mqc-backend:
+    build:
+      context: .
+      network: host
+    command: python src/main.py
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - dist-front:/app/ui/dist
+    ports:
+      - '${PORT}:${PORT}'
+    networks:
+      - mqc-network
+
+  mqc-frontend:
+    image: docker.io/node:${NODE_VERSION:-24}
+    env_file:
+      - .env
+    command: bash -c "npm install && npm run dev"
+    networks:
+      - mqc-network
+    working_dir: /app
+    volumes:
+      - ./ui:/app
+      - dist-front:/app/dist
+
+  mqc-db:
+    image: docker.io/postgres:15
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - mqc-network
+    ports:
+      - '${DB_PORT}:5432'
+    volumes:
+      - dbvol:/var/lib/postgresql/data
+
+networks:
+  mqc-network:
+
+volumes:
+  dbvol:
+    driver: local
+  dist-front:
+    driver: local
