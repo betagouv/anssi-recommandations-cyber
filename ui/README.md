@@ -11,8 +11,7 @@ Ensuite, il faut installer les dépendances avec `npm install`.
 
 ### Dans un conteneur
 
-On fournit une recette pour produire une image de conteneur.\
-Pour construire l'image, il faut lancer `docker build --build-arg NODE_VERSION=$(cat .nvmrc) -t localhost/mqc/ui .`.
+L'installation dans le projet parent est gérée directement par Docker compose, il faut donc se reporter à la section correspondante [🚀 Comment lancer l'application ?](../README.md#-comment-lancer-lapplication-)
 
 ## 🧪 Comment valider ?
 
@@ -20,25 +19,6 @@ Dans un environnement virtuel :
 
 - utiliser `npm run lint:check` pour lancer les vérifications `eslint`, et `npm run lint:fix` pour réparer automatiquement certaines violations,
 - lancer `npm run check` pour vérifier la validité des annotations de types.
-
-## 🚀 Comment lancer l'application ?
-
-### En mode développement
-
-#### Directement sur l'hôte
-
-```shell
-env $(cat ../.env) npm run dev
-```
-
-#### Dans un conteneur
-
-```shell
-docker container run --rm -it \
-    --volume $(pwd):/app \
-    localhost/mqc/ui \
-    env $(cat ../.env) npm run dev
-```
 
 ## 💬 Comment utiliser l'application ?
 
