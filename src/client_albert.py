@@ -56,7 +56,7 @@ class ClientAlbert:
         self.id_collection = configuration.collection_id_anssi_lab
         self.modele_reponse = configuration.modele_reponse
         self.client = client_openai
-        self.PROMPT_SYSTEM = prompt_systeme
+        self.PROMPT_SYSTEME = prompt_systeme
         self.session = client_http
         self.temps_reponse_maximum_recherche_paragraphes = (
             configuration.temps_reponse_maximum_recherche_paragraphes
@@ -90,7 +90,7 @@ class ClientAlbert:
         paragraphes = self.recherche_paragraphes(question)
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
 
-        prompt_systeme = prompt if prompt else self.PROMPT_SYSTEM
+        prompt_systeme = prompt if prompt else self.PROMPT_SYSTEME
 
         messages: list[ChatCompletionMessageParam] = [
             {
