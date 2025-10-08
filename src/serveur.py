@@ -1,11 +1,9 @@
-import gradio as gr
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
 from typing import Dict, Any
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.client_albert import Paragraphe
-from gradio_app import cree_interface_gradio
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
@@ -90,9 +88,6 @@ def fabrique_serveur(mode: Mode) -> FastAPI:
     serveur.include_router(api)
     if mode == Mode.DEVELOPPEMENT:
         serveur.include_router(api_developpement)
-
-    interface = cree_interface_gradio(serveur)
-    serveur = gr.mount_gradio_app(serveur, interface, path="/ui")
 
     serveur.mount(
         "/", StaticFiles(directory="ui/dist", html=True), name="interface utilisateur"
