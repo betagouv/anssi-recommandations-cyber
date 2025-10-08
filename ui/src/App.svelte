@@ -22,6 +22,7 @@
   import { onMount, tick } from "svelte";
   import BandeauAvisUtilisateur from "./composants/BandeauAvisUtilisateur.svelte";
   import InputPromptSysteme from "./composants/InputPromptSysteme.svelte";
+  import Entete from "./composants/Entete.svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
 
@@ -124,10 +125,7 @@
 
 <svelte:body onkeydown={touchePressee} />
 
-<header>
-  <h1>Mes Questions Cyber</h1>
-</header>
-
+<Entete />
 <main>
   {#if bandeauOuvert}
     <div class="bandeau-information">
