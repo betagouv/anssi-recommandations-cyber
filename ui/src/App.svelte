@@ -1,33 +1,14 @@
-<script context="module" lang="ts">
-  type Paragraphe = {
-    score_similarite: number,
-    numero_page: number,
-    url: string,
-    nom_document: string,
-    contenu: string,
-  };
-
-  type Message = {
-    contenu: string;
-    emetteur: "utilisateur" | "systeme";
-    references?: Paragraphe[];
-    idInteraction?: string;
-  };
-</script>
-
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { marked } from "marked";
-  import DOMPurify from "dompurify";
   import { onMount, tick } from "svelte";
   import BandeauAvisUtilisateur from "./composants/BandeauAvisUtilisateur.svelte";
   import InputPromptSysteme from "./composants/InputPromptSysteme.svelte";
   import Entete from "./composants/Entete.svelte";
   import BandeauInformation from "./composants/BandeauInformation.svelte";
+  import { storeConversation } from "./stores/conversation.store";
 
   let { urlAPI }: { urlAPI: string } = $props();
 
-  let messages: Message[] = $state([]);
   let question: string = $state("");
   let enAttenteDeReponse: boolean = $state(false);
   let cibleScroll: HTMLDivElement | undefined = $state();
@@ -51,10 +32,7 @@
     e.preventDefault();
     if(!question) return;
 
-    messages = [...messages, {
-      contenu: question,
-      emetteur: "utilisateur",
-    }];
+    storeConversation.ajouteMessageUtilisateur(question);
     await scrollVersDernierMessage();
 
     const endpoint = afficheInputPromptSysteme
@@ -77,13 +55,9 @@
       body,
     })).json());
 
-    const contenuHTML = DOMPurify.sanitize(await marked.parse(retourApplication.reponse));
-    messages = [...messages, {
-      contenu: contenuHTML,
-      emetteur: "systeme",
-      references: retourApplication.paragraphes,
-      idInteraction: retourApplication.interaction_id,
-    }];
+    const { reponse, paragraphes, interaction_id } = retourApplication;
+    await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
+
     enAttenteDeReponse = false;
     await scrollVersDernierMessage();
   }
@@ -124,7 +98,7 @@
 <main>
   <BandeauInformation />
   <div class="conversation">
-    {#each messages as message, index (index)}
+    {#each $storeConversation as message, index (index)}
       <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
         {#if message.emetteur === "systeme"}
           <!-- eslint-disable-next-line svelte/no-at-html-tags -->
