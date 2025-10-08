@@ -77,6 +77,7 @@
 
 <svelte:body onkeydown={touchePressee} />
 <form onsubmit={soumetQuestion} class="question-utilisateur">
+  <span class="information-donnees-personnelles">Ne partagez aucune donnée personnelle ni information sensible sur votre organisation.</span>
   <textarea
     placeholder="Posez votre question cyber"
     bind:value={question}
@@ -103,6 +104,22 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
+
+    &:focus-within .information-donnees-personnelles {
+      display: block;
+    }
+
+    .information-donnees-personnelles {
+      color: #666666;
+      text-align: center;
+      font-size: 0.75rem;
+      line-height: 1.25rem;
+      width: 100%;
+      position: absolute;
+      top: -4px;
+      transform: translateY(-100%);
+      display: none;
+    }
 
     textarea {
       padding: 12px 54px 12px 12px;
