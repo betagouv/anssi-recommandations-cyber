@@ -18,3 +18,26 @@ export const soumetsAvisUtilisateurAPI = async (
       },
     }),
   });
+
+type MessageUtilisateurAPI = {
+  question: string;
+  prompt?: string;
+};
+
+export const publieMessageUtilisateurAPI = async (
+  message: MessageUtilisateurAPI,
+  avecPromptSysteme: boolean,
+) => {
+  const endpoint = avecPromptSysteme
+    ? `${urlAPI}/api/pose_question_avec_prompt`
+    : `${urlAPI}/api/pose_question`;
+
+  const reponse = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+  return await reponse.json();
+};

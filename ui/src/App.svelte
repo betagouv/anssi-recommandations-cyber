@@ -6,6 +6,7 @@
   import Entete from "./composants/Entete.svelte";
   import BandeauInformation from "./composants/BandeauInformation.svelte";
   import { storeConversation } from "./stores/conversation.store";
+  import { publieMessageUtilisateurAPI } from "./client.api";
 
   let { urlAPI }: { urlAPI: string } = $props();
 
@@ -35,27 +36,13 @@
     storeConversation.ajouteMessageUtilisateur(question);
     await scrollVersDernierMessage();
 
-    const endpoint = afficheInputPromptSysteme
-      ? `${urlAPI}/api/pose_question_avec_prompt`
-      : `${urlAPI}/api/pose_question`;
-
-    const body = JSON.stringify(
-        afficheInputPromptSysteme
+    const message = afficheInputPromptSysteme
           ? { question, prompt: promptSysteme }
-          : { question }
-    );
+          : { question };
 
     question = "";
 
-    const retourApplication = (await (await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body,
-    })).json());
-
-    const { reponse, paragraphes, interaction_id } = retourApplication;
+    const { reponse, paragraphes, interaction_id } = await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
     await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
 
     enAttenteDeReponse = false;
