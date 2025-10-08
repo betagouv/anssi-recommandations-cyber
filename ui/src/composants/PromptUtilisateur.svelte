@@ -58,7 +58,7 @@
     const codeNulMaisFacile = e.ctrlKey && e.code === "Space";
 
     if (codeNulMaisFacile || KONAMI_CODE.length === combinaisonDeTouches.length) {
-      afficheInputPromptSysteme = true;
+      afficheInputPromptSysteme = !afficheInputPromptSysteme;
     }
   }
 
@@ -78,6 +78,9 @@
 <svelte:body onkeydown={touchePressee} />
 <form onsubmit={soumetQuestion} class="question-utilisateur">
   <span class="information-donnees-personnelles">Ne partagez aucune donnée personnelle ni information sensible sur votre organisation.</span>
+  {#if afficheInputPromptSysteme}
+    <InputPromptSysteme bind:prompt={promptSysteme} />
+  {/if}
   <textarea
     placeholder="Posez votre question cyber"
     bind:value={question}
@@ -89,9 +92,6 @@
   <button type="submit">
     <img src="./icons/fleche-envoi-message.svg" alt="" />
   </button>
-  {#if afficheInputPromptSysteme}
-    <InputPromptSysteme bind:prompt={promptSysteme} />
-  {/if}
 </form>
 
 <style lang="scss">
