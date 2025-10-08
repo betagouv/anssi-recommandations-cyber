@@ -21,20 +21,29 @@
   import DOMPurify from "dompurify";
   import { onMount, tick } from "svelte";
   import BandeauAvisUtilisateur from "./composants/BandeauAvisUtilisateur.svelte";
+  import InputPromptSysteme from "./composants/InputPromptSysteme.svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
+
   let bandeauOuvert: boolean = $state(true);
   let messages: Message[] = $state([]);
   let question: string = $state("");
   let enAttenteDeReponse: boolean = $state(false);
   let cibleScroll: HTMLDivElement | undefined = $state();
   let afficheBoutonScroll: boolean = $state(false);
+  let promptSysteme: string = $state("");
 
   onMount(() => {
     window.addEventListener('scroll', gereScrollConversation, { passive: true });
     gereScrollConversation();
+    recuperePromptSysteme();
     return () => window.removeEventListener('scroll', gereScrollConversation);
   });
+
+  async function recuperePromptSysteme() {
+    const reponse = await fetch(`${urlAPI}/api/prompt`);
+    promptSysteme = await reponse.json();
+  }
 
   async function soumetQuestion(e: Event) {
     enAttenteDeReponse = true;
@@ -47,8 +56,15 @@
     }];
     await scrollVersDernierMessage();
 
-    const endpoint = `${urlAPI}/api/pose_question`;
-    const body = JSON.stringify({ question });
+    const endpoint = afficheInputPromptSysteme
+      ? `${urlAPI}/api/pose_question_avec_prompt`
+      : `${urlAPI}/api/pose_question`;
+
+    const body = JSON.stringify(
+        afficheInputPromptSysteme
+          ? { question, prompt: promptSysteme }
+          : { question }
+    );
 
     question = "";
 
@@ -86,7 +102,27 @@
     const distanceFromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
     afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
   }
+
+  const KONAMI_CODE = [ "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", ];
+
+  let combinaisonDeTouches: string[] = [];
+  let afficheInputPromptSysteme = $state(false);
+
+  const touchePressee = (e: KeyboardEvent) => {
+    const touche = e.key
+    combinaisonDeTouches = (KONAMI_CODE[combinaisonDeTouches.length] === touche)
+      ? combinaisonDeTouches.concat([touche])
+      : [];
+
+    const codeNulMaisFacile = e.ctrlKey && e.code === "Space";
+
+    if (codeNulMaisFacile || KONAMI_CODE.length === combinaisonDeTouches.length) {
+      afficheInputPromptSysteme = true;
+    }
+  }
 </script>
+
+<svelte:body onkeydown={touchePressee} />
 
 <header>
   <h1>Mes Questions Cyber</h1>
@@ -160,6 +196,9 @@
     <button type="submit">
       <img src="./icons/fleche-envoi-message.svg" alt="" />
     </button>
+    {#if afficheInputPromptSysteme}
+      <InputPromptSysteme bind:prompt={promptSysteme} />
+    {/if}
   </form>
 </main>
 
