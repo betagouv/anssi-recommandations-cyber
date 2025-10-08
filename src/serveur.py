@@ -37,6 +37,13 @@ def route_pose_question_avec_prompt(
     )
 
 
+@api_developpement.get("/prompt")
+def route_prompt_systeme(
+    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+) -> str:
+    return client_albert.PROMPT_SYSTEME
+
+
 @api.post("/recherche")
 def route_recherche(
     request: QuestionRequete,

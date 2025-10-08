@@ -16,7 +16,7 @@ def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> 
     assert client_albert.session.__class__.__name__ == "ClientAlbertHttp"
     assert (
         "Tu es un service développé par ou pour l’ANSSI"
-        in client_albert.PROMPT_SYSTEM
+        in client_albert.PROMPT_SYSTEME
     )
 
 
