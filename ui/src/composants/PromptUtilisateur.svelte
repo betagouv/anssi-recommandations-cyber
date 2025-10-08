@@ -3,16 +3,18 @@
   import { storeAffichage } from "../stores/affichage.store";
   import { storeConversation } from "../stores/conversation.store";
   import { publieMessageUtilisateurAPI } from "../client.api";
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
 
   let question: string = $state("");
   let promptSysteme: string = $state("");
   let afficheInputPromptSysteme = $state(false);
+  let elementTextarea: HTMLTextAreaElement | undefined = $state();
 
   onMount(() => {
     recuperePromptSysteme();
+    redimensionneZoneDeTexte();
   });
 
   async function recuperePromptSysteme() {
@@ -33,6 +35,8 @@
       : { question };
 
     question = "";
+    await tick();
+    redimensionneZoneDeTexte();
 
     const { reponse, paragraphes, interaction_id } = await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
     await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
@@ -57,11 +61,30 @@
       afficheInputPromptSysteme = true;
     }
   }
+
+  const redimensionneZoneDeTexte = () => {
+    if(!elementTextarea) return;
+    elementTextarea.style.height = 'auto';
+    elementTextarea.style.height = `${Math.min(elementTextarea.scrollHeight, 96)}px`;
+  }
+
+  const gereTouchePresseeZoneDeTexte = (e: KeyboardEvent) => {
+    if (e.code === "Enter" && !e.shiftKey) {
+      soumetQuestion(e);
+    }
+  }
 </script>
 
 <svelte:body onkeydown={touchePressee} />
 <form onsubmit={soumetQuestion} class="question-utilisateur">
-  <input placeholder="Posez votre question cyber" bind:value={question} type="text" />
+  <textarea
+    placeholder="Posez votre question cyber"
+    bind:value={question}
+    bind:this={elementTextarea}
+    oninput={redimensionneZoneDeTexte}
+    onkeydown={gereTouchePresseeZoneDeTexte}
+    rows="1"
+  ></textarea>
   <button type="submit">
     <img src="./icons/fleche-envoi-message.svg" alt="" />
   </button>
@@ -81,10 +104,9 @@
     left: 50%;
     transform: translateX(-50%);
 
-    input[type="text"] {
-      padding: 12px;
+    textarea {
+      padding: 12px 54px 12px 12px;
       width: 100%;
-      height: 64px;
       box-sizing: border-box;
       border-radius: 16px;
       border: 1px solid #DDDDDD;
@@ -93,6 +115,8 @@
       font-family: Marianne;
       font-size: 1rem;
       line-height: 1.5rem;
+      overflow: hidden;
+      resize: none;
 
       &::placeholder {
         color: #666666;
@@ -111,7 +135,7 @@
       line-height: 24px;
       padding: 0;
       position: absolute;
-      top: 12px;
+      bottom: 29px;
       right: 24px;
       cursor: pointer;
     }
