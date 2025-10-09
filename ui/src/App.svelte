@@ -2,7 +2,7 @@
   import Entete from "./composants/Entete.svelte";
   import BandeauInformation from "./composants/BandeauInformation.svelte";
   import Conversation from "./composants/Conversation.svelte";
-  import PromptUtilisateur from "./composants/PromptUtilisateur.svelte";
+  import InputUtilisateur from "./composants/InputUtilisateur.svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
 </script>
@@ -11,5 +11,5 @@
 <main>
   <BandeauInformation />
   <Conversation />
-  <PromptUtilisateur {urlAPI} />
+  <InputUtilisateur {urlAPI} />
 </main>
