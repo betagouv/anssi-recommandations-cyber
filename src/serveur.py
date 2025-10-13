@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
-from typing import Dict, Any
+from typing import Dict
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
+from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.client_albert import Paragraphe
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
@@ -71,15 +72,15 @@ def route_retour(
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
-) -> Dict[str, Any]:
-    succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
+) -> RetourUtilisatrice:
+    retour = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
         body.id_interaction, body.retour
     )
 
-    if not succes:
+    if not retour:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
 
-    return {"succes": True, "commentaire": body.retour.commentaire}
+    return retour
 
 
 def fabrique_serveur(mode: Mode) -> FastAPI:

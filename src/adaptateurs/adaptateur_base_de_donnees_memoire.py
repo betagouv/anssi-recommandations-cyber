@@ -19,16 +19,16 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
 
     def ajoute_retour_utilisatrice(
         self, identifiant_interaction: str, retour: RetourUtilisatrice
-    ) -> bool:
+    ) -> Optional[RetourUtilisatrice]:
         if identifiant_interaction not in self._interactions:
-            return False
+            return None
 
         interaction = self._interactions[identifiant_interaction]
         interaction_mise_a_jour = Interaction(
             reponse_question=interaction.reponse_question, retour_utilisatrice=retour
         )
         self._interactions[identifiant_interaction] = interaction_mise_a_jour
-        return True
+        return retour
 
     def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
         return self._interactions.get(identifiant_interaction)
