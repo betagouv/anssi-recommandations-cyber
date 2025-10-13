@@ -9,7 +9,7 @@ from adaptateurs.adaptateur_base_de_donnees_postgres import (
 )
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.client_albert import Paragraphe, ReponseQuestion
-from schemas.retour_utilisatrice import RetourPositif
+from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
@@ -210,7 +210,8 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
 def test_route_retour_avec_mock_retourne_succes_200() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
     mock_adaptateur.ajoute_retour_utilisatrice.return_value = RetourPositif(
-        commentaire="Très utile !"
+        commentaire="Très utile !",
+        tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
 
     serveur.dependency_overrides[
@@ -224,6 +225,7 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
             "retour": {
                 "type": "positif",
                 "commentaire": "Très utile",
+                "tags": ["complete", "facileacomprendre"],
             },
         }
         reponse = client.post("/api/retour", json=payload)
@@ -237,7 +239,8 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
 def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
     mock_adaptateur.ajoute_retour_utilisatrice.return_value = RetourPositif(
-        commentaire="Très utile !"
+        commentaire="Très utile !",
+        tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
 
     serveur.dependency_overrides[
@@ -251,6 +254,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
             "retour": {
                 "type": "positif",
                 "commentaire": "Très utile !",
+                "tags": ["complete", "facileacomprendre"],
             },
         }
 
@@ -258,6 +262,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
         data = reponse.json()
 
         assert data["commentaire"] == "Très utile !"
+        assert data["tags"] == [TagPositif.Complete, TagPositif.FacileAComprendre]
         args, _ = mock_adaptateur.ajoute_retour_utilisatrice.call_args
     finally:
         serveur.dependency_overrides.clear()
