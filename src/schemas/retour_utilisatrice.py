@@ -1,10 +1,29 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import Generic, Literal, Optional, TypeVar, Union
 from schemas.client_albert import ReponseQuestion
+from enum import StrEnum, auto
 
 
-class AbstractRetourUtilisatrice(BaseModel):
+class TagPositif(StrEnum):
+    FacileAComprendre = auto()
+    Complete = auto()
+    BienStructuree = auto()
+    SourcesUtiles = auto()
+
+
+class TagNegatif(StrEnum):
+    PasAssezDetaillee = auto()
+    TropComplexe = auto()
+    SourcesPeuUtiles = auto()
+    InformationErronee = auto()
+    HorsSujet = auto()
+
+
+TypeDesTags = TypeVar("TypeDesTags")
+
+
+class AbstractRetourUtilisatrice(BaseModel, Generic[TypeDesTags]):
     def __new__(cls, *args, **kwargs):
         """
         On doit empêcher cette instanciation au runtime...
@@ -21,13 +40,14 @@ class AbstractRetourUtilisatrice(BaseModel):
 
     commentaire: Optional[str] = None
     horodatage: datetime = Field(default_factory=datetime.now)
+    tags: list[TypeDesTags] = []
 
 
-class RetourNegatif(AbstractRetourUtilisatrice):
+class RetourNegatif(AbstractRetourUtilisatrice[TagNegatif]):
     type: Literal["negatif"] = "negatif"
 
 
-class RetourPositif(AbstractRetourUtilisatrice):
+class RetourPositif(AbstractRetourUtilisatrice[TagPositif]):
     type: Literal["positif"] = "positif"
 
 

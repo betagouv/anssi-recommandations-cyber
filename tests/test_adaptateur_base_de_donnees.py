@@ -6,7 +6,7 @@ from adaptateurs import (
     AdaptateurBaseDeDonneesEnMemoire,
     AdaptateurBaseDeDonneesPostgres,
 )
-from schemas.retour_utilisatrice import RetourPositif
+from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from schemas.client_albert import ReponseQuestion, Paragraphe
 from configuration import recupere_configuration_postgres
 
@@ -117,7 +117,7 @@ def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     )
     id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
 
-    retour = RetourPositif(commentaire="Excellent")
+    retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
 
     interaction = adaptateur_test.lit_interaction(id_interaction)
@@ -126,6 +126,7 @@ def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     assert interaction.reponse_question.reponse == "Réponse test"
     assert interaction.retour_utilisatrice is not None
     assert interaction.retour_utilisatrice.commentaire == "Excellent"
+    assert interaction.retour_utilisatrice.tags == [TagPositif.Complete]
 
 
 def test_lit_interaction_inexistante(adaptateur_test) -> None:

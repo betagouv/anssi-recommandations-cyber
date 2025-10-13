@@ -2,6 +2,8 @@ from schemas.retour_utilisatrice import (
     RetourNegatif,
     RetourPositif,
     RetourUtilisatrice,
+    TagNegatif,
+    TagPositif,
     Interaction,
 )
 from schemas.client_albert import ReponseQuestion, Paragraphe
@@ -39,6 +41,32 @@ class TestRetourUtilisatrice:
         with pytest.raises(TypeError):
             RetourUtilisatrice()  # type: ignore [operator]
 
+    def test_retour_utilisatrice_negatif_peut_avoir_des_tags(self) -> None:
+        commentaire = "c'est pas terrible..."
+        tags = [TagNegatif.TropComplexe, TagNegatif.SourcesPeuUtiles]
+        retour = RetourNegatif(commentaire=commentaire, tags=tags)
+
+        assert retour.tags == tags
+
+    def test_retour_utilisatrice_positif_peut_avoir_des_tags(self) -> None:
+        commentaire = "c'est super !"
+        tags = [TagPositif.FacileAComprendre, TagPositif.Complete]
+        retour = RetourPositif(commentaire=commentaire, tags=tags)
+
+        assert retour.tags == tags
+
+    def test_retour_utilisatrice_negatif_sans_tags_a_des_tags_vide_par_default(
+        self,
+    ) -> None:
+        retour = RetourNegatif(commentaire="c'est pas terrible...")
+        assert retour.tags == []
+
+    def test_retour_utilisatrice_positif_sans_tags_a_des_tags_vide_par_default(
+        self,
+    ) -> None:
+        retour = RetourPositif(commentaire="c'est super !")
+        assert retour.tags == []
+
 
 class TestInteraction:
     def test_creation_interaction(self) -> None:
@@ -56,7 +84,9 @@ class TestInteraction:
             question="Quelle est la longueur recommandée pour un mot de passe ?",
         )
 
-        retour_utilisatrice = RetourPositif(commentaire="Très utile")
+        retour_utilisatrice = RetourPositif(
+            commentaire="Très utile", tags=[TagPositif.FacileAComprendre]
+        )
 
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=retour_utilisatrice
@@ -68,6 +98,7 @@ class TestInteraction:
         )
         assert interaction.retour_utilisatrice is not None
         assert interaction.retour_utilisatrice.commentaire == "Très utile"
+        assert interaction.retour_utilisatrice.tags == [TagPositif.FacileAComprendre]
 
     def test_creation_interaction_sans_retour_utilisatrice(self) -> None:
         paragraphe = Paragraphe(
