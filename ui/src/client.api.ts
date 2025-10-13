@@ -11,7 +11,7 @@ export const soumetsAvisUtilisateurAPI = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      id_interaction_rattachee: idInteraction,
+      id_interaction: idInteraction,
       retour: {
         type: positif ? "positif" : "negatif",
         ...(commentaire ? { commentaire } : {}),

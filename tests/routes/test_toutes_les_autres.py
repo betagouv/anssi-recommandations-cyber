@@ -217,7 +217,7 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
     try:
         client = TestClient(serveur)
         payload = {
-            "id_interaction_rattachee": "id-123",
+            "id_interaction": "id-123",
             "retour": {
                 "type": "positif",
                 "commentaire": "Très utile",
@@ -242,7 +242,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
     try:
         client = TestClient(serveur)
         payload = {
-            "id_interaction_rattachee": "id-123",
+            "id_interaction": "id-123",
             "retour": {
                 "type": "positif",
                 "commentaire": "Très utile !",
@@ -270,7 +270,7 @@ def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
     try:
         client = TestClient(serveur)
         payload = {
-            "id_interaction_rattachee": "id-123",
+            "id_interaction": "id-123",
             "retour": {
                 "type": "positif",
                 "commentaire": "Très utile",
