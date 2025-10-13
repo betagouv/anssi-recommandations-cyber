@@ -40,5 +40,5 @@ class Interaction(BaseModel):
 
 
 class DonneesCreationRetourUtilisateur(BaseModel):
-    id_interaction_rattachee: str
+    id_interaction: str
     retour: RetourUtilisatrice

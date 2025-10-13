@@ -73,7 +73,7 @@ def route_retour(
     ),
 ) -> Dict[str, Any]:
     succes = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
-        body.id_interaction_rattachee, body.retour
+        body.id_interaction, body.retour
     )
 
     if not succes:
