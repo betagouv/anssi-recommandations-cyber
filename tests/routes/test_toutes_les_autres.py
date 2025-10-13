@@ -9,6 +9,7 @@ from adaptateurs.adaptateur_base_de_donnees_postgres import (
 )
 from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.client_albert import Paragraphe, ReponseQuestion
+from schemas.retour_utilisatrice import RetourPositif
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
@@ -208,7 +209,9 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
 
 def test_route_retour_avec_mock_retourne_succes_200() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = True
+    mock_adaptateur.ajoute_retour_utilisatrice.return_value = RetourPositif(
+        commentaire="Très utile !"
+    )
 
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
@@ -233,7 +236,9 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
 
 def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = True
+    mock_adaptateur.ajoute_retour_utilisatrice.return_value = RetourPositif(
+        commentaire="Très utile !"
+    )
 
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
@@ -252,7 +257,6 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
         reponse = client.post("/api/retour", json=payload)
         data = reponse.json()
 
-        assert data["succes"] is True
         assert data["commentaire"] == "Très utile !"
         args, _ = mock_adaptateur.ajoute_retour_utilisatrice.call_args
     finally:
@@ -261,7 +265,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
 
 def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
     mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = False
+    mock_adaptateur.ajoute_retour_utilisatrice.return_value = None
 
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice

@@ -44,7 +44,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
 
     def ajoute_retour_utilisatrice(
         self, identifiant_interaction: str, retour: RetourUtilisatrice
-    ) -> bool:
+    ) -> Optional[RetourUtilisatrice]:
         curseur = self._get_curseur()
         curseur.execute(
             "SELECT contenu FROM interactions WHERE id_interaction = %s",
@@ -52,7 +52,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         )
         ligne = curseur.fetchone()
         if not ligne:
-            return False
+            return None
 
         interaction = Interaction.model_validate(ligne["contenu"])
 
@@ -64,7 +64,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
             (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
         )
-        return True
+        return retour
 
     def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
         curseur = self._get_curseur()

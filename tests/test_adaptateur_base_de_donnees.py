@@ -94,7 +94,7 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     retour = RetourPositif(commentaire="Très utile")
 
     resultat = adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
-    assert resultat is True
+    assert resultat == retour
 
 
 def test_lit_interaction_existante(adaptateur_test) -> None:

@@ -12,7 +12,7 @@ class AdaptateurBaseDeDonnees(ABC):
     @abstractmethod
     def ajoute_retour_utilisatrice(
         self, identifiant_interaction: str, retour: RetourUtilisatrice
-    ) -> bool:
+    ) -> Optional[RetourUtilisatrice]:
         pass
 
     @abstractmethod
