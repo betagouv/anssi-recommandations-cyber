@@ -46,6 +46,7 @@ class ClientAlbert:
         "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
     )
     REPONSE_VIOLATION_IDENTITE = "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence."
+    REPONSE_VIOLATION_THEMATIQUE = "Cette thématique n’entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d’un enjeu cybersécurité ou informatique."
 
     def __init__(
         self,
@@ -148,9 +149,10 @@ class ClientAlbert:
 
         if reponse_presente:
             reponse_albert = cast(str, propositions_albert[0].message.content)
-            reponse_erreur_identite = "ERREUR_IDENTITÉ" in reponse_albert
-            if reponse_erreur_identite:
+            if "ERREUR_IDENTITÉ" in reponse_albert:
                 return self.REPONSE_VIOLATION_IDENTITE, []
+            elif "ERREUR_THÉMATIQUE" in reponse_albert:
+                return self.REPONSE_VIOLATION_THEMATIQUE, []
             return reponse_albert, paragraphes
         else:
             return ClientAlbert.REPONSE_PAR_DEFAULT, []

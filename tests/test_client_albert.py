@@ -224,6 +224,38 @@ def test_pose_question_si_question_identite_retourne_message_identite_avec_parag
     assert retour.reponse == ClientAlbert.REPONSE_VIOLATION_IDENTITE
     assert retour.paragraphes == []
 
+def test_pose_question_si_question_mauvaise_thematique_retourne_message_thematique_avec_paragraphes_vides():
+    mock_client_openai = Mock(OpenAI)
+    mock_client_openai.chat.completions.create = Mock(
+        return_value=Reponse([Reponse.Message("ERREUR_THÉMATIQUE")])
+    )
+
+    mock_client_albert = ClientAlbert(
+        configuration=FAUX_PARAMETRES_ALBERT,
+        client_openai=mock_client_openai,
+        client_http=Mock(),
+        prompt_systeme="PROMPT {chunks}",
+    )
+
+    FAUX_PARAGRAPHES = [
+        Paragraphe(
+            score_similarite=0.5,
+            numero_page=1,
+            url="https://cyber.gouv.fr/document.pdf",
+            nom_document="Mon Guide Cyber",
+            contenu="FAUX_CONTENU",
+        )
+    ]
+
+    with patch(
+        "client_albert.ClientAlbert.recherche_paragraphes",
+        return_value=FAUX_PARAGRAPHES,
+    ):
+        retour = mock_client_albert.pose_question("Quelle est la recette de la tartiflette ?")
+
+    assert retour.reponse == ClientAlbert.REPONSE_VIOLATION_THEMATIQUE
+    assert retour.paragraphes == []
+
 
 def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
     mock_client_openai_sans_reponse, mock_client_http
