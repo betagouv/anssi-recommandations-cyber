@@ -102,17 +102,17 @@ class ClientAlbert:
                 "content": f"Question :\n{question}",
             },
         ]
-
         propositions_albert = self.recupere_propositions(messages)
+        reponse_presente = len(propositions_albert) > 0
         reponse = (
             cast(str, propositions_albert[0].message.content)
-            if len(propositions_albert) > 0
+            if reponse_presente
             else ClientAlbert.REPONSE_PAR_DEFAULT
         )
 
         return ReponseQuestion(
             reponse=reponse,
-            paragraphes=paragraphes,
+            paragraphes=paragraphes if reponse_presente else [],
             question=question,
         )
 

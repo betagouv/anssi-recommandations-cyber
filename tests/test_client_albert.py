@@ -165,6 +165,7 @@ def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien
         retour = client_sans_reponse.pose_question(QUESTION)
 
         assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+        assert retour.paragraphes == []
 
 
 def test_pose_question_si_timeout_retourne_reponse_par_defaut():
@@ -185,9 +186,10 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
     )
 
     with patch.object(ClientAlbert, "recherche_paragraphes", return_value=[]):
-        rep = client_avec_openai_timeout.pose_question("Question ?")
+        retour = client_avec_openai_timeout.pose_question("Question ?")
 
-    assert rep.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+    assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+    assert retour.paragraphes == []
 
 
 def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
