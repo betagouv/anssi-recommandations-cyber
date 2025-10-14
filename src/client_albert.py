@@ -45,6 +45,7 @@ class ClientAlbert:
     REPONSE_PAR_DEFAULT = (
         "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
     )
+    REPONSE_VIOLATION_IDENTITE = "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence."
 
     def __init__(
         self,
@@ -103,16 +104,13 @@ class ClientAlbert:
             },
         ]
         propositions_albert = self.recupere_propositions(messages)
-        reponse_presente = len(propositions_albert) > 0
-        reponse = (
-            cast(str, propositions_albert[0].message.content)
-            if reponse_presente
-            else ClientAlbert.REPONSE_PAR_DEFAULT
+        (reponse, paragraphes) = self._recupere_reponse_et_paragraphes(
+            propositions_albert, paragraphes
         )
 
         return ReponseQuestion(
             reponse=reponse,
-            paragraphes=paragraphes if reponse_presente else [],
+            paragraphes=paragraphes,
             question=question,
         )
 
@@ -142,6 +140,20 @@ class ClientAlbert:
                 system_fingerprint=None,
             ).choices
             return aucune_proposition
+
+    def _recupere_reponse_et_paragraphes(
+        self, propositions_albert: list[Choice], paragraphes: list[Paragraphe]
+    ) -> tuple[str, list[Paragraphe]]:
+        reponse_presente = len(propositions_albert) > 0
+
+        if reponse_presente:
+            reponse_albert = cast(str, propositions_albert[0].message.content)
+            reponse_erreur_identite = "ERREUR_IDENTITÉ" in reponse_albert
+            if reponse_erreur_identite:
+                return self.REPONSE_VIOLATION_IDENTITE, []
+            return reponse_albert, paragraphes
+        else:
+            return ClientAlbert.REPONSE_PAR_DEFAULT, []
 
     def recupere_data(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
