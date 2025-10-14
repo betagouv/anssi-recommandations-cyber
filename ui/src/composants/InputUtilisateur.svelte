@@ -98,11 +98,8 @@
   .question-utilisateur {
     position: fixed;
     max-width: 840px;
-    margin: 0 auto;
     width: calc(100% - 32px);
     bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
     border-radius: 16px;
     border: 1px solid #DDDDDD;
     background: #F6F6F6;
@@ -111,6 +108,15 @@
     align-items: center;
     gap: 16px;
     padding: 12px;
+    box-sizing: border-box;
+    margin: 0 16px;
+
+    @media screen and (min-width: 768px) {
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0 auto;
+      width: 100%;
+    }
 
     &:focus-within {
       outline: 2px solid #0A76F6;
