@@ -46,8 +46,8 @@
     {#if avisUtilisateur && !avisUtilisateur.soumis}
         <div class="encart-commentaire-avis">
             <div>
+                <span>Facultatif, mais super utile 😉 !</span>
                 <span class="titre"><b>{titreBlocAvis}</b></span>
-                <span>Ce n’est pas obligatoire, mais super utile 😉 !</span>
             </div>
             <dsfr-input
                 label="Ajouter un commentaire"
