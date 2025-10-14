@@ -14,7 +14,13 @@
     let commentaire: string = $state("");
     let tagsSelectionnes: SvelteSet<string> = new SvelteSet<string>();
 
+    const remiseAZero = () => {
+        commentaire = "";
+        tagsSelectionnes.clear();
+    }
+
     const afficheAvisUtilisateur = async (positif: boolean) => {
+        remiseAZero();
         storeAvisUtilisateur.ajouteAvis(idInteraction, { positif, soumis: false });
         await soumetsAvisUtilisateurAPI(
           idInteraction,
@@ -30,8 +36,7 @@
           avecCommentaire ? commentaire : undefined,
           tagsSelectionnes.size > 0 ? [...tagsSelectionnes] : undefined
         );
-        commentaire = "";
-        tagsSelectionnes.clear();
+        remiseAZero();
     }
 
     const tags = {
@@ -105,19 +110,21 @@
                 <span>Facultatif, mais super utile 😉 !</span>
                 <span class="titre"><b>{titreBlocAvis}</b></span>
             </div>
-            <dsfr-tags-group
-              size="md"
-              type="pressable"
-              groupMarkup="ul"
-              hasIcon={false}
-              tags={avisUtilisateur.positif ? tags.positif : tags.negatif}
-              onselected={(e: CustomEvent) => {
-                tagsSelectionnes.add(e.detail);
-              }}
-              onunselected={(e: CustomEvent) => {
-                tagsSelectionnes.delete(e.detail);
-              }}
-            ></dsfr-tags-group>
+            {#key avisUtilisateur}
+                <dsfr-tags-group
+                  size="md"
+                  type="pressable"
+                  groupMarkup="ul"
+                  hasIcon={false}
+                  tags={avisUtilisateur.positif ? tags.positif : tags.negatif}
+                  onselected={(e: CustomEvent) => {
+                    tagsSelectionnes.add(e.detail);
+                  }}
+                  onunselected={(e: CustomEvent) => {
+                    tagsSelectionnes.delete(e.detail);
+                  }}
+                ></dsfr-tags-group>
+            {/key}
             <dsfr-input
                 label="Ajouter un commentaire"
                 type="text"
