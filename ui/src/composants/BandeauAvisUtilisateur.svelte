@@ -16,6 +16,10 @@
 
     const afficheAvisUtilisateur = async (positif: boolean) => {
         storeAvisUtilisateur.ajouteAvis(idInteraction, { positif, soumis: false });
+        await soumetsAvisUtilisateurAPI(
+          idInteraction,
+          positif,
+        );
     }
 
     const soumetsAvisUtilisateur = async (avecCommentaire: boolean) => {
