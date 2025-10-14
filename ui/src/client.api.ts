@@ -4,6 +4,7 @@ export const soumetsAvisUtilisateurAPI = async (
   idInteraction: string,
   positif: boolean,
   commentaire?: string,
+  tags?: string[],
 ) =>
   await fetch(`${urlAPI}/api/retour`, {
     method: "POST",
@@ -15,6 +16,7 @@ export const soumetsAvisUtilisateurAPI = async (
       retour: {
         type: positif ? "positif" : "negatif",
         ...(commentaire ? { commentaire } : {}),
+        ...(tags ? { tags } : {}),
       },
     }),
   });
