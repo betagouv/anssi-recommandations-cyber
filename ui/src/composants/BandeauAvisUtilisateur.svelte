@@ -30,24 +30,48 @@
         tagsSelectionnes.clear();
     }
 
-    const tags = [
-      {
-        "label": "Facile à comprendre",
-        "id": "facileacomprendre"
-      },
-      {
-        "label": "Complète",
-        "id": "complete"
-      },
-      {
-        "label": "Bien structurée",
-        "id": "bienstructuree"
-      },
-      {
-        "label": "Sources utiles",
-        "id": "sourcesutiles"
-      }
-    ]
+    const tags = {
+      positif: [
+        {
+          "label": "Facile à comprendre",
+          "id": "facileacomprendre"
+        },
+        {
+          "label": "Complète",
+          "id": "complete"
+        },
+        {
+          "label": "Bien structurée",
+          "id": "bienstructuree"
+        },
+        {
+          "label": "Sources utiles",
+          "id": "sourcesutiles"
+        }
+      ],
+      negatif: [
+        {
+          "label": "Pas assez détaillée",
+          "id": "pasassezdetaillee"
+        },
+        {
+          "label": "Trop complexe",
+          "id": "tropcomplexe"
+        },
+        {
+          "label": "Sources peu utiles",
+          "id": "sourcespeuutiles"
+        },
+        {
+          "label": "Information erronée",
+          "id": "informationerronee"
+        },
+        {
+          "label": "Hors sujet",
+          "id": "horssujet"
+        },
+      ]
+}
 </script>
 
 <div class="avis-utilisateur">
@@ -82,7 +106,7 @@
               type="pressable"
               groupMarkup="ul"
               hasIcon={false}
-              {tags}
+              tags={avisUtilisateur.positif ? tags.positif : tags.negatif}
               onselected={(e: CustomEvent) => {
                 tagsSelectionnes.add(e.detail);
               }}
