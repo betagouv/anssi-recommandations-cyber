@@ -112,8 +112,13 @@
     gap: 16px;
     padding: 12px;
 
-    &:focus-within .information-donnees-personnelles {
-      display: block;
+    &:focus-within {
+      outline: 2px solid #0A76F6;
+      outline-offset: 2px;
+
+      .information-donnees-personnelles {
+        display: block;
+      }
     }
 
     .information-donnees-personnelles {
@@ -123,7 +128,7 @@
       line-height: 1.25rem;
       width: 100%;
       position: absolute;
-      top: -4px;
+      top: -8px;
       transform: translateY(-100%);
       display: none;
     }
@@ -142,6 +147,10 @@
 
       &::placeholder {
         color: #666666;
+      }
+
+      &:focus-visible {
+        outline: none;
       }
     }
 
