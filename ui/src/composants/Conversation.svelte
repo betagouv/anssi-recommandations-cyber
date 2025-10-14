@@ -32,7 +32,7 @@
       {/if}
     </div>
 
-    {#if message.references}
+    {#if message.references && message.references.length > 0}
       <details class="conteneur-sources">
         <summary>
           Sources
