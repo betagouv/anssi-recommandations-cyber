@@ -47,6 +47,7 @@ class ClientAlbert:
     )
     REPONSE_VIOLATION_IDENTITE = "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence."
     REPONSE_VIOLATION_THEMATIQUE = "Cette thématique n’entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d’un enjeu cybersécurité ou informatique."
+    REPONSE_VIOLATION_MALVEILLANCE = REPONSE_PAR_DEFAULT
 
     def __init__(
         self,
@@ -153,6 +154,8 @@ class ClientAlbert:
                 return self.REPONSE_VIOLATION_IDENTITE, []
             elif "ERREUR_THÉMATIQUE" in reponse_albert:
                 return self.REPONSE_VIOLATION_THEMATIQUE, []
+            elif "ERREUR_MALVEILLANCE" in reponse_albert:
+                return self.REPONSE_VIOLATION_MALVEILLANCE, []
             return reponse_albert, paragraphes
         else:
             return ClientAlbert.REPONSE_PAR_DEFAULT, []
