@@ -93,6 +93,7 @@
       gap: 8px;
       img {
         animation: rotation 1s linear infinite;
+        width: 24px;
       }
     }
 
