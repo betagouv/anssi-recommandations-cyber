@@ -96,14 +96,21 @@
 
 <style lang="scss">
   .question-utilisateur {
-    padding: 0 16px 24px;
     position: fixed;
     max-width: 840px;
     margin: 0 auto;
     width: calc(100% - 32px);
-    bottom: 0;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
+    border-radius: 16px;
+    border: 1px solid #DDDDDD;
+    background: #F6F6F6;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
 
     &:focus-within .information-donnees-personnelles {
       display: block;
@@ -122,18 +129,16 @@
     }
 
     textarea {
-      padding: 12px 54px 12px 12px;
       width: 100%;
       box-sizing: border-box;
-      border-radius: 16px;
-      border: 1px solid #DDDDDD;
-      background: #F6F6F6;
       text-overflow: ellipsis;
       font-family: Marianne;
       font-size: 1rem;
       line-height: 1.5rem;
       overflow: hidden;
       resize: none;
+      border: none;
+      background: none;
 
       &::placeholder {
         color: #666666;
@@ -142,6 +147,7 @@
 
     button {
       width: 40px;
+      min-width: 40px;
       height: 40px;
       border-radius: 8px;
       background: #E5E5E5;
@@ -151,9 +157,6 @@
       justify-content: center;
       line-height: 24px;
       padding: 0;
-      position: absolute;
-      bottom: 29px;
-      right: 24px;
       cursor: pointer;
     }
   }
