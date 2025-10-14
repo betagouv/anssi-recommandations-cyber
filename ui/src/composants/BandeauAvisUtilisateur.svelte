@@ -2,6 +2,7 @@
     import { infobulle } from '../directives/infobulle';
     import { type AvisUtilisateur, storeAvisUtilisateur } from "../stores/avisUtilisateur.store";
     import {soumetsAvisUtilisateurAPI} from "../client.api";
+    import { SvelteSet } from "svelte/reactivity";
 
     let { idInteraction }: { idInteraction: string } = $props();
     const avisUtilisateur: AvisUtilisateur | undefined = $derived.by(() => $storeAvisUtilisateur[idInteraction]);
@@ -11,6 +12,7 @@
             : "Expliquez-nous ce qui peut être amélioré 🛠️"
     );
     let commentaire: string = $state("");
+    let tagsSelectionnes: SvelteSet<string> = new SvelteSet<string>();
 
     const afficheAvisUtilisateur = async (positif: boolean) => {
         storeAvisUtilisateur.ajouteAvis(idInteraction, { positif, soumis: false });
@@ -18,8 +20,34 @@
 
     const soumetsAvisUtilisateur = async (avecCommentaire: boolean) => {
         storeAvisUtilisateur.soumetsAvis(idInteraction);
-        await soumetsAvisUtilisateurAPI(idInteraction, avisUtilisateur.positif, avecCommentaire ? commentaire : undefined);
+        await soumetsAvisUtilisateurAPI(
+          idInteraction,
+          avisUtilisateur.positif,
+          avecCommentaire ? commentaire : undefined,
+          tagsSelectionnes.size > 0 ? [...tagsSelectionnes] : undefined
+        );
+        commentaire = "";
+        tagsSelectionnes.clear();
     }
+
+    const tags = [
+      {
+        "label": "Facile à comprendre",
+        "id": "facileacomprendre"
+      },
+      {
+        "label": "Complète",
+        "id": "complete"
+      },
+      {
+        "label": "Bien structurée",
+        "id": "bienstructuree"
+      },
+      {
+        "label": "Sources utiles",
+        "id": "sourcesutiles"
+      }
+    ]
 </script>
 
 <div class="avis-utilisateur">
@@ -49,6 +77,19 @@
                 <span>Facultatif, mais super utile 😉 !</span>
                 <span class="titre"><b>{titreBlocAvis}</b></span>
             </div>
+            <dsfr-tags-group
+              size="md"
+              type="pressable"
+              groupMarkup="ul"
+              hasIcon={false}
+              {tags}
+              onselected={(e: CustomEvent) => {
+                tagsSelectionnes.add(e.detail);
+              }}
+              onunselected={(e: CustomEvent) => {
+                tagsSelectionnes.delete(e.detail);
+              }}
+            ></dsfr-tags-group>
             <dsfr-input
                 label="Ajouter un commentaire"
                 type="text"
