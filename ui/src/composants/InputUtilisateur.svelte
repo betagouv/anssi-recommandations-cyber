@@ -77,21 +77,23 @@
 
 <svelte:body onkeydown={touchePressee} />
 <form onsubmit={soumetQuestion} class="question-utilisateur">
-  <span class="information-donnees-personnelles">Ne partagez aucune donnée personnelle ni information sensible sur votre organisation.</span>
-  {#if afficheInputPromptSysteme}
-    <InputPromptSysteme bind:prompt={promptSysteme} />
-  {/if}
-  <textarea
-    placeholder="Posez votre question cyber"
-    bind:value={question}
-    bind:this={elementTextarea}
-    oninput={redimensionneZoneDeTexte}
-    onkeydown={gereTouchePresseeZoneDeTexte}
-    rows="1"
-  ></textarea>
-  <button type="submit">
-    <img src="./icons/fleche-envoi-message.svg" alt="" />
-  </button>
+    {#if afficheInputPromptSysteme}
+      <InputPromptSysteme bind:prompt={promptSysteme} />
+    {/if}
+  <div>
+    <span class="information-donnees-personnelles">Ne partagez aucune donnée personnelle ni information sensible sur votre organisation.</span>
+    <textarea
+      placeholder="Posez votre question cyber"
+      bind:value={question}
+      bind:this={elementTextarea}
+      oninput={redimensionneZoneDeTexte}
+      onkeydown={gereTouchePresseeZoneDeTexte}
+      rows="1"
+    ></textarea>
+    <button type="submit">
+      <img src="./icons/fleche-envoi-message.svg" alt="" />
+    </button>
+  </div>
 </form>
 
 <style lang="scss">
@@ -103,13 +105,16 @@
     border-radius: 16px;
     border: 1px solid #DDDDDD;
     background: #F6F6F6;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
     padding: 12px;
     box-sizing: border-box;
     margin: 0 16px;
+
+    & > div {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+    }
 
     @media screen and (min-width: 768px) {
       left: 50%;
