@@ -14,17 +14,9 @@
   <dsfr-badge
     slot="headerbadge"
     label="Bêta"
-    type="accent"
-    accent="green-emeraude"
+    type="status"
+    status="success"
     size="sm"
-    has-icon={false}
-    ellipsis={false}
+    hasNoIcon={true}
   ></dsfr-badge>
 </dsfr-header>
-
-<style lang="scss">
-  :root {
-    --raised-shadow: 0 1px 3px var(--shadow-color);
-    --shadow-color: rgba(0,0,18,.16);
-  }
-</style>
