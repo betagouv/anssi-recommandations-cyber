@@ -43,7 +43,12 @@
           {#each message.references as reference, index (index)}
             <div class="source">
               <span>{reference.nom_document}</span>
-              <a href="{reference.url}#page={reference.numero_page}" target="_blank" rel="noopener">Page {reference.numero_page} <img src="./icons/lien-externe.svg" alt="" /></a>
+              <dsfr-link
+                label="Page {reference.numero_page}"
+                href="{reference.url}#page={reference.numero_page}"
+                blank
+                title={reference.nom_document}
+              />
               {#if index !== message.references.length - 1}
                 <hr>
               {/if}
@@ -167,22 +172,6 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-
-        a {
-          color: #000091;
-          text-decoration: underline;
-          text-decoration-thickness: 2px;
-          text-underline-offset: 5px;
-          display: flex;
-          flex-direction: row;
-          gap: 8px;
-          align-items: baseline;
-
-          img {
-            width: 16px;
-            height: 16px;
-          }
-        }
 
         span {
           font-weight: bold;

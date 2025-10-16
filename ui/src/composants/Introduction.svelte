@@ -3,8 +3,9 @@
   import { storeConversation } from "../stores/conversation.store";
   import { publieMessageUtilisateurAPI } from "../client.api";
 
-  async function rempliQuestion(e: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) {
-    const suggestion: string = e.currentTarget.innerText;
+  async function rempliQuestion(e: MouseEvent & { currentTarget: EventTarget & { label: string }} ) {
+    e.preventDefault();
+    const suggestion: string = e.currentTarget.label;
     storeAffichage.estEnAttenteDeReponse(true);
     storeConversation.ajouteMessageUtilisateur(suggestion);
     await storeAffichage.scrollVersDernierMessage();
@@ -23,9 +24,27 @@
   <p>Posez votre question ou choisissez parmi nos suggestions :</p>
 
   <ul>
-    <li><button onclick={rempliQuestion}>Les réflexes à adopter en cas d’attaque par rançongiciel</button></li>
-    <li><button onclick={rempliQuestion}>Organiser un exercice de gestion de crise cyber</button></li>
-    <li><button onclick={rempliQuestion}>Réaliser une cartographie de mon SI</button></li>
+    <li>
+      <dsfr-link
+        label="Les réflexes à adopter en cas d’attaque par rançongiciel"
+        href="#"
+        onclick={rempliQuestion}
+      ></dsfr-link>
+    </li>
+    <li>
+      <dsfr-link
+        label="Organiser un exercice de gestion de crise cyber"
+        href="#"
+        onclick={rempliQuestion}
+      ></dsfr-link>
+    </li>
+    <li>
+      <dsfr-link
+        label="Réaliser une cartographie de mon SI"
+        href="#"
+        onclick={rempliQuestion}
+      ></dsfr-link>
+    </li>
   </ul>
 </div>
 
@@ -55,7 +74,6 @@
         flex-direction: row;
         gap: 8px;
         align-items: center;
-        cursor: pointer;
 
         &:before {
           content: url("/icons/fleche-bas-scroll.svg");
@@ -63,19 +81,6 @@
           display: flex;
           width: 16px;
           height: 16px;
-        }
-
-        button {
-          background: none;
-          border: none;
-          font-family: Marianne;
-          font-size: 1rem;
-          line-height: 1.5rem;
-          text-decoration: underline;
-          text-underline-offset: 5px;
-          color: #000091;
-          cursor: pointer;
-          text-align: left;
         }
       }
     }
