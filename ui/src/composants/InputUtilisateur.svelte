@@ -143,6 +143,7 @@
       transform: translateY(-100%);
       display: none;
       left: 0;
+      background: white;
     }
 
     textarea {
