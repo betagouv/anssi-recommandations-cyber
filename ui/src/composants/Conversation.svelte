@@ -194,7 +194,7 @@
       right: 0;
       height: 200px;
       pointer-events: none;
-      background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent);
+      background: linear-gradient(to top, white 0%, white 40%, transparent 100%);
       opacity: 0;
       transition: opacity 0.2s ease;
     }
