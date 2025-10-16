@@ -73,19 +73,18 @@ class ClientAlbert:
             method="semantic",
         )
 
-        donnees = self.recupere_data(payload)
-        paragraphes = []
-        for resultat in donnees:
-            paragraphes.append(
-                Paragraphe(
-                    contenu=resultat.chunk.content,
-                    url=resultat.chunk.metadata.source_url,
-                    score_similarite=resultat.score,
-                    numero_page=resultat.chunk.metadata.page,
-                    nom_document=resultat.chunk.metadata.document_name,
-                )
+        donnees = self.recupere_donnees(payload)
+
+        def _transforme_en_paragraphe(donnee):
+            return Paragraphe(
+                contenu=donnee.chunk.content,
+                url=donnee.chunk.metadata.source_url,
+                score_similarite=donnee.score,
+                numero_page=donnee.chunk.metadata.page,
+                nom_document=donnee.chunk.metadata.document_name,
             )
-        return paragraphes
+
+        return list(map(_transforme_en_paragraphe, donnees))
 
     def pose_question(
         self, question: str, prompt: Optional[str] = None
