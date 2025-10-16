@@ -17,5 +17,11 @@ export const storeAvisUtilisateur = {
       [idInteraction]: { ...avisActuel[idInteraction], soumis: true },
     }));
   },
+  supprimeAvis: (idInteraction: string) => {
+    update((avisActuel) => {
+      delete avisActuel[idInteraction];
+      return avisActuel;
+    });
+  },
   subscribe,
 };
