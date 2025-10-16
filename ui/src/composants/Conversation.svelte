@@ -137,6 +137,7 @@
         user-select: none;
         cursor: pointer;
         position: relative;
+        list-style: none;
 
         img {
           position: absolute;
@@ -150,7 +151,9 @@
         }
 
         &::-webkit-details-marker {
-          display: none;
+          content: "";
+          display: none !important;
+          visibility: hidden;
         }
       }
 
