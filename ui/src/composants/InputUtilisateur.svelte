@@ -142,6 +142,7 @@
       top: -8px;
       transform: translateY(-100%);
       display: none;
+      left: 0;
     }
 
     textarea {
