@@ -73,7 +73,7 @@ class ClientAlbert:
             method="semantic",
         )
 
-        donnees = self.recupere_donnees(payload)
+        donnees = self.recherche(payload)
 
         def _transforme_en_paragraphe(donnee):
             return Paragraphe(
@@ -159,7 +159,7 @@ class ClientAlbert:
         else:
             return ClientAlbert.REPONSE_PAR_DEFAULT, []
 
-    def recupere_donnees(self, payload: RecherchePayload) -> list[ResultatRecherche]:
+    def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
             response: requests.Response = self.client_http.post(
                 "/search",
