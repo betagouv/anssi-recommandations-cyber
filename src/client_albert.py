@@ -73,16 +73,16 @@ class ClientAlbert:
             method="semantic",
         )
 
-        data = self.recupere_data(payload)
+        donnees = self.recupere_data(payload)
         paragraphes = []
-        for result in data:
+        for resultat in donnees:
             paragraphes.append(
                 Paragraphe(
-                    contenu=result.chunk.content,
-                    url=result.chunk.metadata.source_url,
-                    score_similarite=result.score,
-                    numero_page=result.chunk.metadata.page,
-                    nom_document=result.chunk.metadata.document_name,
+                    contenu=resultat.chunk.content,
+                    url=resultat.chunk.metadata.source_url,
+                    score_similarite=resultat.score,
+                    numero_page=resultat.chunk.metadata.page,
+                    nom_document=resultat.chunk.metadata.document_name,
                 )
             )
         return paragraphes
@@ -160,7 +160,7 @@ class ClientAlbert:
         else:
             return ClientAlbert.REPONSE_PAR_DEFAULT, []
 
-    def recupere_data(self, payload: RecherchePayload) -> list[ResultatRecherche]:
+    def recupere_donnees(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
             response: requests.Response = self.client_http.post(
                 "/search",
@@ -170,9 +170,9 @@ class ClientAlbert:
             response.raise_for_status()
             brut = response.json()
 
-            data = brut.get("data", [])
+            donnees = brut.get("data", [])
             resultats: list[ResultatRecherche] = []
-            for r in data:
+            for r in donnees:
                 chunk_dict = r.get("chunk", {})
                 meta_dict = chunk_dict.get("metadata", {})
 
