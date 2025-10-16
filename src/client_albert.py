@@ -58,9 +58,9 @@ class ClientAlbert:
     ) -> None:
         self.id_collection = configuration.collection_id_anssi_lab
         self.modele_reponse = configuration.modele_reponse
-        self.client = client_openai
         self.PROMPT_SYSTEME = prompt_systeme
-        self.session = client_http
+        self.client_openai = client_openai
+        self.client_http = client_http
         self.temps_reponse_maximum_recherche_paragraphes = (
             configuration.temps_reponse_maximum_recherche_paragraphes
         )
@@ -120,7 +120,7 @@ class ClientAlbert:
         self, messages: list[ChatCompletionMessageParam]
     ) -> list[Choice]:
         try:
-            propositions_albert = self.client.chat.completions.create(
+            propositions_albert = self.client_openai.chat.completions.create(
                 messages=messages,
                 model=self.modele_reponse,
                 stream=False,
@@ -162,7 +162,7 @@ class ClientAlbert:
 
     def recupere_data(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
-            response: requests.Response = self.session.post(
+            response: requests.Response = self.client_http.post(
                 "/search",
                 json=payload._asdict(),
                 timeout=self.temps_reponse_maximum_recherche_paragraphes,
