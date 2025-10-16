@@ -12,8 +12,8 @@ from openai import APITimeoutError
 def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
     client_albert = fabrique_client_albert()
 
-    assert client_albert.client.__class__.__name__ == "OpenAI"
-    assert client_albert.session.__class__.__name__ == "ClientAlbertHttp"
+    assert client_albert.client_openai.__class__.__name__ == "OpenAI"
+    assert client_albert.client_http.__class__.__name__ == "ClientAlbertHttp"
     assert (
         "Tu es un service développé par ou pour l’ANSSI" in client_albert.PROMPT_SYSTEME
     )
