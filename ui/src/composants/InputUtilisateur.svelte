@@ -90,7 +90,7 @@
       onkeydown={gereTouchePresseeZoneDeTexte}
       rows="1"
     ></textarea>
-    <button type="submit">
+    <button type="submit" class:actif={question !== ''}>
       <img src="./icons/fleche-envoi-message.svg" alt="" />
     </button>
   </div>
@@ -180,6 +180,14 @@
       line-height: 24px;
       padding: 0;
       cursor: pointer;
+
+      &.actif {
+        background: #000091;
+
+        img {
+          filter: brightness(0) invert(1);
+        }
+      }
     }
   }
 </style>
