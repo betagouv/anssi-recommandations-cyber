@@ -21,11 +21,15 @@
 
     const afficheAvisUtilisateur = async (positif: boolean) => {
         remiseAZero();
-        storeAvisUtilisateur.ajouteAvis(idInteraction, { positif, soumis: false });
-        await soumetsAvisUtilisateurAPI(
-          idInteraction,
-          positif,
-        );
+        if(!avisUtilisateur || (avisUtilisateur && avisUtilisateur.positif !== positif)) {
+          storeAvisUtilisateur.ajouteAvis(idInteraction, { positif, soumis: false });
+          await soumetsAvisUtilisateurAPI(
+            idInteraction,
+            positif,
+          );
+        } else {
+          storeAvisUtilisateur.supprimeAvis(idInteraction);
+        }
     }
 
     const soumetsAvisUtilisateur = async (avecCommentaire: boolean) => {
@@ -175,6 +179,9 @@
     }
 
     .conteneur-emoji-avis {
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
       button {
         width: 40px;
