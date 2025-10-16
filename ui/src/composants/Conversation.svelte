@@ -42,7 +42,7 @@
         <div class="sources">
           {#each message.references as reference, index (index)}
             <div class="source">
-              <span>{reference.nom_document}</span>
+              <span class="nom-document">{reference.nom_document}</span>
               <dsfr-link
                 label="Page {reference.numero_page}"
                 href="{reference.url}#page={reference.numero_page}"
@@ -174,8 +174,9 @@
         flex-direction: column;
         gap: 8px;
 
-        span {
+        .nom-document {
           font-weight: bold;
+          overflow-wrap: anywhere;
         }
 
         hr {
