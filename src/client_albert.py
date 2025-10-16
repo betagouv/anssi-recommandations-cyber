@@ -81,7 +81,7 @@ class ClientAlbert:
                 url=donnee.chunk.metadata.source_url,
                 score_similarite=donnee.score,
                 numero_page=donnee.chunk.metadata.page,
-                nom_document=donnee.chunk.metadata.document_name,
+                nom_document=donnee.chunk.metadata.nom_document,
             )
 
         return list(map(_transforme_en_paragraphe, donnees))
@@ -161,14 +161,13 @@ class ClientAlbert:
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
-            response: requests.Response = self.client_http.post(
+            reponse: requests.Response = self.client_http.post(
                 "/search",
                 json=payload._asdict(),
                 timeout=self.temps_reponse_maximum_recherche_paragraphes,
             )
-            response.raise_for_status()
-            brut = response.json()
-
+            reponse.raise_for_status()
+            brut = reponse.json()
             donnees = brut.get("data", [])
             resultats: list[ResultatRecherche] = []
             for r in donnees:
@@ -178,7 +177,7 @@ class ClientAlbert:
                 metadata = RechercheMetadonnees(
                     source_url=meta_dict.get("source_url", ""),
                     page=meta_dict.get("page", 0),
-                    document_name=meta_dict.get("document_name", ""),
+                    nom_document=meta_dict.get("document_name", ""),
                 )
                 chunk = RechercheChunk(
                     content=chunk_dict.get("content", ""),
