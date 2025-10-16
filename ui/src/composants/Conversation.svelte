@@ -86,10 +86,11 @@
     font-size: 1rem;
     line-height: 1.5rem;
     max-width: 840px;
-    margin: 0 auto 48px;
+    margin: 0 auto 120px;
 
     #cible-scroll {
       scroll-margin-bottom: 120px;
+      display: none;
     }
 
     .attente-reponse {
