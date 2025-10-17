@@ -190,7 +190,7 @@ class ClientAlbert:
                     )
                 )
 
-        except requests.Timeout:
+        except (requests.HTTPError, requests.Timeout):
             resultats = []
 
         return resultats
