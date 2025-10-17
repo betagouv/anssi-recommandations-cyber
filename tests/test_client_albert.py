@@ -5,7 +5,12 @@ from openai import OpenAI
 
 from configuration import Albert
 from client_albert import ClientAlbert, fabrique_client_albert
-from schemas.client_albert import Paragraphe
+from schemas.client_albert import (
+    Paragraphe,
+    RechercheChunk,
+    RechercheMetadonnees,
+    RecherchePayload,
+)
 from openai import APITimeoutError
 
 
@@ -29,6 +34,24 @@ FAUX_PARAMETRES_ALBERT = Albert.Parametres(  # type: ignore [attr-defined]
     temps_reponse_maximum_pose_question=10.0,
     temps_reponse_maximum_recherche_paragraphes=1.0,
 )
+FAUX_RETOURS_ALBERT_API = {
+    "route_search": type(
+        "",
+        (object,),
+        {
+            "json": lambda _: {
+                "data": [
+                    {
+                        "chunk": {"content": "contenu"},
+                        "metadata": {"source_url": "", "page": 0, "document_name": ""},
+                        "score": "0.9",
+                    }
+                ]
+            },
+            "raise_for_status": lambda _: None,
+        },
+    )
+}
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 
@@ -286,3 +309,37 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
 
     retour = client.pose_question("Q ?")
     assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+
+
+def test_recherche_appelle_la_route_search_d_albert(
+    client_avec_reponse, mock_client_http
+):
+    mock_client_http.post.return_value = FAUX_RETOURS_ALBERT_API["route_search"]()
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    client_avec_reponse.recherche(payload)
+
+    mock_client_http.post.assert_called_once()
+
+    _, call_kwargs = mock_client_http.post.call_args
+    assert call_kwargs["json"] == payload._asdict()
+
+
+def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
+    client_avec_reponse, mock_client_http
+):
+    mock_client_http.post.return_value = FAUX_RETOURS_ALBERT_API["route_search"]()
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    retour = client_avec_reponse.recherche(payload)
+
+    chunks = list(map(lambda r: r.chunk, retour))
+    scores = list(map(lambda r: r.score, retour))
+
+    assert chunks == [
+        RechercheChunk(
+            content="contenu",
+            metadata=RechercheMetadonnees(source_url="", page=0, nom_document=""),
+        )
+    ]
+    assert scores == [0.9]

@@ -186,7 +186,7 @@ class ClientAlbert:
                 resultats.append(
                     ResultatRecherche(
                         chunk=chunk,
-                        score=r.get("score", 0.0),
+                        score=float(r.get("score", "0.0")),
                     )
                 )
 
