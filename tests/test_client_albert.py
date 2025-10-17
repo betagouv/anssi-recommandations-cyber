@@ -343,3 +343,27 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
         )
     ]
     assert scores == [0.9]
+
+
+@pytest.mark.parametrize(
+    "erreur",
+    [
+        pytest.param(
+            "404 Client Error: Not Found for url: https://albert.api.etalab.gouv.fr/v1/search",
+            id="si_api_retourne_404",
+        ),
+        pytest.param(
+            "500 Server Error: Internal Server Error for url: http://albert.api.etalab.gouv.fr/v1/search",
+            id="si_api_retourne_500",
+        ),
+    ],
+)
+def test_recherche_retourne_gracieusement_en_cas_de_probleme(
+    client_avec_reponse, mock_client_http, erreur
+):
+    mock_client_http.post.side_effect = requests.HTTPError(erreur)
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    retour = client_avec_reponse.recherche(payload)
+
+    assert retour == []
