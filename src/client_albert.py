@@ -1,5 +1,4 @@
 import requests
-from configuration import logging
 from pathlib import Path
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletion
@@ -12,7 +11,7 @@ from schemas.client_albert import (
     RechercheChunk,
     RechercheMetadonnees,
 )
-from configuration import recupere_configuration, Albert
+from configuration import logging, recupere_configuration, Albert
 from typing import Optional, cast
 from openai.types import CompletionUsage
 import time
