@@ -1,3 +1,4 @@
+import logging
 import os
 from typing_extensions import NamedTuple
 from enum import StrEnum, auto
@@ -5,6 +6,9 @@ from enum import StrEnum, auto
 # `mypy` ne comprend pas les classes imbriquées dans des `NamedTuple` (alors que c'est du `Python` valide...);
 # _c.f._ https://github.com/python/mypy/issues/15775 .
 # mypy: disable-error-code="misc, attr-defined, name-defined"
+
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 class Albert(NamedTuple):
