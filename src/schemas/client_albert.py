@@ -26,7 +26,7 @@ class RecherchePayload(NamedTuple):
 class RechercheMetadonnees(NamedTuple):
     source_url: str
     page: int
-    document_name: str
+    nom_document: str
 
 
 class RechercheChunk(NamedTuple):
