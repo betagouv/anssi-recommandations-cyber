@@ -52,18 +52,18 @@ class ClientAlbert:
 
     def __init__(
         self,
-        configuration: Albert.Parametres,  # type: ignore [name-defined]
+        configuration: Albert,  # type: ignore [name-defined]
         client_openai: OpenAI,
         client_http: requests.Session,
         prompt_systeme: str,
     ) -> None:
-        self.id_collection = configuration.collection_id_anssi_lab
-        self.modele_reponse = configuration.modele_reponse
+        self.id_collection = configuration.parametres.collection_id_anssi_lab
+        self.modele_reponse = configuration.parametres.modele_reponse
         self.PROMPT_SYSTEME = prompt_systeme
         self.client_openai = client_openai
         self.client_http = client_http
         self.temps_reponse_maximum_recherche_paragraphes = (
-            configuration.temps_reponse_maximum_recherche_paragraphes
+            configuration.client.temps_reponse_maximum_recherche_paragraphes
         )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
@@ -192,7 +192,9 @@ class ClientAlbert:
                 )
 
         except (requests.HTTPError, requests.Timeout) as erreur:
-            logging.error(f"Route `/search` de l'API Albert retourne une erreur: {erreur}")
+            logging.error(
+                f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
+            )
             resultats = []
 
         return resultats
@@ -204,7 +206,7 @@ def fabrique_client_albert() -> ClientAlbert:
     client_openai = OpenAI(
         base_url=configuration.albert.client.base_url,
         api_key=configuration.albert.client.api_key,
-        timeout=configuration.albert.parametres.temps_reponse_maximum_pose_question,
+        timeout=configuration.albert.client.temps_reponse_maximum_pose_question,
     )
 
     client_http = ClientAlbertHttp(
@@ -216,7 +218,7 @@ def fabrique_client_albert() -> ClientAlbert:
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
 
     return ClientAlbert(
-        configuration=configuration.albert.parametres,
+        configuration=configuration.albert,
         client_openai=client_openai,
         client_http=client_http,
         prompt_systeme=prompt_systeme,

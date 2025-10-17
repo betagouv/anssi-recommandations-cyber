@@ -27,13 +27,21 @@ def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> 
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
 )
-FAUX_PARAMETRES_ALBERT = Albert.Parametres(  # type: ignore [attr-defined]
-    modele_reponse="",
-    collection_nom_anssi_lab="",
-    collection_id_anssi_lab=42,
-    temps_reponse_maximum_pose_question=10.0,
-    temps_reponse_maximum_recherche_paragraphes=1.0,
+FAUSSE_CONFIGURATION_ALBERT = Albert(
+    client=Albert.Client(  # type: ignore [attr-defined]
+        api_key="",
+        base_url="",
+        temps_reponse_maximum_pose_question=10.0,
+        temps_reponse_maximum_recherche_paragraphes=1.0,
+    ),
+    parametres=Albert.Parametres(  # type: ignore [attr-defined]
+        modele_reponse="",
+        collection_nom_anssi_lab="",
+        collection_id_anssi_lab=42,
+    ),
 )
+
+
 FAUX_RETOURS_ALBERT_API = {
     "route_search": type(
         "",
@@ -93,7 +101,7 @@ def mock_client_http():
 @pytest.fixture
 def client_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
     return ClientAlbert(
-        configuration=FAUX_PARAMETRES_ALBERT,
+        configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_avec_reponse,
         client_http=mock_client_http,
         prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
@@ -103,7 +111,7 @@ def client_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
 @pytest.fixture
 def client_sans_reponse(mock_client_openai_sans_reponse, mock_client_http):
     return ClientAlbert(
-        configuration=FAUX_PARAMETRES_ALBERT,
+        configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_sans_reponse,
         client_http=mock_client_http,
         prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
@@ -202,7 +210,7 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
     )
 
     client_avec_openai_timeout = ClientAlbert(
-        configuration=FAUX_PARAMETRES_ALBERT,
+        configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_openai,
         client_http=Mock(),
         prompt_systeme="PROMPT {chunks}",
@@ -242,7 +250,7 @@ def test_pose_question_illegale(erreur: str, message_attendu: str):
     )
 
     mock_client_albert = ClientAlbert(
-        configuration=FAUX_PARAMETRES_ALBERT,
+        configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai,
         client_http=Mock(),
         prompt_systeme="PROMPT {chunks}",
@@ -274,13 +282,7 @@ def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
     mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
 
     client = ClientAlbert(
-        configuration=Albert.Parametres(
-            modele_reponse="x",
-            collection_nom_anssi_lab="",
-            collection_id_anssi_lab=1,
-            temps_reponse_maximum_pose_question=10.0,
-            temps_reponse_maximum_recherche_paragraphes=0.01,
-        ),
+        configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_sans_reponse,
         client_http=mock_client_http,
         prompt_systeme="PROMPT {chunks}",
@@ -295,13 +297,7 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
 ):
     mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
     client = ClientAlbert(
-        configuration=Albert.Parametres(
-            modele_reponse="x",
-            collection_nom_anssi_lab="",
-            collection_id_anssi_lab=1,
-            temps_reponse_maximum_pose_question=10.0,
-            temps_reponse_maximum_recherche_paragraphes=0.01,
-        ),
+        configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_sans_reponse,
         client_http=mock_client_http,
         prompt_systeme="PROMPT {chunks}",
