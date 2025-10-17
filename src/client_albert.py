@@ -1,4 +1,5 @@
 import requests
+from configuration import logging
 from pathlib import Path
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletion
@@ -190,7 +191,8 @@ class ClientAlbert:
                     )
                 )
 
-        except (requests.HTTPError, requests.Timeout):
+        except (requests.HTTPError, requests.Timeout) as erreur:
+            logging.error(f"Route `/search` de l'API Albert retourne une erreur: {erreur}")
             resultats = []
 
         return resultats
