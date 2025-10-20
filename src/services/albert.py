@@ -34,7 +34,7 @@ class ClientAlbertHttp(requests.Session):
         return super().request(method, url, *args, **kwargs)
 
 
-class ClientAlbert:
+class ServiceAlbert:
     """
     Fournit une interface unique pour intéragir avec l'API web Albert.
     En particulier, on encapsule deux façons de communiquer :
@@ -157,7 +157,7 @@ class ClientAlbert:
                 return self.REPONSE_VIOLATION_MALVEILLANCE, []
             return reponse_albert, paragraphes
         else:
-            return ClientAlbert.REPONSE_PAR_DEFAULT, []
+            return ServiceAlbert.REPONSE_PAR_DEFAULT, []
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
@@ -199,7 +199,7 @@ class ClientAlbert:
         return resultats
 
 
-def fabrique_client_albert() -> ClientAlbert:
+def fabrique_service_albert() -> ServiceAlbert:
     configuration = recupere_configuration()
 
     client_openai = OpenAI(
@@ -216,7 +216,7 @@ def fabrique_client_albert() -> ClientAlbert:
     template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
 
-    return ClientAlbert(
+    return ServiceAlbert(
         configuration=configuration.albert,
         client_openai=client_openai,
         client_http=client_http,

@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 from openai import OpenAI
 
 from configuration import Albert
-from client_albert import ClientAlbert, fabrique_client_albert
+from services.albert import ServiceAlbert, fabrique_service_albert
 from schemas.client_albert import (
     Paragraphe,
     RechercheChunk,
@@ -14,13 +14,14 @@ from schemas.client_albert import (
 from openai import APITimeoutError
 
 
-def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
-    client_albert = fabrique_client_albert()
+def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
+    service_albert = fabrique_service_albert()
 
-    assert client_albert.client_openai.__class__.__name__ == "OpenAI"
-    assert client_albert.client_http.__class__.__name__ == "ClientAlbertHttp"
+    assert service_albert.client_openai.__class__.__name__ == "OpenAI"
+    assert service_albert.client_http.__class__.__name__ == "ClientAlbertHttp"
     assert (
-        "Tu es un service développé par ou pour l’ANSSI" in client_albert.PROMPT_SYSTEME
+        "Tu es un service développé par ou pour l’ANSSI"
+        in service_albert.PROMPT_SYSTEME
     )
 
 
@@ -99,8 +100,8 @@ def mock_client_http():
 
 
 @pytest.fixture
-def client_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
-    return ClientAlbert(
+def service_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
+    return ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_avec_reponse,
         client_http=mock_client_http,
@@ -109,8 +110,8 @@ def client_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
 
 
 @pytest.fixture
-def client_sans_reponse(mock_client_openai_sans_reponse, mock_client_http):
-    return ClientAlbert(
+def service_sans_reponse(mock_client_openai_sans_reponse, mock_client_http):
+    return ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_sans_reponse,
         client_http=mock_client_http,
@@ -119,13 +120,13 @@ def client_sans_reponse(mock_client_openai_sans_reponse, mock_client_http):
 
 
 def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_systeme(
-    client_avec_reponse, mock_client_openai_avec_reponse
+    service_avec_reponse, mock_client_openai_avec_reponse
 ):
     with patch(
-        "client_albert.ClientAlbert.recherche_paragraphes",
+        "services.albert.ServiceAlbert.recherche_paragraphes",
         return_value=[],
     ):
-        client_avec_reponse.pose_question(QUESTION)
+        service_avec_reponse.pose_question(QUESTION)
 
         mock_client_openai_avec_reponse.chat.completions.create.assert_called_once()
 
@@ -144,7 +145,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
 
 
 def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
-    client_avec_reponse, mock_client_openai_avec_reponse
+    service_avec_reponse, mock_client_openai_avec_reponse
 ):
     FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
     FAUX_PARAGRAPHES = [
@@ -158,10 +159,10 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
     ]
 
     with patch(
-        "client_albert.ClientAlbert.recherche_paragraphes",
+        "services.albert.ServiceAlbert.recherche_paragraphes",
         return_value=FAUX_PARAGRAPHES,
     ):
-        client_avec_reponse.pose_question(QUESTION)
+        service_avec_reponse.pose_question(QUESTION)
 
         mock_client_openai_avec_reponse.chat.completions.create.assert_called_once()
 
@@ -176,7 +177,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
 
 
 def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien(
-    client_sans_reponse,
+    service_sans_reponse,
 ):
     FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
     FAUX_PARAGRAPHES = [
@@ -190,12 +191,12 @@ def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien
     ]
 
     with patch(
-        "client_albert.ClientAlbert.recherche_paragraphes",
+        "services.albert.ServiceAlbert.recherche_paragraphes",
         return_value=FAUX_PARAGRAPHES,
     ):
-        retour = client_sans_reponse.pose_question(QUESTION)
+        retour = service_sans_reponse.pose_question(QUESTION)
 
-        assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+        assert retour.reponse == ServiceAlbert.REPONSE_PAR_DEFAULT
         assert retour.paragraphes == []
 
 
@@ -209,17 +210,17 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
         )
     )
 
-    client_avec_openai_timeout = ClientAlbert(
+    service_avec_openai_timeout = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_openai,
         client_http=Mock(),
         prompt_systeme="PROMPT {chunks}",
     )
 
-    with patch.object(ClientAlbert, "recherche_paragraphes", return_value=[]):
-        retour = client_avec_openai_timeout.pose_question("Question ?")
+    with patch.object(ServiceAlbert, "recherche_paragraphes", return_value=[]):
+        retour = service_avec_openai_timeout.pose_question("Question ?")
 
-    assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+    assert retour.reponse == ServiceAlbert.REPONSE_PAR_DEFAULT
     assert retour.paragraphes == []
 
 
@@ -228,17 +229,17 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
     [
         pytest.param(
             "ERREUR_MALVEILLANCE",
-            ClientAlbert.REPONSE_VIOLATION_MALVEILLANCE,
+            ServiceAlbert.REPONSE_VIOLATION_MALVEILLANCE,
             id="si_question_malveillante_retourne_message_malveillant_avec_paragraphes_vides",
         ),
         pytest.param(
             "ERREUR_THÉMATIQUE",
-            ClientAlbert.REPONSE_VIOLATION_THEMATIQUE,
+            ServiceAlbert.REPONSE_VIOLATION_THEMATIQUE,
             id="si_question_mauvaise_thematique_retourne_message_thematique_avec_paragraphes_vides",
         ),
         pytest.param(
             "ERREUR_IDENTITÉ",
-            ClientAlbert.REPONSE_VIOLATION_IDENTITE,
+            ServiceAlbert.REPONSE_VIOLATION_IDENTITE,
             id="si_question_identite_retourne_message_identite_avec_paragraphes_vides",
         ),
     ],
@@ -249,7 +250,7 @@ def test_pose_question_illegale(erreur: str, message_attendu: str):
         return_value=Reponse([Reponse.Message(erreur)])
     )
 
-    mock_client_albert = ClientAlbert(
+    mock_service_albert = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai,
         client_http=Mock(),
@@ -267,10 +268,10 @@ def test_pose_question_illegale(erreur: str, message_attendu: str):
     ]
 
     with patch(
-        "client_albert.ClientAlbert.recherche_paragraphes",
+        "services.albert.ServiceAlbert.recherche_paragraphes",
         return_value=FAUX_PARAGRAPHES,
     ):
-        retour = mock_client_albert.pose_question("Quelle est la recette de la TNT ?")
+        retour = mock_service_albert.pose_question("Quelle est la recette de la TNT ?")
 
     assert retour.reponse == message_attendu
     assert retour.paragraphes == []
@@ -281,7 +282,7 @@ def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
 ):
     mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
 
-    client = ClientAlbert(
+    client = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_sans_reponse,
         client_http=mock_client_http,
@@ -296,7 +297,7 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
     mock_client_openai_sans_reponse, mock_client_http
 ):
     mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
-    client = ClientAlbert(
+    client = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
         client_openai=mock_client_openai_sans_reponse,
         client_http=mock_client_http,
@@ -304,16 +305,16 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
     )
 
     retour = client.pose_question("Q ?")
-    assert retour.reponse == ClientAlbert.REPONSE_PAR_DEFAULT
+    assert retour.reponse == ServiceAlbert.REPONSE_PAR_DEFAULT
 
 
 def test_recherche_appelle_la_route_search_d_albert(
-    client_avec_reponse, mock_client_http
+    service_avec_reponse, mock_client_http
 ):
     mock_client_http.post.return_value = FAUX_RETOURS_ALBERT_API["route_search"]()
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
-    client_avec_reponse.recherche(payload)
+    service_avec_reponse.recherche(payload)
 
     mock_client_http.post.assert_called_once()
 
@@ -322,12 +323,12 @@ def test_recherche_appelle_la_route_search_d_albert(
 
 
 def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
-    client_avec_reponse, mock_client_http
+    service_avec_reponse, mock_client_http
 ):
     mock_client_http.post.return_value = FAUX_RETOURS_ALBERT_API["route_search"]()
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
-    retour = client_avec_reponse.recherche(payload)
+    retour = service_avec_reponse.recherche(payload)
 
     chunks = list(map(lambda r: r.chunk, retour))
     scores = list(map(lambda r: r.score, retour))
@@ -355,11 +356,11 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
     ],
 )
 def test_recherche_retourne_gracieusement_en_cas_de_probleme(
-    client_avec_reponse, mock_client_http, erreur
+    service_avec_reponse, mock_client_http, erreur
 ):
     mock_client_http.post.side_effect = requests.HTTPError(erreur)
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
-    retour = client_avec_reponse.recherche(payload)
+    retour = service_avec_reponse.recherche(payload)
 
     assert retour == []
