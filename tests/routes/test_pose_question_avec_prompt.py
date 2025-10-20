@@ -7,7 +7,7 @@ from serveur import (
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
-from client_albert import ClientAlbert, fabrique_client_albert
+from services.albert import ServiceAlbert, fabrique_service_albert
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
@@ -30,16 +30,16 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         question="Qui es-tu ?",
     )
 
-    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client: Mock = Mock(spec=ServiceAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service.sauvegarde_interaction.return_value = "id-interaction-test"
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     with patch("main.recupere_configuration") as mock_conf:
         mock_conf.return_value = {

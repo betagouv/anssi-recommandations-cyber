@@ -7,7 +7,7 @@ from serveur import (
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
-from client_albert import ClientAlbert, fabrique_client_albert
+from services.albert import ServiceAlbert, fabrique_service_albert
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -18,10 +18,10 @@ serveur = fabrique_serveur(Mode.PRODUCTION)
 
 def test_route_recherche_repond_correctement() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
-    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client: Mock = Mock(spec=ServiceAlbert)
     mock_client.recherche_paragraphes.return_value = []
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     try:
         client: TestClient = TestClient(serveur)
         response = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -35,10 +35,10 @@ def test_route_recherche_repond_correctement() -> None:
 
 def test_route_recherche_donnees_correctes() -> None:
     """Vérifie que l'endpoint recherche fonctionne"""
-    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client: Mock = Mock(spec=ServiceAlbert)
     mock_client.recherche_paragraphes.return_value = []
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     try:
         client: TestClient = TestClient(serveur)
         response = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -68,16 +68,16 @@ def test_route_pose_question_repond_correctement() -> None:
         question="Qui es-tu",
     )
 
-    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client: Mock = Mock(spec=ServiceAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service.sauvegarde_interaction.return_value = "id-interaction-test"
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     with patch("main.recupere_configuration") as mock_conf:
         mock_conf.return_value = {
@@ -117,16 +117,16 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
         question="Qui es-tu",
     )
 
-    mock_client = Mock(spec=ClientAlbert)
+    mock_client = Mock(spec=ServiceAlbert)
     mock_client.pose_question.return_value = mock_reponse
 
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.sauvegarde_interaction.return_value = "id-interaction-test"
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service.sauvegarde_interaction.return_value = "id-interaction-test"
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     with patch("main.recupere_configuration") as mock_conf:
         mock_conf.return_value = {
@@ -162,7 +162,7 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
             assert resultat["question"] == "Qui es-tu"
 
             mock_client.pose_question.assert_called_once()
-            mock_adaptateur.sauvegarde_interaction.assert_called_once()
+            mock_service.sauvegarde_interaction.assert_called_once()
         finally:
             serveur.dependency_overrides.clear()
 
@@ -179,10 +179,10 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
         ),
     ]
 
-    mock_client: Mock = Mock(spec=ClientAlbert)
+    mock_client: Mock = Mock(spec=ServiceAlbert)
     mock_client.recherche_paragraphes.return_value = mock_paragraphes
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     try:
         client: TestClient = TestClient(serveur)
         response = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -208,15 +208,15 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
 
 
 def test_route_retour_avec_mock_retourne_succes_200() -> None:
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = RetourPositif(
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service.ajoute_retour_utilisatrice.return_value = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
 
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     try:
         client = TestClient(serveur)
@@ -231,21 +231,21 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
         reponse = client.post("/api/retour", json=payload)
 
         assert reponse.status_code == 200
-        mock_adaptateur.ajoute_retour_utilisatrice.assert_called_once()
+        mock_service.ajoute_retour_utilisatrice.assert_called_once()
     finally:
         serveur.dependency_overrides.clear()
 
 
 def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = RetourPositif(
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service.ajoute_retour_utilisatrice.return_value = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
 
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     try:
         client = TestClient(serveur)
@@ -263,18 +263,18 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
 
         assert data["commentaire"] == "Très utile !"
         assert data["tags"] == [TagPositif.Complete, TagPositif.FacileAComprendre]
-        args, _ = mock_adaptateur.ajoute_retour_utilisatrice.call_args
+        args, _ = mock_service.ajoute_retour_utilisatrice.call_args
     finally:
         serveur.dependency_overrides.clear()
 
 
 def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur.ajoute_retour_utilisatrice.return_value = None
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service.ajoute_retour_utilisatrice.return_value = None
 
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     try:
         client = TestClient(serveur)
@@ -291,17 +291,17 @@ def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
         assert resp.status_code == 404
         assert resp.json() == {"detail": "Interaction non trouvée"}
 
-        mock_adaptateur.ajoute_retour_utilisatrice.assert_called_once()
+        mock_service.ajoute_retour_utilisatrice.assert_called_once()
 
     finally:
         serveur.dependency_overrides.clear()
 
 
 def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
-    mock_adaptateur = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur
+    ] = lambda: mock_service
 
     try:
         client = TestClient(serveur)
@@ -315,7 +315,7 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
         resp = client.post("/api/retour", json=payload)
 
         assert resp.status_code == 422
-        mock_adaptateur.ajoute_retour_utilisatrice.assert_not_called()
+        mock_service.ajoute_retour_utilisatrice.assert_not_called()
     finally:
         serveur.dependency_overrides.clear()
 
@@ -327,7 +327,7 @@ def test_pose_question_retourne_id_dans_body() -> None:
     mock_db = Mock(spec=AdaptateurBaseDeDonnees)
     mock_db.sauvegarde_interaction.return_value = "id-123"
 
-    serveur.dependency_overrides[fabrique_client_albert] = lambda: mock_client
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ] = lambda: mock_db

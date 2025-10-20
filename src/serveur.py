@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
 from typing import Dict
-from client_albert import ClientAlbert, fabrique_client_albert
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.client_albert import Paragraphe
@@ -9,6 +8,7 @@ from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
+from services.albert import ServiceAlbert, fabrique_service_albert
 from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
 from configuration import Mode
 
@@ -24,12 +24,12 @@ def route_sante() -> Dict[str, str]:
 @api_developpement.post("/pose_question_avec_prompt")
 def route_pose_question_avec_prompt(
     request: QuestionRequeteAvecPrompt,
-    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> ReponseQuestion:
-    reponse_question = client_albert.pose_question(request.question, request.prompt)
+    reponse_question = service_albert.pose_question(request.question, request.prompt)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
     return ReponseQuestion(
         **reponse_question.model_dump(), interaction_id=id_interaction
@@ -38,28 +38,28 @@ def route_pose_question_avec_prompt(
 
 @api_developpement.get("/prompt")
 def route_prompt_systeme(
-    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
 ) -> str:
-    return client_albert.PROMPT_SYSTEME
+    return service_albert.PROMPT_SYSTEME
 
 
 @api.post("/recherche")
 def route_recherche(
     request: QuestionRequete,
-    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
 ) -> list[Paragraphe]:
-    return client_albert.recherche_paragraphes(request.question)
+    return service_albert.recherche_paragraphes(request.question)
 
 
 @api.post("/pose_question")
 def route_pose_question(
     request: QuestionRequete,
-    client_albert: ClientAlbert = Depends(fabrique_client_albert),
+    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> ReponseQuestion:
-    reponse_question = client_albert.pose_question(request.question)
+    reponse_question = service_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
     return ReponseQuestion(
         **reponse_question.model_dump(), interaction_id=id_interaction
