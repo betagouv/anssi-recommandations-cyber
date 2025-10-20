@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 from openai import OpenAI
 
 from configuration import Albert
-from services.albert import ServiceAlbert, fabrique_service_albert
+from services.albert import ClientAlbertApi, ServiceAlbert, fabrique_service_albert
 from schemas.client_albert import (
     Paragraphe,
     RechercheChunk,
@@ -17,8 +17,8 @@ from openai import APITimeoutError
 def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
     service_albert = fabrique_service_albert()
 
-    assert service_albert.client_openai.__class__.__name__ == "OpenAI"
-    assert service_albert.client_http.__class__.__name__ == "ClientAlbertHttp"
+    assert service_albert.client.client_openai.__class__.__name__ == "OpenAI"
+    assert service_albert.client.client_http.__class__.__name__ == "ClientAlbertHttp"
     assert (
         "Tu es un service développé par ou pour l’ANSSI"
         in service_albert.PROMPT_SYSTEME
@@ -101,20 +101,26 @@ def mock_client_http():
 
 @pytest.fixture
 def service_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
+    client_albert_api = ClientAlbertApi(
+        mock_client_openai_avec_reponse, mock_client_http
+    )
+
     return ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
-        client_openai=mock_client_openai_avec_reponse,
-        client_http=mock_client_http,
+        client=client_albert_api,
         prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
     )
 
 
 @pytest.fixture
 def service_sans_reponse(mock_client_openai_sans_reponse, mock_client_http):
+    client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse, mock_client_http
+    )
+
     return ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
-        client_openai=mock_client_openai_sans_reponse,
-        client_http=mock_client_http,
+        client=client_albert_api,
         prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
     )
 
@@ -210,10 +216,11 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
         )
     )
 
+    client_albert_api = ClientAlbertApi(mock_openai, mock_client_http)
+
     service_avec_openai_timeout = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
-        client_openai=mock_openai,
-        client_http=Mock(),
+        client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
 
@@ -250,10 +257,10 @@ def test_pose_question_illegale(erreur: str, message_attendu: str):
         return_value=Reponse([Reponse.Message(erreur)])
     )
 
+    client_albert_api = ClientAlbertApi(mock_client_openai, Mock())
     mock_service_albert = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
-        client_openai=mock_client_openai,
-        client_http=Mock(),
+        client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
 
@@ -282,10 +289,12 @@ def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
 ):
     mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
 
+    client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse, mock_client_http
+    )
     client = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
-        client_openai=mock_client_openai_sans_reponse,
-        client_http=mock_client_http,
+        client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
 
@@ -297,10 +306,13 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
     mock_client_openai_sans_reponse, mock_client_http
 ):
     mock_client_http.post.side_effect = requests.Timeout("timeout simulé")
+
+    client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse, mock_client_http
+    )
     client = ServiceAlbert(
         configuration=FAUSSE_CONFIGURATION_ALBERT,
-        client_openai=mock_client_openai_sans_reponse,
-        client_http=mock_client_http,
+        client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
 

@@ -34,7 +34,7 @@ class ClientAlbertHttp(requests.Session):
         return super().request(method, url, *args, **kwargs)
 
 
-class ServiceAlbert:
+class ClientAlbertApi:
     """
     Fournit une interface unique pour intéragir avec l'API web Albert.
     En particulier, on encapsule deux façons de communiquer :
@@ -42,6 +42,12 @@ class ServiceAlbert:
     - une API qui suit le format OpenAI
     """
 
+    def __init__(self, client_openai: OpenAI, client_http: requests.Session):
+        self.client_openai = client_openai
+        self.client_http = client_http
+
+
+class ServiceAlbert:
     REPONSE_PAR_DEFAULT = (
         "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
     )
@@ -52,15 +58,13 @@ class ServiceAlbert:
     def __init__(
         self,
         configuration: Albert,  # type: ignore [name-defined]
-        client_openai: OpenAI,
-        client_http: requests.Session,
+        client: ClientAlbertApi,
         prompt_systeme: str,
     ) -> None:
         self.id_collection = configuration.parametres.collection_id_anssi_lab
         self.modele_reponse = configuration.parametres.modele_reponse
         self.PROMPT_SYSTEME = prompt_systeme
-        self.client_openai = client_openai
-        self.client_http = client_http
+        self.client = client
         self.temps_reponse_maximum_recherche_paragraphes = (
             configuration.client.temps_reponse_maximum_recherche_paragraphes
         )
@@ -119,7 +123,7 @@ class ServiceAlbert:
         self, messages: list[ChatCompletionMessageParam]
     ) -> list[Choice]:
         try:
-            propositions_albert = self.client_openai.chat.completions.create(
+            propositions_albert = self.client.client_openai.chat.completions.create(
                 messages=messages,
                 model=self.modele_reponse,
                 stream=False,
@@ -161,7 +165,7 @@ class ServiceAlbert:
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
-            reponse: requests.Response = self.client_http.post(
+            reponse: requests.Response = self.client.client_http.post(
                 "/search",
                 json=payload._asdict(),
                 timeout=self.temps_reponse_maximum_recherche_paragraphes,
@@ -207,18 +211,17 @@ def fabrique_service_albert() -> ServiceAlbert:
         api_key=configuration.albert.client.api_key,
         timeout=configuration.albert.client.temps_reponse_maximum_pose_question,
     )
-
     client_http = ClientAlbertHttp(
         base_url=configuration.albert.client.base_url,
         token=configuration.albert.client.api_key,
     )
+    client_albert_api = ClientAlbertApi(client_openai, client_http)
 
     template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
 
     return ServiceAlbert(
         configuration=configuration.albert,
-        client_openai=client_openai,
-        client_http=client_http,
+        client=client_albert_api,
         prompt_systeme=prompt_systeme,
     )
