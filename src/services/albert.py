@@ -208,21 +208,26 @@ class ServiceAlbert:
             return ServiceAlbert.REPONSE_PAR_DEFAULT, []
 
 
+def fabrique_client_albert() -> ClientAlbertApi:
+    configuration = recupere_configuration().albert.client
+
+    client_openai = OpenAI(
+        base_url=configuration.base_url,
+        api_key=configuration.api_key,
+        timeout=configuration.temps_reponse_maximum_pose_question,
+    )
+    client_http = ClientAlbertHttp(
+        base_url=configuration.base_url,
+        token=configuration.api_key,
+    )
+
+    return ClientAlbertApi(client_openai, client_http, configuration)
+
+
 def fabrique_service_albert() -> ServiceAlbert:
     configuration = recupere_configuration()
 
-    client_openai = OpenAI(
-        base_url=configuration.albert.client.base_url,
-        api_key=configuration.albert.client.api_key,
-        timeout=configuration.albert.client.temps_reponse_maximum_pose_question,
-    )
-    client_http = ClientAlbertHttp(
-        base_url=configuration.albert.client.base_url,
-        token=configuration.albert.client.api_key,
-    )
-    client_albert_api = ClientAlbertApi(
-        client_openai, client_http, configuration.albert.client
-    )
+    client_albert_api = fabrique_client_albert()
 
     template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
     prompt_systeme: str = template_path.read_text(encoding="utf-8")

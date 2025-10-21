@@ -8,6 +8,7 @@ from services.albert import (
     ClientAlbertApi,
     ClientAlbertHttp,
     ServiceAlbert,
+    fabrique_client_albert,
     fabrique_service_albert,
 )
 from schemas.client_albert import (
@@ -19,11 +20,17 @@ from schemas.client_albert import (
 from openai import APITimeoutError
 
 
+def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
+    client = fabrique_client_albert()
+
+    assert isinstance(client.client_openai, OpenAI)
+    assert isinstance(client.client_http, ClientAlbertHttp)
+
+
 def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
     service_albert = fabrique_service_albert()
 
-    assert isinstance(service_albert.client.client_openai, OpenAI)
-    assert isinstance(service_albert.client.client_http, ClientAlbertHttp)
+    assert isinstance(service_albert.client, ClientAlbertApi)
     assert (
         "Tu es un service développé par ou pour l’ANSSI"
         in service_albert.PROMPT_SYSTEME
