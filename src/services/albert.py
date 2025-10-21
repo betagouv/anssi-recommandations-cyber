@@ -65,7 +65,7 @@ class ServiceAlbert:
 
     def __init__(
         self,
-        configuration: Albert.Parametres,  # type: ignore [name-defined]
+        configuration: Albert.Service,  # type: ignore [name-defined]
         client: ClientAlbertApi,
         prompt_systeme: str,
     ) -> None:
@@ -139,7 +139,7 @@ class ServiceAlbert:
             aucune_proposition = ChatCompletion(
                 id="tmp-empty",
                 created=int(time.time()),
-                model=recupere_configuration().albert.parametres.modele_reponse,
+                model=recupere_configuration().albert.service.modele_reponse,
                 object="chat.completion",
                 choices=[],
                 usage=CompletionUsage(
@@ -228,7 +228,7 @@ def fabrique_service_albert() -> ServiceAlbert:
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
 
     return ServiceAlbert(
-        configuration=configuration.albert.parametres,
+        configuration=configuration.albert.service,
         client=client_albert_api,
         prompt_systeme=prompt_systeme,
     )
