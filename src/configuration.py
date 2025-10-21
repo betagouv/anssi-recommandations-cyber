@@ -15,11 +15,11 @@ class Albert(NamedTuple):
     class Client(NamedTuple):
         api_key: str
         base_url: str
+        modele_reponse: str
         temps_reponse_maximum_pose_question: float
         temps_reponse_maximum_recherche_paragraphes: float
 
     class Service(NamedTuple):
-        modele_reponse: str
         collection_nom_anssi_lab: str
         collection_id_anssi_lab: int
 
@@ -66,6 +66,7 @@ def recupere_configuration() -> Configuration:
         client=Albert.Client(
             base_url="https://albert.api.etalab.gouv.fr/v1",
             api_key=os.getenv("ALBERT_API_KEY"),
+            modele_reponse=os.getenv("ALBERT_MODELE", "albert-large"),
             temps_reponse_maximum_pose_question=float(
                 os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_REPONSE_QUESTION", 15.0)
             ),
@@ -74,7 +75,6 @@ def recupere_configuration() -> Configuration:
             ),
         ),
         service=Albert.Service(
-            modele_reponse=os.getenv("ALBERT_MODELE", "albert-large"),
             collection_nom_anssi_lab=os.getenv(
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
