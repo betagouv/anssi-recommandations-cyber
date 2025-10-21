@@ -4,7 +4,12 @@ from unittest.mock import Mock, patch
 from openai import OpenAI
 
 from configuration import Albert
-from services.albert import ClientAlbertApi, ServiceAlbert, fabrique_service_albert
+from services.albert import (
+    ClientAlbertApi,
+    ClientAlbertHttp,
+    ServiceAlbert,
+    fabrique_service_albert,
+)
 from schemas.client_albert import (
     Paragraphe,
     RechercheChunk,
@@ -17,8 +22,8 @@ from openai import APITimeoutError
 def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
     service_albert = fabrique_service_albert()
 
-    assert service_albert.client.client_openai.__class__.__name__ == "OpenAI"
-    assert service_albert.client.client_http.__class__.__name__ == "ClientAlbertHttp"
+    assert isinstance(service_albert.client.client_openai, OpenAI)
+    assert isinstance(service_albert.client.client_http, ClientAlbertHttp)
     assert (
         "Tu es un service développé par ou pour l’ANSSI"
         in service_albert.PROMPT_SYSTEME
