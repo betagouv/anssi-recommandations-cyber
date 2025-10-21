@@ -36,11 +36,11 @@ PROMPT_SYSTEME_ALTERNATIF = (
 FAUSSE_CONFIGURATION_ALBERT_CLIENT = Albert.Client(  # type: ignore [attr-defined]
     api_key="",
     base_url="",
+    modele_reponse="",
     temps_reponse_maximum_pose_question=10.0,
     temps_reponse_maximum_recherche_paragraphes=1.0,
 )
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
-    modele_reponse="",
     collection_nom_anssi_lab="",
     collection_id_anssi_lab=42,
 )

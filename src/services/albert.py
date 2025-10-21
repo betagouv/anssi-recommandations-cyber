@@ -50,6 +50,7 @@ class ClientAlbertApi:
     ):
         self.client_openai = client_openai
         self.client_http = client_http
+        self.modele_reponse = configuration.modele_reponse
         self.temps_reponse_maximum_recherche_paragraphes = (
             configuration.temps_reponse_maximum_recherche_paragraphes
         )
@@ -109,7 +110,6 @@ class ServiceAlbert:
         prompt_systeme: str,
     ) -> None:
         self.id_collection = configuration.collection_id_anssi_lab
-        self.modele_reponse = configuration.modele_reponse
         self.PROMPT_SYSTEME = prompt_systeme
         self.client = client
 
@@ -169,7 +169,7 @@ class ServiceAlbert:
         try:
             propositions_albert = self.client.client_openai.chat.completions.create(
                 messages=messages,
-                model=self.modele_reponse,
+                model=self.client.modele_reponse,
                 stream=False,
             ).choices
             return propositions_albert
@@ -178,7 +178,7 @@ class ServiceAlbert:
             aucune_proposition = ChatCompletion(
                 id="tmp-empty",
                 created=int(time.time()),
-                model=self.modele_reponse,
+                model=self.client.modele_reponse,
                 object="chat.completion",
                 choices=[],
                 usage=CompletionUsage(
