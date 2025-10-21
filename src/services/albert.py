@@ -42,9 +42,17 @@ class ClientAlbertApi:
     - une API qui suit le format OpenAI
     """
 
-    def __init__(self, client_openai: OpenAI, client_http: requests.Session):
+    def __init__(
+        self,
+        client_openai: OpenAI,
+        client_http: requests.Session,
+        configuration: Albert.Client,  # type: ignore [name-defined]
+    ):
         self.client_openai = client_openai
         self.client_http = client_http
+        self.temps_reponse_maximum_recherche_paragraphes = (
+            configuration.temps_reponse_maximum_recherche_paragraphes
+        )
 
 
 class ServiceAlbert:
@@ -65,9 +73,6 @@ class ServiceAlbert:
         self.modele_reponse = configuration.parametres.modele_reponse
         self.PROMPT_SYSTEME = prompt_systeme
         self.client = client
-        self.temps_reponse_maximum_recherche_paragraphes = (
-            configuration.client.temps_reponse_maximum_recherche_paragraphes
-        )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         payload = RecherchePayload(
@@ -168,7 +173,7 @@ class ServiceAlbert:
             reponse: requests.Response = self.client.client_http.post(
                 "/search",
                 json=payload._asdict(),
-                timeout=self.temps_reponse_maximum_recherche_paragraphes,
+                timeout=self.client.temps_reponse_maximum_recherche_paragraphes,
             )
             reponse.raise_for_status()
             brut = reponse.json()
@@ -215,7 +220,9 @@ def fabrique_service_albert() -> ServiceAlbert:
         base_url=configuration.albert.client.base_url,
         token=configuration.albert.client.api_key,
     )
-    client_albert_api = ClientAlbertApi(client_openai, client_http)
+    client_albert_api = ClientAlbertApi(
+        client_openai, client_http, configuration.albert.client
+    )
 
     template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
