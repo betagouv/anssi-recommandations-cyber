@@ -54,6 +54,45 @@ class ClientAlbertApi:
             configuration.temps_reponse_maximum_recherche_paragraphes
         )
 
+    def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
+        try:
+            reponse: requests.Response = self.client_http.post(
+                "/search",
+                json=payload._asdict(),
+                timeout=self.temps_reponse_maximum_recherche_paragraphes,
+            )
+            reponse.raise_for_status()
+            brut = reponse.json()
+            donnees = brut.get("data", [])
+            resultats: list[ResultatRecherche] = []
+            for r in donnees:
+                chunk_dict = r.get("chunk", {})
+                meta_dict = chunk_dict.get("metadata", {})
+
+                metadata = RechercheMetadonnees(
+                    source_url=meta_dict.get("source_url", ""),
+                    page=meta_dict.get("page", 0),
+                    nom_document=meta_dict.get("document_name", ""),
+                )
+                chunk = RechercheChunk(
+                    content=chunk_dict.get("content", ""),
+                    metadata=metadata,
+                )
+                resultats.append(
+                    ResultatRecherche(
+                        chunk=chunk,
+                        score=float(r.get("score", "0.0")),
+                    )
+                )
+
+        except (requests.HTTPError, requests.Timeout) as erreur:
+            logging.error(
+                f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
+            )
+            resultats = []
+
+        return resultats
+
 
 class ServiceAlbert:
     REPONSE_PAR_DEFAULT = (
@@ -82,7 +121,7 @@ class ServiceAlbert:
             method="semantic",
         )
 
-        donnees = self.recherche(payload)
+        donnees = self.client.recherche(payload)
 
         def _transforme_en_paragraphe(donnee):
             return Paragraphe(
@@ -167,45 +206,6 @@ class ServiceAlbert:
             return reponse_albert, paragraphes
         else:
             return ServiceAlbert.REPONSE_PAR_DEFAULT, []
-
-    def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
-        try:
-            reponse: requests.Response = self.client.client_http.post(
-                "/search",
-                json=payload._asdict(),
-                timeout=self.client.temps_reponse_maximum_recherche_paragraphes,
-            )
-            reponse.raise_for_status()
-            brut = reponse.json()
-            donnees = brut.get("data", [])
-            resultats: list[ResultatRecherche] = []
-            for r in donnees:
-                chunk_dict = r.get("chunk", {})
-                meta_dict = chunk_dict.get("metadata", {})
-
-                metadata = RechercheMetadonnees(
-                    source_url=meta_dict.get("source_url", ""),
-                    page=meta_dict.get("page", 0),
-                    nom_document=meta_dict.get("document_name", ""),
-                )
-                chunk = RechercheChunk(
-                    content=chunk_dict.get("content", ""),
-                    metadata=metadata,
-                )
-                resultats.append(
-                    ResultatRecherche(
-                        chunk=chunk,
-                        score=float(r.get("score", "0.0")),
-                    )
-                )
-
-        except (requests.HTTPError, requests.Timeout) as erreur:
-            logging.error(
-                f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
-            )
-            resultats = []
-
-        return resultats
 
 
 def fabrique_service_albert() -> ServiceAlbert:
