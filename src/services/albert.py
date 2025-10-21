@@ -65,12 +65,12 @@ class ServiceAlbert:
 
     def __init__(
         self,
-        configuration: Albert,  # type: ignore [name-defined]
+        configuration: Albert.Parametres,  # type: ignore [name-defined]
         client: ClientAlbertApi,
         prompt_systeme: str,
     ) -> None:
-        self.id_collection = configuration.parametres.collection_id_anssi_lab
-        self.modele_reponse = configuration.parametres.modele_reponse
+        self.id_collection = configuration.collection_id_anssi_lab
+        self.modele_reponse = configuration.modele_reponse
         self.PROMPT_SYSTEME = prompt_systeme
         self.client = client
 
@@ -228,7 +228,7 @@ def fabrique_service_albert() -> ServiceAlbert:
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
 
     return ServiceAlbert(
-        configuration=configuration.albert,
+        configuration=configuration.albert.parametres,
         client=client_albert_api,
         prompt_systeme=prompt_systeme,
     )
