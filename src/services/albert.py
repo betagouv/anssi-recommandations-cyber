@@ -94,6 +94,33 @@ class ClientAlbertApi:
 
         return resultats
 
+    def recupere_propositions(
+        self, messages: list[ChatCompletionMessageParam]
+    ) -> list[Choice]:
+        try:
+            propositions_albert = self.client_openai.chat.completions.create(
+                messages=messages,
+                model=self.modele_reponse,
+                stream=False,
+            ).choices
+            return propositions_albert
+
+        except (APITimeoutError, APIConnectionError):
+            aucune_proposition = ChatCompletion(
+                id="tmp-empty",
+                created=int(time.time()),
+                model=self.modele_reponse,
+                object="chat.completion",
+                choices=[],
+                usage=CompletionUsage(
+                    prompt_tokens=0,
+                    completion_tokens=0,
+                    total_tokens=0,
+                ),
+                system_fingerprint=None,
+            ).choices
+            return aucune_proposition
+
 
 class ServiceAlbert:
     REPONSE_PAR_DEFAULT = (
@@ -152,7 +179,7 @@ class ServiceAlbert:
                 "content": f"Question :\n{question}",
             },
         ]
-        propositions_albert = self.recupere_propositions(messages)
+        propositions_albert = self.client.recupere_propositions(messages)
         (reponse, paragraphes) = self._recupere_reponse_et_paragraphes(
             propositions_albert, paragraphes
         )
@@ -162,33 +189,6 @@ class ServiceAlbert:
             paragraphes=paragraphes,
             question=question,
         )
-
-    def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam]
-    ) -> list[Choice]:
-        try:
-            propositions_albert = self.client.client_openai.chat.completions.create(
-                messages=messages,
-                model=self.client.modele_reponse,
-                stream=False,
-            ).choices
-            return propositions_albert
-
-        except (APITimeoutError, APIConnectionError):
-            aucune_proposition = ChatCompletion(
-                id="tmp-empty",
-                created=int(time.time()),
-                model=self.client.modele_reponse,
-                object="chat.completion",
-                choices=[],
-                usage=CompletionUsage(
-                    prompt_tokens=0,
-                    completion_tokens=0,
-                    total_tokens=0,
-                ),
-                system_fingerprint=None,
-            ).choices
-            return aucune_proposition
 
     def _recupere_reponse_et_paragraphes(
         self, propositions_albert: list[Choice], paragraphes: list[Paragraphe]
