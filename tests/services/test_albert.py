@@ -34,7 +34,7 @@ FAUSSE_CONFIGURATION_ALBERT_CLIENT = Albert.Client(  # type: ignore [attr-define
     temps_reponse_maximum_pose_question=10.0,
     temps_reponse_maximum_recherche_paragraphes=1.0,
 )
-FAUSSE_CONFIGURATION_ALBERT_PARAMETRES = Albert.Parametres(  # type: ignore [attr-defined]
+FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
     modele_reponse="",
     collection_nom_anssi_lab="",
     collection_id_anssi_lab=42,
@@ -106,7 +106,7 @@ def service_avec_reponse(mock_client_openai_avec_reponse, mock_client_http):
     )
 
     return ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_PARAMETRES,
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_api,
         prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
     )
@@ -121,7 +121,7 @@ def service_sans_reponse(mock_client_openai_sans_reponse, mock_client_http):
     )
 
     return ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_PARAMETRES,
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_api,
         prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
     )
@@ -223,7 +223,7 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
     )
 
     service_avec_openai_timeout = ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_PARAMETRES,
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
@@ -265,7 +265,7 @@ def test_pose_question_illegale(erreur: str, message_attendu: str):
         mock_client_openai, Mock(), FAUSSE_CONFIGURATION_ALBERT_CLIENT
     )
     mock_service_albert = ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_PARAMETRES,
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
@@ -301,7 +301,7 @@ def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
         FAUSSE_CONFIGURATION_ALBERT_CLIENT,
     )
     client = ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_PARAMETRES,
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )
@@ -321,7 +321,7 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
         FAUSSE_CONFIGURATION_ALBERT_CLIENT,
     )
     client = ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_PARAMETRES,
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_api,
         prompt_systeme="PROMPT {chunks}",
     )

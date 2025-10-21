@@ -18,13 +18,13 @@ class Albert(NamedTuple):
         temps_reponse_maximum_pose_question: float
         temps_reponse_maximum_recherche_paragraphes: float
 
-    class Parametres(NamedTuple):
+    class Service(NamedTuple):
         modele_reponse: str
         collection_nom_anssi_lab: str
         collection_id_anssi_lab: int
 
     client: Client
-    parametres: Parametres
+    service: Service
 
 
 class BaseDeDonnees(NamedTuple):
@@ -73,7 +73,7 @@ def recupere_configuration() -> Configuration:
                 os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_RECHERCHE_PARAGRAPHES", 3.0)
             ),
         ),
-        parametres=Albert.Parametres(
+        service=Albert.Service(
             modele_reponse=os.getenv("ALBERT_MODELE", "albert-large"),
             collection_nom_anssi_lab=os.getenv(
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
