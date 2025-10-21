@@ -139,7 +139,7 @@ class ServiceAlbert:
             aucune_proposition = ChatCompletion(
                 id="tmp-empty",
                 created=int(time.time()),
-                model=recupere_configuration().albert.service.modele_reponse,
+                model=self.modele_reponse,
                 object="chat.completion",
                 choices=[],
                 usage=CompletionUsage(
