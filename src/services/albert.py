@@ -208,9 +208,7 @@ class ServiceAlbert:
             return ServiceAlbert.REPONSE_PAR_DEFAULT, []
 
 
-def fabrique_client_albert() -> ClientAlbertApi:
-    configuration = recupere_configuration().albert.client
-
+def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]
     client_openai = OpenAI(
         base_url=configuration.base_url,
         api_key=configuration.api_key,
@@ -227,7 +225,7 @@ def fabrique_client_albert() -> ClientAlbertApi:
 def fabrique_service_albert() -> ServiceAlbert:
     configuration = recupere_configuration()
 
-    client_albert_api = fabrique_client_albert()
+    client_albert_api = fabrique_client_albert(configuration.albert.client)
 
     template_path = Path.cwd() / "templates" / "prompt_assistant_cyber.txt"
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
