@@ -20,23 +20,6 @@ from schemas.client_albert import (
 from openai import APITimeoutError
 
 
-def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
-    client = fabrique_client_albert()
-
-    assert isinstance(client.client_openai, OpenAI)
-    assert isinstance(client.client_http, ClientAlbertHttp)
-
-
-def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
-    service_albert = fabrique_service_albert()
-
-    assert isinstance(service_albert.client, ClientAlbertApi)
-    assert (
-        "Tu es un service développé par ou pour l’ANSSI"
-        in service_albert.PROMPT_SYSTEME
-    )
-
-
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
 )
@@ -73,6 +56,23 @@ FAUX_RETOURS_ALBERT_API = {
 }
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
+
+
+def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
+    client = fabrique_client_albert()
+
+    assert isinstance(client.client_openai, OpenAI)
+    assert isinstance(client.client_http, ClientAlbertHttp)
+
+
+def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
+    service_albert = fabrique_service_albert()
+
+    assert isinstance(service_albert.client, ClientAlbertApi)
+    assert (
+        "Tu es un service développé par ou pour l’ANSSI"
+        in service_albert.PROMPT_SYSTEME
+    )
 
 
 class Reponse:
