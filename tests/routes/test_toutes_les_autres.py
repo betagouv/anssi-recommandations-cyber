@@ -24,14 +24,14 @@ from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
-from serveur_de_test import ConstructeurServiceAlbert
+from serveur_de_test import ConstructeurServiceAlbert, ConstructeurServeur
 
 
 def test_route_recherche_repond_correctement() -> None:
     service_albert = ConstructeurServiceAlbert().construit()
-
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: service_albert
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
     client: TestClient = TestClient(serveur)
+
     response = client.post("/api/recherche", json={"question": "Ma question test"})
 
     assert response.status_code == 200
