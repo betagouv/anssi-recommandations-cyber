@@ -184,6 +184,13 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     mock_adaptateur_journal = Mock(AdaptateurJournal)
     mock_adaptateur_journal.consigne_evenement = Mock(return_value=None)
 
+    mock_client: Mock = Mock(spec=ServiceAlbert)
+    mock_client.pose_question.return_value = ReponseQuestion(
+        reponse="Je suis un chatbot expert de l'ANSSI",
+        paragraphes=[],
+        question="Qui es-tu",
+    )
+
     mock_adaptateur_chiffrement = Mock(AdaptateurChiffrement)
     mock_adaptateur_chiffrement.hache = Mock(return_value="haché")
 
@@ -192,6 +199,7 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
         "id-interaction-test"
     )
 
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
     serveur.dependency_overrides[
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ] = lambda: mock_adaptateur_base_de_donnees
