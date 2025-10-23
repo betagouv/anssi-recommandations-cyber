@@ -39,27 +39,25 @@ def test_route_recherche_repond_correctement() -> None:
 
 
 def test_route_recherche_donnees_correctes() -> None:
-    """Vérifie que l'endpoint recherche fonctionne"""
-    mock_client: Mock = Mock(spec=ServiceAlbert)
-    mock_client.recherche_paragraphes.return_value = []
+    paragraphes: list[Paragraphe] = []
+    service_albert = (
+        ConstructeurServiceAlbert()
+        .qui_retourne_les_paragraphes(paragraphes)
+        .construit()
+    )
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
+    client: TestClient = TestClient(serveur)
 
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    try:
-        client: TestClient = TestClient(serveur)
-        response = client.post("/api/recherche", json={"question": "Ma question test"})
-        resultat = response.json()
-        assert isinstance(resultat, list)
-        assert len(resultat) == 0
+    response = client.post("/api/recherche", json={"question": "Ma question test"})
+    resultat = response.json()
 
-        mock_client.recherche_paragraphes.assert_called_once()
-
-    finally:
-        serveur.dependency_overrides.clear()
+    assert isinstance(resultat, list)
+    assert len(resultat) == len(paragraphes)
+    service_albert.recherche_paragraphes.assert_called_once()
 
 
 def test_route_pose_question_repond_correctement() -> None:
-    """Vérifie que l'endpoint recherche fonctionne"""
-    mock_reponse = ReponseQuestion(
+    reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
             Paragraphe(
@@ -73,31 +71,26 @@ def test_route_pose_question_repond_correctement() -> None:
         question="Qui es-tu",
     )
 
-    mock_client: Mock = Mock(spec=ServiceAlbert)
-    mock_client.pose_question.return_value = mock_reponse
-
     mock_service = Mock(spec=AdaptateurBaseDeDonnees)
     mock_service.sauvegarde_interaction.return_value = "id-interaction-test"
 
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    serveur.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_service
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+    )
+    serveur = (
+        ConstructeurServeur()
+        .avec_service_albert(service_albert)
+        .avec_adaptateur_base_de_donnees(mock_service)
+        .construit()
+    )
 
-    with patch("main.recupere_configuration") as mock_conf:
-        mock_conf.return_value = {
-            "NOM_BDD": "test",
-        }
+    client: TestClient = TestClient(serveur)
+    response = client.post("/api/pose_question", json={"question": "Qui es-tu"})
 
-        try:
-            client: TestClient = TestClient(serveur)
-            response = client.post("/api/pose_question", json={"question": "Qui es-tu"})
+    assert response.status_code == 200
+    service_albert.pose_question.assert_called_once()
 
-            assert response.status_code == 200
-            mock_client.pose_question.assert_called_once()
-
-        finally:
-            serveur.dependency_overrides.clear()
+    serveur.dependency_overrides.clear()
 
 
 def test_route_pose_question_retourne_donnees_correctes() -> None:
