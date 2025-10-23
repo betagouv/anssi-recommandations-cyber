@@ -1,9 +1,15 @@
+import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 from serveur import (
     fabrique_serveur,
 )
 
+from adaptateurs.journal import (
+    AdaptateurJournal,
+    TypeEvenement,
+    fabrique_adaptateur_journal,
+)
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
@@ -78,3 +84,27 @@ def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> No
 
     assert response.status_code == code_attendu
     assert response.json() == {"detail": "Method Not Allowed"}
+
+
+@pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
+def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
+    serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
+
+    mock_adaptateur_journal = Mock(AdaptateurJournal)
+    mock_adaptateur_journal.consigne_evenement = Mock(return_value=None)
+
+    serveur.dependency_overrides[fabrique_adaptateur_journal] = (
+        lambda: mock_adaptateur_journal
+    )
+
+    client: TestClient = TestClient(serveur)
+
+    client.post(
+        "/api/pose_question",
+        json={"question": "Qui es-tu ?"},
+    )
+
+    mock_adaptateur_journal.consigne_evenement.assert_called_once()
+    [args, kwargs] = mock_adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
+    assert kwargs["donnees"] == {"id_interaction": "un-id-hashé"}
