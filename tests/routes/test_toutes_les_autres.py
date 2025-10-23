@@ -1,9 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
-from serveur import (
-    fabrique_serveur,
+from serveur_de_test import (
+    serveur,
 )
+from serveur import fabrique_serveur
 
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
@@ -23,24 +24,18 @@ from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
-serveur = fabrique_serveur(Mode.PRODUCTION)
+from serveur_de_test import ConstructeurServiceAlbert
 
 
 def test_route_recherche_repond_correctement() -> None:
-    """Vérifie que l'endpoint recherche fonctionne"""
-    mock_client: Mock = Mock(spec=ServiceAlbert)
-    mock_client.recherche_paragraphes.return_value = []
+    service_albert = ConstructeurServiceAlbert().construit()
 
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    try:
-        client: TestClient = TestClient(serveur)
-        response = client.post("/api/recherche", json={"question": "Ma question test"})
+    serveur.dependency_overrides[fabrique_service_albert] = lambda: service_albert
+    client: TestClient = TestClient(serveur)
+    response = client.post("/api/recherche", json={"question": "Ma question test"})
 
-        assert response.status_code == 200
-        mock_client.recherche_paragraphes.assert_called_once()
-
-    finally:
-        serveur.dependency_overrides.clear()
+    assert response.status_code == 200
+    service_albert.recherche_paragraphes.assert_called_once()
 
 
 def test_route_recherche_donnees_correctes() -> None:
