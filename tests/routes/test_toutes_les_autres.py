@@ -1,9 +1,19 @@
+import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 from serveur import (
     fabrique_serveur,
 )
 
+from adaptateurs.chiffrement import (
+    AdaptateurChiffrement,
+    fabrique_adaptateur_chiffrement,
+)
+from adaptateurs.journal import (
+    AdaptateurJournal,
+    TypeEvenement,
+    fabrique_adaptateur_journal,
+)
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
@@ -165,6 +175,49 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
             mock_service.sauvegarde_interaction.assert_called_once()
         finally:
             serveur.dependency_overrides.clear()
+
+
+@pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
+def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
+    serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
+
+    mock_adaptateur_journal = Mock(AdaptateurJournal)
+    mock_adaptateur_journal.consigne_evenement = Mock(return_value=None)
+
+    mock_adaptateur_chiffrement = Mock(AdaptateurChiffrement)
+    mock_adaptateur_chiffrement.hache = Mock(return_value="haché")
+
+    mock_adaptateur_base_de_donnees = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_adaptateur_base_de_donnees.sauvegarde_interaction.return_value = (
+        "id-interaction-test"
+    )
+
+    serveur.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_adaptateur_base_de_donnees
+
+    serveur.dependency_overrides[fabrique_adaptateur_chiffrement] = (
+        lambda: mock_adaptateur_chiffrement
+    )
+    serveur.dependency_overrides[fabrique_adaptateur_journal] = (
+        lambda: mock_adaptateur_journal
+    )
+
+    client: TestClient = TestClient(serveur)
+
+    client.post(
+        "/api/pose_question",
+        json={"question": "Qui es-tu ?"},
+    )
+
+    mock_adaptateur_journal.consigne_evenement.assert_called_once()
+    [args, kwargs] = mock_adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
+    assert kwargs["donnees"] == {"id_interaction": "haché"}
+
+    mock_adaptateur_chiffrement.hache.assert_called_once()
+    [args, kwargs] = mock_adaptateur_chiffrement.hache._mock_call_args
+    assert args[0] == "id-interaction-test"
 
 
 def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
