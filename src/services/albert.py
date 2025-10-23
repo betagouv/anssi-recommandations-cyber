@@ -66,13 +66,18 @@ class ClientAlbertApi:
             brut = reponse.json()
             donnees = brut.get("data", [])
             resultats: list[ResultatRecherche] = []
+
+            # Albert retourne un index 0-based utilisé par la librairie `pymupdf`.
+            # Pour obtenir le numéro de page réel, il faut donc ajouter +1.
+            decalage_index_Albert_et_numero_de_page_lecteur = 1
             for r in donnees:
                 chunk_dict = r.get("chunk", {})
                 meta_dict = chunk_dict.get("metadata", {})
 
                 metadata = RechercheMetadonnees(
                     source_url=meta_dict.get("source_url", ""),
-                    page=meta_dict.get("page", 0),
+                    page=meta_dict.get("page", 0)
+                    + decalage_index_Albert_et_numero_de_page_lecteur,
                     nom_document=meta_dict.get("document_name", ""),
                 )
                 chunk = RechercheChunk(
