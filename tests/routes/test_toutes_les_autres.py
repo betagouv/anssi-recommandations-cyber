@@ -213,7 +213,8 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     mock_adaptateur_journal.consigne_evenement.assert_called_once()
     [args, kwargs] = mock_adaptateur_journal.consigne_evenement._mock_call_args
     assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
-    assert kwargs["donnees"] == {"id_interaction": "haché"}
+    assert kwargs["donnees"].id_interaction == "haché"
+    assert kwargs["donnees"].model_dump_json()
 
     mock_adaptateur_chiffrement.hache.assert_called_once()
     [args, kwargs] = mock_adaptateur_chiffrement.hache._mock_call_args
