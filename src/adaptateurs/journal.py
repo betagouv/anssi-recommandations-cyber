@@ -1,6 +1,14 @@
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Dict
+from pydantic import BaseModel
+
+
+class Donnees(BaseModel):
+    pass
+
+
+class DonneesInteractionCreee(Donnees):
+    id_interaction: str
 
 
 class TypeEvenement(StrEnum):
@@ -9,12 +17,12 @@ class TypeEvenement(StrEnum):
 
 class AdaptateurJournal(ABC):
     @abstractmethod
-    def consigne_evenement(self, type: TypeEvenement, donnees: Dict) -> None:
+    def consigne_evenement(self, type: TypeEvenement, donnees: Donnees) -> None:
         pass
 
 
 class AdaptateurJournalMemoire(AdaptateurJournal):
-    def consigne_evenement(self, type: TypeEvenement, donnees: Dict) -> None:
+    def consigne_evenement(self, type: TypeEvenement, donnees: Donnees) -> None:
         pass
 
 

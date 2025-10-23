@@ -11,6 +11,7 @@ from adaptateurs.chiffrement import (
 )
 from adaptateurs.journal import (
     AdaptateurJournal,
+    DonneesInteractionCreee,
     TypeEvenement,
     fabrique_adaptateur_journal,
 )
@@ -76,7 +77,9 @@ def route_pose_question(
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.INTERACTION_CREEE,
-        donnees={"id_interaction": adaptateur_chiffrement.hache(id_interaction)},
+        donnees=DonneesInteractionCreee(
+            id_interaction=adaptateur_chiffrement.hache(id_interaction)
+        ),
     )
 
     return ReponseQuestion(
