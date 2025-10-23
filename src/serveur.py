@@ -5,6 +5,10 @@ from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuest
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.client_albert import Paragraphe
 from adaptateurs import AdaptateurBaseDeDonnees
+from adaptateurs.chiffrement import (
+    AdaptateurChiffrement,
+    fabrique_adaptateur_chiffrement,
+)
 from adaptateurs.journal import (
     AdaptateurJournal,
     TypeEvenement,
@@ -63,12 +67,16 @@ def route_pose_question(
     adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
+    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+        fabrique_adaptateur_chiffrement
+    ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> ReponseQuestion:
     reponse_question = service_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
     adaptateur_journal.consigne_evenement(
-        type=TypeEvenement.INTERACTION_CREEE, donnees={"id_interaction": "un-id-hashé"}
+        type=TypeEvenement.INTERACTION_CREEE,
+        donnees={"id_interaction": adaptateur_chiffrement.hache(id_interaction)},
     )
 
     return ReponseQuestion(
