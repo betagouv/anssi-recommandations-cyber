@@ -1,6 +1,6 @@
 import logging
 import os
-from typing_extensions import NamedTuple
+from typing_extensions import NamedTuple, Optional
 from enum import StrEnum, auto
 
 # `mypy` ne comprend pas les classes imbriquées dans des `NamedTuple` (alors que c'est du `Python` valide...);
@@ -48,6 +48,7 @@ class Mode(StrEnum):
 class Configuration(NamedTuple):
     albert: Albert
     base_de_donnees: BaseDeDonnees
+    base_de_donnees_journal: Optional[BaseDeDonnees]
     chiffrement: Chiffrement
     hote: str
     port: int
@@ -63,6 +64,20 @@ def recupere_configuration_postgres(
         utilisateur=os.getenv("DB_USER", "postgres"),
         mot_de_passe=os.getenv("DB_PASSWORD", "postgres"),
         nom=database,
+    )
+
+
+def recupere_configuration_journal_postgres() -> Optional[BaseDeDonnees]:
+    return (
+        BaseDeDonnees(
+            hote=os.getenv("DB_JOURNAL_HOST", "localhost"),
+            port=int(os.getenv("DB_JOURNAL_PORT", "5432")),
+            utilisateur=os.getenv("DB_JOURNAL_USER", "postgres"),
+            mot_de_passe=os.getenv("DB_JOURNAL_PASSWORD", "postgres"),
+            nom=os.getenv("DB_JOURNAL_NAME", "journal"),
+        )
+        if os.getenv("DB_JOURNAL_HOST")
+        else None
     )
 
 
@@ -91,6 +106,8 @@ def recupere_configuration() -> Configuration:
         os.getenv("DB_NAME", "anssi_retours")
     )
 
+    configuration_base_de_donnees_journal = recupere_configuration_journal_postgres()
+
     configuration_chiffrement = Chiffrement(
         sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HASHAGE", "")
     )
@@ -100,6 +117,7 @@ def recupere_configuration() -> Configuration:
     return Configuration(
         albert=configuration_albert,
         base_de_donnees=configuration_base_de_donnees,
+        base_de_donnees_journal=configuration_base_de_donnees_journal,
         chiffrement=configuration_chiffrement,
         hote=os.getenv("HOST", "127.0.0.1"),
         port=int(os.getenv("PORT", "8000")),
