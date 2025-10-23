@@ -5,6 +5,10 @@ from serveur import (
     fabrique_serveur,
 )
 
+from adaptateurs.chiffrement import (
+    AdaptateurChiffrement,
+    fabrique_adaptateur_chiffrement,
+)
 from adaptateurs.journal import (
     AdaptateurJournal,
     TypeEvenement,
@@ -93,6 +97,21 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     mock_adaptateur_journal = Mock(AdaptateurJournal)
     mock_adaptateur_journal.consigne_evenement = Mock(return_value=None)
 
+    mock_adaptateur_chiffrement = Mock(AdaptateurChiffrement)
+    mock_adaptateur_chiffrement.hache = Mock(return_value="haché")
+
+    mock_adaptateur_base_de_donnees = Mock(spec=AdaptateurBaseDeDonnees)
+    mock_adaptateur_base_de_donnees.sauvegarde_interaction.return_value = (
+        "id-interaction-test"
+    )
+
+    serveur.dependency_overrides[
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ] = lambda: mock_adaptateur_base_de_donnees
+
+    serveur.dependency_overrides[fabrique_adaptateur_chiffrement] = (
+        lambda: mock_adaptateur_chiffrement
+    )
     serveur.dependency_overrides[fabrique_adaptateur_journal] = (
         lambda: mock_adaptateur_journal
     )
@@ -107,4 +126,8 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     mock_adaptateur_journal.consigne_evenement.assert_called_once()
     [args, kwargs] = mock_adaptateur_journal.consigne_evenement._mock_call_args
     assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
-    assert kwargs["donnees"] == {"id_interaction": "un-id-hashé"}
+    assert kwargs["donnees"] == {"id_interaction": "haché"}
+
+    mock_adaptateur_chiffrement.hache.assert_called_once()
+    [args, kwargs] = mock_adaptateur_chiffrement.hache._mock_call_args
+    assert args[0] == "id-interaction-test"
