@@ -1,8 +1,12 @@
 import hashlib
 from abc import ABC, abstractmethod
+from configuration import Chiffrement, recupere_configuration
 
 
 class AdaptateurChiffrement(ABC):
+    def __init__(self, configuration: Chiffrement):
+        self.sel_de_hachage = configuration.sel_de_hachage
+
     @abstractmethod
     def hache(self, valeur: str) -> str:
         pass
@@ -10,8 +14,9 @@ class AdaptateurChiffrement(ABC):
 
 class AdaptateurChiffrementStandard(AdaptateurChiffrement):
     def hache(self, valeur: str) -> str:
-        return hashlib.sha256(valeur.encode()).hexdigest()
+        return hashlib.sha256(f"{self.sel_de_hachage}{valeur}".encode()).hexdigest()
 
 
 def fabrique_adaptateur_chiffrement() -> AdaptateurChiffrement:
-    return AdaptateurChiffrementStandard()
+    configuration = recupere_configuration().chiffrement
+    return AdaptateurChiffrementStandard(configuration)

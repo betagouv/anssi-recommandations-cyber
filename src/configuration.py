@@ -35,6 +35,10 @@ class BaseDeDonnees(NamedTuple):
     nom: str
 
 
+class Chiffrement(NamedTuple):
+    sel_de_hachage: str
+
+
 class Mode(StrEnum):
     DEVELOPPEMENT = auto()
     TEST = auto()
@@ -44,6 +48,7 @@ class Mode(StrEnum):
 class Configuration(NamedTuple):
     albert: Albert
     base_de_donnees: BaseDeDonnees
+    chiffrement: Chiffrement
     hote: str
     port: int
     mode: Mode
@@ -85,11 +90,17 @@ def recupere_configuration() -> Configuration:
     configuration_base_de_donnees = recupere_configuration_postgres(
         os.getenv("DB_NAME", "anssi_retours")
     )
+
+    configuration_chiffrement = Chiffrement(
+        sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HASHAGE", "")
+    )
+
     mode = Mode(os.getenv("MODE", "production"))
 
     return Configuration(
         albert=configuration_albert,
         base_de_donnees=configuration_base_de_donnees,
+        chiffrement=configuration_chiffrement,
         hote=os.getenv("HOST", "127.0.0.1"),
         port=int(os.getenv("PORT", "8000")),
         mode=mode,
