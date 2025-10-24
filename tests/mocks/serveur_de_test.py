@@ -36,8 +36,8 @@ class ConstructeurServiceAlbert:
 
 
 class ConstructeurServeur:
-    def __init__(self):
-        self._serveur = fabrique_serveur(Mode.PRODUCTION)
+    def __init__(self, mode: Mode = Mode.PRODUCTION):
+        self._serveur = fabrique_serveur(mode)
 
     def avec_service_albert(self, service_albert: ServiceAlbert):
         self._serveur.dependency_overrides[fabrique_service_albert] = (
