@@ -30,6 +30,10 @@ class ConstructeurServiceAlbert:
         self._mock = Mock()
         self._mock.recherche_paragraphes.return_value = []
 
+    def avec_prompt_systeme(self, prompt: str):
+        self._mock.PROMPT_SYSTEME = prompt
+        return self
+
     def qui_retourne_les_paragraphes(self, paragraphes: list[Paragraphe]):
         self._mock.recherche_paragraphes.return_value = paragraphes
         return self
