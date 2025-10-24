@@ -1,8 +1,11 @@
+from typing import Optional
+
 from serveur import fabrique_serveur
 from configuration import Mode
 from unittest.mock import Mock
 from services.albert import ServiceAlbert, fabrique_service_albert
 from schemas.client_albert import Paragraphe, ReponseQuestion
+from schemas.retour_utilisatrice import RetourUtilisatrice
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
@@ -13,6 +16,10 @@ class ConstructeurAdaptateurBaseDeDonnees:
     def __init__(self):
         self._mock = Mock()
         self._mock.sauvegarde_interaction.return_value = "id-interaction-test"
+
+    def avec_retour(self, retour: Optional[RetourUtilisatrice]):
+        self._mock.ajoute_retour_utilisatrice.return_value = retour
+        return self
 
     def construit(self):
         return self._mock

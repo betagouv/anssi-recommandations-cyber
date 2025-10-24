@@ -240,32 +240,32 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
 
 
 def test_route_retour_avec_mock_retourne_succes_200() -> None:
-    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_service.ajoute_retour_utilisatrice.return_value = RetourPositif(
+    retour = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
+    adaptateur_base_de_donnees = (
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construit()
+    )
+    serveur = (
+        ConstructeurServeur()
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .construit()
+    )
 
-    serveur.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_service
+    client = TestClient(serveur)
+    payload = {
+        "id_interaction": "id-123",
+        "retour": {
+            "type": "positif",
+            "commentaire": "Très utile",
+            "tags": ["complete", "facileacomprendre"],
+        },
+    }
+    reponse = client.post("/api/retour", json=payload)
 
-    try:
-        client = TestClient(serveur)
-        payload = {
-            "id_interaction": "id-123",
-            "retour": {
-                "type": "positif",
-                "commentaire": "Très utile",
-                "tags": ["complete", "facileacomprendre"],
-            },
-        }
-        reponse = client.post("/api/retour", json=payload)
-
-        assert reponse.status_code == 200
-        mock_service.ajoute_retour_utilisatrice.assert_called_once()
-    finally:
-        serveur.dependency_overrides.clear()
+    assert reponse.status_code == 200
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
 def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
