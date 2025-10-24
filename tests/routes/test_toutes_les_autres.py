@@ -51,6 +51,45 @@ def test_route_recherche_donnees_correctes() -> None:
     service_albert.recherche_paragraphes.assert_called_once()
 
 
+def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
+    paragraphes = [
+        Paragraphe(
+            contenu="Contenu du paragraphe 1",
+            url="https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+            score_similarite=0.75,
+            numero_page=29,
+            nom_document="anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+        ),
+    ]
+
+    service_albert = (
+        ConstructeurServiceAlbert()
+        .qui_retourne_les_paragraphes(paragraphes)
+        .construit()
+    )
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
+
+    client: TestClient = TestClient(serveur)
+    response = client.post("/api/recherche", json={"question": "Ma question test"})
+
+    resultat = response.json()
+    assert len(resultat) == 1
+    p1 = resultat[0]
+    assert p1["contenu"] == "Contenu du paragraphe 1"
+    assert (
+        p1["url"]
+        == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+    )
+    assert p1["score_similarite"] == 0.75
+    assert p1["numero_page"] == 29
+    assert (
+        p1["nom_document"]
+        == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+    )
+
+    service_albert.recherche_paragraphes.assert_called_once()
+
+
 def test_route_pose_question_repond_correctement() -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
@@ -193,43 +232,26 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     assert args[0] == "id-interaction-test"
 
 
-def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
-    paragraphes = [
-        Paragraphe(
-            contenu="Contenu du paragraphe 1",
-            url="https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-            score_similarite=0.75,
-            numero_page=29,
-            nom_document="anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-        ),
-    ]
+def test_route_pose_question_retourne_id_dans_body() -> None:
+    reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
 
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
     service_albert = (
-        ConstructeurServiceAlbert()
-        .qui_retourne_les_paragraphes(paragraphes)
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+    )
+    serveur = (
+        ConstructeurServeur()
+        .avec_service_albert(service_albert)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construit()
     )
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
 
-    client: TestClient = TestClient(serveur)
-    response = client.post("/api/recherche", json={"question": "Ma question test"})
-
-    resultat = response.json()
-    assert len(resultat) == 1
-    p1 = resultat[0]
-    assert p1["contenu"] == "Contenu du paragraphe 1"
-    assert (
-        p1["url"]
-        == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-    )
-    assert p1["score_similarite"] == 0.75
-    assert p1["numero_page"] == 29
-    assert (
-        p1["nom_document"]
-        == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-    )
-
-    service_albert.recherche_paragraphes.assert_called_once()
+    client = TestClient(serveur)
+    r = client.post("/api/pose_question", json={"question": "Q?"})
+    j = r.json()
+    assert r.status_code == 200
+    assert j["reponse"] == "ok"
+    assert j["interaction_id"] == "id-interaction-test"
 
 
 def test_route_retour_avec_mock_retourne_succes_200() -> None:
@@ -339,25 +361,3 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
 
     assert resp.status_code == 422
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_not_called()
-
-
-def test_pose_question_retourne_id_dans_body() -> None:
-    reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
-
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
-    service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
-    )
-    serveur = (
-        ConstructeurServeur()
-        .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
-    )
-
-    client = TestClient(serveur)
-    r = client.post("/api/pose_question", json={"question": "Q?"})
-    j = r.json()
-    assert r.status_code == 200
-    assert j["reponse"] == "ok"
-    assert j["interaction_id"] == "id-interaction-test"
