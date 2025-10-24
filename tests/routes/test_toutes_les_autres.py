@@ -24,7 +24,11 @@ from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from adaptateurs import AdaptateurBaseDeDonnees
 from configuration import Mode
 
-from serveur_de_test import ConstructeurServiceAlbert, ConstructeurServeur
+from serveur_de_test import (
+    ConstructeurAdaptateurBaseDeDonnees,
+    ConstructeurServiceAlbert,
+    ConstructeurServeur,
+)
 
 
 def test_route_recherche_repond_correctement() -> None:
@@ -71,16 +75,14 @@ def test_route_pose_question_repond_correctement() -> None:
         question="Qui es-tu",
     )
 
-    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_service.sauvegarde_interaction.return_value = "id-interaction-test"
-
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
     )
     serveur = (
         ConstructeurServeur()
         .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(mock_service)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construit()
     )
 
