@@ -1,11 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock
 
-from adaptateurs.chiffrement import (
-    AdaptateurChiffrement,
-    fabrique_adaptateur_chiffrement,
-)
 from adaptateurs.journal import (
     TypeEvenement,
 )
@@ -15,6 +10,7 @@ from configuration import Mode
 
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
+    ConstructeurAdaptateurChiffrement,
     ConstructeurAdaptateurJournal,
     ConstructeurServiceAlbert,
     ConstructeurServeur,
@@ -188,9 +184,13 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 
 @pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
 def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
+    valeur_hachee = "haché"
     reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_chiffrement = (
+        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construit()
+    )
     adaptateur_journal = ConstructeurAdaptateurJournal().construit()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
@@ -198,16 +198,10 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     serveur = (
         ConstructeurServeur(Mode.DEVELOPPEMENT)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
         .avec_service_albert(service_albert)
         .construit()
-    )
-
-    mock_adaptateur_chiffrement = Mock(AdaptateurChiffrement)
-    mock_adaptateur_chiffrement.hache = Mock(return_value="haché")
-
-    serveur.dependency_overrides[fabrique_adaptateur_chiffrement] = (
-        lambda: mock_adaptateur_chiffrement
     )
 
     client: TestClient = TestClient(serveur)
@@ -219,11 +213,11 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     adaptateur_journal.consigne_evenement.assert_called_once()
     [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
     assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
-    assert kwargs["donnees"].id_interaction == "haché"
+    assert kwargs["donnees"].id_interaction == valeur_hachee
     assert kwargs["donnees"].model_dump_json()
 
-    mock_adaptateur_chiffrement.hache.assert_called_once()
-    [args, kwargs] = mock_adaptateur_chiffrement.hache._mock_call_args
+    adaptateur_chiffrement.hache.assert_called_once()
+    [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
     assert args[0] == "id-interaction-test"
 
 

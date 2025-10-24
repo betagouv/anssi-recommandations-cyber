@@ -13,6 +13,10 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
 )
+from adaptateurs.chiffrement import (
+    AdaptateurChiffrement,
+    fabrique_adaptateur_chiffrement,
+)
 from adaptateurs import AdaptateurBaseDeDonnees
 
 
@@ -23,6 +27,18 @@ class ConstructeurAdaptateurBaseDeDonnees:
 
     def avec_retour(self, retour: Optional[RetourUtilisatrice]):
         self._mock.ajoute_retour_utilisatrice.return_value = retour
+        return self
+
+    def construit(self):
+        return self._mock
+
+
+class ConstructeurAdaptateurChiffrement:
+    def __init__(self):
+        self._mock = Mock()
+
+    def qui_hache(self, hache: str):
+        self._mock.hache.return_value = hache
         return self
 
     def construit(self):
@@ -74,6 +90,14 @@ class ConstructeurServeur:
         self._serveur.dependency_overrides[
             fabrique_adaptateur_base_de_donnees_retour_utilisatrice
         ] = lambda: adaptateur_base_de_donnees
+        return self
+
+    def avec_adaptateur_chiffrement(
+        self, adaptateur_chiffrement: AdaptateurChiffrement
+    ):
+        self._serveur.dependency_overrides[fabrique_adaptateur_chiffrement] = (
+            lambda: adaptateur_chiffrement
+        )
         return self
 
     def avec_adaptateur_journal(self, adaptateur_journal: AdaptateurJournal):
