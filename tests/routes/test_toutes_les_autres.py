@@ -1,10 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from serveur_de_test import (
     serveur,
 )
-from serveur import fabrique_serveur
 
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
@@ -18,7 +17,6 @@ from adaptateurs.journal import (
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
-from services.albert import ServiceAlbert, fabrique_service_albert
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -96,7 +94,7 @@ def test_route_pose_question_repond_correctement() -> None:
 
 
 def test_route_pose_question_retourne_donnees_correctes() -> None:
-    mock_reponse = ReponseQuestion(
+    reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
             Paragraphe(
@@ -117,82 +115,66 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
         question="Qui es-tu",
     )
 
-    mock_client = Mock(spec=ServiceAlbert)
-    mock_client.pose_question.return_value = mock_reponse
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+    )
+    serveur = (
+        ConstructeurServeur()
+        .avec_service_albert(service_albert)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .construit()
+    )
 
-    mock_service = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_service.sauvegarde_interaction.return_value = "id-interaction-test"
+    client_http = TestClient(serveur)
+    response = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
+    resultat = response.json()
 
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    serveur.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_service
+    assert "reponse" in resultat
+    assert "paragraphes" in resultat
+    assert "question" in resultat
+    assert resultat["reponse"] == "Réponse de test d'Albert"
+    assert isinstance(resultat["paragraphes"], list)
+    assert len(resultat["paragraphes"]) == 2
 
-    with patch("main.recupere_configuration") as mock_conf:
-        mock_conf.return_value = {
-            "NOM_BDD": "test",
-        }
+    p1 = resultat["paragraphes"][0]
+    assert p1["score_similarite"] == 0.75
+    assert p1["numero_page"] == 29
+    assert (
+        p1["url"]
+        == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+    )
+    assert (
+        p1["nom_document"]
+        == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+    )
+    assert p1["contenu"] == "Contenu du paragraphe 1"
+    assert resultat["question"] == "Qui es-tu"
 
-        try:
-            client_http = TestClient(serveur)
-            response = client_http.post(
-                "/api/pose_question", json={"question": "Qui es-tu"}
-            )
-            resultat = response.json()
-
-            assert "reponse" in resultat
-            assert "paragraphes" in resultat
-            assert "question" in resultat
-            assert resultat["reponse"] == "Réponse de test d'Albert"
-            assert isinstance(resultat["paragraphes"], list)
-            assert len(resultat["paragraphes"]) == 2
-
-            p1 = resultat["paragraphes"][0]
-            assert p1["score_similarite"] == 0.75
-            assert p1["numero_page"] == 29
-            assert (
-                p1["url"]
-                == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-            )
-            assert (
-                p1["nom_document"]
-                == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-            )
-            assert p1["contenu"] == "Contenu du paragraphe 1"
-            assert resultat["question"] == "Qui es-tu"
-
-            mock_client.pose_question.assert_called_once()
-            mock_service.sauvegarde_interaction.assert_called_once()
-        finally:
-            serveur.dependency_overrides.clear()
+    service_albert.pose_question.assert_called_once()
+    adaptateur_base_de_donnees.sauvegarde_interaction.assert_called_once()
 
 
 @pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
 def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
-    serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
+    reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
+
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+    )
+    serveur = (
+        ConstructeurServeur(Mode.DEVELOPPEMENT)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_service_albert(service_albert)
+        .construit()
+    )
 
     mock_adaptateur_journal = Mock(AdaptateurJournal)
     mock_adaptateur_journal.consigne_evenement = Mock(return_value=None)
 
-    mock_client: Mock = Mock(spec=ServiceAlbert)
-    mock_client.pose_question.return_value = ReponseQuestion(
-        reponse="Je suis un chatbot expert de l'ANSSI",
-        paragraphes=[],
-        question="Qui es-tu",
-    )
-
     mock_adaptateur_chiffrement = Mock(AdaptateurChiffrement)
     mock_adaptateur_chiffrement.hache = Mock(return_value="haché")
-
-    mock_adaptateur_base_de_donnees = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_adaptateur_base_de_donnees.sauvegarde_interaction.return_value = (
-        "id-interaction-test"
-    )
-
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    serveur.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_adaptateur_base_de_donnees
 
     serveur.dependency_overrides[fabrique_adaptateur_chiffrement] = (
         lambda: mock_adaptateur_chiffrement
@@ -202,7 +184,6 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     )
 
     client: TestClient = TestClient(serveur)
-
     client.post(
         "/api/pose_question",
         json={"question": "Qui es-tu ?"},
@@ -220,8 +201,7 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
 
 
 def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
-    """Vérifie que l'endpoint recherche retourne toutes les métadonnées pour chaque paragraphe"""
-    mock_paragraphes = [
+    paragraphes = [
         Paragraphe(
             contenu="Contenu du paragraphe 1",
             url="https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
@@ -231,32 +211,32 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
         ),
     ]
 
-    mock_client: Mock = Mock(spec=ServiceAlbert)
-    mock_client.recherche_paragraphes.return_value = mock_paragraphes
+    service_albert = (
+        ConstructeurServiceAlbert()
+        .qui_retourne_les_paragraphes(paragraphes)
+        .construit()
+    )
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
 
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    try:
-        client: TestClient = TestClient(serveur)
-        response = client.post("/api/recherche", json={"question": "Ma question test"})
+    client: TestClient = TestClient(serveur)
+    response = client.post("/api/recherche", json={"question": "Ma question test"})
 
-        resultat = response.json()
-        assert len(resultat) == 1
-        p1 = resultat[0]
-        assert p1["contenu"] == "Contenu du paragraphe 1"
-        assert (
-            p1["url"]
-            == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-        )
-        assert p1["score_similarite"] == 0.75
-        assert p1["numero_page"] == 29
-        assert (
-            p1["nom_document"]
-            == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-        )
+    resultat = response.json()
+    assert len(resultat) == 1
+    p1 = resultat[0]
+    assert p1["contenu"] == "Contenu du paragraphe 1"
+    assert (
+        p1["url"]
+        == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+    )
+    assert p1["score_similarite"] == 0.75
+    assert p1["numero_page"] == 29
+    assert (
+        p1["nom_document"]
+        == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+    )
 
-        mock_client.recherche_paragraphes.assert_called_once()
-    finally:
-        serveur.dependency_overrides.clear()
+    service_albert.recherche_paragraphes.assert_called_once()
 
 
 def test_route_retour_avec_mock_retourne_succes_200() -> None:
@@ -374,21 +354,21 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
 
 def test_pose_question_retourne_id_dans_body() -> None:
     reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
-    mock_client = Mock()
-    mock_client.pose_question.return_value = reponse
-    mock_db = Mock(spec=AdaptateurBaseDeDonnees)
-    mock_db.sauvegarde_interaction.return_value = "id-123"
 
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
-    serveur.dependency_overrides[
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-    ] = lambda: mock_db
-    try:
-        client = TestClient(serveur)
-        r = client.post("/api/pose_question", json={"question": "Q?"})
-        j = r.json()
-        assert r.status_code == 200
-        assert j["reponse"] == "ok"
-        assert j["interaction_id"] == "id-123"
-    finally:
-        serveur.dependency_overrides.clear()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+    )
+    serveur = (
+        ConstructeurServeur()
+        .avec_service_albert(service_albert)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .construit()
+    )
+
+    client = TestClient(serveur)
+    r = client.post("/api/pose_question", json={"question": "Q?"})
+    j = r.json()
+    assert r.status_code == 200
+    assert j["reponse"] == "ok"
+    assert j["interaction_id"] == "id-interaction-test"
