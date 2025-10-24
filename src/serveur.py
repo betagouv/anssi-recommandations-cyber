@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
+from fastapi_armor.middleware import ArmorMiddleware  # type: ignore [import-untyped]
 from typing import Dict
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
@@ -106,6 +107,13 @@ def route_retour(
 
 def fabrique_serveur(mode: Mode) -> FastAPI:
     serveur = FastAPI()
+
+    serveur.add_middleware(
+        ArmorMiddleware,
+        preset="strict",
+        content_security_policy="default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com;",
+        cross_origin_embedder_policy="credentialless",
+    )
 
     serveur.include_router(api)
     if mode == Mode.DEVELOPPEMENT:
