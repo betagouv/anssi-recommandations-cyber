@@ -1,17 +1,25 @@
 from fastapi.testclient import TestClient
-from unittest.mock import Mock
 
-from services.albert import ServiceAlbert, fabrique_service_albert
 from configuration import Mode
 from serveur import fabrique_serveur
 
+from serveur_de_test import (
+    ConstructeurServeur,
+    ConstructeurServiceAlbert,
+)
+
 
 def test_route_prompt_retourne_le_prompt_systeme_en_developpement() -> None:
-    mock_client: Mock = Mock(spec=ServiceAlbert)
-    mock_client.PROMPT_SYSTEME = "Tu es une fougère."
-
-    serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
-    serveur.dependency_overrides[fabrique_service_albert] = lambda: mock_client
+    service_albert = (
+        ConstructeurServiceAlbert()
+        .avec_prompt_systeme("Tu es une fougère.")
+        .construit()
+    )
+    serveur = (
+        ConstructeurServeur(Mode.DEVELOPPEMENT)
+        .avec_service_albert(service_albert)
+        .construit()
+    )
 
     client = TestClient(serveur)
     r = client.get("/api/prompt")
