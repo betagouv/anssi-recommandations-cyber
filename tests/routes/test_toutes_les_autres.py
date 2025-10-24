@@ -290,7 +290,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
 
     assert data["commentaire"] == "Très utile !"
     assert data["tags"] == [TagPositif.Complete, TagPositif.FacileAComprendre]
-    args, _ = adaptateur_base_de_donnees.ajoute_retour_utilisatrice.call_args
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
 def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
