@@ -9,6 +9,15 @@ from adaptateurs.adaptateur_base_de_donnees_postgres import (
 from adaptateurs import AdaptateurBaseDeDonnees
 
 
+class ConstructeurAdaptateurBaseDeDonnees:
+    def __init__(self):
+        self._mock = Mock()
+        self._mock.sauvegarde_interaction.return_value = "id-interaction-test"
+
+    def construit(self):
+        return self._mock
+
+
 class ConstructeurServiceAlbert:
     def __init__(self):
         self._mock = Mock()
