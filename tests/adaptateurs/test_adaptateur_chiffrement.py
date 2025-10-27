@@ -12,3 +12,12 @@ def test_hache_transforme_une_valeur_donnee():
         adaptateur_chiffrement.hache("une valeur")
         == une_valeur_hachee_salee_avec_sha256
     )
+
+
+def test_recupere_nonce_retourne_une_valeur_assez_longue():
+    configuration = Chiffrement(sel_de_hachage="un sel")
+    adaptateur_chiffrement = AdaptateurChiffrementStandard(configuration)
+
+    nonce = adaptateur_chiffrement.recupere_nonce()
+
+    assert len(nonce) >= 16
