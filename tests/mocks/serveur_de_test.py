@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Callable, Dict, Optional
 
 from serveur import fabrique_serveur
 from configuration import Mode
@@ -76,37 +76,37 @@ class ConstructeurServiceAlbert:
 
 class ConstructeurServeur:
     def __init__(self, mode: Mode = Mode.PRODUCTION):
-        self._serveur = fabrique_serveur(mode)
+        self._mode = mode
+        self._dependances: Dict[Callable, Callable] = {}
 
     def avec_service_albert(self, service_albert: ServiceAlbert):
-        self._serveur.dependency_overrides[fabrique_service_albert] = (
-            lambda: service_albert
-        )
+        self._dependances[fabrique_service_albert] = lambda: service_albert
         return self
 
     def avec_adaptateur_base_de_donnees(
         self, adaptateur_base_de_donnees: AdaptateurBaseDeDonnees
     ):
-        self._serveur.dependency_overrides[
-            fabrique_adaptateur_base_de_donnees_retour_utilisatrice
-        ] = lambda: adaptateur_base_de_donnees
+        self._dependances[fabrique_adaptateur_base_de_donnees_retour_utilisatrice] = (
+            lambda: adaptateur_base_de_donnees
+        )
         return self
 
     def avec_adaptateur_chiffrement(
         self, adaptateur_chiffrement: AdaptateurChiffrement
     ):
-        self._serveur.dependency_overrides[fabrique_adaptateur_chiffrement] = (
+        self._dependances[fabrique_adaptateur_chiffrement] = (
             lambda: adaptateur_chiffrement
         )
         return self
 
     def avec_adaptateur_journal(self, adaptateur_journal: AdaptateurJournal):
-        self._serveur.dependency_overrides[fabrique_adaptateur_journal] = (
-            lambda: adaptateur_journal
-        )
+        self._dependances[fabrique_adaptateur_journal] = lambda: adaptateur_journal
         return self
 
     def construit(self):
+        self._serveur = fabrique_serveur(self._mode)
+        for clef, dependance in self._dependances.items():
+            self._serveur.dependency_overrides[clef] = dependance
         return self._serveur
 
 
