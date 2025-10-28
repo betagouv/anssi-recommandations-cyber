@@ -91,7 +91,7 @@ class ConstructeurServeur:
         )
         return self
 
-    def avec_adaptateur_chiffrement(
+    def avec_adaptateur_chiffrement_pour_les_routes_d_api(
         self, adaptateur_chiffrement: AdaptateurChiffrement
     ):
         self._dependances[fabrique_adaptateur_chiffrement] = (
