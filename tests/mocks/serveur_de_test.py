@@ -33,18 +33,6 @@ class ConstructeurAdaptateurBaseDeDonnees:
         return self._mock
 
 
-class ConstructeurAdaptateurChiffrement:
-    def __init__(self):
-        self._mock = Mock()
-
-    def qui_hache(self, hache: str):
-        self._mock.hache.return_value = hache
-        return self
-
-    def construit(self):
-        return self._mock
-
-
 class ConstructeurAdaptateurJournal:
     def __init__(self):
         self._mock = Mock()

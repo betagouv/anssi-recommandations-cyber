@@ -10,11 +10,11 @@ from configuration import Mode
 
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
-    ConstructeurAdaptateurChiffrement,
     ConstructeurAdaptateurJournal,
     ConstructeurServiceAlbert,
     ConstructeurServeur,
 )
+from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
 
 
 def test_route_recherche_repond_correctement() -> None:
