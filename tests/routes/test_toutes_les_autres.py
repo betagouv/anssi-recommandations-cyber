@@ -196,7 +196,7 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
     )
     serveur = (
-        ConstructeurServeur(Mode.DEVELOPPEMENT)
+        ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_chiffrement(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
