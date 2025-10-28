@@ -2,6 +2,7 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi_armor.presets import PRESETS  # type: ignore [import-untyped]
 from typing import Dict
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
@@ -127,6 +128,14 @@ def fabrique_serveur(
             .replace("%%NONCE_A_INJECTER%%", nonce)
         )
 
-        return HTMLResponse(index)
+        response = HTMLResponse(content=index)
+        headers = PRESETS["strict"] | {
+            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}'; script-src: 'self' 'nonce-{nonce}",
+            "Cross-Origin-Embedder-Policy": "credentialless",
+        }
+        for header_name, header_value in headers.items():
+            response.headers[header_name] = header_value
+
+        return response
 
     return serveur

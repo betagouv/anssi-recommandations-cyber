@@ -5,6 +5,7 @@ description = "Une interface permettant d'interroger [Albert](https://albert.eta
 requires-python = ">=3.13"
 dependencies = [
     "fastapi",
+    "fastapi-armor",
     "httpx",
     "openai",
     "psycopg2-binary",
