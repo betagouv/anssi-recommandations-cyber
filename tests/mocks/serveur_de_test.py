@@ -75,7 +75,14 @@ class ConstructeurServiceAlbert:
 
 
 class ConstructeurServeur:
-    def __init__(self, mode: Mode = Mode.PRODUCTION):
+    def __init__(
+        self,
+        adaptateur_chiffrement: Optional[AdaptateurChiffrement] = None,
+        mode: Mode = Mode.PRODUCTION,
+    ):
+        self._adaptateur_chiffrement = (
+            adaptateur_chiffrement or fabrique_adaptateur_chiffrement()
+        )
         self._mode = mode
         self._dependances: Dict[Callable, Callable] = {}
 
@@ -104,7 +111,7 @@ class ConstructeurServeur:
         return self
 
     def construit(self):
-        self._serveur = fabrique_serveur(self._mode)
+        self._serveur = fabrique_serveur(self._mode, self._adaptateur_chiffrement)
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
         return self._serveur
