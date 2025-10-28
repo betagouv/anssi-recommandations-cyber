@@ -104,7 +104,9 @@ def route_retour(
     return retour
 
 
-def fabrique_serveur(mode: Mode) -> FastAPI:
+def fabrique_serveur(
+    mode: Mode, adaptateur_chiffrement: AdaptateurChiffrement
+) -> FastAPI:
     serveur = FastAPI()
 
     serveur.include_router(api)

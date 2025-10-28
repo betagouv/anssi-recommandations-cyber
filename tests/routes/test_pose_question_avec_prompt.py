@@ -3,6 +3,7 @@ from serveur import (
     fabrique_serveur,
 )
 
+from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from configuration import Mode
 
@@ -53,7 +54,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
 
 
 def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> None:
-    serveur = fabrique_serveur(Mode.PRODUCTION)
+    serveur = fabrique_serveur(Mode.PRODUCTION, fabrique_adaptateur_chiffrement())
     client: TestClient = TestClient(serveur)
 
     response = client.post(

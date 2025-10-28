@@ -3,9 +3,11 @@ from fastapi.testclient import TestClient
 from configuration import Mode
 from serveur import fabrique_serveur
 
+from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
+
 
 def test_route_sante_est_exposee_en_developpement() -> None:
-    serveur = fabrique_serveur(Mode.DEVELOPPEMENT)
+    serveur = fabrique_serveur(Mode.DEVELOPPEMENT, fabrique_adaptateur_chiffrement())
     client: TestClient = TestClient(serveur)
 
     response = client.get("/api/sante")
@@ -15,7 +17,7 @@ def test_route_sante_est_exposee_en_developpement() -> None:
 
 
 def test_route_sante_n_est_pas_exposee_en_production() -> None:
-    serveur = fabrique_serveur(Mode.PRODUCTION)
+    serveur = fabrique_serveur(Mode.PRODUCTION, fabrique_adaptateur_chiffrement())
     client: TestClient = TestClient(serveur)
 
     response = client.get("/api/sante")
