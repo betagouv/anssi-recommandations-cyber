@@ -33,7 +33,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
     )
     serveur = (
-        ConstructeurServeur(Mode.DEVELOPPEMENT)
+        ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construit()

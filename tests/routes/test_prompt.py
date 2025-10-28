@@ -16,7 +16,7 @@ def test_route_prompt_retourne_le_prompt_systeme_en_developpement() -> None:
         .construit()
     )
     serveur = (
-        ConstructeurServeur(Mode.DEVELOPPEMENT)
+        ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
         .avec_service_albert(service_albert)
         .construit()
     )
