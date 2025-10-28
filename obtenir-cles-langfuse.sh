@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "🔑 Pour obtenir vos clés API Langfuse :"
+echo ""
+echo "1. Connectez-vous à Langfuse : http://localhost:3002"
+echo "2. Créez un compte ou connectez-vous"
+echo "3. Allez dans 'Settings' > 'API Keys'"
+echo "4. Créez une nouvelle clé API"
+echo "5. Copiez la Public Key et Secret Key"
+echo ""
+echo "Puis ajoutez ces variables à votre fichier .env :"
+echo ""
+echo "LANGFUSE_PUBLIC_KEY=pk-lf-..."
+echo "LANGFUSE_SECRET_KEY=sk-lf-..."
+echo "LANGFUSE_HOST=http://localhost:3002"
+echo ""
+echo "💡 Le monitoring sera automatiquement activé une fois ces variables configurées."

@@ -13,6 +13,7 @@ services:
       - '${PORT}:${PORT}'
     networks:
       - mqc-network
+      - anssi-net
 
   mqc-frontend:
     image: docker.io/node:${NODE_VERSION:-24}
@@ -42,6 +43,11 @@ services:
 
 networks:
   mqc-network:
+  anssi-net:
+    external: true
+  default:
+    name: anssi-net
+    external: true
 
 volumes:
   dbvol:

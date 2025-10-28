@@ -6,6 +6,7 @@ requires-python = ">=3.13"
 dependencies = [
     "fastapi",
     "httpx",
+    "langfuse",
     "openai",
     "psycopg2-binary",
     "pytest",

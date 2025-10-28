@@ -1,6 +1,21 @@
+from langfuse import observe
+from langfuse import Langfuse
+import os
+
+# Initialisation globale du client Langfuse (lecture env)
+langfuse = Langfuse(
+    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+    secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+    base_url=os.getenv("LANGFUSE_HOST", "http://localhost:3002"),
+)
+# Langfuse instrumente tout ce qui est décoré avec @observe()
+
+# ---------------------------------------------------------------------------------
+# Intégration
+# ---------------------------------------------------------------------------------
 import requests
 from pathlib import Path
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletion
 from openai.types.chat.chat_completion import Choice
 from schemas.client_albert import (
@@ -55,6 +70,7 @@ class ClientAlbertApi:
             configuration.temps_reponse_maximum_recherche_paragraphes
         )
 
+    @observe(name="recherche_paragraphes")
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         try:
             reponse: requests.Response = self.client_http.post(
@@ -99,6 +115,7 @@ class ClientAlbertApi:
 
         return resultats
 
+    @observe(name="recupere_propositions")  # trace OpenAI call
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam]
     ) -> list[Choice]:
@@ -184,6 +201,7 @@ class ServiceAlbert:
                 "content": f"Question :\n{question}",
             },
         ]
+
         propositions_albert = self.client.recupere_propositions(messages)
         (reponse, paragraphes) = self._recupere_reponse_et_paragraphes(
             propositions_albert, paragraphes
