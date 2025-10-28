@@ -62,9 +62,7 @@ def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> No
         json={"question": "Qui es-tu ?", "prompt": "Vous êtes un assistant virtuel."},
     )
 
-    # Le code attendu n'est pas `404` parce qu'on a un "catch-all" qui sert du contenu statique,
-    # et pour lequel des requêtes POST sont invalides.
-    code_attendu = 405
+    code_attendu = 404
 
     assert response.status_code == code_attendu
-    assert response.json() == {"detail": "Method Not Allowed"}
+    assert response.json() == {"detail": "Not Found"}

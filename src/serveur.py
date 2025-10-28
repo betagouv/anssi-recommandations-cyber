@@ -1,5 +1,7 @@
+from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from typing import Dict
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
@@ -113,8 +115,18 @@ def fabrique_serveur(
     if mode == Mode.DEVELOPPEMENT:
         serveur.include_router(api_developpement)
 
-    serveur.mount(
-        "/", StaticFiles(directory="ui/dist", html=True), name="interface utilisateur"
-    )
+    for static in ["assets", "fonts", "icons", "images"]:
+        serveur.mount(f"/{static}", StaticFiles(directory=f"ui/dist/{static}"))
+
+    @serveur.get("/")
+    def index():
+        nonce = adaptateur_chiffrement.recupere_nonce()
+        index = (
+            Path("ui/dist/index.html")
+            .read_text(encoding="utf-8")
+            .replace("%%NONCE_A_INJECTER%%", nonce)
+        )
+
+        return HTMLResponse(index)
 
     return serveur
