@@ -130,7 +130,7 @@ def fabrique_serveur(
 
         response = HTMLResponse(content=index)
         headers = PRESETS["strict"] | {
-            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}'; script-src: 'self' 'nonce-{nonce}",
+            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}'; script-src 'self' 'nonce-{nonce}'",
             "Cross-Origin-Embedder-Policy": "credentialless",
         }
         for header_name, header_value in headers.items():
