@@ -31,7 +31,7 @@ def test_route_index_sert_une_page_html() -> None:
             [
                 [
                     "content-security-policy",
-                    f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{NONCE}'; script-src: 'self' 'nonce-{NONCE}",
+                    f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{NONCE}'; script-src 'self' 'nonce-{NONCE}'",
                 ],
                 ["cross-origin-embedder-policy", "credentialless"],
                 ["cross-origin-opener-policy", "same-origin"],
