@@ -67,7 +67,7 @@ def recupere_configuration_postgres(
     )
 
 
-def recupere_configuration_journal_postgres() -> Optional[BaseDeDonnees]:
+def recupere_configuration_journal(mode: Mode) -> Optional[BaseDeDonnees]:
     return (
         BaseDeDonnees(
             hote=os.getenv("DB_JOURNAL_HOST", "localhost"),
@@ -76,7 +76,7 @@ def recupere_configuration_journal_postgres() -> Optional[BaseDeDonnees]:
             mot_de_passe=os.getenv("DB_JOURNAL_PASSWORD", "postgres"),
             nom=os.getenv("DB_JOURNAL_NAME", "journal"),
         )
-        if os.getenv("DB_JOURNAL_HOST")
+        if os.getenv("DB_JOURNAL_HOST") and mode == Mode.PRODUCTION
         else None
     )
 
@@ -106,13 +106,13 @@ def recupere_configuration() -> Configuration:
         os.getenv("DB_NAME", "anssi_retours")
     )
 
-    configuration_base_de_donnees_journal = recupere_configuration_journal_postgres()
+    mode = Mode(os.getenv("MODE", "production"))
+
+    configuration_base_de_donnees_journal = recupere_configuration_journal(mode)
 
     configuration_chiffrement = Chiffrement(
         sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HASHAGE", "")
     )
-
-    mode = Mode(os.getenv("MODE", "production"))
 
     return Configuration(
         albert=configuration_albert,
