@@ -38,12 +38,12 @@ def route_sante() -> Dict[str, str]:
 def route_pose_question_avec_prompt(
     request: QuestionRequeteAvecPrompt,
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> ReponseQuestion:
     reponse_question = service_albert.pose_question(request.question, request.prompt)
-    id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
+    id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
     return ReponseQuestion(
         **reponse_question.model_dump(), interaction_id=id_interaction
     )
@@ -68,7 +68,7 @@ def route_recherche(
 def route_pose_question(
     request: QuestionRequete,
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
     adaptateur_chiffrement: AdaptateurChiffrement = Depends(
@@ -77,7 +77,7 @@ def route_pose_question(
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> ReponseQuestion:
     reponse_question = service_albert.pose_question(request.question)
-    id_interaction = adaptateur_base_de_donnes.sauvegarde_interaction(reponse_question)
+    id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.INTERACTION_CREEE,
         donnees=DonneesInteractionCreee(
@@ -93,11 +93,11 @@ def route_pose_question(
 @api.post("/retour")
 def route_retour(
     body: DonneesCreationRetourUtilisateur,
-    adaptateur_base_de_donnes: AdaptateurBaseDeDonnees = Depends(
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
 ) -> RetourUtilisatrice:
-    retour = adaptateur_base_de_donnes.ajoute_retour_utilisatrice(
+    retour = adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
         body.id_interaction, body.retour
     )
 
