@@ -27,6 +27,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
             )
         ],
         question="Qui es-tu ?",
+        violation=None,
     )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()

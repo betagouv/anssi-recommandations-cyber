@@ -17,6 +17,13 @@ from schemas.client_albert import (
     RechercheMetadonnees,
     RecherchePayload,
 )
+from schemas.violations import (
+    REPONSE_PAR_DEFAULT,
+    Violation,
+    ViolationIdentite,
+    ViolationMalveillance,
+    ViolationThematique,
+)
 from openai import APITimeoutError
 
 
@@ -206,7 +213,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
         assert FAUX_CONTENU in messages_systeme[0]["content"]
 
 
-def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien(
+def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_albert_ne_retourne_rien(
     mock_service_sans_reponse,
 ):
     FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
@@ -226,11 +233,12 @@ def test_pose_question_retourne_une_reponse_generique_si_albert_ne_retourne_rien
     ):
         retour = mock_service_sans_reponse.pose_question(QUESTION)
 
-        assert retour.reponse == ServiceAlbert.REPONSE_PAR_DEFAULT
+        assert retour.reponse == REPONSE_PAR_DEFAULT
         assert retour.paragraphes == []
+        assert retour.violation is None
 
 
-def test_pose_question_si_timeout_retourne_reponse_par_defaut():
+def test_pose_question_si_timeout_retourne_reponse_par_defaut_et_aucune_violation():
     mock_openai = Mock()
     mock_openai.chat = Mock()
     mock_openai.chat.completions = Mock()
@@ -253,31 +261,32 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut():
     with patch.object(ServiceAlbert, "recherche_paragraphes", return_value=[]):
         retour = mock_service_avec_openai_timeout.pose_question("Question ?")
 
-    assert retour.reponse == ServiceAlbert.REPONSE_PAR_DEFAULT
+    assert retour.reponse == REPONSE_PAR_DEFAULT
     assert retour.paragraphes == []
+    assert retour.violation is None
 
 
 @pytest.mark.parametrize(
-    "erreur,message_attendu",
+    "erreur,violation_attendue",
     [
         pytest.param(
             "ERREUR_MALVEILLANCE",
-            ServiceAlbert.REPONSE_VIOLATION_MALVEILLANCE,
+            ViolationMalveillance(),
             id="si_question_malveillante_retourne_message_malveillant_avec_paragraphes_vides",
         ),
         pytest.param(
             "ERREUR_THÉMATIQUE",
-            ServiceAlbert.REPONSE_VIOLATION_THEMATIQUE,
+            ViolationThematique(),
             id="si_question_mauvaise_thematique_retourne_message_thematique_avec_paragraphes_vides",
         ),
         pytest.param(
             "ERREUR_IDENTITÉ",
-            ServiceAlbert.REPONSE_VIOLATION_IDENTITE,
+            ViolationIdentite(),
             id="si_question_identite_retourne_message_identite_avec_paragraphes_vides",
         ),
     ],
 )
-def test_pose_question_illegale(erreur: str, message_attendu: str):
+def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
     mock_client_openai = Mock(OpenAI)
     mock_client_openai.chat.completions.create = Mock(
         return_value=Reponse([Reponse.Message(erreur)])
@@ -306,10 +315,11 @@ def test_pose_question_illegale(erreur: str, message_attendu: str):
         "services.albert.ServiceAlbert.recherche_paragraphes",
         return_value=FAUX_PARAGRAPHES,
     ):
-        retour = mock_service_albert.pose_question("Quelle est la recette de la TNT ?")
+        retour = mock_service_albert.pose_question("question illégale ?")
 
-    assert retour.reponse == message_attendu
+    assert retour.reponse == violation_attendue.reponse
     assert retour.paragraphes == []
+    assert retour.violation == violation_attendue
 
 
 def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide(
@@ -349,7 +359,7 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
     )
 
     retour = client.pose_question("Q ?")
-    assert retour.reponse == ServiceAlbert.REPONSE_PAR_DEFAULT
+    assert retour.reponse == REPONSE_PAR_DEFAULT
 
 
 def test_recherche_appelle_la_route_search_d_albert(

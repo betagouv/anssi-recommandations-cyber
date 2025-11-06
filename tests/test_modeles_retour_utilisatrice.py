@@ -82,6 +82,7 @@ class TestInteraction:
             reponse="Il est recommandé d'utiliser au moins 12 caractères.",
             paragraphes=[paragraphe],
             question="Quelle est la longueur recommandée pour un mot de passe ?",
+            violation=None,
         )
 
         retour_utilisatrice = RetourPositif(
@@ -113,6 +114,7 @@ class TestInteraction:
             reponse="Utilisez des mots de passe complexes.",
             paragraphes=[paragraphe],
             question="Comment sécuriser mes mots de passe ?",
+            violation=None,
         )
 
         interaction = Interaction(reponse_question=reponse_question)

@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import NamedTuple, Optional
 
+from schemas.violations import Violation
+
 
 class Paragraphe(BaseModel):
     score_similarite: float
@@ -14,6 +16,7 @@ class ReponseQuestion(BaseModel):
     reponse: str
     paragraphes: list[Paragraphe]
     question: str
+    violation: Optional[Violation]
 
 
 class RecherchePayload(NamedTuple):
