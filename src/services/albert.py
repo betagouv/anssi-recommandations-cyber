@@ -11,6 +11,13 @@ from schemas.client_albert import (
     RechercheChunk,
     RechercheMetadonnees,
 )
+from schemas.violations import (
+    REPONSE_PAR_DEFAULT,
+    Violation,
+    ViolationIdentite,
+    ViolationMalveillance,
+    ViolationThematique,
+)
 from configuration import logging, recupere_configuration, Albert
 from typing import Optional, cast
 from openai.types import CompletionUsage
@@ -128,13 +135,6 @@ class ClientAlbertApi:
 
 
 class ServiceAlbert:
-    REPONSE_PAR_DEFAULT = (
-        "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
-    )
-    REPONSE_VIOLATION_IDENTITE = "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence."
-    REPONSE_VIOLATION_THEMATIQUE = "Cette thématique n’entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d’un enjeu cybersécurité ou informatique."
-    REPONSE_VIOLATION_MALVEILLANCE = REPONSE_PAR_DEFAULT
-
     def __init__(
         self,
         configuration: Albert.Service,  # type: ignore [name-defined]
@@ -185,32 +185,38 @@ class ServiceAlbert:
             },
         ]
         propositions_albert = self.client.recupere_propositions(messages)
-        (reponse, paragraphes) = self._recupere_reponse_et_paragraphes(
-            propositions_albert, paragraphes
+        (reponse, paragraphes, violation) = (
+            self._recupere_reponse_paragraphes_et_violation(
+                propositions_albert, paragraphes
+            )
         )
 
         return ReponseQuestion(
             reponse=reponse,
             paragraphes=paragraphes,
             question=question,
+            violation=violation,
         )
 
-    def _recupere_reponse_et_paragraphes(
+    def _recupere_reponse_paragraphes_et_violation(
         self, propositions_albert: list[Choice], paragraphes: list[Paragraphe]
-    ) -> tuple[str, list[Paragraphe]]:
+    ) -> tuple[str, list[Paragraphe], Violation | None]:
+        def retourne_violation(v: Violation):
+            return v.reponse, [], v
+
         reponse_presente = len(propositions_albert) > 0
 
         if reponse_presente:
             reponse_albert = cast(str, propositions_albert[0].message.content)
             if "ERREUR_IDENTITÉ" in reponse_albert:
-                return self.REPONSE_VIOLATION_IDENTITE, []
+                return retourne_violation(ViolationIdentite())
             elif "ERREUR_THÉMATIQUE" in reponse_albert:
-                return self.REPONSE_VIOLATION_THEMATIQUE, []
+                return retourne_violation(ViolationThematique())
             elif "ERREUR_MALVEILLANCE" in reponse_albert:
-                return self.REPONSE_VIOLATION_MALVEILLANCE, []
-            return reponse_albert, paragraphes
+                return retourne_violation(ViolationMalveillance())
+            return reponse_albert, paragraphes, None
         else:
-            return ServiceAlbert.REPONSE_PAR_DEFAULT, []
+            return REPONSE_PAR_DEFAULT, [], None
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]

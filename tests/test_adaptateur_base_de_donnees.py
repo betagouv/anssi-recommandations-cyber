@@ -77,6 +77,7 @@ def test_sauvegarde_interaction(adaptateur_test) -> None:
         reponse="Il est recommandé d'utiliser au moins 12 caractères.",
         paragraphes=[paragraphe],
         question="Quelle est la longueur recommandée pour un mot de passe ?",
+        violation=None,
     )
 
     id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
@@ -87,7 +88,10 @@ def test_sauvegarde_interaction(adaptateur_test) -> None:
 
 def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
-        reponse="Test réponse", paragraphes=[], question="Test question"
+        reponse="Test réponse",
+        paragraphes=[],
+        question="Test question",
+        violation=None,
     )
     id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
 
@@ -99,7 +103,10 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
 
 def test_lit_interaction_existante(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
-        reponse="Réponse test", paragraphes=[], question="Question test"
+        reponse="Réponse test",
+        paragraphes=[],
+        question="Question test",
+        violation=None,
     )
     id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
 
@@ -113,7 +120,10 @@ def test_lit_interaction_existante(adaptateur_test) -> None:
 
 def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
-        reponse="Réponse test", paragraphes=[], question="Question test"
+        reponse="Réponse test",
+        paragraphes=[],
+        question="Question test",
+        violation=None,
     )
     id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
 

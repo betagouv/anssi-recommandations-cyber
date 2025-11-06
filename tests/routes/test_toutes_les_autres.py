@@ -98,6 +98,7 @@ def test_route_pose_question_repond_correctement() -> None:
             ),
         ],
         question="Qui es-tu",
+        violation=None,
     )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
@@ -140,6 +141,7 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
             ),
         ],
         question="Qui es-tu",
+        violation=None,
     )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
@@ -185,7 +187,9 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 @pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
 def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
     valeur_hachee = "haché"
-    reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
+    reponse = ReponseQuestion(
+        reponse="ok", paragraphes=[], question="Q?", violation=None
+    )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
     adaptateur_chiffrement = (
@@ -222,7 +226,9 @@ def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
 
 
 def test_route_pose_question_retourne_id_dans_body() -> None:
-    reponse = ReponseQuestion(reponse="ok", paragraphes=[], question="Q?")
+    reponse = ReponseQuestion(
+        reponse="ok", paragraphes=[], question="Q?", violation=None
+    )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
     service_albert = (
