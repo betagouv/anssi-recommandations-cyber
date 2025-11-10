@@ -202,7 +202,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
     )
     serveur = (
-        ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
+        ConstructeurServeur(mode=mode)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
