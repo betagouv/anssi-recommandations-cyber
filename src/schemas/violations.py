@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
 
-REPONSE_PAR_DEFAULT = (
+REPONSE_PAR_DEFAUT = (
     "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
 )
 
@@ -22,7 +22,7 @@ class ViolationIdentite(Violation):
 class ViolationMalveillance(Violation):
     @property
     def reponse(self):
-        return REPONSE_PAR_DEFAULT
+        return REPONSE_PAR_DEFAUT
 
 
 class ViolationThematique(Violation):

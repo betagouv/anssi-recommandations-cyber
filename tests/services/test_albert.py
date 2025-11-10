@@ -18,7 +18,7 @@ from schemas.client_albert import (
     RecherchePayload,
 )
 from schemas.violations import (
-    REPONSE_PAR_DEFAULT,
+    REPONSE_PAR_DEFAUT,
     Violation,
     ViolationIdentite,
     ViolationMalveillance,
@@ -233,7 +233,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
     ):
         retour = mock_service_sans_reponse.pose_question(QUESTION)
 
-        assert retour.reponse == REPONSE_PAR_DEFAULT
+        assert retour.reponse == REPONSE_PAR_DEFAUT
         assert retour.paragraphes == []
         assert retour.violation is None
 
@@ -261,7 +261,7 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut_et_aucune_violatio
     with patch.object(ServiceAlbert, "recherche_paragraphes", return_value=[]):
         retour = mock_service_avec_openai_timeout.pose_question("Question ?")
 
-    assert retour.reponse == REPONSE_PAR_DEFAULT
+    assert retour.reponse == REPONSE_PAR_DEFAUT
     assert retour.paragraphes == []
     assert retour.violation is None
 
@@ -359,7 +359,7 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide(
     )
 
     retour = client.pose_question("Q ?")
-    assert retour.reponse == REPONSE_PAR_DEFAULT
+    assert retour.reponse == REPONSE_PAR_DEFAUT
 
 
 def test_recherche_appelle_la_route_search_d_albert(

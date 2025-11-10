@@ -12,7 +12,7 @@ from schemas.client_albert import (
     RechercheMetadonnees,
 )
 from schemas.violations import (
-    REPONSE_PAR_DEFAULT,
+    REPONSE_PAR_DEFAUT,
     Violation,
     ViolationIdentite,
     ViolationMalveillance,
@@ -216,7 +216,7 @@ class ServiceAlbert:
                 return retourne_violation(ViolationMalveillance())
             return reponse_albert, paragraphes, None
         else:
-            return REPONSE_PAR_DEFAULT, [], None
+            return REPONSE_PAR_DEFAUT, [], None
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]
