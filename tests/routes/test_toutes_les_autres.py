@@ -185,7 +185,9 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 
 
 @pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
-def test_route_pose_question_emet_un_evenement_journal(mode) -> None:
+def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_une_interaction(
+    mode,
+) -> None:
     valeur_hachee = "haché"
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
