@@ -6,6 +6,11 @@ from adaptateurs.journal import (
 )
 from schemas.client_albert import Paragraphe, ReponseQuestion
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
+from schemas.violations import (
+    ViolationIdentite,
+    ViolationMalveillance,
+    ViolationThematique,
+)
 from configuration import Mode
 
 from serveur_de_test import (
@@ -223,6 +228,52 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     assert kwargs["donnees"].model_dump_json()
 
     adaptateur_chiffrement.hache.assert_called_once()
+    [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
+    assert args[0] == "id-interaction-test"
+
+
+@pytest.mark.parametrize(
+    "violation", [ViolationIdentite(), ViolationMalveillance(), ViolationThematique()]
+)
+def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
+    violation,
+) -> None:
+    valeur_hachee = "haché"
+    reponse = ReponseQuestion(
+        reponse="", paragraphes=[], question="Q?", violation=violation
+    )
+
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_chiffrement = (
+        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construit()
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construit()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+    )
+    serveur = (
+        ConstructeurServeur()
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .avec_service_albert(service_albert)
+        .construit()
+    )
+
+    client: TestClient = TestClient(serveur)
+    client.post(
+        "/api/pose_question",
+        json={"question": "Qui es-tu ?"},
+    )
+
+    assert adaptateur_journal.consigne_evenement.call_count == 2
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["type"] == TypeEvenement.VIOLATION_DETECTEE
+    assert kwargs["donnees"].id_interaction == valeur_hachee
+    assert kwargs["donnees"].type_violation == violation.__class__.__name__
+    assert kwargs["donnees"].model_dump_json()
+
+    assert adaptateur_journal.consigne_evenement.call_count == 2
     [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
     assert args[0] == "id-interaction-test"
 

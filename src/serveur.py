@@ -15,6 +15,7 @@ from adaptateurs.chiffrement import (
 from adaptateurs.journal import (
     AdaptateurJournal,
     DonneesInteractionCreee,
+    DonneesViolationDetectee,
     TypeEvenement,
     fabrique_adaptateur_journal,
 )
@@ -78,12 +79,22 @@ def route_pose_question(
 ) -> ReponseQuestion:
     reponse_question = service_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
+
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.INTERACTION_CREEE,
         donnees=DonneesInteractionCreee(
             id_interaction=adaptateur_chiffrement.hache(id_interaction)
         ),
     )
+
+    if reponse_question.violation is not None:
+        adaptateur_journal.consigne_evenement(
+            type=TypeEvenement.VIOLATION_DETECTEE,
+            donnees=DonneesViolationDetectee(
+                id_interaction=adaptateur_chiffrement.hache(id_interaction),
+                type_violation=reponse_question.violation.__class__.__name__,
+            ),
+        )
 
     return ReponseQuestion(
         **reponse_question.model_dump(), interaction_id=id_interaction

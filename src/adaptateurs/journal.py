@@ -15,8 +15,14 @@ class DonneesInteractionCreee(Donnees):
     id_interaction: str
 
 
+class DonneesViolationDetectee(Donnees):
+    id_interaction: str
+    type_violation: str
+
+
 class TypeEvenement(StrEnum):
     INTERACTION_CREEE = "INTERACTION_CREEE"
+    VIOLATION_DETECTEE = "VIOLATION_DETECTEE"
 
 
 class AdaptateurJournal(ABC):
