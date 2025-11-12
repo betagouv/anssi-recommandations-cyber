@@ -27,6 +27,9 @@ class ConstructeurAdaptateurBaseDeDonnees:
 
     def avec_retour(self, retour: Optional[RetourUtilisatrice]):
         self._mock.ajoute_retour_utilisatrice.return_value = retour
+        self._mock.supprime_retour_utilisatrice.side_effect = (
+            lambda i: i if i == "id-interaction-test" else None
+        )
         return self
 
     def construit(self):

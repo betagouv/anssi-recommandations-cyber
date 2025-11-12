@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi_armor.presets import PRESETS  # type: ignore [import-untyped]
-from typing import Dict
+from typing import Dict, Optional
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.client_albert import Paragraphe
@@ -102,7 +102,7 @@ def route_pose_question(
 
 
 @api.post("/retour")
-def route_retour(
+def ajoute_retour(
     body: DonneesCreationRetourUtilisateur,
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
@@ -116,6 +116,23 @@ def route_retour(
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
 
     return retour
+
+
+@api.delete("/retour/{id_interaction}")
+def supprime_retour(
+    id_interaction: str,
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+    ),
+) -> Optional[str]:
+    id_interaction_retour_supprime = (
+        adaptateur_base_de_donnees.supprime_retour_utilisatrice(id_interaction)
+    )
+
+    if not id_interaction_retour_supprime:
+        raise HTTPException(status_code=404, detail="Interaction non trouvée")
+
+    return id_interaction_retour_supprime
 
 
 def fabrique_serveur(
