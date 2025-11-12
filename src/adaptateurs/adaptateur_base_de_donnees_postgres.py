@@ -66,7 +66,33 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         )
         return retour
 
-    def recupere_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+    def supprime_retour_utilisatrice(
+        self, identifiant_interaction: str
+    ) -> Optional[str]:
+        curseur = self._get_curseur()
+        curseur.execute(
+            "SELECT contenu FROM interactions WHERE id_interaction = %s",
+            (identifiant_interaction,),
+        )
+        ligne = curseur.fetchone()
+        if not ligne:
+            return None
+
+        interaction = Interaction.model_validate(ligne["contenu"])
+
+        interaction_mise_a_jour = Interaction(
+            reponse_question=interaction.reponse_question, retour_utilisatrice=None
+        )
+
+        curseur.execute(
+            "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
+            (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
+        )
+        return identifiant_interaction
+
+    def recupere_interaction(
+        self, identifiant_interaction: str
+    ) -> Optional[Interaction]:
         curseur = self._get_curseur()
         curseur.execute(
             "SELECT contenu FROM interactions WHERE id_interaction = %s",

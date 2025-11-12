@@ -16,7 +16,15 @@ class AdaptateurBaseDeDonnees(ABC):
         pass
 
     @abstractmethod
-    def recupere_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+    def supprime_retour_utilisatrice(
+        self, identifiant_interaction: str
+    ) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def recupere_interaction(
+        self, identifiant_interaction: str
+    ) -> Optional[Interaction]:
         pass
 
     @abstractmethod
