@@ -20,10 +20,11 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
     def ajoute_retour_utilisatrice(
         self, identifiant_interaction: str, retour: RetourUtilisatrice
     ) -> Optional[RetourUtilisatrice]:
-        if identifiant_interaction not in self._interactions:
+        interaction = self.recupere_interaction(identifiant_interaction)
+
+        if not interaction:
             return None
 
-        interaction = self._interactions[identifiant_interaction]
         interaction_mise_a_jour = Interaction(
             reponse_question=interaction.reponse_question, retour_utilisatrice=retour
         )
@@ -33,10 +34,11 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
     def supprime_retour_utilisatrice(
         self, identifiant_interaction: str
     ) -> Optional[str]:
-        if identifiant_interaction not in self._interactions:
+        interaction = self.recupere_interaction(identifiant_interaction)
+
+        if not interaction:
             return None
 
-        interaction = self._interactions[identifiant_interaction]
         interaction_mise_a_jour = Interaction(
             reponse_question=interaction.reponse_question, retour_utilisatrice=None
         )
