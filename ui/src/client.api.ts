@@ -21,6 +21,11 @@ export const soumetsAvisUtilisateurAPI = async (
     }),
   });
 
+export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
+  await fetch(`${urlAPI}/api/retour/${idInteraction}`, {
+    method: "DELETE",
+  });
+
 type MessageUtilisateurAPI = {
   question: string;
   prompt?: string;

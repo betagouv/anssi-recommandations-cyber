@@ -1,7 +1,7 @@
 <script lang="ts">
     import { infobulle } from '../directives/infobulle';
     import { type AvisUtilisateur, storeAvisUtilisateur } from "../stores/avisUtilisateur.store";
-    import {soumetsAvisUtilisateurAPI} from "../client.api";
+    import {soumetsAvisUtilisateurAPI, supprimeAvisUtilisateurAPI} from "../client.api";
     import { SvelteSet } from "svelte/reactivity";
 
     let { idInteraction }: { idInteraction: string } = $props();
@@ -28,6 +28,7 @@
             positif,
           );
         } else {
+          await supprimeAvisUtilisateurAPI(idInteraction);
           storeAvisUtilisateur.supprimeAvis(idInteraction);
         }
     }
