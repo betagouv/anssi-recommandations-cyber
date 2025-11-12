@@ -101,7 +101,7 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     assert resultat == retour
 
 
-def test_lit_interaction_existante(adaptateur_test) -> None:
+def test_recupere_interaction_existante(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test",
         paragraphes=[],
@@ -110,7 +110,7 @@ def test_lit_interaction_existante(adaptateur_test) -> None:
     )
     id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
 
-    interaction = adaptateur_test.lit_interaction(id_interaction)
+    interaction = adaptateur_test.recupere_interaction(id_interaction)
 
     assert interaction is not None
     assert interaction.reponse_question.reponse == "Réponse test"
@@ -118,7 +118,7 @@ def test_lit_interaction_existante(adaptateur_test) -> None:
     assert interaction.retour_utilisatrice is None
 
 
-def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
+def test_recupere_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test",
         paragraphes=[],
@@ -130,7 +130,7 @@ def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
 
-    interaction = adaptateur_test.lit_interaction(id_interaction)
+    interaction = adaptateur_test.recupere_interaction(id_interaction)
 
     assert interaction is not None
     assert interaction.reponse_question.reponse == "Réponse test"
@@ -139,9 +139,9 @@ def test_lit_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
     assert interaction.retour_utilisatrice.tags == [TagPositif.Complete]
 
 
-def test_lit_interaction_inexistante(adaptateur_test) -> None:
+def test_recupere_interaction_inexistante(adaptateur_test) -> None:
     id_inexistant = "id-inexistant"
 
-    interaction = adaptateur_test.lit_interaction(id_inexistant)
+    interaction = adaptateur_test.recupere_interaction(id_inexistant)
 
     assert interaction is None

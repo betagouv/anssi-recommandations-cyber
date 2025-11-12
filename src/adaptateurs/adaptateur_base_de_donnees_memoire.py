@@ -30,7 +30,7 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
         self._interactions[identifiant_interaction] = interaction_mise_a_jour
         return retour
 
-    def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+    def recupere_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
         return self._interactions.get(identifiant_interaction)
 
     def ferme_connexion(self) -> None:
