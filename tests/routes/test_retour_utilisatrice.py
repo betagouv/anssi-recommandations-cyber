@@ -87,10 +87,10 @@ def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
         },
     }
 
-    resp = client.post("/api/retour", json=payload)
+    reponse = client.post("/api/retour", json=payload)
 
-    assert resp.status_code == 404
-    assert resp.json() == {"detail": "Interaction non trouvée"}
+    assert reponse.status_code == 404
+    assert reponse.json() == {"detail": "Interaction non trouvée"}
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
@@ -110,7 +110,7 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
             "commentaire": "Très utile",
         },
     }
-    resp = client.post("/api/retour", json=payload)
+    reponse = client.post("/api/retour", json=payload)
 
-    assert resp.status_code == 422
+    assert reponse.status_code == 422
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_not_called()
