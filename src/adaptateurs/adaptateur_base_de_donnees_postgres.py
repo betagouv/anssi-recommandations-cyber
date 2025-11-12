@@ -66,7 +66,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         )
         return retour
 
-    def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+    def recupere_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
         curseur = self._get_curseur()
         curseur.execute(
             "SELECT contenu FROM interactions WHERE id_interaction = %s",

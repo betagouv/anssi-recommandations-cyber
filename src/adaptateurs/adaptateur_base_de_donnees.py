@@ -16,7 +16,7 @@ class AdaptateurBaseDeDonnees(ABC):
         pass
 
     @abstractmethod
-    def lit_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
+    def recupere_interaction(self, identifiant_interaction: str) -> Optional[Interaction]:
         pass
 
     @abstractmethod
