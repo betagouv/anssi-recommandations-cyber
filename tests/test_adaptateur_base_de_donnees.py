@@ -101,6 +101,16 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     assert resultat == retour
 
 
+def test_ajout_retour_utilisatrice_sur_interaction_inexistante(adaptateur_test) -> None:
+    retour = RetourPositif(commentaire="Très utile")
+
+    resultat = adaptateur_test.ajoute_retour_utilisatrice(
+        "id-interaction-inexistant", retour
+    )
+
+    assert resultat is None
+
+
 def test_recupere_interaction_existante(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test",
