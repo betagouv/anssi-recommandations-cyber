@@ -33,7 +33,7 @@ def test_route_prompt_n_est_pas_exposee_en_production() -> None:
     serveur = fabrique_serveur(Mode.PRODUCTION, fabrique_adaptateur_chiffrement())
     client: TestClient = TestClient(serveur)
 
-    response = client.get("/api/prompt")
+    reponse = client.get("/api/prompt")
 
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
+    assert reponse.status_code == 404
+    assert reponse.json() == {"detail": "Not Found"}

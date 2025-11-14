@@ -26,9 +26,9 @@ def test_route_recherche_repond_correctement() -> None:
     serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
     client: TestClient = TestClient(serveur)
 
-    response = client.post("/api/recherche", json={"question": "Ma question test"})
+    reponse = client.post("/api/recherche", json={"question": "Ma question test"})
 
-    assert response.status_code == 200
+    assert reponse.status_code == 200
     service_albert.recherche_paragraphes.assert_called_once()
 
 
@@ -42,8 +42,8 @@ def test_route_recherche_donnees_correctes() -> None:
     serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
     client: TestClient = TestClient(serveur)
 
-    response = client.post("/api/recherche", json={"question": "Ma question test"})
-    resultat = response.json()
+    reponse = client.post("/api/recherche", json={"question": "Ma question test"})
+    resultat = reponse.json()
 
     assert isinstance(resultat, list)
     assert len(resultat) == len(paragraphes)
@@ -69,9 +69,9 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
     serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
 
     client: TestClient = TestClient(serveur)
-    response = client.post("/api/recherche", json={"question": "Ma question test"})
+    reponse = client.post("/api/recherche", json={"question": "Ma question test"})
 
-    resultat = response.json()
+    resultat = reponse.json()
     assert len(resultat) == 1
     p1 = resultat[0]
     assert p1["contenu"] == "Contenu du paragraphe 1"
@@ -117,9 +117,9 @@ def test_route_pose_question_repond_correctement() -> None:
     )
 
     client: TestClient = TestClient(serveur)
-    response = client.post("/api/pose_question", json={"question": "Qui es-tu"})
+    r = client.post("/api/pose_question", json={"question": "Qui es-tu"})
 
-    assert response.status_code == 200
+    assert r.status_code == 200
     service_albert.pose_question.assert_called_once()
 
     serveur.dependency_overrides.clear()
@@ -160,8 +160,8 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
     )
 
     client_http = TestClient(serveur)
-    response = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
-    resultat = response.json()
+    r = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
+    resultat = r.json()
 
     assert "reponse" in resultat
     assert "paragraphes" in resultat
