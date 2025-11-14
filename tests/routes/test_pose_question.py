@@ -95,6 +95,7 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
     r = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
     resultat = r.json()
 
+    assert resultat["interaction_id"] == "id-interaction-test"
     assert resultat["question"] == "Qui es-tu"
     assert resultat["reponse"] == "Réponse de test d'Albert"
     assert resultat["paragraphes"] == [
@@ -205,27 +206,3 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     assert adaptateur_journal.consigne_evenement.call_count == 2
     [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
     assert args[0] == "id-interaction-test"
-
-
-def test_route_pose_question_retourne_id_dans_body() -> None:
-    reponse = ReponseQuestion(
-        reponse="ok", paragraphes=[], question="Q?", violation=None
-    )
-
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
-    service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
-    )
-    serveur = (
-        ConstructeurServeur()
-        .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
-    )
-
-    client = TestClient(serveur)
-    r = client.post("/api/pose_question", json={"question": "Q?"})
-    j = r.json()
-    assert r.status_code == 200
-    assert j["reponse"] == "ok"
-    assert j["interaction_id"] == "id-interaction-test"
