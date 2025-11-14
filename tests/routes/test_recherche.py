@@ -59,18 +59,14 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})
 
     resultat = reponse.json()
-    assert len(resultat) == 1
-    p1 = resultat[0]
-    assert p1["contenu"] == "Contenu du paragraphe 1"
-    assert (
-        p1["url"]
-        == "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-    )
-    assert p1["score_similarite"] == 0.75
-    assert p1["numero_page"] == 29
-    assert (
-        p1["nom_document"]
-        == "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
-    )
+    assert resultat == [
+        {
+            "contenu": "Contenu du paragraphe 1",
+            "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+            "score_similarite": 0.75,
+            "numero_page": 29,
+            "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+        }
+    ]
 
     service_albert.recherche_paragraphes.assert_called_once()
