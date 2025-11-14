@@ -17,10 +17,10 @@ serveur = ConstructeurServeur(
 
 def test_route_index_sert_une_page_html() -> None:
     client: TestClient = TestClient(serveur)
-    response = client.get("/")
+    reponse = client.get("/")
 
-    assert response.status_code == 200
-    assert "text/html" in response.headers.get("content-type")
+    assert reponse.status_code == 200
+    assert "text/html" in reponse.headers.get("content-type")
 
 
 @pytest.mark.parametrize(
@@ -53,8 +53,8 @@ def test_route_index_sert_des_entetes_securisant_la_page_servie_avec_les_bonnes_
     entete: str, valeur_attendue: str
 ) -> None:
     client: TestClient = TestClient(serveur)
-    response = client.get("/")
+    reponse = client.get("/")
 
-    valeur_entete = response.headers.get(entete)
+    valeur_entete = reponse.headers.get(entete)
 
     assert valeur_entete == valeur_attendue

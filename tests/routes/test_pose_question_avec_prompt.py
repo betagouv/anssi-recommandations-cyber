@@ -42,7 +42,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
     )
 
     client: TestClient = TestClient(serveur)
-    response = client.post(
+    r = client.post(
         "/api/pose_question_avec_prompt",
         json={
             "question": "Qui es-tu ?",
@@ -50,7 +50,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         },
     )
 
-    assert response.status_code == 200
+    assert r.status_code == 200
     service_albert.pose_question.assert_called_once()
 
 
@@ -58,12 +58,12 @@ def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> No
     serveur = fabrique_serveur(Mode.PRODUCTION, fabrique_adaptateur_chiffrement())
     client: TestClient = TestClient(serveur)
 
-    response = client.post(
+    reponse = client.post(
         "/api/pose_question_avec_prompt",
         json={"question": "Qui es-tu ?", "prompt": "Vous êtes un assistant virtuel."},
     )
 
     code_attendu = 404
 
-    assert response.status_code == code_attendu
-    assert response.json() == {"detail": "Not Found"}
+    assert reponse.status_code == code_attendu
+    assert reponse.json() == {"detail": "Not Found"}
