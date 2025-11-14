@@ -93,27 +93,28 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
 
     client_http = TestClient(serveur)
     r = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
-    resultat = r.json()
 
-    assert resultat["interaction_id"] == "id-interaction-test"
-    assert resultat["question"] == "Qui es-tu"
-    assert resultat["reponse"] == "Réponse de test d'Albert"
-    assert resultat["paragraphes"] == [
-        {
-            "score_similarite": 0.75,
-            "numero_page": 29,
-            "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-            "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-            "contenu": "Contenu du paragraphe 1",
-        },
-        {
-            "score_similarite": 0.72,
-            "numero_page": 15,
-            "url": "https://cyber.gouv.fr/sites/default/files/2017/01/guide_hygiene_informatique_anssi.pdf",
-            "nom_document": "guide_hygiene_informatique_anssi.pdf",
-            "contenu": "Contenu du paragraphe 2",
-        },
-    ]
+    assert r.json() == {
+        "interaction_id": "id-interaction-test",
+        "question": "Qui es-tu",
+        "reponse": "Réponse de test d'Albert",
+        "paragraphes": [
+            {
+                "score_similarite": 0.75,
+                "numero_page": 29,
+                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "contenu": "Contenu du paragraphe 1",
+            },
+            {
+                "score_similarite": 0.72,
+                "numero_page": 15,
+                "url": "https://cyber.gouv.fr/sites/default/files/2017/01/guide_hygiene_informatique_anssi.pdf",
+                "nom_document": "guide_hygiene_informatique_anssi.pdf",
+                "contenu": "Contenu du paragraphe 2",
+            },
+        ],
+    }
 
     service_albert.pose_question.assert_called_once()
     adaptateur_base_de_donnees.sauvegarde_interaction.assert_called_once()
