@@ -69,11 +69,13 @@ class ConstructeurServeur:
     def __init__(
         self,
         adaptateur_chiffrement: Optional[AdaptateurChiffrement] = None,
+        max_requetes_par_minute: int = 600,
         mode: Mode = Mode.PRODUCTION,
     ):
         self._adaptateur_chiffrement = (
             adaptateur_chiffrement or fabrique_adaptateur_chiffrement()
         )
+        self._max_requetes_par_minute = max_requetes_par_minute
         self._mode = mode
         self._dependances: Dict[Callable, Callable] = {}
 
@@ -102,7 +104,9 @@ class ConstructeurServeur:
         return self
 
     def construit(self):
-        self._serveur = fabrique_serveur(self._mode, self._adaptateur_chiffrement)
+        self._serveur = fabrique_serveur(
+            self._max_requetes_par_minute, self._mode, self._adaptateur_chiffrement
+        )
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
         return self._serveur

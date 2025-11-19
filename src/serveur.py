@@ -1,9 +1,16 @@
 from pathlib import Path
+from typing import Dict, Optional
+
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi_armor.presets import PRESETS  # type: ignore [import-untyped]
-from typing import Dict, Optional
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.client_albert import Paragraphe
@@ -136,11 +143,28 @@ def supprime_retour(
 
 
 def fabrique_serveur(
-    mode: Mode, adaptateur_chiffrement: AdaptateurChiffrement
+    max_requetes_par_minute: int,
+    mode: Mode,
+    adaptateur_chiffrement: AdaptateurChiffrement,
 ) -> FastAPI:
     serveur = FastAPI()
 
+    limiteur = Limiter(
+        key_func=get_remote_address,
+        default_limits=[f"{max_requetes_par_minute}/minute"],
+    )
+    serveur.state.limiter = limiteur
+    # Les problèmes de types apparaissants ici sont connus ;
+    # _c.f._ https://github.com/laurentS/slowapi/issues/188 .
+    serveur.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore [arg-type]
+
+    serveur.add_middleware(SlowAPIMiddleware)
+    # Les problèmes de types apparaissants ici sont résolus côté `Starlette`, mais ne semblent pas encore avoir atteint `FastAPI` ;
+    # _c.f._ https://github.com/Kludex/starlette/discussions/2451#discussioncomment-14855204 .
+    serveur.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])  # type: ignore [arg-type]
+
     serveur.include_router(api)
+
     if mode == Mode.DEVELOPPEMENT:
         serveur.include_router(api_developpement)
 

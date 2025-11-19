@@ -5,7 +5,9 @@ from serveur import fabrique_serveur
 
 configuration = recupere_configuration()
 adaptateur_chiffrement = fabrique_adaptateur_chiffrement()
-serveur = fabrique_serveur(configuration.mode, adaptateur_chiffrement)
+serveur = fabrique_serveur(
+    configuration.max_requetes_par_minute, configuration.mode, adaptateur_chiffrement
+)
 
 if __name__ == "__main__":
     HOST = configuration.hote
