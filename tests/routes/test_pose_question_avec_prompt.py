@@ -2,9 +2,6 @@ from fastapi.testclient import TestClient
 
 from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from configuration import Mode
-from serveur import (
-    fabrique_serveur,
-)
 from schemas.client_albert import Paragraphe, ReponseQuestion
 
 from serveur_de_test import (
@@ -55,7 +52,9 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
 
 
 def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> None:
-    serveur = fabrique_serveur(Mode.PRODUCTION, fabrique_adaptateur_chiffrement())
+    serveur = ConstructeurServeur(
+        mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
+    ).construit()
     client: TestClient = TestClient(serveur)
 
     reponse = client.post(
