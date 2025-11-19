@@ -2,7 +2,6 @@ from fastapi.testclient import TestClient
 
 from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from configuration import Mode
-from serveur import fabrique_serveur
 
 from serveur_de_test import (
     ConstructeurServeur,
@@ -30,7 +29,9 @@ def test_route_prompt_retourne_le_prompt_systeme_en_developpement() -> None:
 
 
 def test_route_prompt_n_est_pas_exposee_en_production() -> None:
-    serveur = fabrique_serveur(Mode.PRODUCTION, fabrique_adaptateur_chiffrement())
+    serveur = ConstructeurServeur(
+        mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
+    ).construit()
     client: TestClient = TestClient(serveur)
 
     reponse = client.get("/api/prompt")
