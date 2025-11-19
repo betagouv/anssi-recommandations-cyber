@@ -1,11 +1,11 @@
 from fastapi.testclient import TestClient
+
+from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
+from configuration import Mode
 from serveur import (
     fabrique_serveur,
 )
-
-from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from schemas.client_albert import Paragraphe, ReponseQuestion
-from configuration import Mode
 
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,

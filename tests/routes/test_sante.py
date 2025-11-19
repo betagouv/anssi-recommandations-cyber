@@ -1,9 +1,8 @@
 from fastapi.testclient import TestClient
 
+from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from configuration import Mode
 from serveur import fabrique_serveur
-
-from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 
 
 def test_route_sante_est_exposee_en_developpement() -> None:

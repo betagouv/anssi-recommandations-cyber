@@ -1,10 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
+
+from configuration import Mode
+
+from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
 from serveur_de_test import (
     ConstructeurServeur,
 )
-from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
-from configuration import Mode
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = (
