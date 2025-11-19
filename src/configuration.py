@@ -53,6 +53,7 @@ class Configuration(NamedTuple):
     hote: str
     port: int
     mode: Mode
+    max_requetes_par_minute: int
 
 
 def recupere_configuration_postgres(
@@ -122,4 +123,7 @@ def recupere_configuration() -> Configuration:
         hote=os.getenv("HOST", "127.0.0.1"),
         port=int(os.getenv("PORT", "8000")),
         mode=mode,
+        max_requetes_par_minute=int(
+            os.getenv("SERVEUR_MAX_REQUETES_PAR_MINUTE", "600")
+        ),
     )

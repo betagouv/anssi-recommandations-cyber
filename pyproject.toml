@@ -11,6 +11,7 @@ dependencies = [
     "psycopg2-binary",
     "pytest",
     "requests",
+    "slowapi",
     "typing",
     "uvicorn",
 ]
