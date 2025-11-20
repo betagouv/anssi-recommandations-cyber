@@ -10,11 +10,11 @@ from serveur_de_test import (
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = (
-    ConstructeurAdaptateurChiffrement().qui_retourne_nonce(NONCE).construit()
+    ConstructeurAdaptateurChiffrement().qui_retourne_nonce(NONCE).construis()
 )
 serveur = ConstructeurServeur(
     mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
-).construit()
+).construis()
 
 
 def test_route_index_sert_une_page_html() -> None:

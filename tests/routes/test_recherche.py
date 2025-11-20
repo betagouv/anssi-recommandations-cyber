@@ -9,8 +9,8 @@ from serveur_de_test import (
 
 
 def test_route_recherche_repond_correctement() -> None:
-    service_albert = ConstructeurServiceAlbert().construit()
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
+    service_albert = ConstructeurServiceAlbert().construis()
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construis()
     client: TestClient = TestClient(serveur)
 
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -24,9 +24,9 @@ def test_route_recherche_donnees_correctes() -> None:
     service_albert = (
         ConstructeurServiceAlbert()
         .qui_retourne_les_paragraphes(paragraphes)
-        .construit()
+        .construis()
     )
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construis()
     client: TestClient = TestClient(serveur)
 
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -51,9 +51,9 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
     service_albert = (
         ConstructeurServiceAlbert()
         .qui_retourne_les_paragraphes(paragraphes)
-        .construit()
+        .construis()
     )
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construit()
+    serveur = ConstructeurServeur().avec_service_albert(service_albert).construis()
 
     client: TestClient = TestClient(serveur)
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})

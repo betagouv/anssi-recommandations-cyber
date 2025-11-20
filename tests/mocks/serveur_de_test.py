@@ -32,7 +32,7 @@ class ConstructeurAdaptateurBaseDeDonnees:
         )
         return self
 
-    def construit(self):
+    def construis(self):
         return self._mock
 
 
@@ -40,7 +40,7 @@ class ConstructeurAdaptateurJournal:
     def __init__(self):
         self._mock = Mock()
 
-    def construit(self):
+    def construis(self):
         return self._mock
 
 
@@ -61,7 +61,7 @@ class ConstructeurServiceAlbert:
         self._mock.pose_question.return_value = reponse
         return self
 
-    def construit(self):
+    def construis(self):
         return self._mock
 
 
@@ -103,7 +103,7 @@ class ConstructeurServeur:
         self._dependances[fabrique_adaptateur_journal] = lambda: adaptateur_journal
         return self
 
-    def construit(self):
+    def construis(self):
         self._serveur = fabrique_serveur(
             self._max_requetes_par_minute, self._mode, self._adaptateur_chiffrement
         )
@@ -112,4 +112,4 @@ class ConstructeurServeur:
         return self._serveur
 
 
-serveur = ConstructeurServeur().construit()
+serveur = ConstructeurServeur().construis()
