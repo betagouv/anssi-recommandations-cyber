@@ -4,6 +4,35 @@ from unittest.mock import Mock
 from openai import APITimeoutError, OpenAI
 
 
+class RetourRouteSearch:
+    def __init__(self, contenu):
+        self._contenu = contenu
+
+    def json(self):
+        return {"data": self._contenu}
+
+    def raise_for_status(self):
+        pass
+
+
+class ConstructeurRetourRouteSearch:
+    def __init__(self):
+        self._retours = []
+
+    def avec_contenu(self, contenu: str):
+        self._retours.append(
+            {
+                "chunk": {"content": contenu},
+                "metadata": {"source_url": "", "page": 0, "document_name": ""},
+                "score": "0.9",
+            }
+        )
+        return self
+
+    def construis(self) -> RetourRouteSearch:
+        return RetourRouteSearch(self._retours)
+
+
 class ConstructeurClientHttp:
     def __init__(self):
         self._mock = Mock(requests.Session)
