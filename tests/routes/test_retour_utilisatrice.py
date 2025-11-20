@@ -13,12 +13,12 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
     adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construit()
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)
@@ -42,12 +42,12 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
     adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construit()
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)
@@ -70,12 +70,12 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
 
 def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
     adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(None).construit()
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(None).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)
@@ -95,11 +95,11 @@ def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
 
 
 def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     serveur = (
         ConstructeurServeur()
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)
@@ -122,12 +122,12 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant() -> 
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
     adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construit()
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)
@@ -148,12 +148,12 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
     )
     adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construit()
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)

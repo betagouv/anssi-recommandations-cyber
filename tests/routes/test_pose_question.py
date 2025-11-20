@@ -37,15 +37,15 @@ def test_route_pose_question_repond_correctement() -> None:
         violation=None,
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client: TestClient = TestClient(serveur)
@@ -80,15 +80,15 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
         violation=None,
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
         ConstructeurServeur()
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client_http = TestClient(serveur)
@@ -129,13 +129,13 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construit()
+        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
     )
-    adaptateur_journal = ConstructeurAdaptateurJournal().construit()
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
         ConstructeurServeur(mode=mode)
@@ -143,7 +143,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
         .avec_service_albert(service_albert)
-        .construit()
+        .construis()
     )
 
     client: TestClient = TestClient(serveur)
@@ -174,13 +174,13 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
         reponse="", paragraphes=[], question="Q?", violation=violation
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construit()
+        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
     )
-    adaptateur_journal = ConstructeurAdaptateurJournal().construit()
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
         ConstructeurServeur()
@@ -188,7 +188,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
         .avec_service_albert(service_albert)
-        .construit()
+        .construis()
     )
 
     client: TestClient = TestClient(serveur)

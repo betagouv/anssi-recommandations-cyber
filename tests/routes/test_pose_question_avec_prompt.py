@@ -27,15 +27,15 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         violation=None,
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construit()
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construit()
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
         ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construit()
+        .construis()
     )
 
     client: TestClient = TestClient(serveur)
@@ -54,7 +54,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
 def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> None:
     serveur = ConstructeurServeur(
         mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
-    ).construit()
+    ).construis()
     client: TestClient = TestClient(serveur)
 
     reponse = client.post(

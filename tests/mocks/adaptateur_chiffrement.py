@@ -13,5 +13,5 @@ class ConstructeurAdaptateurChiffrement:
         self._mock.recupere_nonce.return_value = nonce
         return self
 
-    def construit(self):
+    def construis(self):
         return self._mock

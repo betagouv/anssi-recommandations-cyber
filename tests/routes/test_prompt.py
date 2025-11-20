@@ -13,12 +13,12 @@ def test_route_prompt_retourne_le_prompt_systeme_en_developpement() -> None:
     service_albert = (
         ConstructeurServiceAlbert()
         .avec_prompt_systeme("Tu es une fougère.")
-        .construit()
+        .construis()
     )
     serveur = (
         ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
         .avec_service_albert(service_albert)
-        .construit()
+        .construis()
     )
 
     client = TestClient(serveur)
@@ -31,7 +31,7 @@ def test_route_prompt_retourne_le_prompt_systeme_en_developpement() -> None:
 def test_route_prompt_n_est_pas_exposee_en_production() -> None:
     serveur = ConstructeurServeur(
         mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
-    ).construit()
+    ).construis()
     client: TestClient = TestClient(serveur)
 
     reponse = client.get("/api/prompt")

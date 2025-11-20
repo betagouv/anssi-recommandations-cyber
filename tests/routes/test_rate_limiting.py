@@ -28,7 +28,7 @@ routes_get = list(
                 mode=Mode.DEVELOPPEMENT,
                 adaptateur_chiffrement=fabrique_adaptateur_chiffrement(),
             )
-            .construit()
+            .construis()
             .routes,
         ),
     )
@@ -42,7 +42,7 @@ def test_les_routes_limitent_le_nombre_de_requetes_quand_un_utilisateur_fait_tro
     serveur = ConstructeurServeur(
         max_requetes_par_minute=1,
         mode=Mode.DEVELOPPEMENT,
-    ).construit()
+    ).construis()
     client: TestClient = TestClient(serveur)
 
     ip_client = "123.123.123.123"
@@ -60,7 +60,7 @@ def test_les_routes_ne_limitent_PAS_le_nombre_de_requetes_quand_elles_viennent_d
     serveur = ConstructeurServeur(
         max_requetes_par_minute=1,
         mode=Mode.DEVELOPPEMENT,
-    ).construit()
+    ).construis()
     client: TestClient = TestClient(serveur)
 
     ip_client = "123.123.123.123"

@@ -10,7 +10,7 @@ def test_route_sante_est_exposee_en_developpement() -> None:
     serveur = ConstructeurServeur(
         mode=Mode.DEVELOPPEMENT,
         adaptateur_chiffrement=fabrique_adaptateur_chiffrement(),
-    ).construit()
+    ).construis()
     client: TestClient = TestClient(serveur)
 
     reponse = client.get("/api/sante")
@@ -22,7 +22,7 @@ def test_route_sante_est_exposee_en_developpement() -> None:
 def test_route_sante_n_est_pas_exposee_en_production() -> None:
     serveur = ConstructeurServeur(
         mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
-    ).construit()
+    ).construis()
     client: TestClient = TestClient(serveur)
 
     reponse = client.get("/api/sante")
