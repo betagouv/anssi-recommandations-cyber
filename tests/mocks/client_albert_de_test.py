@@ -39,6 +39,11 @@ class ConstructeurRetourRouteSearch:
         return RetourRouteSearch(self._retours)
 
 
+FAUX_RETOURS_ALBERT_API = (
+    ConstructeurRetourRouteSearch().avec_contenu("contenu").construis()
+)
+
+
 class ConstructeurClientHttp:
     def __init__(self):
         self._mock = Mock(requests.Session)
