@@ -1,9 +1,7 @@
 import pytest
 
-from services.albert import (
-    ClientAlbertApi,
-    fabrique_service_albert,
-)
+from clients.albert import ClientAlbertApi
+from services.albert import fabrique_service_albert
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
     Violation,
