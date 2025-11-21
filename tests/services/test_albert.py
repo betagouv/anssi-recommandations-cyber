@@ -1,7 +1,6 @@
 import pytest
 from openai import OpenAI
 
-from configuration import Albert
 from services.albert import (
     ClientAlbertApi,
     ClientAlbertHttp,
@@ -28,28 +27,15 @@ from client_albert_de_test import (
     ConstructeurServiceAlbert,
 )
 
-
-PROMPT_SYSTEME_ALTERNATIF = (
-    "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
-)
-FAUSSE_CONFIGURATION_ALBERT_CLIENT = Albert.Client(  # type: ignore [attr-defined]
-    api_key="",
-    base_url="",
-    modele_reponse="",
-    temps_reponse_maximum_pose_question=10.0,
-    temps_reponse_maximum_recherche_paragraphes=1.0,
-)
-
 FAUX_RETOURS_ALBERT_API = (
     ConstructeurRetourRouteSearch().avec_contenu("contenu").construis()
 )
-
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 
 
 def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
-    client = fabrique_client_albert(FAUSSE_CONFIGURATION_ALBERT_CLIENT)
+    client = fabrique_client_albert(ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT)
 
     assert isinstance(client.client_openai, OpenAI)
     assert isinstance(client.client_http, ClientAlbertHttp)
@@ -92,7 +78,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
     messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
     messages_utilisatrice = list(filter(lambda m: m["role"] == "user", messages))
 
-    bout_de_prompt_systeme = PROMPT_SYSTEME_ALTERNATIF.split("\n\n")[0]
+    bout_de_prompt_systeme = ConstructeurServiceAlbert.PROMPT_SYSTEME_ALTERNATIF.split("\n\n")[0]
     assert len(messages_systeme) == 1
     assert bout_de_prompt_systeme in messages_systeme[0]["content"]
     assert len(messages_utilisatrice) == 1
@@ -269,7 +255,7 @@ def test_recherche_appelle_la_route_search_d_albert():
     mock_client_albert_api = ClientAlbertApi(
         mock_client_openai_sans_reponse,
         mock_client_http,
-        FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
     )
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
@@ -292,7 +278,7 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
     mock_client_albert_api = ClientAlbertApi(
         mock_client_openai_sans_reponse,
         mock_client_http,
-        FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
     )
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
@@ -334,7 +320,7 @@ def test_recherche_retourne_gracieusement_en_cas_de_probleme(erreur):
     mock_client_albert_api = ClientAlbertApi(
         mock_client_openai_sans_reponse,
         mock_client_http,
-        FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
     )
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
