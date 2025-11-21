@@ -3,6 +3,12 @@ from unittest.mock import Mock
 
 from openai import APITimeoutError, OpenAI
 
+from configuration import Albert
+from services.albert import (
+    ClientAlbertApi,
+    ServiceAlbert,
+)
+
 
 class RetourRouteSearch:
     def __init__(self, contenu):
@@ -90,3 +96,47 @@ class ConstructeurClientOpenai:
 
     def construis(self):
         return self._mock
+
+
+class ConstructeurServiceAlbert:
+    FAUSSE_CONFIGURATION_ALBERT_CLIENT = Albert.Client(  # type: ignore [attr-defined]
+        api_key="",
+        base_url="",
+        modele_reponse="",
+        temps_reponse_maximum_pose_question=10.0,
+        temps_reponse_maximum_recherche_paragraphes=1.0,
+    )
+    FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
+        collection_nom_anssi_lab="",
+        collection_id_anssi_lab=42,
+    )
+    PROMPT_SYSTEME_ALTERNATIF = (
+        "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
+    )
+
+    def avec_client_http(self, client_http):
+        self._client_http = client_http
+        return self
+
+    def avec_client_openai(self, client_openai):
+        self._client_openai = client_openai
+        return self
+
+    def construis(self):
+        mock_client_http = getattr(
+            self, "_client_http", ConstructeurClientHttp().construis()
+        )
+        mock_client_openai = getattr(
+            self, "_client_openai", ConstructeurClientOpenai().construis()
+        )
+        mock_client_albert_api = ClientAlbertApi(
+            mock_client_openai,
+            mock_client_http,
+            self.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        )
+
+        return ServiceAlbert(
+            configuration=self.FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+            client=mock_client_albert_api,
+            prompt_systeme=self.PROMPT_SYSTEME_ALTERNATIF,
+        )
