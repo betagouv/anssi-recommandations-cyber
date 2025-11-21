@@ -1,7 +1,7 @@
 import pytest
 from openai import OpenAI
 
-from services.albert import (
+from clients.albert import (
     ClientAlbertApi,
     ClientAlbertHttp,
     fabrique_client_albert,
