@@ -46,15 +46,15 @@ class ConstructeurClientHttp:
     def __init__(self):
         self._mock = Mock(requests.Session)
 
-    def qui_retourne(self, retour):
+    def qui_retourne_lors_d_un_post(self, retour):
         self._mock.post.return_value = retour
         return self
 
-    def qui_retourne_une_erreur(self, erreur):
+    def qui_retourne_une_erreur_lors_d_un_post(self, erreur):
         self._mock.post.side_effect = requests.HTTPError(erreur)
         return self
 
-    def qui_timeout(self):
+    def qui_timeout_lors_d_un_post(self):
         self._mock.post.side_effect = requests.Timeout("timeout simulé")
         return self
 

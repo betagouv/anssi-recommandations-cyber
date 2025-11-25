@@ -31,7 +31,9 @@ def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> 
 
 def test_recherche_appelle_la_route_search_d_albert():
     mock_client_http = (
-        ConstructeurClientHttp().qui_retourne(FAUX_RETOURS_ALBERT_API).construis()
+        ConstructeurClientHttp()
+        .qui_retourne_lors_d_un_post(FAUX_RETOURS_ALBERT_API)
+        .construis()
     )
     mock_client_openai_sans_reponse = (
         ConstructeurClientOpenai().qui_ne_complete_pas().construis()
@@ -54,7 +56,9 @@ def test_recherche_appelle_la_route_search_d_albert():
 
 def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
     mock_client_http = (
-        ConstructeurClientHttp().qui_retourne(FAUX_RETOURS_ALBERT_API).construis()
+        ConstructeurClientHttp()
+        .qui_retourne_lors_d_un_post(FAUX_RETOURS_ALBERT_API)
+        .construis()
     )
     mock_client_openai_sans_reponse = (
         ConstructeurClientOpenai().qui_ne_complete_pas().construis()
@@ -96,7 +100,9 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
 )
 def test_recherche_retourne_gracieusement_en_cas_de_probleme(erreur):
     mock_client_http = (
-        ConstructeurClientHttp().qui_retourne_une_erreur(erreur).construis()
+        ConstructeurClientHttp()
+        .qui_retourne_une_erreur_lors_d_un_post(erreur)
+        .construis()
     )
     mock_client_openai_sans_reponse = (
         ConstructeurClientOpenai().qui_ne_complete_pas().construis()

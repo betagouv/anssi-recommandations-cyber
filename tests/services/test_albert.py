@@ -35,7 +35,7 @@ def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() ->
 def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_systeme():
     mock_client_http = (
         ConstructeurClientHttp()
-        .qui_retourne(ConstructeurRetourRouteSearch().construis())
+        .qui_retourne_lors_d_un_post(ConstructeurRetourRouteSearch().construis())
         .construis()
     )
     mock_client_openai_avec_reponse = (
@@ -73,7 +73,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme():
 
     mock_client_http = (
         ConstructeurClientHttp()
-        .qui_retourne(
+        .qui_retourne_lors_d_un_post(
             ConstructeurRetourRouteSearch().avec_contenu(FAUX_CONTENU).construis()
         )
         .construis()
@@ -107,7 +107,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
 
     mock_client_http = (
         ConstructeurClientHttp()
-        .qui_retourne(
+        .qui_retourne_lors_d_un_post(
             ConstructeurRetourRouteSearch().avec_contenu(FAUX_CONTENU).construis()
         )
         .construis()
@@ -132,7 +132,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
 def test_pose_question_si_timeout_retourne_reponse_par_defaut_et_aucune_violation():
     mock_client_http = (
         ConstructeurClientHttp()
-        .qui_retourne(ConstructeurRetourRouteSearch().construis())
+        .qui_retourne_lors_d_un_post(ConstructeurRetourRouteSearch().construis())
         .construis()
     )
     mock_client_openai = ConstructeurClientOpenai().qui_timeout().construis()
@@ -173,7 +173,9 @@ def test_pose_question_si_timeout_retourne_reponse_par_defaut_et_aucune_violatio
 )
 def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
     mock_client_http = (
-        ConstructeurClientHttp().qui_retourne(FAUX_RETOURS_ALBERT_API).construis()
+        ConstructeurClientHttp()
+        .qui_retourne_lors_d_un_post(FAUX_RETOURS_ALBERT_API)
+        .construis()
     )
     mock_client_openai = (
         ConstructeurClientOpenai().qui_complete_avec(erreur).construis()
@@ -197,7 +199,7 @@ def test_recherche_paragraphes_si_timeout_search_retourne_liste_vide():
     mock_client_openai_sans_reponse = (
         ConstructeurClientOpenai().qui_ne_complete_pas().construis()
     )
-    mock_client_http = ConstructeurClientHttp().qui_timeout().construis()
+    mock_client_http = ConstructeurClientHttp().qui_timeout_lors_d_un_post().construis()
 
     client = (
         ConstructeurServiceAlbert()
@@ -214,7 +216,7 @@ def test_pose_question_si_timeout_recherche_paragraphes_retourne_liste_vide():
     mock_client_openai_sans_reponse = (
         ConstructeurClientOpenai().qui_ne_complete_pas().construis()
     )
-    mock_client_http = ConstructeurClientHttp().qui_timeout().construis()
+    mock_client_http = ConstructeurClientHttp().qui_timeout_lors_d_un_post().construis()
 
     client = (
         ConstructeurServiceAlbert()
