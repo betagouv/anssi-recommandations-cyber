@@ -4,10 +4,8 @@ from unittest.mock import Mock
 from openai import APITimeoutError, OpenAI
 
 from configuration import Albert
-from services.albert import (
-    ClientAlbertApi,
-    ServiceAlbert,
-)
+from clients.albert import ClientAlbertApi
+from services.albert import ServiceAlbert
 
 
 class RetourRouteSearch:
@@ -37,6 +35,11 @@ class ConstructeurRetourRouteSearch:
 
     def construis(self) -> RetourRouteSearch:
         return RetourRouteSearch(self._retours)
+
+
+FAUX_RETOURS_ALBERT_API = (
+    ConstructeurRetourRouteSearch().avec_contenu("contenu").construis()
+)
 
 
 class ConstructeurClientHttp:
