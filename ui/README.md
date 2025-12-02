@@ -7,7 +7,7 @@ La partie client du service permettant d'interroger [Albert](https://albert.etal
 ### Directement sur l'hôte
 
 Il faut installer les dépendances système `node` (la version à installer est spécifiée dans le fichier `.nvmrc`) et `npm`.
-Ensuite, il faut installer les dépendances avec `npm install`.
+Ensuite, il faut installer les dépendances avec `npm ci`.
 
 ### Dans un conteneur
 
