@@ -18,7 +18,7 @@ services:
     image: docker.io/node:${NODE_VERSION:-24}
     env_file:
       - .env
-    command: bash -c "npm install && npm run dev"
+    command: bash -c "npm ci && npm run dev"
     networks:
       - mqc-network
     working_dir: /app
