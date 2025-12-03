@@ -140,17 +140,20 @@ class ServiceAlbert:
         configuration: Albert.Service,  # type: ignore [name-defined]
         client: ClientAlbertApi,
         prompt_systeme: str,
+        utilise_recherche_hybride: bool,
     ) -> None:
         self.id_collection = configuration.collection_id_anssi_lab
         self.PROMPT_SYSTEME = prompt_systeme
         self.client = client
+        self.utilise_recherche_hybride = utilise_recherche_hybride
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
+        methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
         payload = RecherchePayload(
             collections=[self.id_collection],
             k=5,
             prompt=question,
-            method="semantic",
+            method=methode_recherche,
         )
 
         donnees = self.client.recherche(payload)
@@ -245,4 +248,5 @@ def fabrique_service_albert() -> ServiceAlbert:
         configuration=configuration.albert.service,
         client=client_albert_api,
         prompt_systeme=prompt_systeme,
+        utilise_recherche_hybride=configuration.albert.client.utilise_recherche_hybride,
     )

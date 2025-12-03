@@ -35,7 +35,9 @@ REPONSE = "Patates et reblochon"
 
 
 def test_peut_fabriquer_un_client_albert_avec_une_configuration_par_defaut() -> None:
-    client = fabrique_client_albert(ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT)
+    client = fabrique_client_albert(
+        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT
+    )
 
     assert isinstance(client.client_openai, OpenAI)
     assert isinstance(client.client_http, ClientAlbertHttp)
@@ -78,7 +80,9 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
     messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
     messages_utilisatrice = list(filter(lambda m: m["role"] == "user", messages))
 
-    bout_de_prompt_systeme = ConstructeurServiceAlbert.PROMPT_SYSTEME_ALTERNATIF.split("\n\n")[0]
+    bout_de_prompt_systeme = ConstructeurServiceAlbert.PROMPT_SYSTEME_ALTERNATIF.split(
+        "\n\n"
+    )[0]
     assert len(messages_systeme) == 1
     assert bout_de_prompt_systeme in messages_systeme[0]["content"]
     assert len(messages_utilisatrice) == 1

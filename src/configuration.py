@@ -18,6 +18,7 @@ class Albert(NamedTuple):
         modele_reponse: str
         temps_reponse_maximum_pose_question: float
         temps_reponse_maximum_recherche_paragraphes: float
+        utilise_recherche_hybride: bool
 
     class Service(NamedTuple):
         collection_nom_anssi_lab: str
@@ -93,6 +94,9 @@ def recupere_configuration() -> Configuration:
             ),
             temps_reponse_maximum_recherche_paragraphes=float(
                 os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_RECHERCHE_PARAGRAPHES", 3.0)
+            ),
+            utilise_recherche_hybride=bool(
+                os.getenv("ALBERT_UTILISE_RECHERCHE_HYBRIDE", False)
             ),
         ),
         service=Albert.Service(

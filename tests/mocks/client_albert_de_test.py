@@ -105,6 +105,7 @@ class ConstructeurServiceAlbert:
         modele_reponse="",
         temps_reponse_maximum_pose_question=10.0,
         temps_reponse_maximum_recherche_paragraphes=1.0,
+        utilise_recherche_hybride=False,
     )
     FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
         collection_nom_anssi_lab="",
@@ -139,4 +140,5 @@ class ConstructeurServiceAlbert:
             configuration=self.FAUSSE_CONFIGURATION_ALBERT_SERVICE,
             client=mock_client_albert_api,
             prompt_systeme=self.PROMPT_SYSTEME_ALTERNATIF,
+            utilise_recherche_hybride=self.FAUSSE_CONFIGURATION_ALBERT_CLIENT.utilise_recherche_hybride,
         )
