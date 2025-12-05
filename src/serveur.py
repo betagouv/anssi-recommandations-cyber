@@ -11,7 +11,12 @@ from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
+from schemas.api import (
+    QuestionRequete,
+    QuestionRequeteAvecPrompt,
+    ReponseQuestion,
+    RequeteReclasse,
+)
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.client_albert import Paragraphe
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -70,6 +75,14 @@ def route_recherche(
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
 ) -> list[Paragraphe]:
     return service_albert.recherche_paragraphes(request.question)
+
+
+@api.post("/reclasse")
+def route_reclasse(
+    request: RequeteReclasse,
+    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
+) -> dict:
+    return service_albert.reclasse(request)
 
 
 @api.post("/pose_question")

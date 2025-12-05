@@ -48,6 +48,7 @@ class ConstructeurServiceAlbert:
     def __init__(self):
         self._mock = Mock()
         self._mock.recherche_paragraphes.return_value = []
+        self._mock.reclasse.return_value = dict()
 
     def avec_prompt_systeme(self, prompt: str):
         self._mock.PROMPT_SYSTEME = prompt
@@ -59,6 +60,10 @@ class ConstructeurServiceAlbert:
 
     def qui_repond_aux_questions(self, reponse: ReponseQuestion):
         self._mock.pose_question.return_value = reponse
+        return self
+
+    def qui_reclasse_les_paragraphes(self, reponse: dict):
+        self._mock.reclasse.return_value = reponse
         return self
 
     def construis(self):

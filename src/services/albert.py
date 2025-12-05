@@ -7,6 +7,9 @@ from schemas.client_albert import (
     Paragraphe,
     ReponseQuestion,
     RecherchePayload,
+    ReclassePayload,
+    ReclasseReponse,
+    ResultatReclasse,
     ResultatRecherche,
     RechercheChunk,
     RechercheMetadonnees,
@@ -105,6 +108,29 @@ class ClientAlbertApi:
             resultats = []
 
         return resultats
+
+    def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
+        reponse = self.client_http.post(
+            "/rerank",
+            json=payload._asdict(),
+        )
+        brut = reponse.json()
+
+        donnees = brut.get("data", [])
+        resultats = [
+            ResultatReclasse(
+                object=r.get("object", "rerank"),
+                score=float(r.get("score", 0.0)),
+                index=r.get("index", 0),
+            )
+            for r in donnees
+        ]
+        return ReclasseReponse(
+            id=brut.get("id"),
+            object=brut.get("object", "list"),
+            data=resultats,
+            usage=brut.get("usage"),
+        )
 
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam]
@@ -220,6 +246,9 @@ class ServiceAlbert:
             return reponse_albert, paragraphes, None
         else:
             return REPONSE_PAR_DEFAUT, [], None
+
+    def reclasse(self, request):
+        pass
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]

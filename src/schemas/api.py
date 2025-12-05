@@ -17,3 +17,9 @@ class ReponseQuestion(BaseModel):
     paragraphes: list[Paragraphe]
     question: str
     interaction_id: str
+
+
+class RequeteReclasse(BaseModel):
+    prompt: str
+    input: list[str]
+    model: str
