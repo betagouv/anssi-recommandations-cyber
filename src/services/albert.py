@@ -247,8 +247,15 @@ class ServiceAlbert:
         else:
             return REPONSE_PAR_DEFAUT, [], None
 
-    def reclasse(self, request):
-        pass
+    def reclasse(self, payload: ReclassePayload):
+        resultat_du_reclassement = self.client.reclasse(payload)
+
+        resultats_reclassement_donnees = resultat_du_reclassement.data
+        resultats_reclassement_donnees.sort(key=lambda data: data.score)
+        index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
+        toutes_les_entrees = payload.input
+
+        return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]

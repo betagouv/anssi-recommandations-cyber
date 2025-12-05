@@ -6,11 +6,15 @@ from services.albert import (
     ClientAlbertHttp,
     fabrique_client_albert,
     fabrique_service_albert,
+    ServiceAlbert,
 )
 from schemas.client_albert import (
     RechercheChunk,
     RechercheMetadonnees,
     RecherchePayload,
+    ReclasseReponse,
+    ResultatReclasse,
+    ReclassePayload,
 )
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
@@ -25,6 +29,7 @@ from client_albert_de_test import (
     ConstructeurClientOpenai,
     ConstructeurRetourRouteSearch,
     ConstructeurServiceAlbert,
+    RetourRouteReclasse,
 )
 
 FAUX_RETOURS_ALBERT_API = (
@@ -331,3 +336,39 @@ def test_recherche_retourne_gracieusement_en_cas_de_probleme(erreur):
     retour = mock_client_albert_api.recherche(payload)
 
     assert retour == []
+
+
+def test_reclasse_les_paragraphes():
+    reponse = ReclasseReponse(
+        id="test",
+        object="list",
+        data=[
+            ResultatReclasse(object="rerank", score=0.6, index=1),
+            ResultatReclasse(object="rerank", score=0.5, index=0),
+        ],
+    )
+
+    mock_client_http = (
+        ConstructeurClientHttp().qui_retourne(RetourRouteReclasse(reponse)).construis()
+    )
+    mock_client_openai_sans_reponse = (
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis()
+    )
+
+    mock_client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse,
+        mock_client_http,
+        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+    )
+
+    payload = ReclassePayload(
+        prompt="un prompt", input=["texte2", "texte1"], model="albert_rerank"
+    )
+
+    reclassement = ServiceAlbert(
+        configuration=ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=mock_client_albert_api,
+        prompt_systeme="",
+        utilise_recherche_hybride=False,
+    ).reclasse(payload)
+    assert reclassement == {"paragraphes_tries": ["texte2", "texte1"]}

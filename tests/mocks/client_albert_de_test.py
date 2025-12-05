@@ -4,10 +4,27 @@ from unittest.mock import Mock
 from openai import APITimeoutError, OpenAI
 
 from configuration import Albert
+from schemas.client_albert import ReclasseReponse
 from services.albert import (
     ClientAlbertApi,
     ServiceAlbert,
 )
+
+
+class RetourRouteReclasse:
+    def __init__(self, contenu: ReclasseReponse):
+        self._contenu = contenu
+
+    def json(self):
+        return {
+            "id": self._contenu.id,
+            "object": self._contenu.object,
+            "usage": self._contenu.usage,
+            "data": list(map(lambda d: d.__dict__, self._contenu.data)),
+        }
+
+    def raise_for_status(self):
+        pass
 
 
 class RetourRouteSearch:
