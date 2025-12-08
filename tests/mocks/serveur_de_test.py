@@ -4,7 +4,7 @@ from serveur import fabrique_serveur
 from configuration import Mode
 from unittest.mock import Mock
 from services.albert import ServiceAlbert, fabrique_service_albert
-from schemas.client_albert import Paragraphe, ReponseQuestion
+from schemas.client_albert import ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
@@ -51,10 +51,6 @@ class ConstructeurServiceAlbert:
 
     def avec_prompt_systeme(self, prompt: str):
         self._mock.PROMPT_SYSTEME = prompt
-        return self
-
-    def qui_retourne_les_paragraphes(self, paragraphes: list[Paragraphe]):
-        self._mock.recherche_paragraphes.return_value = paragraphes
         return self
 
     def qui_repond_aux_questions(self, reponse: ReponseQuestion):

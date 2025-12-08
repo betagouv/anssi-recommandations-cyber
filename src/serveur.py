@@ -13,7 +13,6 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
-from schemas.client_albert import Paragraphe
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
@@ -62,14 +61,6 @@ def route_prompt_systeme(
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
 ) -> str:
     return service_albert.PROMPT_SYSTEME
-
-
-@api.post("/recherche")
-def route_recherche(
-    request: QuestionRequete,
-    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-) -> list[Paragraphe]:
-    return service_albert.recherche_paragraphes(request.question)
 
 
 @api.post("/pose_question")
