@@ -1,20 +1,18 @@
 from pathlib import Path
-from typing import Dict, Optional
-
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi_armor.presets import PRESETS  # type: ignore [import-untyped]
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
+from typing import Dict, Optional
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
-
-from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
-from schemas.retour_utilisatrice import RetourUtilisatrice
-from schemas.albert import Paragraphe
 from adaptateurs import AdaptateurBaseDeDonnees
+from adaptateurs.adaptateur_base_de_donnees_postgres import (
+    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
+)
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
     fabrique_adaptateur_chiffrement,
@@ -26,13 +24,17 @@ from adaptateurs.journal import (
     TypeEvenement,
     fabrique_adaptateur_journal,
 )
-from adaptateurs.adaptateur_base_de_donnees_postgres import (
-    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
-)
-from services.service_albert import ServiceAlbert
-from services.fabrique_service_albert import fabrique_service_albert
-from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
 from configuration import Mode
+from schemas.albert import Paragraphe
+from schemas.api import (
+    QuestionRequete,
+    QuestionRequeteAvecPrompt,
+    ReponseQuestion,
+)
+from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
+from schemas.retour_utilisatrice import RetourUtilisatrice
+from services.fabrique_service_albert import fabrique_service_albert
+from services.service_albert import ServiceAlbert
 
 api = APIRouter(prefix="/api")
 api_developpement = APIRouter(prefix="/api")
