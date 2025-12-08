@@ -22,6 +22,7 @@ dev = [
     "ruff",
     "types-psycopg2",
     "types-requests",
+    "pytest-dotenv",
 ]
 
 [tool.mypy]

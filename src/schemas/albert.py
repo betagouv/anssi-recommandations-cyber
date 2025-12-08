@@ -25,6 +25,12 @@ class RecherchePayload(NamedTuple):
     method: str
 
 
+class ReclassePayload(NamedTuple):
+    prompt: str
+    input: list[str]
+    model: str
+
+
 class RechercheMetadonnees(NamedTuple):
     source_url: str
     page: int
@@ -45,3 +51,19 @@ class RechercheReponse(NamedTuple):
     object: str
     data: list[ResultatRecherche]
     usage: Optional[dict]
+
+
+class ResultatReclasse(BaseModel):
+    object: str = "rerank"
+    score: float
+    index: int
+
+
+class ReclasseReponse(BaseModel):
+    id: Optional[str] = None
+    object: str = "list"
+    data: list[ResultatReclasse]
+    usage: Optional[dict] = None
+
+    class Config:
+        extra = "allow"

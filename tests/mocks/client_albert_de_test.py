@@ -1,10 +1,8 @@
-import requests
 from unittest.mock import Mock
-
+import requests
 from openai import APITimeoutError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice, ChatCompletionMessage
-
 from configuration import Albert
 from infra.albert.client_albert import (
     ClientAlbertApi,
@@ -14,6 +12,8 @@ from schemas.albert import (
     ResultatRecherche,
     RechercheChunk,
     RechercheMetadonnees,
+    ReclasseReponse,
+    ReclassePayload,
 )
 from services.service_albert import ServiceAlbert, ClientAlbert
 
@@ -154,6 +154,7 @@ class ConstructeurServiceAlbert:
 
 class ClientAlbertMemoire(ClientAlbert):
     def __init__(self):
+        self.reclassement = ReclasseReponse(id="1", object="list", data=[])
         self.propositions_vides = False
         self.resultats_vides = False
         self.messages_recus = []
@@ -171,6 +172,9 @@ class ClientAlbertMemoire(ClientAlbert):
         self.messages_recus = messages
         return self.choix if self.propositions_vides is False else []
 
+    def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
+        return self.reclassement
+
     def avec_les_resultats(self, resultats: list[ResultatRecherche]):
         self.resultats.extend(resultats)
 
@@ -182,6 +186,18 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def sans_propositions(self):
         self.propositions_vides = True
+
+    def avec_le_reclassement(self, reclassement: ReclasseReponse):
+        resultats_recherche = list(
+            map(
+                lambda r: un_resultat_de_recherche()
+                .ayant_pour_contenu(f"paragraphe {r.index}")
+                .construis(),
+                reclassement.data,
+            )
+        )
+        self.resultats.extend(resultats_recherche)
+        self.reclassement = reclassement
 
 
 class ConstructeurResultatDeRecherche:

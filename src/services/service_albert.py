@@ -8,6 +8,8 @@ from schemas.albert import (
     RecherchePayload,
     ReponseQuestion,
     ResultatRecherche,
+    ReclassePayload,
+    ReclasseReponse,
 )
 from schemas.violations import (
     Violation,
@@ -27,6 +29,10 @@ class ClientAlbert(ABC):
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam]
     ) -> list[Choice]:
+        pass
+
+    @abstractmethod
+    def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
         pass
 
 
@@ -116,3 +122,13 @@ class ServiceAlbert:
             return reponse_albert, paragraphes, None
         else:
             return REPONSE_PAR_DEFAUT, [], None
+
+    def reclasse(self, payload: ReclassePayload):
+        resultat_du_reclassement = self.client.reclasse(payload)
+
+        resultats_reclassement_donnees = resultat_du_reclassement.data
+        resultats_reclassement_donnees.sort(key=lambda data: data.score, reverse=True)
+        index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
+        toutes_les_entrees = payload.input
+
+        return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}

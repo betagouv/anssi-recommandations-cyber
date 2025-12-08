@@ -5,6 +5,7 @@ from client_albert_de_test import (
     un_choix_de_proposition,
 )
 from configuration import Albert
+from schemas.albert import ReclasseReponse, ResultatReclasse, ReclassePayload
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
     Violation,
@@ -164,3 +165,29 @@ def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
     assert retour.reponse == violation_attendue.reponse
     assert retour.paragraphes == []
     assert retour.violation == violation_attendue
+
+
+def test_reclasse_les_paragraphes():
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_le_reclassement(
+        ReclasseReponse(
+            id="test",
+            object="list",
+            data=[
+                ResultatReclasse(object="rerank", score=0.5, index=1),
+                ResultatReclasse(object="rerank", score=0.4, index=0),
+            ],
+        )
+    )
+
+    payload = ReclassePayload(
+        prompt="un prompt", input=["texte1", "texte2"], model="albert_rerank"
+    )
+    reclassement = ServiceAlbert(
+        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=client_albert_memoire,
+        prompt_systeme="",
+        utilise_recherche_hybride=False,
+    ).reclasse(payload)
+
+    assert reclassement == {"paragraphes_tries": ["texte2", "texte1"]}
