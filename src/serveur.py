@@ -13,7 +13,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from schemas.api import QuestionRequete, QuestionRequeteAvecPrompt, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
-from schemas.client_albert import Paragraphe
+from schemas.albert import Paragraphe
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
@@ -29,7 +29,8 @@ from adaptateurs.journal import (
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
 )
-from services.albert import ServiceAlbert, fabrique_service_albert
+from services.service_albert import ServiceAlbert
+from services.fabrique_service_albert import fabrique_service_albert
 from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
 from configuration import Mode
 

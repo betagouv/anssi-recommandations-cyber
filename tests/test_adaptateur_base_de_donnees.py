@@ -7,7 +7,7 @@ from adaptateurs import (
     AdaptateurBaseDeDonneesPostgres,
 )
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
-from schemas.client_albert import ReponseQuestion, Paragraphe
+from schemas.albert import ReponseQuestion, Paragraphe
 from configuration import recupere_configuration_postgres
 
 

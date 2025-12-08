@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 from typing import Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
-from schemas.client_albert import ReponseQuestion
+from schemas.albert import ReponseQuestion
 from configuration import recupere_configuration_postgres, recupere_configuration
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 

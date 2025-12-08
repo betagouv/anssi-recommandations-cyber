@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from adaptateurs.journal import (
     TypeEvenement,
 )
-from schemas.client_albert import Paragraphe, ReponseQuestion
+from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.violations import (
     ViolationIdentite,
     ViolationMalveillance,

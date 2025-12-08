@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Generic, Literal, Optional, TypeVar, Union
-from schemas.client_albert import ReponseQuestion
+from schemas.albert import ReponseQuestion
 from enum import StrEnum, auto
 
 

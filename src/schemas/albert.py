@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import NamedTuple, Optional
-
 from schemas.violations import Violation
 
 
