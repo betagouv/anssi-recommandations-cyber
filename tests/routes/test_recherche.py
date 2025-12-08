@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from schemas.client_albert import Paragraphe
+from schemas.albert import Paragraphe
 
 from serveur_de_test import (
     ConstructeurServiceAlbert,

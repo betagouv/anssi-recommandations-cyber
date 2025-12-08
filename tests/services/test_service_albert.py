@@ -1,13 +1,13 @@
 import pytest
 from openai import OpenAI
 
-from services.albert import (
+from infra.albert.client_albert import (
     ClientAlbertApi,
     ClientAlbertHttp,
     fabrique_client_albert,
-    fabrique_service_albert,
 )
-from schemas.client_albert import (
+from services.fabrique_service_albert import fabrique_service_albert
+from schemas.albert import (
     RechercheChunk,
     RechercheMetadonnees,
     RecherchePayload,

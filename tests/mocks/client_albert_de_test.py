@@ -4,10 +4,10 @@ from unittest.mock import Mock
 from openai import APITimeoutError, OpenAI
 
 from configuration import Albert
-from services.albert import (
+from infra.albert.client_albert import (
     ClientAlbertApi,
-    ServiceAlbert,
 )
+from services.service_albert import ServiceAlbert
 
 
 class RetourRouteSearch:

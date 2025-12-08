@@ -6,7 +6,7 @@ from schemas.retour_utilisatrice import (
     TagPositif,
     Interaction,
 )
-from schemas.client_albert import ReponseQuestion, Paragraphe
+from schemas.albert import ReponseQuestion, Paragraphe
 import pytest
 
 

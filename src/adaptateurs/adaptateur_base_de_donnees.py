@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
-from schemas.client_albert import ReponseQuestion
+from schemas.albert import ReponseQuestion
 
 
 class AdaptateurBaseDeDonnees(ABC):

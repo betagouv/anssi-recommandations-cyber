@@ -3,8 +3,9 @@ from typing import Callable, Dict, Optional
 from serveur import fabrique_serveur
 from configuration import Mode
 from unittest.mock import Mock
-from services.albert import ServiceAlbert, fabrique_service_albert
-from schemas.client_albert import Paragraphe, ReponseQuestion
+from services.service_albert import ServiceAlbert
+from services.fabrique_service_albert import fabrique_service_albert
+from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     fabrique_adaptateur_base_de_donnees_retour_utilisatrice,

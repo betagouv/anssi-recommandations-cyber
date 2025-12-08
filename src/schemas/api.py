@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-
-from .client_albert import Paragraphe
+from schemas.albert import Paragraphe
 
 
 class QuestionRequete(BaseModel):
