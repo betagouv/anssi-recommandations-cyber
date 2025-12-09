@@ -121,6 +121,7 @@ class ConstructeurServiceAlbert:
     FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
         collection_nom_anssi_lab="",
         collection_id_anssi_lab=42,
+        reclassement_active=False,
     )
     PROMPT_SYSTEME_ALTERNATIF = (
         "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
@@ -148,7 +149,7 @@ class ConstructeurServiceAlbert:
         )
 
         return ServiceAlbert(
-            configuration=self.FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+            configuration_service_albert=self.FAUSSE_CONFIGURATION_ALBERT_SERVICE,
             client=mock_client_albert_api,
             prompt_systeme=self.PROMPT_SYSTEME_ALTERNATIF,
             utilise_recherche_hybride=self.FAUSSE_CONFIGURATION_ALBERT_CLIENT.utilise_recherche_hybride,
