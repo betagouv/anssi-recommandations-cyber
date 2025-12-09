@@ -14,7 +14,7 @@ def fabrique_service_albert() -> ServiceAlbert:
     prompt_systeme: str = template_path.read_text(encoding="utf-8")
 
     return ServiceAlbert(
-        configuration=configuration.albert.service,
+        configuration_service_albert=configuration.albert.service,
         client=client_albert_api,
         prompt_systeme=prompt_systeme,
         utilise_recherche_hybride=configuration.albert.client.utilise_recherche_hybride,

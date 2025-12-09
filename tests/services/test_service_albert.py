@@ -17,9 +17,13 @@ from schemas.violations import (
 from services.service_albert import ServiceAlbert
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
-    collection_nom_anssi_lab="",
-    collection_id_anssi_lab=42,
+    collection_nom_anssi_lab="", collection_id_anssi_lab=42, reclassement_active=False
 )
+
+FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
+    collection_nom_anssi_lab="", collection_id_anssi_lab=42, reclassement_active=True
+)
+
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
 )
@@ -185,7 +189,7 @@ def test_reclasse_les_paragraphes():
         prompt="un prompt", input=["texte1", "texte2"], model="albert_rerank"
     )
     reclassement = ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_memoire,
         prompt_systeme="",
         utilise_recherche_hybride=False,
@@ -217,7 +221,7 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
     )
 
     reponse_de_pose_question = ServiceAlbert(
-        configuration=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_memoire,
         prompt_systeme="",
         utilise_recherche_hybride=False,
@@ -230,3 +234,23 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
         "paragraphe 19",
         "paragraphe 3",
     ]
+
+
+def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
+    reponse = un_constructeur_de_reponse_de_reclassement().construis()
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_le_reclassement(reponse)
+    client_albert_memoire.avec_les_propositions(
+        [
+            un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
+        ]
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        prompt_systeme="",
+        utilise_recherche_hybride=False,
+    ).pose_question("Une question de test ?")
+
+    assert client_albert_memoire.payload_recu.k == 20

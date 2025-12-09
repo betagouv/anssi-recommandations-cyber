@@ -39,21 +39,23 @@ class ClientAlbert(ABC):
 class ServiceAlbert:
     def __init__(
         self,
-        configuration: Albert.Service,  # type: ignore [name-defined]
+        configuration_service_albert: Albert.Service,  # type: ignore [name-defined]
         client: ClientAlbert,
         prompt_systeme: str,
         utilise_recherche_hybride: bool,
     ) -> None:
-        self.id_collection = configuration.collection_id_anssi_lab
+        self.id_collection = configuration_service_albert.collection_id_anssi_lab
+        self.reclassement_active = configuration_service_albert.reclassement_active
         self.PROMPT_SYSTEME = prompt_systeme
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
+        nombre_paragraphes_a_retourner = 20 if self.reclassement_active else 5
         payload = RecherchePayload(
             collections=[self.id_collection],
-            k=5,
+            k=nombre_paragraphes_a_retourner,
             prompt=question,
             method=methode_recherche,
         )

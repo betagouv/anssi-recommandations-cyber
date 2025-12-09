@@ -23,6 +23,7 @@ class Albert(NamedTuple):
     class Service(NamedTuple):
         collection_nom_anssi_lab: str
         collection_id_anssi_lab: int
+        reclassement_active: bool
 
     client: Client
     service: Service
@@ -104,6 +105,7 @@ def recupere_configuration() -> Configuration:
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
             collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
+            reclassement_active=bool(os.getenv("RECLASSEMENT_ACTIVE", False)),
         ),
     )
 
