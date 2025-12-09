@@ -1,3 +1,5 @@
+import random
+from typing import NamedTuple
 from unittest.mock import Mock
 import requests
 from openai import APITimeoutError, OpenAI
@@ -14,6 +16,7 @@ from schemas.albert import (
     RechercheMetadonnees,
     ReclasseReponse,
     ReclassePayload,
+    ResultatReclasse,
 )
 from services.service_albert import ServiceAlbert, ClientAlbert
 
@@ -234,9 +237,58 @@ class ConstructeurDeChoix:
         )
 
 
+class ParagraphesLesMieuxClasses(NamedTuple):
+    titre: str
+    indice: int
+    score: float
+
+
+class ConstructeurDeReponseDeReclassement:
+    def __init__(self):
+        self.paragraphes_les_mieux_classes = []
+
+    def avec_les_paragraphes_les_mieux_classes(
+        self, paragraphes: list[ParagraphesLesMieuxClasses]
+    ):
+        self.paragraphes_les_mieux_classes.extend(paragraphes)
+        return self
+
+    def construis(self) -> ReclasseReponse:
+        def _calcule_score_faible() -> float:
+            return random.uniform(0.0, 0.6)
+
+        data = []
+
+        for i in range(0, 20):
+            paragraphe = next(
+                (p for p in self.paragraphes_les_mieux_classes if p["indice"] == i),
+                None,
+            )
+            if paragraphe is not None:
+                resultat = ResultatReclasse(
+                    object="rerank", score=paragraphe["score"], index=i
+                )
+
+            else:
+                resultat = ResultatReclasse(
+                    object="rerank", score=_calcule_score_faible(), index=i
+                )
+            data.append(resultat)
+
+        return ReclasseReponse(
+            id="test",
+            object="list",
+            data=data,
+        )
+
+
 def un_resultat_de_recherche() -> ConstructeurResultatDeRecherche:
     return ConstructeurResultatDeRecherche()
 
 
 def un_choix_de_proposition() -> ConstructeurDeChoix:
     return ConstructeurDeChoix()
+
+
+def un_constructeur_de_reponse_de_reclassement() -> ConstructeurDeReponseDeReclassement:
+    return ConstructeurDeReponseDeReclassement()
