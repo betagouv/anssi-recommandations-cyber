@@ -27,7 +27,10 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
 )
-PROMPTS = Prompts(prompt_systeme=PROMPT_SYSTEME_ALTERNATIF, prompt_reclassement="")
+PROMPTS = Prompts(
+    prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
+    prompt_reclassement="Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
+)
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
@@ -309,3 +312,26 @@ def test_appelle_le_reclassement_uniquement_quand_active():
     ).pose_question("Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
+
+
+def test_l_injection_du_prompt_de_reclassement():
+    reponse = un_constructeur_de_reponse_de_reclassement().construis()
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_le_reclassement(reponse)
+    client_albert_memoire.avec_les_propositions(
+        [
+            un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
+        ]
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question("Une question de test ?")
+
+    assert (
+        client_albert_memoire.payload_reclassement_recu.prompt
+        == "Prompt de reclassement :\n\nUne question de test ?\n\n, fin prompt"
+    )
