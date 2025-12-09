@@ -77,7 +77,6 @@ class ServiceAlbert:
         self, question: str, prompt: Optional[str] = None
     ) -> ReponseQuestion:
         paragraphes = self.recherche_paragraphes(question)
-        paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
 
         reclasse_payload = ReclassePayload(
             prompt="reclasse les documents",
@@ -94,6 +93,7 @@ class ServiceAlbert:
                     for contenu in contenus_tries
                 ][:5]
 
+        paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
         prompt_systeme = prompt if prompt else self.PROMPT_SYSTEME
 
         messages: list[ChatCompletionMessageParam] = [

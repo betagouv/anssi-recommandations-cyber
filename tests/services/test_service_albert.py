@@ -236,6 +236,42 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
     ]
 
 
+def test_les_paragraphes_reclasses_sont_envoyes_a_albert():
+    reponse = (
+        un_constructeur_de_reponse_de_reclassement()
+        .avec_5_resultats(
+            [
+                {"titre": "paragraphe 1", "indice": 0, "score": 0.19},
+                {"titre": "paragraphe 2", "indice": 1, "score": 0.48},
+                {"titre": "paragraphe 3", "indice": 2, "score": 0.99},
+                {"titre": "paragraphe 4", "indice": 3, "score": 0.6},
+                {"titre": "paragraphe 5", "indice": 4, "score": 0.63},
+            ]
+        )
+        .construis()
+    )
+
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_le_reclassement(reponse)
+    client_albert_memoire.avec_les_resultats([])
+    service_albert = ServiceAlbert(
+        FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client_albert_memoire,
+        PROMPT_SYSTEME_ALTERNATIF,
+        False,
+    )
+
+    service_albert.pose_question(QUESTION)
+
+    messages = client_albert_memoire.messages_recus
+    assert len(messages) == 2
+    assert messages[0]["role"] == "system"
+    assert (
+        "\n\nparagraphe 2\n\n\nparagraphe 4\n\n\nparagraphe 3\n\n\nparagraphe 1\n\n\nparagraphe 0"
+        in messages[0]["content"]
+    )
+
+
 def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
     reponse = un_constructeur_de_reponse_de_reclassement().construis()
     client_albert_memoire = ClientAlbertMemoire()

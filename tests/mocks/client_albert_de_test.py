@@ -249,6 +249,7 @@ class ParagraphesLesMieuxClasses(NamedTuple):
 class ConstructeurDeReponseDeReclassement:
     def __init__(self):
         self.paragraphes_les_mieux_classes = []
+        self.paragraphes = []
 
     def avec_les_paragraphes_les_mieux_classes(
         self, paragraphes: list[ParagraphesLesMieuxClasses]
@@ -256,11 +257,28 @@ class ConstructeurDeReponseDeReclassement:
         self.paragraphes_les_mieux_classes.extend(paragraphes)
         return self
 
+    def avec_5_resultats(self, paragraphes: list[ParagraphesLesMieuxClasses]):
+        self.paragraphes = paragraphes
+        return self
+
     def construis(self) -> ReclasseReponse:
         def _calcule_score_faible() -> float:
             return random.uniform(0.0, 0.6)
 
         data = []
+        if len(self.paragraphes) > 0:
+            for paragraphe in self.paragraphes:
+                resultat = ResultatReclasse(
+                    object="rerank",
+                    score=paragraphe["score"],
+                    index=paragraphe["indice"],
+                )
+                data.append(resultat)
+            return ReclasseReponse(
+                id="test",
+                object="list",
+                data=data,
+            )
 
         for i in range(0, 20):
             paragraphe = next(
