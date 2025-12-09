@@ -52,6 +52,7 @@ class ServiceAlbert:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.reclassement_active = configuration_service_albert.reclassement_active
         self.prompt_systeme = prompts.prompt_systeme
+        self.prompt_reclassement = prompts.prompt_reclassement
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
 
@@ -83,12 +84,15 @@ class ServiceAlbert:
     ) -> ReponseQuestion:
         paragraphes = self.recherche_paragraphes(question)
 
-        reclasse_payload = ReclassePayload(
-            prompt="reclasse les documents",
-            input=list(map(lambda p: p.contenu, paragraphes)),
-            model="un modele",
-        )
         if self.reclassement_active:
+            prompt_reclassement_avec_question = self.prompt_reclassement.format(
+                QUESTION=question
+            )
+            reclasse_payload = ReclassePayload(
+                prompt=prompt_reclassement_avec_question,
+                input=list(map(lambda p: p.contenu, paragraphes)),
+                model="un modele",
+            )
             reclassement = self.reclasse(reclasse_payload)
 
             contenus_tries = reclassement["paragraphes_tries"]
