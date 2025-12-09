@@ -2,7 +2,7 @@ from pathlib import Path
 
 from configuration import recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
-from services.service_albert import ServiceAlbert
+from services.service_albert import ServiceAlbert, Prompts
 
 
 def fabrique_service_albert() -> ServiceAlbert:
@@ -16,6 +16,6 @@ def fabrique_service_albert() -> ServiceAlbert:
     return ServiceAlbert(
         configuration_service_albert=configuration.albert.service,
         client=client_albert_api,
-        prompt_systeme=prompt_systeme,
         utilise_recherche_hybride=configuration.albert.client.utilise_recherche_hybride,
+        prompts=Prompts(prompt_systeme=prompt_systeme, prompt_reclassement=""),
     )

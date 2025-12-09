@@ -64,7 +64,7 @@ def route_pose_question_avec_prompt(
 def route_prompt_systeme(
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
 ) -> str:
-    return service_albert.PROMPT_SYSTEME
+    return service_albert.prompt_systeme
 
 
 @api.post("/recherche")

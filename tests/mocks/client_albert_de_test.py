@@ -18,7 +18,7 @@ from schemas.albert import (
     ReclassePayload,
     ResultatReclasse,
 )
-from services.service_albert import ServiceAlbert, ClientAlbert
+from services.service_albert import ServiceAlbert, ClientAlbert, Prompts
 
 
 class RetourRouteSearch:
@@ -151,8 +151,10 @@ class ConstructeurServiceAlbert:
         return ServiceAlbert(
             configuration_service_albert=self.FAUSSE_CONFIGURATION_ALBERT_SERVICE,
             client=mock_client_albert_api,
-            prompt_systeme=self.PROMPT_SYSTEME_ALTERNATIF,
             utilise_recherche_hybride=self.FAUSSE_CONFIGURATION_ALBERT_CLIENT.utilise_recherche_hybride,
+            prompts=Prompts(
+                prompt_systeme=self.PROMPT_SYSTEME_ALTERNATIF, prompt_reclassement=""
+            ),
         )
 
 
