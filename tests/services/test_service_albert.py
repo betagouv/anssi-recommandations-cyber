@@ -221,7 +221,7 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
     )
 
     reponse_de_pose_question = ServiceAlbert(
-        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
         client=client_albert_memoire,
         prompt_systeme="",
         utilise_recherche_hybride=False,
@@ -254,3 +254,21 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
     ).pose_question("Une question de test ?")
 
     assert client_albert_memoire.payload_recu.k == 20
+
+
+def test_appelle_le_reclassement_uniquement_quand_active():
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_les_propositions(
+        [
+            un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
+        ]
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=client_albert_memoire,
+        prompt_systeme="",
+        utilise_recherche_hybride=False,
+    ).pose_question("Une question de test ?")
+
+    assert client_albert_memoire.payload_reclassement_recu is None

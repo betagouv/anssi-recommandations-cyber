@@ -158,6 +158,7 @@ class ConstructeurServiceAlbert:
 
 class ClientAlbertMemoire(ClientAlbert):
     def __init__(self):
+        self.payload_reclassement_recu = None
         self.reclassement = ReclasseReponse(id="1", object="list", data=[])
         self.propositions_vides = False
         self.resultats_vides = False
@@ -177,6 +178,7 @@ class ClientAlbertMemoire(ClientAlbert):
         return self.choix if self.propositions_vides is False else []
 
     def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
+        self.payload_reclassement_recu = payload
         return self.reclassement
 
     def avec_les_resultats(self, resultats: list[ResultatRecherche]):
