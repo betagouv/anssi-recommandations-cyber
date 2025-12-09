@@ -335,3 +335,23 @@ def test_l_injection_du_prompt_de_reclassement():
         client_albert_memoire.payload_reclassement_recu.prompt
         == "Prompt de reclassement :\n\nUne question de test ?\n\n, fin prompt"
     )
+
+
+def test_lis_le_nom_du_modele_de_reclassement():
+    reponse = un_constructeur_de_reponse_de_reclassement().construis()
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_le_reclassement(reponse)
+    client_albert_memoire.avec_les_propositions(
+        [
+            un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
+        ]
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question("Une question de test ?")
+
+    assert client_albert_memoire.payload_reclassement_recu.model == "rerank-small"
