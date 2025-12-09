@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
-from typing import Optional, cast
+from typing import Optional, cast, NamedTuple
 from configuration import Albert
 from schemas.albert import (
     Paragraphe,
@@ -36,17 +36,22 @@ class ClientAlbert(ABC):
         pass
 
 
+class Prompts(NamedTuple):
+    prompt_systeme: str
+    prompt_reclassement: str
+
+
 class ServiceAlbert:
     def __init__(
         self,
         configuration_service_albert: Albert.Service,  # type: ignore [name-defined]
         client: ClientAlbert,
-        prompt_systeme: str,
         utilise_recherche_hybride: bool,
+        prompts: Prompts,
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.reclassement_active = configuration_service_albert.reclassement_active
-        self.PROMPT_SYSTEME = prompt_systeme
+        self.prompt_systeme = prompts.prompt_systeme
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
 
@@ -94,7 +99,7 @@ class ServiceAlbert:
                 ][:5]
 
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
-        prompt_systeme = prompt if prompt else self.PROMPT_SYSTEME
+        prompt_systeme = prompt if prompt else self.prompt_systeme
 
         messages: list[ChatCompletionMessageParam] = [
             {

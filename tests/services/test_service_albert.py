@@ -14,7 +14,7 @@ from schemas.violations import (
     ViolationMalveillance,
     ViolationThematique,
 )
-from services.service_albert import ServiceAlbert
+from services.service_albert import ServiceAlbert, Prompts
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="", collection_id_anssi_lab=42, reclassement_active=False
@@ -27,6 +27,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
 )
+PROMPTS = Prompts(prompt_systeme=PROMPT_SYSTEME_ALTERNATIF, prompt_reclassement="")
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
@@ -47,8 +48,8 @@ def test_pose_question_retourne_une_reponse():
     service_albert = ServiceAlbert(
         FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client_albert_memoire,
-        PROMPT_SYSTEME_ALTERNATIF,
         False,
+        PROMPTS,
     )
 
     reponse = service_albert.pose_question(QUESTION)
@@ -64,8 +65,8 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
     service_albert = ServiceAlbert(
         FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client_albert_memoire,
-        PROMPT_SYSTEME_ALTERNATIF,
         False,
+        PROMPTS,
     )
 
     service_albert.pose_question(QUESTION)
@@ -96,8 +97,8 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme():
     service_albert = ServiceAlbert(
         FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client_albert_memoire,
-        PROMPT_SYSTEME_ALTERNATIF,
         False,
+        PROMPTS,
     )
 
     service_albert.pose_question(QUESTION)
@@ -115,8 +116,8 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
     service_albert = ServiceAlbert(
         FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client_albert_memoire,
-        PROMPT_SYSTEME_ALTERNATIF,
         False,
+        PROMPTS,
     )
 
     retour = service_albert.pose_question(QUESTION)
@@ -161,8 +162,8 @@ def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
     service_albert = ServiceAlbert(
         FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client_albert_memoire,
-        PROMPT_SYSTEME_ALTERNATIF,
         False,
+        PROMPTS,
     )
 
     retour = service_albert.pose_question("question illégale ?")
@@ -191,8 +192,8 @@ def test_reclasse_les_paragraphes():
     reclassement = ServiceAlbert(
         configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_memoire,
-        prompt_systeme="",
         utilise_recherche_hybride=False,
+        prompts=PROMPTS,
     ).reclasse(payload)
 
     assert reclassement == {"paragraphes_tries": ["texte2", "texte1"]}
@@ -223,8 +224,8 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
     reponse_de_pose_question = ServiceAlbert(
         configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
         client=client_albert_memoire,
-        prompt_systeme="",
         utilise_recherche_hybride=False,
+        prompts=PROMPTS,
     ).pose_question("Une question de test ?")
 
     assert list(map(lambda p: p.contenu, reponse_de_pose_question.paragraphes)) == [
@@ -257,8 +258,8 @@ def test_les_paragraphes_reclasses_sont_envoyes_a_albert():
     service_albert = ServiceAlbert(
         FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
         client_albert_memoire,
-        PROMPT_SYSTEME_ALTERNATIF,
         False,
+        PROMPTS,
     )
 
     service_albert.pose_question(QUESTION)
@@ -285,8 +286,8 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
     ServiceAlbert(
         configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
         client=client_albert_memoire,
-        prompt_systeme="",
         utilise_recherche_hybride=False,
+        prompts=PROMPTS,
     ).pose_question("Une question de test ?")
 
     assert client_albert_memoire.payload_recu.k == 20
@@ -303,8 +304,8 @@ def test_appelle_le_reclassement_uniquement_quand_active():
     ServiceAlbert(
         configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
         client=client_albert_memoire,
-        prompt_systeme="",
         utilise_recherche_hybride=False,
+        prompts=PROMPTS,
     ).pose_question("Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None

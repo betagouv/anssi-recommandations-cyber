@@ -8,5 +8,5 @@ def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() ->
     assert isinstance(service_albert.client, ClientAlbertApi)
     assert (
         "Tu es un service développé par ou pour l’ANSSI"
-        in service_albert.PROMPT_SYSTEME
+        in service_albert.prompt_systeme
     )
