@@ -91,7 +91,7 @@ class ServiceAlbert:
             reclasse_payload = ReclassePayload(
                 prompt=prompt_reclassement_avec_question,
                 input=list(map(lambda p: p.contenu, paragraphes)),
-                model="un modele",
+                model="rerank-small",
             )
             reclassement = self.reclasse(reclasse_payload)
 
