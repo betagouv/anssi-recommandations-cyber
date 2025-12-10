@@ -82,40 +82,12 @@ class ServiceAlbert:
     def pose_question(
         self, question: str, prompt: Optional[str] = None
     ) -> ReponseQuestion:
-        paragraphes = self.recherche_paragraphes(question)
+        recherche_paragraphes = self.recherche_paragraphes(question)
+        paragraphes = self.__effectue_reclassement(recherche_paragraphes, question)
+        propositions_albert = self.__effectue_recuperation_propositions(
+            paragraphes, prompt, question
+        )
 
-        if self.reclassement_active:
-            prompt_reclassement_avec_question = self.prompt_reclassement.format(
-                QUESTION=question
-            )
-            reclasse_payload = ReclassePayload(
-                prompt=prompt_reclassement_avec_question,
-                input=list(map(lambda p: p.contenu, paragraphes)),
-                model="rerank-small",
-            )
-            reclassement = self.reclasse(reclasse_payload)
-
-            contenus_tries = reclassement["paragraphes_tries"]
-            if len(contenus_tries) > 0:
-                paragraphes = [
-                    next(p for p in paragraphes if p.contenu == contenu)
-                    for contenu in contenus_tries
-                ][:5]
-
-        paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
-        prompt_systeme = prompt if prompt else self.prompt_systeme
-
-        messages: list[ChatCompletionMessageParam] = [
-            {
-                "role": "system",
-                "content": prompt_systeme.format(chunks=paragraphes_concatenes),
-            },
-            {
-                "role": "user",
-                "content": f"Question :\n{question}",
-            },
-        ]
-        propositions_albert = self.client.recupere_propositions(messages)
         (reponse, paragraphes, violation) = (
             self._recupere_reponse_paragraphes_et_violation(
                 propositions_albert, paragraphes
@@ -128,6 +100,58 @@ class ServiceAlbert:
             question=question,
             violation=violation,
         )
+
+    def reclasse(self, payload: ReclassePayload):
+        resultat_du_reclassement = self.client.reclasse(payload)
+
+        resultats_reclassement_donnees = resultat_du_reclassement.data
+        resultats_reclassement_donnees.sort(key=lambda data: data.score, reverse=True)
+        index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
+        toutes_les_entrees = payload.input
+
+        return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}
+
+    def __effectue_recuperation_propositions(
+        self, paragraphes: list[Paragraphe], prompt: str | None, question: str
+    ) -> list[Choice]:
+        paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
+
+        prompt_systeme = prompt if prompt else self.prompt_systeme
+        messages: list[ChatCompletionMessageParam] = [
+            {
+                "role": "system",
+                "content": prompt_systeme.format(chunks=paragraphes_concatenes),
+            },
+            {
+                "role": "user",
+                "content": f"Question :\n{question}",
+            },
+        ]
+        propositions_albert = self.client.recupere_propositions(messages)
+        return propositions_albert
+
+    def __effectue_reclassement(
+        self, paragraphes: list[Paragraphe], question: str
+    ) -> list[Paragraphe]:
+        if self.reclassement_active and len(paragraphes) > 0:
+            prompt_reclassement_avec_question = self.prompt_reclassement.format(
+                QUESTION=question
+            )
+            reclasse_payload = ReclassePayload(
+                prompt=prompt_reclassement_avec_question,
+                input=list(map(lambda p: p.contenu, paragraphes)),
+                model="rerank-small",
+            )
+            reclassement = self.reclasse(reclasse_payload)
+
+            contenus_tries = reclassement["paragraphes_tries"]
+            reclassement_non_vide = len(contenus_tries) > 0
+            if reclassement_non_vide:
+                paragraphes = [
+                    next(p for p in paragraphes if p.contenu == contenu)
+                    for contenu in contenus_tries
+                ][:5]
+        return paragraphes
 
     def _recupere_reponse_paragraphes_et_violation(
         self, propositions_albert: list[Choice], paragraphes: list[Paragraphe]
@@ -148,13 +172,3 @@ class ServiceAlbert:
             return reponse_albert, paragraphes, None
         else:
             return REPONSE_PAR_DEFAUT, [], None
-
-    def reclasse(self, payload: ReclassePayload):
-        resultat_du_reclassement = self.client.reclasse(payload)
-
-        resultats_reclassement_donnees = resultat_du_reclassement.data
-        resultats_reclassement_donnees.sort(key=lambda data: data.score, reverse=True)
-        index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
-        toutes_les_entrees = payload.input
-
-        return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}

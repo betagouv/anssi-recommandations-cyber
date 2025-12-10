@@ -207,6 +207,9 @@ class ClientAlbertMemoire(ClientAlbert):
         self.resultats.extend(resultats_recherche)
         self.reclassement = reclassement
 
+    def reclassement_vide(self):
+        self.reclassement = ReclasseReponse(data=[])
+
 
 class ConstructeurResultatDeRecherche:
     def __init__(self):
