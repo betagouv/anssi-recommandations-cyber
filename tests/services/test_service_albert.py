@@ -355,3 +355,44 @@ def test_lis_le_nom_du_modele_de_reclassement():
     ).pose_question("Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu.model == "rerank-small"
+
+
+def test_ne_reclasse_pas_si_la_recherche_de_paragraphes_retourne_un_resultat_vide():
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.sans_resultats()
+
+    reponse = ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question("Une question de test ?")
+
+    assert client_albert_memoire.payload_reclassement_recu is None
+    assert reponse.reponse == REPONSE_PAR_DEFAUT
+
+
+def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_de_donnees():
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.reclassement_vide()
+    client_albert_memoire.avec_les_resultats(
+        [
+            un_resultat_de_recherche().ayant_pour_contenu("Un contenu").construis(),
+        ]
+    )
+    client_albert_memoire.avec_les_propositions(
+        [
+            un_choix_de_proposition().ayant_pour_contenu("Un contenu").construis(),
+        ]
+    )
+
+    reponse = ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question("Une question de test ?")
+
+    assert reponse.reponse == "Un contenu"
+    assert len(reponse.paragraphes) == 1
+    assert reponse.question == "Une question de test ?"
