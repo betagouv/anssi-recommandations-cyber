@@ -100,27 +100,33 @@ class ClientAlbertApi(ClientAlbert):
         return resultats
 
     def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
-        reponse = self.client_http.post(
-            "/rerank",
-            json=payload._asdict(),
-        )
-        brut = reponse.json()
-
-        donnees = brut.get("data", [])
-        resultats = [
-            ResultatReclasse(
-                object=r.get("object", "rerank"),
-                score=float(r.get("score", 0.0)),
-                index=r.get("index", 0),
+        try:
+            reponse = self.client_http.post(
+                "/rerank",
+                json=payload._asdict(),
             )
-            for r in donnees
-        ]
-        return ReclasseReponse(
-            id=brut.get("id"),
-            object=brut.get("object", "list"),
-            data=resultats,
-            usage=brut.get("usage"),
-        )
+            reponse.raise_for_status()
+            brut = reponse.json()
+
+            donnees = brut.get("data", [])
+            resultats = [
+                ResultatReclasse(
+                    object=r.get("object", "rerank"),
+                    score=float(r.get("score", 0.0)),
+                    index=r.get("index", 0),
+                )
+                for r in donnees
+            ]
+            return ReclasseReponse(
+                data=resultats,
+            )
+        except (requests.HTTPError, requests.Timeout) as erreur:
+            logging.error(
+                f"Route `/rerank` de l'API Albert retourne une erreur: {erreur}"
+            )
+            return ReclasseReponse(
+                data=[],
+            )
 
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam]

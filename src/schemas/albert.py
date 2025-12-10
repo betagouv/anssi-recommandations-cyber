@@ -60,10 +60,7 @@ class ResultatReclasse(BaseModel):
 
 
 class ReclasseReponse(BaseModel):
-    id: Optional[str] = None
-    object: str = "list"
     data: list[ResultatReclasse]
-    usage: Optional[dict] = None
 
     class Config:
         extra = "allow"

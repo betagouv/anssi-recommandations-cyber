@@ -277,8 +277,6 @@ class ConstructeurDeReponseDeReclassement:
                 )
                 data.append(resultat)
             return ReclasseReponse(
-                id="test",
-                object="list",
                 data=data,
             )
 
@@ -299,8 +297,6 @@ class ConstructeurDeReponseDeReclassement:
             data.append(resultat)
 
         return ReclasseReponse(
-            id="test",
-            object="list",
             data=data,
         )
 
