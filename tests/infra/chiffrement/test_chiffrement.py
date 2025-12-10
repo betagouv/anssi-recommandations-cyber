@@ -1,24 +1,22 @@
-from infra.chiffrement.chiffrement import chiffre
+from unittest.mock import patch
+from infra.chiffrement.chiffrement import ServiceDeChiffrementAES
 
 
-def test_chiffre_modele():
-    def fonction_interne():
-        def autre_fonction():
-            return {
-                "cle_avec_valeur_en_clair": "valeur_en_clair",
-                "cle_avec_valeur_chiffree_1": "valeur_a_chiffrer_1",
-                "cle_avec_valeur_chiffree_2": "valeur_a_chiffrer_2",
-            }
+def test_chiffre_une_chaine_de_caractere_avec_aes():
+    with patch("os.urandom", return_value=b"\x01" * 12):
+        key = b"abcdefghijklmnopqrstuvwxyz123456"
 
-        return autre_fonction
+        chaine_chiffree = ServiceDeChiffrementAES(key).chiffre("Un contenu")
 
-    fonction = chiffre(
-        modele={"cles": ["cle_avec_valeur_chiffree_1", "cle_avec_valeur_chiffree_2"]}
-    )
-    modele_chiffre = fonction(fonction_interne())()
+        assert chaine_chiffree == "AQEBAQEBAQEBAQEB25U5WnoGGxurQWkvDcnTSyo+ohgDhTuGxvM="
 
-    assert modele_chiffre == {
-        "cle_avec_valeur_en_clair": "valeur_en_clair",
-        "cle_avec_valeur_chiffree_1": "valeur_a_chiffrer_1_chiffre",
-        "cle_avec_valeur_chiffree_2": "valeur_a_chiffrer_2_chiffre",
-    }
+
+def test_dechiffre_une_chaine_de_caractere_avec_aes():
+    with patch("os.urandom", return_value=b"\x01" * 12):
+        key = b"abcdefghijklmnopqrstuvwxyz123456"
+
+        chaine_dechiffree = ServiceDeChiffrementAES(key).dechiffre(
+            "AQEBAQEBAQEBAQEB25U5WnoGGxurQWkvDcnTSyo+ohgDhTuGxvM="
+        )
+
+        assert chaine_dechiffree == "Un contenu"

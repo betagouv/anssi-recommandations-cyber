@@ -1,4 +1,3 @@
-from typing import Any
 import pytest
 from infra.chiffrement.chiffrement import (
     FournisseurDeServiceDeChiffrement,
@@ -7,11 +6,11 @@ from infra.chiffrement.chiffrement import (
 
 
 class ServiceDeChiffrementDeTest(ServiceDeChiffrement):
-    def dechiffre(self, contenu_chiffre: Any) -> bytes:
-        return bytes(contenu_chiffre.decode("utf-8").removesuffix("_chiffre"), "utf-8")
+    def dechiffre(self, contenu_chiffre: str) -> str:
+        return contenu_chiffre.removesuffix("_chiffre")
 
-    def chiffre(self, contenu: bytes) -> bytes:
-        return bytes(f"{contenu}_chiffre", "utf-8")  # type: ignore
+    def chiffre(self, contenu: str) -> str:
+        return f"{contenu}_chiffre"
 
 
 @pytest.fixture(autouse=True)

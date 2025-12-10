@@ -1,6 +1,7 @@
-import functools
+import base64
+import os
 from abc import abstractmethod, ABCMeta
-from typing import Any
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
 class ServiceDeChiffrement(metaclass=ABCMeta):
@@ -16,18 +17,21 @@ class FournisseurDeServiceDeChiffrement:
     service: ServiceDeChiffrement
 
 
-def chiffre(modele: dict):
-    def fonction_de_chiffrement(func) -> Any:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            resultat = func(*args, **kwargs)
-            for cle in modele["cles"]:
-                contenu_chiffre = FournisseurDeServiceDeChiffrement.service.chiffre(
-                    contenu=resultat[cle]
-                )
-                resultat[cle] = f"{contenu_chiffre.decode('utf-8')}"
-            return resultat
+class ServiceDeChiffrementAES(ServiceDeChiffrement):
+    def __init__(self, clef: bytes):
+        super().__init__()
+        self.clef = clef
 
-        return wrapper
+    def chiffre(self, contenu: str) -> str:
+        aesgcm = AESGCM(self.clef)
+        nonce = os.urandom(12)
+        ciphertext = aesgcm.encrypt(nonce, contenu.encode("utf-8"), None)
+        return base64.b64encode(nonce).decode("utf-8") + base64.b64encode(
+            ciphertext
+        ).decode("utf-8")
 
-    return fonction_de_chiffrement
+    def dechiffre(self, contenu_chiffre: str) -> str:
+        aesgcm = AESGCM(self.clef)
+        nonce = base64.b64decode(contenu_chiffre[:16])
+        ciphertext = base64.b64decode(contenu_chiffre[16:])
+        return aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
