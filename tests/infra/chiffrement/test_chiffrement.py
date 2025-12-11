@@ -107,20 +107,6 @@ def test_chiffre_un_dict_en_donnant_le_chemin_des_elements_dans_un_tableau():
     }
 
 
-def test_chiffre_un_dict_lorsque_une_clef_a_une_valeur_none():
-    key = b"abcdefghijklmnopqrstuvwxyz123456"
-
-    dictionnaire_chiffre = ServiceDeChiffrementAES(key).chiffre_dict(
-        {"champ_1": "le champ", "champ_a_chiffrer": None},
-        ["champ_1"],
-    )
-
-    assert dictionnaire_chiffre == {
-        "champ_1": "le champ",
-        "champ_a_chiffrer": None,
-    }
-
-
 def test_chiffre_une_liste_de_chaines_de_caracteres():
     dictionnaire_chiffre = ServiceDeChiffrementDeTest().chiffre_dict(
         {
@@ -145,6 +131,34 @@ def test_chiffre_une_liste_de_chaines_de_caracteres():
                 "liste_en_clair": ["valeur3", "valeur4"],
             }
         },
+    }
+
+
+def test_chiffre_un_dict_lorsque_une_clef_a_une_valeur_none():
+    key = b"abcdefghijklmnopqrstuvwxyz123456"
+
+    dictionnaire_chiffre = ServiceDeChiffrementAES(key).chiffre_dict(
+        {"champ_1": "le champ", "champ_a_chiffrer": None},
+        ["champ_1"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_a_chiffrer": None,
+    }
+
+
+def test_dechiffre_un_dict_lorsque_une_clef_a_une_valeur_none():
+    key = b"abcdefghijklmnopqrstuvwxyz123456"
+
+    dictionnaire_chiffre = ServiceDeChiffrementAES(key).dechiffre_dict(
+        {"champ_1": "le champ", "champ_a_dechiffrer": None},
+        ["champ_1"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_a_dechiffrer": None,
     }
 
 
