@@ -4,6 +4,7 @@ from abc import abstractmethod, ABCMeta
 import secrets
 import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from typing import Callable
 
 
 class ServiceDeChiffrement(metaclass=ABCMeta):
@@ -40,6 +41,53 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
                                 valeur[i] = self.chiffre(element)
                             case dict():
                                 self.__chiffre_tout(element)
+
+    def dechiffre_dict(self, dictionnaire: dict, chemins: list[str]) -> dict:
+        dictionnaire_chiffre = copy.deepcopy(dictionnaire)
+
+        for chemin in chemins:
+            self.__dechiffre_tout(chemin, dictionnaire_chiffre)
+        return dictionnaire_chiffre
+
+    def __dechiffre_tout(
+        self, chemin: str, dictionnaire_chiffre: dict, chemin_parcouru: str = ""
+    ):
+        for clef, valeur in dictionnaire_chiffre.items():
+            match valeur:
+                case str():
+                    if clef != chemin or chemin_parcouru == chemin:
+                        dpath.set(dictionnaire_chiffre, clef, self.dechiffre(valeur))
+                case dict():
+                    self.__dechiffre_tout(
+                        chemin,
+                        valeur,
+                        f"{clef}"
+                        if chemin_parcouru == ""
+                        else f"{chemin_parcouru}/{clef}",
+                    )
+
+                case list():
+                    for i, element in enumerate(valeur):
+                        match element:
+                            case str():
+                                if f"{chemin_parcouru}/{clef}" != chemin:
+                                    dpath.set(
+                                        dictionnaire_chiffre,
+                                        f"{clef}/{i}",
+                                        self.dechiffre(element),
+                                    )
+                            case dict():
+                                self.__dechiffre_tout(chemin, element, f"{clef}/*")
+
+    @staticmethod
+    def __applique(
+        chemins: list[str], fonction: Callable[[str], str], dictionnaire: dict
+    ) -> dict:
+        dictionnaire_chiffre = dictionnaire
+        for chemin in chemins:
+            for recherche in dpath.search(dictionnaire, chemin, yielded=True):
+                dpath.set(dictionnaire_chiffre, recherche[0], fonction(recherche[1]))
+        return dictionnaire_chiffre
 
 
 class FournisseurDeServiceDeChiffrement:
