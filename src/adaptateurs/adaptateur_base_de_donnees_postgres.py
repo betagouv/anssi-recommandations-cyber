@@ -1,7 +1,10 @@
 import uuid
+import json
 import psycopg2
 import psycopg2.extras
-from typing import Optional
+from typing import Optional, Any
+from infra.chiffrement.chiffrement import FournisseurDeServiceDeChiffrement
+from infra.postgres.encodeurs_json import EncodeurDeDate
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.albert import ReponseQuestion
 from configuration import recupere_configuration_postgres, recupere_configuration
@@ -35,10 +38,11 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=None
         )
+        interaction_json = self.__chiffre_interaction(interaction.model_dump())
 
         self._get_curseur().execute(
             "INSERT INTO interactions (id_interaction, contenu) VALUES (%s, %s)",
-            (identifiant_interaction, interaction.model_dump_json()),
+            (identifiant_interaction, interaction_json),
         )
         return identifiant_interaction
 
@@ -53,10 +57,13 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         interaction_mise_a_jour = Interaction(
             reponse_question=interaction.reponse_question, retour_utilisatrice=retour
         )
+        interaction_json = self.__chiffre_interaction(
+            interaction_mise_a_jour.model_dump()
+        )
 
         self._get_curseur().execute(
             "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
+            (interaction_json, identifiant_interaction),
         )
         return retour
 
@@ -71,10 +78,13 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         interaction_mise_a_jour = Interaction(
             reponse_question=interaction.reponse_question, retour_utilisatrice=None
         )
+        interaction_json = self.__chiffre_interaction(
+            interaction_mise_a_jour.model_dump()
+        )
 
         self._get_curseur().execute(
             "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
+            (interaction_json, identifiant_interaction),
         )
         return identifiant_interaction
 
@@ -90,7 +100,34 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         if not ligne:
             return None
 
-        return Interaction.model_validate(ligne["contenu"])
+        interaction_dechiffree = (
+            FournisseurDeServiceDeChiffrement.service.dechiffre_dict(
+                ligne["contenu"],
+                [
+                    "reponse_question/reponse",
+                    "reponse_question/question",
+                    "reponse_question/paragraphes/*/nom_document",
+                    "reponse_question/paragraphes/*/contenu",
+                ],
+            )
+        )
+
+        return Interaction.model_validate(interaction_dechiffree)
+
+    @staticmethod
+    def __chiffre_interaction(dump_interaction: dict[str, Any]) -> str:
+        interaction_chiffree = FournisseurDeServiceDeChiffrement.service.chiffre_dict(
+            dump_interaction,
+            [
+                "reponse_question/reponse",
+                "reponse_question/question",
+                "reponse_question/paragraphes/*/nom_document",
+                "reponse_question/paragraphes/*/contenu",
+                "retour_utilisatrice/commentaire",
+            ],
+        )
+
+        return json.dumps(interaction_chiffree, cls=EncodeurDeDate)
 
     def _get_curseur(self):
         return self._connexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
