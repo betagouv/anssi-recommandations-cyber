@@ -6,6 +6,8 @@ import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from typing import Callable
 
+from configuration import Configuration
+
 
 class ServiceDeChiffrement(metaclass=ABCMeta):
     @abstractmethod
@@ -115,3 +117,21 @@ class ServiceDeChiffrementAES(ServiceDeChiffrement):
         nonce = base64.b64decode(contenu_chiffre[:16])
         ciphertext = base64.b64decode(contenu_chiffre[16:])
         return aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
+
+
+class ServiceDeChiffrementEnClair(ServiceDeChiffrement):
+    def dechiffre(self, contenu_chiffre: str) -> str:
+        return contenu_chiffre.removesuffix("_chiffre")
+
+    def chiffre(self, contenu: str) -> str:
+        return f"{contenu}_chiffre"  # type: ignore
+
+
+def fabrique_fournisseur_de_chiffrement(configuration: Configuration) -> None:
+    clef_chiffrement = configuration.chiffrement.clef_chiffrement
+    if clef_chiffrement is not None:
+        FournisseurDeServiceDeChiffrement.service = ServiceDeChiffrementAES(
+            clef_chiffrement.encode("utf-8")
+        )
+    else:
+        FournisseurDeServiceDeChiffrement.service = ServiceDeChiffrementEnClair()

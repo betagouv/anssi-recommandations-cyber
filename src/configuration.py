@@ -38,6 +38,7 @@ class BaseDeDonnees(NamedTuple):
 
 
 class Chiffrement(NamedTuple):
+    clef_chiffrement: str | None
     sel_de_hachage: str
 
 
@@ -118,7 +119,8 @@ def recupere_configuration() -> Configuration:
     configuration_base_de_donnees_journal = recupere_configuration_journal(mode)
 
     configuration_chiffrement = Chiffrement(
-        sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HASHAGE", "")
+        sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HASHAGE", ""),
+        clef_chiffrement=os.getenv("CHIFFREMENT_CLEF_DE_CHIFFREMENT", None),
     )
 
     return Configuration(
