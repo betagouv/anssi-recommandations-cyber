@@ -1,4 +1,5 @@
 import base64
+import copy
 from abc import abstractmethod, ABCMeta
 import secrets
 import dpath
@@ -12,6 +13,33 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
     @abstractmethod
     def dechiffre(self, contenu_chiffre: str) -> str:
         pass
+
+    def chiffre_dict(
+        self, dictionnaire: dict, chemins_a_conserver_en_clair: list[str]
+    ) -> dict:
+        dictionnaire_chiffre = copy.deepcopy(dictionnaire)
+
+        self.__chiffre_tout(dictionnaire_chiffre)
+
+        for clef in chemins_a_conserver_en_clair:
+            for recherche in dpath.search(dictionnaire, clef, yielded=True):
+                dpath.set(dictionnaire_chiffre, recherche[0], recherche[1])
+        return dictionnaire_chiffre
+
+    def __chiffre_tout(self, dictionnaire_chiffre: dict) -> None:
+        for clef, valeur in dictionnaire_chiffre.items():
+            match valeur:
+                case str():
+                    dictionnaire_chiffre[clef] = self.chiffre(valeur)
+                case dict():
+                    self.__chiffre_tout(valeur)
+                case list():
+                    for i, element in enumerate(valeur):
+                        match element:
+                            case str():
+                                valeur[i] = self.chiffre(element)
+                            case dict():
+                                self.__chiffre_tout(element)
 
 
 class FournisseurDeServiceDeChiffrement:
