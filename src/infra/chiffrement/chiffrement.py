@@ -1,6 +1,8 @@
 import base64
 import os
 from abc import abstractmethod, ABCMeta
+
+import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
@@ -11,6 +13,15 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
     @abstractmethod
     def dechiffre(self, contenu_chiffre: str) -> str:
         pass
+
+    def chiffre_dict(self, dictionnaire: dict, clefs: list[str]) -> dict:
+        dictionnaire_chiffre = dictionnaire
+        for clef in clefs:
+            for recherche in dpath.search(dictionnaire, clef, yielded=True):
+                dpath.set(
+                    dictionnaire_chiffre, recherche[0], self.chiffre(recherche[1])
+                )
+        return dictionnaire_chiffre
 
 
 class FournisseurDeServiceDeChiffrement:
