@@ -4,6 +4,7 @@ from abc import abstractmethod, ABCMeta
 
 import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from typing import Callable
 
 
 class ServiceDeChiffrement(metaclass=ABCMeta):
@@ -15,12 +16,19 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
         pass
 
     def chiffre_dict(self, dictionnaire: dict, clefs: list[str]) -> dict:
+        return self.__applique(clefs, self.chiffre, dictionnaire)
+
+    def dechiffre_dict(self, dictionnaire: dict, chemins: list[str]) -> dict:
+        return self.__applique(chemins, self.dechiffre, dictionnaire)
+
+    @staticmethod
+    def __applique(
+        chemins: list[str], fonction: Callable[[str], str], dictionnaire: dict
+    ) -> dict:
         dictionnaire_chiffre = dictionnaire
-        for clef in clefs:
-            for recherche in dpath.search(dictionnaire, clef, yielded=True):
-                dpath.set(
-                    dictionnaire_chiffre, recherche[0], self.chiffre(recherche[1])
-                )
+        for chemin in chemins:
+            for recherche in dpath.search(dictionnaire, chemin, yielded=True):
+                dpath.set(dictionnaire_chiffre, recherche[0], fonction(recherche[1]))
         return dictionnaire_chiffre
 
 

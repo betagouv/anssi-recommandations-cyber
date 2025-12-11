@@ -82,3 +82,57 @@ def test_chiffre_un_dict_en_donnant_le_chemin_des_elements_dans_un_tableau():
             {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_2_chiffre"}}},
         ],
     }
+
+
+def test_dechiffre_un_dict():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {"champ_1": "le champ", "champ_chiffre": "l’autre champ_chiffre"},
+        ["champ_chiffre"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+    }
+
+
+def test_dechiffre_un_dict_en_donnant_le_chemin_des_elements():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {
+            "champ_1": "le champ",
+            "champ_chiffre": "l’autre champ_chiffre",
+            "champ_imbrique": {
+                "niveau_1": {"niveau_2": {"champ": "champ imbriqué_chiffre"}}
+            },
+        },
+        ["champ_chiffre", "champ_imbrique/niveau_1/niveau_2/champ"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+        "champ_imbrique": {"niveau_1": {"niveau_2": {"champ": "champ imbriqué"}}},
+    }
+
+
+def test_dechiffre_un_dict_en_donnant_le_chemin_des_elements_dans_un_tableau():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {
+            "champ_1": "le champ",
+            "champ_chiffre": "l’autre champ_chiffre",
+            "champs_imbriques": [
+                {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_1_chiffre"}}},
+                {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_2_chiffre"}}},
+            ],
+        },
+        ["champ_chiffre", "champs_imbriques/*/niveau_1/niveau_2/champ"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+        "champs_imbriques": [
+            {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_1"}}},
+            {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_2"}}},
+        ],
+    }
