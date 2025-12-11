@@ -146,3 +146,102 @@ def test_chiffre_une_liste_de_chaines_de_caracteres():
             }
         },
     }
+
+
+def test_dechiffre_un_dict():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {"champ_1": "le champ", "champ_chiffre": "l’autre champ_chiffre"},
+        ["champ_1"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+    }
+
+
+def test_dechiffre_un_dict_en_donnant_le_chemin_des_elements():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {
+            "champ_1": "le champ",
+            "champ_chiffre": "l’autre champ_chiffre",
+            "champ_imbrique": {
+                "niveau_1": {
+                    "niveau_2": {"champ": "champ imbriqué_chiffre"},
+                    "champ_pas_chiffre": "value_non_chiffree",
+                }
+            },
+        },
+        ["champ_1", "champ_imbrique/niveau_1/niveau_2/champ_pas_chiffre"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+        "champ_imbrique": {
+            "niveau_1": {
+                "niveau_2": {"champ": "champ imbriqué"},
+                "champ_pas_chiffre": "value_non_chiffree",
+            }
+        },
+    }
+
+
+def test_dechiffre_un_dict_en_donnant_le_chemin_des_elements_dans_un_tableau():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {
+            "champ_1": "le champ",
+            "champ_chiffre": "l’autre champ_chiffre",
+            "champs_imbriques": [
+                {
+                    "niveau_1": {
+                        "niveau_2": {"champ": "champ imbriqué_1_chiffre"},
+                        "champ_pas_chiffre": "value_non_chiffree",
+                    }
+                },
+                {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_2_chiffre"}}},
+            ],
+        },
+        ["champ_chiffre", "champs_imbriques/*/niveau_1/niveau_2/champ_pas_chiffre"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+        "champs_imbriques": [
+            {
+                "niveau_1": {
+                    "niveau_2": {"champ": "champ imbriqué_1"},
+                    "champ_pas_chiffre": "value_non_chiffree",
+                }
+            },
+            {"niveau_1": {"niveau_2": {"champ": "champ imbriqué_2"}}},
+        ],
+    }
+
+
+def test_dechiffre_une_liste_de_chaines_de_caracteres():
+    dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
+        {
+            "champ_1": "le champ",
+            "champ_chiffre": "l’autre champ_chiffre",
+            "niveau1": {
+                "niveau2": {
+                    "liste_chiffre": ["valeur1_chiffre", "valeur2_chiffre"],
+                    "liste_en_clair": ["valeur3", "valeur4"],
+                }
+            },
+        },
+        ["champ_chiffre", "niveau1/niveau2/liste_en_clair"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_chiffre": "l’autre champ",
+        "niveau1": {
+            "niveau2": {
+                "liste_chiffre": ["valeur1", "valeur2"],
+                "liste_en_clair": ["valeur3", "valeur4"],
+            }
+        },
+    }
