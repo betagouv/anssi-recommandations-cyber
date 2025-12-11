@@ -4,6 +4,7 @@ import psycopg2
 import psycopg2.extras
 from typing import Optional
 from infra.chiffrement.chiffrement import FournisseurDeServiceDeChiffrement
+from infra.postgres.encodeurs_json import EncodeurDeDate
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.albert import ReponseQuestion
 from configuration import recupere_configuration_postgres, recupere_configuration
@@ -47,7 +48,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
                 "reponse_question/violation/reponse",
             ],
         )
-        interaction_json = json.dumps(interaction_chiffree)
+        interaction_json = json.dumps(interaction_chiffree, cls=EncodeurDeDate)
 
         self._get_curseur().execute(
             "INSERT INTO interactions (id_interaction, contenu) VALUES (%s, %s)",
@@ -67,9 +68,23 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             reponse_question=interaction.reponse_question, retour_utilisatrice=retour
         )
 
+        interaction_chiffree = FournisseurDeServiceDeChiffrement.service.chiffre_dict(
+            interaction_mise_a_jour.model_dump(),
+            [
+                "reponse_question/paragraphes/*/score_similarite",
+                "reponse_question/paragraphes/*/numero_page",
+                "reponse_question/paragraphes/*/url",
+                "reponse_question/violation/reponse",
+                "retour_utilisatrice/type",
+                "retour_utilisatrice/horodatageretour_utilisatrice/tags/*",
+            ],
+        )
+
+        interaction_json = json.dumps(interaction_chiffree, cls=EncodeurDeDate)
+
         self._get_curseur().execute(
             "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_mise_a_jour.model_dump_json(), identifiant_interaction),
+            (interaction_json, identifiant_interaction),
         )
         return retour
 
