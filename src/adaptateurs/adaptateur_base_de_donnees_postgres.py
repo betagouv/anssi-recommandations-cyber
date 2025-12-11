@@ -103,7 +103,19 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         if not ligne:
             return None
 
-        return Interaction.model_validate(ligne["contenu"])
+        interaction_dechiffree = (
+            FournisseurDeServiceDeChiffrement.service.dechiffre_dict(
+                ligne["contenu"],
+                [
+                    "reponse_question/reponse",
+                    "reponse_question/question",
+                    "reponse_question/paragraphes/*/nom_document",
+                    "reponse_question/paragraphes/*/contenu",
+                ],
+            )
+        )
+
+        return Interaction.model_validate(interaction_dechiffree)
 
     def _get_curseur(self):
         return self._connexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor)

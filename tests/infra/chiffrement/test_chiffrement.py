@@ -84,6 +84,33 @@ def test_chiffre_un_dict_en_donnant_le_chemin_des_elements_dans_un_tableau():
     }
 
 
+def test_chiffre_un_dict_lorsque_une_clef_a_une_valeur_none():
+    key = b"abcdefghijklmnopqrstuvwxyz123456"
+
+    dictionnaire_chiffre = ServiceDeChiffrementAES(key).chiffre_dict(
+        {"champ_1": "le champ", "champ_a_chiffrer": None},
+        ["champ_a_chiffrer"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_a_chiffrer": None,
+    }
+
+
+def test_dechiffre_un_dict_lorsque_une_clef_a_une_valeur_none():
+    key = b"abcdefghijklmnopqrstuvwxyz123456"
+
+    dictionnaire_chiffre = ServiceDeChiffrementAES(key).dechiffre_dict(
+        {"champ_1": "le champ", "champ_a_dechiffrer": None},
+        ["champ_a_dechiffrer"],
+    )
+
+    assert dictionnaire_chiffre == {
+        "champ_1": "le champ",
+        "champ_a_dechiffrer": None,
+    }
+
 def test_dechiffre_un_dict():
     dictionnaire_chiffre = ServiceDeChiffrementDeTest().dechiffre_dict(
         {"champ_1": "le champ", "champ_chiffre": "l’autre champ_chiffre"},

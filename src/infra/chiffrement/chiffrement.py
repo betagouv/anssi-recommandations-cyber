@@ -28,7 +28,8 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
         dictionnaire_chiffre = dictionnaire
         for chemin in chemins:
             for recherche in dpath.search(dictionnaire, chemin, yielded=True):
-                dpath.set(dictionnaire_chiffre, recherche[0], fonction(recherche[1]))
+                if recherche[1] is not None:
+                    dpath.set(dictionnaire_chiffre, recherche[0], fonction(recherche[1]))
         return dictionnaire_chiffre
 
 
