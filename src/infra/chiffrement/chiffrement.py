@@ -1,5 +1,6 @@
 import base64
 import copy
+import logging
 from abc import abstractmethod, ABCMeta
 import secrets
 import dpath
@@ -113,10 +114,25 @@ class ServiceDeChiffrementAES(ServiceDeChiffrement):
         ).decode("utf-8")
 
     def dechiffre(self, contenu_chiffre: str) -> str:
-        aesgcm = AESGCM(self.clef)
-        nonce = base64.b64decode(contenu_chiffre[:16])
-        ciphertext = base64.b64decode(contenu_chiffre[16:])
-        return aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
+        try:
+            return self.__dechiffre_la_chaine(contenu_chiffre)
+        except DechiffrementException as e:
+            logging.warn(f"Exception : {e} - contenu : {str(contenu_chiffre)}")  # type: ignore
+            return contenu_chiffre
+
+    def __dechiffre_la_chaine(self, contenu_chiffre: str) -> str:
+        try:
+            aesgcm = AESGCM(self.clef)
+            nonce = base64.b64decode(contenu_chiffre[:16])
+            ciphertext = base64.b64decode(contenu_chiffre[16:])
+            return aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
+        except (ValueError, UnicodeDecodeError) as e:
+            raise DechiffrementException(str(e))
+
+
+class DechiffrementException(Exception):
+    def __init__(self, message: str):
+        super().__init__(f"Erreur de déchiffrement : {message}")
 
 
 class ServiceDeChiffrementEnClair(ServiceDeChiffrement):

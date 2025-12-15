@@ -10,7 +10,7 @@ from schemas.albert import ReponseQuestion
 from configuration import recupere_configuration_postgres, recupere_configuration
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
-__CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
+CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
     "reponse_question/paragraphes/*/score_similarite",
     "reponse_question/paragraphes/*/numero_page",
     "reponse_question/paragraphes/*/url",
@@ -112,7 +112,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         interaction_dechiffree = (
             FournisseurDeServiceDeChiffrement.service.dechiffre_dict(
                 ligne["contenu"],
-                __CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
+                CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
             )
         )
 
@@ -122,7 +122,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def __chiffre_interaction(dump_interaction: dict[str, Any]) -> str:
         interaction_chiffree = FournisseurDeServiceDeChiffrement.service.chiffre_dict(
             dump_interaction,
-            __CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
+            CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
         )
 
         return json.dumps(interaction_chiffree, cls=EncodeurDeDate)
