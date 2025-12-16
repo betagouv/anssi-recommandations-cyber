@@ -197,3 +197,26 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags() -> None
     assert kwargs["donnees"].id_interaction == "id-456"
     assert kwargs["donnees"].type_retour == "positif"
     assert kwargs["donnees"].tags == [TagPositif.Complete]
+    assert kwargs["donnees"].model_dump_json()
+
+
+def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime() -> None:
+    retour = RetourPositif(commentaire="Très utile !")
+    adaptateur_base_de_donnees = (
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    serveur = (
+        ConstructeurServeur()
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.delete("/api/retour/id-interaction-test")
+
+    adaptateur_journal.consigne_evenement.assert_called_once()
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["type"] == TypeEvenement.AVIS_UTILISATEUR_SUPPRIME
+    assert kwargs["donnees"].id_interaction == "id-interaction-test"

@@ -20,6 +20,7 @@ from adaptateurs.chiffrement import (
 from adaptateurs.journal import (
     AdaptateurJournal,
     DonneesAvisUtilisateurSoumis,
+    DonneesAvisUtilisateurSupprime,
     DonneesInteractionCreee,
     DonneesViolationDetectee,
     TypeEvenement,
@@ -145,6 +146,7 @@ def supprime_retour(
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
+    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> Optional[str]:
     id_interaction_retour_supprime = (
         adaptateur_base_de_donnees.supprime_retour_utilisatrice(id_interaction)
@@ -152,6 +154,11 @@ def supprime_retour(
 
     if not id_interaction_retour_supprime:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
+
+    adaptateur_journal.consigne_evenement(
+        type=TypeEvenement.AVIS_UTILISATEUR_SUPPRIME,
+        donnees=DonneesAvisUtilisateurSupprime(id_interaction=id_interaction),
+    )
 
     return id_interaction_retour_supprime
 
