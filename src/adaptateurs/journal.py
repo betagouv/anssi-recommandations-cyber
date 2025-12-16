@@ -28,10 +28,15 @@ class DonneesAvisUtilisateurSoumis(Donnees):
     tags: list[TagPositif | TagNegatif]
 
 
+class DonneesAvisUtilisateurSupprime(Donnees):
+    id_interaction: str
+
+
 class TypeEvenement(StrEnum):
     INTERACTION_CREEE = "INTERACTION_CREEE"
     VIOLATION_DETECTEE = "VIOLATION_DETECTEE"
     AVIS_UTILISATEUR_SOUMIS = "AVIS_UTILISATEUR_SOUMIS"
+    AVIS_UTILISATEUR_SUPPRIME = "AVIS_UTILISATEUR_SUPPRIME"
 
 
 class AdaptateurJournal(ABC):
