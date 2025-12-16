@@ -24,6 +24,7 @@ class Albert(NamedTuple):
         collection_nom_anssi_lab: str
         collection_id_anssi_lab: int
         reclassement_active: bool
+        modele_reclassement: str
 
     client: Client
     service: Service
@@ -107,6 +108,7 @@ def recupere_configuration() -> Configuration:
             ),
             collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
             reclassement_active=bool(os.getenv("RECLASSEMENT_ACTIVE", False)),
+            modele_reclassement=os.getenv("MODELE_RECLASSEMENT", "openweight-rerank"),
         ),
     )
 
