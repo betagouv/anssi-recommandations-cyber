@@ -19,6 +19,7 @@ from adaptateurs.chiffrement import (
 )
 from adaptateurs.journal import (
     AdaptateurJournal,
+    DonneesAvisUtilisateurSoumis,
     DonneesInteractionCreee,
     DonneesViolationDetectee,
     TypeEvenement,
@@ -117,6 +118,7 @@ def ajoute_retour(
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees_retour_utilisatrice
     ),
+    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> RetourUtilisatrice:
     retour = adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
         body.id_interaction, body.retour
@@ -124,6 +126,15 @@ def ajoute_retour(
 
     if not retour:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
+
+    adaptateur_journal.consigne_evenement(
+        type=TypeEvenement.AVIS_UTILISATEUR_SOUMIS,
+        donnees=DonneesAvisUtilisateurSoumis(
+            id_interaction=body.id_interaction,
+            type_retour=body.retour.type,
+            tags=list(body.retour.tags),
+        ),
+    )
 
     return retour
 

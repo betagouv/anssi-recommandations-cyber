@@ -3,8 +3,10 @@ import psycopg2
 from abc import ABC, abstractmethod
 from enum import StrEnum
 from pydantic import BaseModel
+from typing import Literal
 
 from configuration import BaseDeDonnees, recupere_configuration
+from schemas.retour_utilisatrice import TagPositif, TagNegatif
 
 
 class Donnees(BaseModel):
@@ -20,9 +22,16 @@ class DonneesViolationDetectee(Donnees):
     type_violation: str
 
 
+class DonneesAvisUtilisateurSoumis(Donnees):
+    id_interaction: str
+    type_retour: Literal["positif", "negatif"]
+    tags: list[TagPositif | TagNegatif]
+
+
 class TypeEvenement(StrEnum):
     INTERACTION_CREEE = "INTERACTION_CREEE"
     VIOLATION_DETECTEE = "VIOLATION_DETECTEE"
+    AVIS_UTILISATEUR_SOUMIS = "AVIS_UTILISATEUR_SOUMIS"
 
 
 class AdaptateurJournal(ABC):

@@ -1,8 +1,10 @@
 from fastapi.testclient import TestClient
 
+from adaptateurs.journal import TypeEvenement
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
+    ConstructeurAdaptateurJournal,
     ConstructeurServeur,
 )
 
@@ -163,3 +165,35 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
     adaptateur_base_de_donnees.supprime_retour_utilisatrice.assert_called_once()
     [args, _] = adaptateur_base_de_donnees.supprime_retour_utilisatrice._mock_call_args
     assert args[0] == "id-interaction-inexistant"
+
+
+def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags() -> None:
+    retour = RetourPositif(commentaire="Excellent !", tags=[TagPositif.Complete])
+    adaptateur_base_de_donnees = (
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    serveur = (
+        ConstructeurServeur()
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    payload = {
+        "id_interaction": "id-456",
+        "retour": {
+            "type": "positif",
+            "commentaire": "Excellent !",
+            "tags": ["complete"],
+        },
+    }
+    client.post("/api/retour", json=payload)
+
+    adaptateur_journal.consigne_evenement.assert_called_once()
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["type"] == TypeEvenement.AVIS_UTILISATEUR_SOUMIS
+    assert kwargs["donnees"].id_interaction == "id-456"
+    assert kwargs["donnees"].type_retour == "positif"
+    assert kwargs["donnees"].tags == [TagPositif.Complete]
