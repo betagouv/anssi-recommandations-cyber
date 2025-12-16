@@ -51,6 +51,7 @@ class ServiceAlbert:
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.reclassement_active = configuration_service_albert.reclassement_active
+        self.modele_reclassement = configuration_service_albert.modele_reclassement
         self.prompt_systeme = prompts.prompt_systeme
         self.prompt_reclassement = prompts.prompt_reclassement
         self.client = client
@@ -140,7 +141,7 @@ class ServiceAlbert:
             reclasse_payload = ReclassePayload(
                 prompt=prompt_reclassement_avec_question,
                 input=list(map(lambda p: p.contenu, paragraphes)),
-                model="rerank-small",
+                model=self.modele_reclassement,
             )
             reclassement = self.reclasse(reclasse_payload)
 
