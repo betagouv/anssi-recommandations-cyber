@@ -98,6 +98,9 @@ def route_pose_question(
             id_interaction=adaptateur_chiffrement.hache(id_interaction),
             longueur_question=len(reponse_question.question.strip()),
             longueur_reponse=len(reponse_question.reponse.strip()),
+            longueur_paragraphes=sum(
+                (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
+            ),
         ),
     )
 

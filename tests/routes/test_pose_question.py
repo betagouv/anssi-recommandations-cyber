@@ -198,6 +198,47 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
     assert kwargs["donnees"].longueur_reponse == 32
 
 
+def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_paragraphes_sur_l_interaction_creee(
+    un_constructeur_de_paragraphe,
+):
+    question_posee = " Qui es-tu ? "
+    valeur_hachee = "haché"
+    reponse = ReponseQuestion(
+        reponse=" Je suis Albert, pour vous servir ",
+        paragraphes=[
+            un_constructeur_de_paragraphe.avec_contenu("Contenu A").construis(),
+            un_constructeur_de_paragraphe.avec_contenu("Contenu B").construis(),
+        ],
+        question=question_posee,
+        violation=None,
+    )
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_chiffrement = (
+        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
+    )
+    serveur = (
+        ConstructeurServeur(mode=Mode.PRODUCTION)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.post(
+        "/api/pose_question",
+        json={"question": question_posee},
+    )
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].longueur_paragraphes == 18
+
+
 @pytest.mark.parametrize(
     "violation", [ViolationIdentite(), ViolationMalveillance(), ViolationThematique()]
 )
