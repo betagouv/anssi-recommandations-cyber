@@ -156,11 +156,46 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
     assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
     assert kwargs["donnees"].id_interaction == valeur_hachee
-    assert kwargs["donnees"].model_dump_json()
-
     adaptateur_chiffrement.hache.assert_called_once()
     [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
     assert args[0] == "id-interaction-test"
+
+
+def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_interaction_creee():
+    question_posee = " Qui es-tu ? "
+    valeur_hachee = "haché"
+    reponse = ReponseQuestion(
+        reponse=" Je suis Albert, pour vous servir ",
+        paragraphes=[],
+        question=question_posee,
+        violation=None,
+    )
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_chiffrement = (
+        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
+    )
+    serveur = (
+        ConstructeurServeur(mode=Mode.PRODUCTION)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.post(
+        "/api/pose_question",
+        json={"question": question_posee},
+    )
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].longueur_question == 11
+    assert kwargs["donnees"].longueur_reponse == 32
 
 
 @pytest.mark.parametrize(
