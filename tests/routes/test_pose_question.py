@@ -283,3 +283,25 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     assert adaptateur_journal.consigne_evenement.call_count == 2
     [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
     assert args[0] == "id-interaction-test"
+
+
+def test_route_pose_question_rejette_question_trop_longue() -> None:
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    service_albert = ConstructeurServiceAlbert().construis()
+    serveur = (
+        ConstructeurServeur()
+        .avec_service_albert(service_albert)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    question_trop_longue = "?" * 5001
+
+    reponse = client.post("/api/pose_question", json={"question": question_trop_longue})
+
+    assert reponse.status_code == 422
+    assert "5000" in reponse.json()["detail"][0]["msg"]
+    service_albert.pose_question.assert_not_called()
+
+    serveur.dependency_overrides.clear()
