@@ -15,6 +15,8 @@ class Donnees(BaseModel):
 
 class DonneesInteractionCreee(Donnees):
     id_interaction: str
+    longueur_question: int
+    longueur_reponse: int
 
 
 class DonneesViolationDetectee(Donnees):

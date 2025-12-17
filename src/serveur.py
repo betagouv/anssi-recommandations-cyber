@@ -95,7 +95,9 @@ def route_pose_question(
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.INTERACTION_CREEE,
         donnees=DonneesInteractionCreee(
-            id_interaction=adaptateur_chiffrement.hache(id_interaction)
+            id_interaction=adaptateur_chiffrement.hache(id_interaction),
+            longueur_question=len(reponse_question.question.strip()),
+            longueur_reponse=len(reponse_question.reponse.strip()),
         ),
     )
 
