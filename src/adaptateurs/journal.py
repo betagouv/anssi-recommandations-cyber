@@ -17,6 +17,7 @@ class DonneesInteractionCreee(Donnees):
     id_interaction: str
     longueur_question: int
     longueur_reponse: int
+    longueur_paragraphes: int
 
 
 class DonneesViolationDetectee(Donnees):

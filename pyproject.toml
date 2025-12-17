@@ -29,6 +29,8 @@ dev = [
 
 [tool.mypy]
 files = ["src/**/*.py", "tests/**/*.py"]
+explicit_package_bases = true
+mypy_path = ["src", "tests/mocks"]
 
 [tool.pytest.ini_options]
 pythonpath = [
