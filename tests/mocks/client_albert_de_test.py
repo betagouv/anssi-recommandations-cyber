@@ -122,7 +122,7 @@ class ConstructeurServiceAlbert:
         collection_nom_anssi_lab="",
         collection_id_anssi_lab=42,
         reclassement_active=False,
-        modele_reclassement="reranking-de-test"
+        modele_reclassement="reranking-de-test",
     )
     PROMPT_SYSTEME_ALTERNATIF = (
         "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"

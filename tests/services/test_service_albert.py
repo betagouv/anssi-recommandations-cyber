@@ -17,11 +17,17 @@ from schemas.violations import (
 from services.service_albert import ServiceAlbert, Prompts
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
-    collection_nom_anssi_lab="", collection_id_anssi_lab=42, reclassement_active=False, modele_reclassement="modele-reranking-de-test"
+    collection_nom_anssi_lab="",
+    collection_id_anssi_lab=42,
+    reclassement_active=False,
+    modele_reclassement="modele-reranking-de-test",
 )
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
-    collection_nom_anssi_lab="", collection_id_anssi_lab=42, reclassement_active=True, modele_reclassement="rerank-small"
+    collection_nom_anssi_lab="",
+    collection_id_anssi_lab=42,
+    reclassement_active=True,
+    modele_reclassement="rerank-small",
 )
 
 PROMPT_SYSTEME_ALTERNATIF = (
