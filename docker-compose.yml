@@ -1,4 +1,16 @@
 services:
+  mqc-frontend:
+    build:
+      context: ui
+    command: bash -c "pnpm run dev"
+    networks:
+      - mqc-network
+    working_dir: /usr/src/app
+    volumes:
+      - ./ui:/usr/src/app
+      - /usr/src/app/node_modules # On ne monte pas le node_modules de l’hôte
+      - dist-front:/usr/src/app/dist
+
   mqc-backend:
     build:
       context: .
@@ -13,18 +25,8 @@ services:
       - '${PORT}:${PORT}'
     networks:
       - mqc-network
-
-  mqc-frontend:
-    image: docker.io/node:${NODE_VERSION:-24}
-    env_file:
-      - .env
-    command: bash -c "npm ci && npm run dev"
-    networks:
-      - mqc-network
-    working_dir: /app
-    volumes:
-      - ./ui:/app
-      - dist-front:/app/dist
+    depends_on:
+      - mqc-frontend
 
   mqc-db:
     image: docker.io/postgres:15
