@@ -12,7 +12,8 @@
     "lint:check": "eslint .",
     "lint:fix": "eslint --fix .",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "preinstall": "npx only-allow@1.2.2 pnpm"
   },
   "devDependencies": {
     "@eslint/compat": "~1.2.5",
