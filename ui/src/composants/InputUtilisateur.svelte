@@ -4,6 +4,7 @@
   import { storeConversation } from "../stores/conversation.store";
   import { publieMessageUtilisateurAPI } from "../client.api";
   import { onMount, tick } from "svelte";
+  import {ValidateurQuestionUtilisateur} from "./ValidateurQuestionUtilisateur";
 
   let { urlAPI }: { urlAPI: string } = $props();
 
@@ -11,6 +12,8 @@
   let promptSysteme: string = $state("");
   let afficheInputPromptSysteme = $state(false);
   let elementTextarea: HTMLTextAreaElement | undefined = $state();
+  let erreurValidation: string = $state("");
+  const validateurQuestionUtilisateur = new ValidateurQuestionUtilisateur();
 
   onMount(() => {
     recuperePromptSysteme();
@@ -23,26 +26,35 @@
   }
 
   async function soumetQuestion(e: Event) {
-    storeAffichage.estEnAttenteDeReponse(true);
     e.preventDefault();
-    if(!question) return;
+      if (validateurQuestionUtilisateur.estValide(question)) {
+          erreurValidation = "";
+          storeAffichage.estEnAttenteDeReponse(true);
+          storeConversation.ajouteMessageUtilisateur(question);
+          await storeAffichage.scrollVersDernierMessage();
 
-    storeConversation.ajouteMessageUtilisateur(question);
-    await storeAffichage.scrollVersDernierMessage();
+          const message = afficheInputPromptSysteme
+              ? {question, prompt: promptSysteme}
+              : {question};
 
-    const message = afficheInputPromptSysteme
-      ? { question, prompt: promptSysteme }
-      : { question };
+          question = "";
+          await tick();
+          redimensionneZoneDeTexte();
 
-    question = "";
-    await tick();
-    redimensionneZoneDeTexte();
+          const {
+              reponse,
+              paragraphes,
+              interaction_id
+          } = await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
+          await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
 
-    const { reponse, paragraphes, interaction_id } = await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
-    await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
+          storeAffichage.estEnAttenteDeReponse(false);
+          await storeAffichage.scrollVersDernierMessage();
+      } else {
+          erreurValidation = validateurQuestionUtilisateur.valide(question);
+      }
 
-    storeAffichage.estEnAttenteDeReponse(false);
-    await storeAffichage.scrollVersDernierMessage();
+
   }
 
   const KONAMI_CODE = [ "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", ];
@@ -67,6 +79,11 @@
     elementTextarea.style.height = 'auto';
     elementTextarea.style.height = `${Math.min(elementTextarea.scrollHeight, 96)}px`;
   }
+  
+  const gereChangementTexte = () => {
+    redimensionneZoneDeTexte();
+    erreurValidation = validateurQuestionUtilisateur.estValide(question) ? "" : validateurQuestionUtilisateur.valide(question);
+  }
 
   const gereTouchePresseeZoneDeTexte = (e: KeyboardEvent) => {
     if (e.code === "Enter" && !e.shiftKey) {
@@ -80,20 +97,24 @@
     {#if afficheInputPromptSysteme}
       <InputPromptSysteme bind:prompt={promptSysteme} />
     {/if}
-  <div>
+  <div class={erreurValidation ==="" ? "" : "question-erreur"}>
     <span class="information-donnees-personnelles">Ne partagez aucune donnée personnelle ni information sensible sur votre organisation.</span>
     <textarea
       placeholder="Posez votre question cyber"
       bind:value={question}
       bind:this={elementTextarea}
-      oninput={redimensionneZoneDeTexte}
+      oninput={gereChangementTexte}
       onkeydown={gereTouchePresseeZoneDeTexte}
       rows="1"
+      class:erreur={erreurValidation !== ''}
     ></textarea>
-    <button type="submit" class:actif={question !== ''}>
+    <button type="submit" class:actif={question !== '' && erreurValidation === ''}>
       <img src="./icons/fleche-envoi-message.svg" alt="" />
     </button>
   </div>
+  {#if erreurValidation}
+    <div class="message-erreur">{erreurValidation}</div>
+  {/if}
 </form>
 
 <style lang="scss">
@@ -102,9 +123,6 @@
     max-width: 840px;
     width: calc(100% - 32px);
     bottom: 24px;
-    border-radius: 16px;
-    border: 1px solid #DDDDDD;
-    background: #F6F6F6;
     padding: 12px;
     box-sizing: border-box;
     margin: 0 16px;
@@ -146,6 +164,21 @@
       background: white;
     }
 
+    .question-erreur::before {
+        background-image: linear-gradient(0deg, #CE0500, #CE0500);
+        content: "";
+        display: block;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        right: -0.75rem;
+        bottom: 0;
+        left: -0.75rem;
+        background-repeat: no-repeat;
+        background-position: 0 0;
+        background-size: 0.125rem 100%;
+    }
+
     textarea {
       width: 100%;
       box-sizing: border-box;
@@ -156,7 +189,10 @@
       overflow: hidden;
       resize: none;
       border: none;
-      background: none;
+      padding: 0.5rem 1rem;
+      min-height: 28px;
+      background-color: #EEE;
+      border-radius: 8px 8px 0 0;
 
       &::placeholder {
         color: #666666;
@@ -165,6 +201,10 @@
       &:focus-visible {
         outline: none;
       }
+    }
+
+    textarea.erreur {
+      box-shadow: inset 0 -2px 0 0 #CE0500;
     }
 
     button {
@@ -189,5 +229,12 @@
         }
       }
     }
+  }
+
+  .message-erreur {
+    color: #CE0500;
+    font-size: 0.875rem;
+    margin-top: 8px;
+    text-align: center;
   }
 </style>

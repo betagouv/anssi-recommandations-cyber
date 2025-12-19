@@ -29,16 +29,20 @@ jobs:
         run: npm install -g "$(jq -r '.packageManager' package.json)" && pnpm install
         working-directory: ui
 
+      - name: Exécute les tests
+        run: pnpm run test
+        working-directory: ui
+
       - name: Contrôler les types
-        run: npm run check
+        run: pnpm run check
         working-directory: ui
 
       - name: Contrôler le linting
-        run: npm run lint:check
+        run: pnpm run lint:check
         working-directory: ui
 
       - name: Contrôler la mise en forme
-        run: npm run format:check
+        run: pnpm run format:check
         working-directory: ui
 
   build:

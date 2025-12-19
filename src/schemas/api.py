@@ -1,10 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from schemas.albert import Paragraphe
 
 
 class QuestionRequete(BaseModel):
-    question: str
+    question: str = Field(
+        max_length=5000,
+        description="Votre question d'une longueur maximale de 5000 caractères.",
+    )
 
 
 class QuestionRequeteAvecPrompt(QuestionRequete):
