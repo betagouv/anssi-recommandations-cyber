@@ -8,9 +8,13 @@ from serveur_de_test import (
 )
 
 
-def test_route_recherche_repond_correctement() -> None:
+def test_route_recherche_repond_correctement(adaptateur_chiffrement) -> None:
     service_albert = ConstructeurServiceAlbert().construis()
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construis()
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
     client: TestClient = TestClient(serveur)
 
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -19,14 +23,18 @@ def test_route_recherche_repond_correctement() -> None:
     service_albert.recherche_paragraphes.assert_called_once()
 
 
-def test_route_recherche_donnees_correctes() -> None:
+def test_route_recherche_donnees_correctes(adaptateur_chiffrement) -> None:
     paragraphes: list[Paragraphe] = []
     service_albert = (
         ConstructeurServiceAlbert()
         .qui_retourne_les_paragraphes(paragraphes)
         .construis()
     )
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construis()
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
     client: TestClient = TestClient(serveur)
 
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})
@@ -37,7 +45,9 @@ def test_route_recherche_donnees_correctes() -> None:
     service_albert.recherche_paragraphes.assert_called_once()
 
 
-def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
+def test_route_recherche_retourne_la_bonne_structure_d_objet(
+    adaptateur_chiffrement,
+) -> None:
     paragraphes = [
         Paragraphe(
             contenu="Contenu du paragraphe 1",
@@ -53,7 +63,11 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet() -> None:
         .qui_retourne_les_paragraphes(paragraphes)
         .construis()
     )
-    serveur = ConstructeurServeur().avec_service_albert(service_albert).construis()
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
 
     client: TestClient = TestClient(serveur)
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})

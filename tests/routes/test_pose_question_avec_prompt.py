@@ -11,7 +11,9 @@ from serveur_de_test import (
 )
 
 
-def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() -> None:
+def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
+    adaptateur_chiffrement,
+) -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
@@ -32,7 +34,9 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement() 
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
+        ConstructeurServeur(
+            mode=Mode.DEVELOPPEMENT, adaptateur_chiffrement=adaptateur_chiffrement
+        )
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()

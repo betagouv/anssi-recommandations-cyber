@@ -12,6 +12,10 @@ class AdaptateurChiffrement(ABC):
     def hache(self, valeur: str) -> str:
         pass
 
+    @abstractmethod
+    def recupere_nonce(self) -> str:
+        pass
+
 
 class AdaptateurChiffrementStandard(AdaptateurChiffrement):
     def hache(self, valeur: str) -> str:

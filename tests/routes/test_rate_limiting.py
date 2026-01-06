@@ -38,10 +38,12 @@ routes_get = list(
 @pytest.mark.parametrize("route", routes_get)
 def test_les_routes_limitent_le_nombre_de_requetes_quand_un_utilisateur_fait_trop_de_requetes(
     route,
+    adaptateur_chiffrement,
 ) -> None:
     serveur = ConstructeurServeur(
         max_requetes_par_minute=1,
         mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=adaptateur_chiffrement,
     ).construis()
     client: TestClient = TestClient(serveur)
 
@@ -56,10 +58,12 @@ def test_les_routes_limitent_le_nombre_de_requetes_quand_un_utilisateur_fait_tro
 @pytest.mark.parametrize("route", routes_get)
 def test_les_routes_ne_limitent_PAS_le_nombre_de_requetes_quand_elles_viennent_d_utilisateurs_differents(
     route,
+    adaptateur_chiffrement,
 ) -> None:
     serveur = ConstructeurServeur(
         max_requetes_par_minute=1,
         mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=adaptateur_chiffrement,
     ).construis()
     client: TestClient = TestClient(serveur)
 

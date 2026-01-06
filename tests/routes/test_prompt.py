@@ -9,14 +9,18 @@ from serveur_de_test import (
 )
 
 
-def test_route_prompt_retourne_le_prompt_systeme_en_developpement() -> None:
+def test_route_prompt_retourne_le_prompt_systeme_en_developpement(
+    adaptateur_chiffrement,
+) -> None:
     service_albert = (
         ConstructeurServiceAlbert()
         .avec_prompt_systeme("Tu es une fougère.")
         .construis()
     )
     serveur = (
-        ConstructeurServeur(mode=Mode.DEVELOPPEMENT)
+        ConstructeurServeur(
+            mode=Mode.DEVELOPPEMENT, adaptateur_chiffrement=adaptateur_chiffrement
+        )
         .avec_service_albert(service_albert)
         .construis()
     )

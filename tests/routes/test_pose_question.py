@@ -21,7 +21,7 @@ from serveur_de_test import (
 from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
 
 
-def test_route_pose_question_repond_correctement() -> None:
+def test_route_pose_question_repond_correctement(adaptateur_chiffrement) -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
@@ -42,7 +42,7 @@ def test_route_pose_question_repond_correctement() -> None:
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
@@ -57,7 +57,7 @@ def test_route_pose_question_repond_correctement() -> None:
     serveur.dependency_overrides.clear()
 
 
-def test_route_pose_question_retourne_donnees_correctes() -> None:
+def test_route_pose_question_retourne_donnees_correctes(adaptateur_chiffrement) -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
@@ -85,7 +85,7 @@ def test_route_pose_question_retourne_donnees_correctes() -> None:
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
@@ -138,7 +138,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur(mode=mode)
+        ConstructeurServeur(mode=mode, adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
@@ -179,7 +179,9 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur(mode=Mode.PRODUCTION)
+        ConstructeurServeur(
+            mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
+        )
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
@@ -221,7 +223,9 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur(mode=Mode.PRODUCTION)
+        ConstructeurServeur(
+            mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
+        )
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
@@ -259,7 +263,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
         .avec_adaptateur_journal(adaptateur_journal)
@@ -285,11 +289,13 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     assert args[0] == "id-interaction-test"
 
 
-def test_route_pose_question_rejette_question_trop_longue() -> None:
+def test_route_pose_question_rejette_question_trop_longue(
+    adaptateur_chiffrement,
+) -> None:
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     service_albert = ConstructeurServiceAlbert().construis()
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_service_albert(service_albert)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()

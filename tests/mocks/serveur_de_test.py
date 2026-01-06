@@ -1,5 +1,6 @@
 from typing import Callable, Dict, Optional
 
+from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
 from serveur import fabrique_serveur
 from configuration import Mode
 from unittest.mock import Mock
@@ -19,6 +20,11 @@ from adaptateurs.chiffrement import (
     fabrique_adaptateur_chiffrement,
 )
 from adaptateurs import AdaptateurBaseDeDonnees
+
+NONCE = "un-nonce"
+adaptateur_chiffrement = (
+    ConstructeurAdaptateurChiffrement().qui_retourne_nonce(NONCE).construis()
+)
 
 
 class ConstructeurAdaptateurBaseDeDonnees:
@@ -69,7 +75,7 @@ class ConstructeurServiceAlbert:
 class ConstructeurServeur:
     def __init__(
         self,
-        adaptateur_chiffrement: Optional[AdaptateurChiffrement] = None,
+        adaptateur_chiffrement: AdaptateurChiffrement,
         max_requetes_par_minute: int = 600,
         mode: Mode = Mode.PRODUCTION,
     ):
@@ -79,6 +85,9 @@ class ConstructeurServeur:
         self._max_requetes_par_minute = max_requetes_par_minute
         self._mode = mode
         self._dependances: Dict[Callable, Callable] = {}
+        self._dependances[fabrique_adaptateur_chiffrement] = (
+            lambda: adaptateur_chiffrement
+        )
 
     def avec_service_albert(self, service_albert: ServiceAlbert):
         self._dependances[fabrique_service_albert] = lambda: service_albert
@@ -105,12 +114,10 @@ class ConstructeurServeur:
         return self
 
     def construis(self):
-        self._serveur = fabrique_serveur(
-            self._max_requetes_par_minute, self._mode, self._adaptateur_chiffrement
-        )
+        self._serveur = fabrique_serveur(self._max_requetes_par_minute, self._mode)
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
         return self._serveur
 
 
-serveur = ConstructeurServeur().construis()
+serveur = ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement).construis()
