@@ -9,7 +9,7 @@ from serveur_de_test import (
 )
 
 
-def test_route_retour_avec_mock_retourne_succes_200() -> None:
+def test_route_retour_avec_mock_retourne_succes_200(adaptateur_chiffrement) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
@@ -18,7 +18,7 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
     )
@@ -38,7 +38,9 @@ def test_route_retour_avec_mock_retourne_succes_200() -> None:
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
-def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
+def test_route_retour_avec_mock_retourne_donnees_attendues(
+    adaptateur_chiffrement,
+) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
@@ -47,7 +49,7 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
     )
@@ -70,12 +72,14 @@ def test_route_retour_avec_mock_retourne_donnees_attendues() -> None:
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
-def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
+def test_route_retour_avec_interaction_inexistante_retourne_404(
+    adaptateur_chiffrement,
+) -> None:
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(None).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
     )
@@ -96,10 +100,12 @@ def test_route_retour_avec_interaction_inexistante_retourne_404() -> None:
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
-def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
+def test_route_retour_avec_payload_invalide_rejette_la_requete(
+    adaptateur_chiffrement,
+) -> None:
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
     )
@@ -118,7 +124,9 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete() -> None:
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_not_called()
 
 
-def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant() -> None:
+def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
+    adaptateur_chiffrement,
+) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
@@ -127,7 +135,7 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant() -> 
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
     )
@@ -142,9 +150,9 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant() -> 
     assert args[0] == "id-interaction-test"
 
 
-def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_erreur() -> (
-    None
-):
+def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_erreur(
+    adaptateur_chiffrement,
+) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
@@ -153,7 +161,7 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .construis()
     )
@@ -167,14 +175,16 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
     assert args[0] == "id-interaction-inexistant"
 
 
-def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags() -> None:
+def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
+    adaptateur_chiffrement,
+) -> None:
     retour = RetourPositif(commentaire="Excellent !", tags=[TagPositif.Complete])
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_journal(adaptateur_journal)
         .construis()
@@ -200,14 +210,16 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags() -> None
     assert kwargs["donnees"].model_dump_json()
 
 
-def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime() -> None:
+def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
+    adaptateur_chiffrement,
+) -> None:
     retour = RetourPositif(commentaire="Très utile !")
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     serveur = (
-        ConstructeurServeur()
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
         .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
         .avec_adaptateur_journal(adaptateur_journal)
         .construis()

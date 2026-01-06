@@ -171,7 +171,6 @@ def supprime_retour(
 def fabrique_serveur(
     max_requetes_par_minute: int,
     mode: Mode,
-    adaptateur_chiffrement: AdaptateurChiffrement,
 ) -> FastAPI:
     serveur = FastAPI()
 
@@ -198,7 +197,11 @@ def fabrique_serveur(
         serveur.mount(f"/{static}", StaticFiles(directory=f"ui/dist/{static}"))
 
     @serveur.get("/")
-    def index():
+    def index(
+        adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+            fabrique_adaptateur_chiffrement
+        ),
+    ):
         nonce = adaptateur_chiffrement.recupere_nonce()
         index = (
             Path("ui/dist/index.html")

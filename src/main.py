@@ -9,9 +9,7 @@ from serveur import fabrique_serveur
 
 configuration = recupere_configuration()
 adaptateur_chiffrement = fabrique_adaptateur_chiffrement()
-serveur = fabrique_serveur(
-    configuration.max_requetes_par_minute, configuration.mode, adaptateur_chiffrement
-)
+serveur = fabrique_serveur(configuration.max_requetes_par_minute, configuration.mode)
 fabrique_fournisseur_de_chiffrement(configuration)
 
 if __name__ == "__main__":
