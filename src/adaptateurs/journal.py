@@ -7,6 +7,7 @@ from typing import Literal
 
 from configuration import BaseDeDonnees, recupere_configuration
 from schemas.retour_utilisatrice import TagPositif, TagNegatif
+from schemas.type_utilisateur import TypeUtilisateur
 
 
 class Donnees(BaseModel):
@@ -18,6 +19,7 @@ class DonneesInteractionCreee(Donnees):
     longueur_question: int
     longueur_reponse: int
     longueur_paragraphes: int
+    type_utilisateur: TypeUtilisateur
 
 
 class DonneesViolationDetectee(Donnees):

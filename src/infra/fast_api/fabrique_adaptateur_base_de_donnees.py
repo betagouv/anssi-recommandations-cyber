@@ -1,7 +1,10 @@
 from fastapi import Depends
 
 from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesPostgres
-from adaptateurs.chiffrement import AdaptateurChiffrement, fabrique_adaptateur_chiffrement
+from adaptateurs.chiffrement import (
+    AdaptateurChiffrement,
+    fabrique_adaptateur_chiffrement,
+)
 from configuration import recupere_configuration
 
 
