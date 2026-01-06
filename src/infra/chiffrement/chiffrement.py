@@ -96,10 +96,6 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
         return dictionnaire_chiffre
 
 
-class FournisseurDeServiceDeChiffrement:
-    service: ServiceDeChiffrement
-
-
 class ServiceDeChiffrementAES(ServiceDeChiffrement):
     def __init__(self, clef: bytes):
         super().__init__()
@@ -143,18 +139,12 @@ class ServiceDeChiffrementEnClair(ServiceDeChiffrement):
         return f"{contenu}_chiffre"  # type: ignore
 
 
-def fabrique_fournisseur_de_chiffrement(
+def fabrique_service_de_chiffrement(
     configuration: Configuration,
 ) -> ServiceDeChiffrement:
     clef_chiffrement = configuration.chiffrement.clef_chiffrement
     if clef_chiffrement is not None:
-        service_chiffrement_aes = ServiceDeChiffrementAES(
-            clef_chiffrement.encode("utf-8")
-        )
-        FournisseurDeServiceDeChiffrement.service = service_chiffrement_aes
-        return service_chiffrement_aes
+        return ServiceDeChiffrementAES(clef_chiffrement.encode("utf-8"))
 
     else:
-        service_chiffrement_en_clair = ServiceDeChiffrementEnClair()
-        FournisseurDeServiceDeChiffrement.service = service_chiffrement_en_clair
-        return service_chiffrement_en_clair
+        return ServiceDeChiffrementEnClair()

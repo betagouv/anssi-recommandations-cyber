@@ -3,7 +3,7 @@ import secrets
 from abc import ABC, abstractmethod
 from configuration import Chiffrement, recupere_configuration
 from infra.chiffrement.chiffrement import (
-    fabrique_fournisseur_de_chiffrement,
+    fabrique_service_de_chiffrement,
     ServiceDeChiffrement,
 )
 
@@ -48,7 +48,5 @@ class AdaptateurChiffrementStandard(AdaptateurChiffrement):
 
 def fabrique_adaptateur_chiffrement() -> AdaptateurChiffrement:
     configuration = recupere_configuration().chiffrement
-    service_de_chiffrement = fabrique_fournisseur_de_chiffrement(
-        recupere_configuration()
-    )
+    service_de_chiffrement = fabrique_service_de_chiffrement(recupere_configuration())
     return AdaptateurChiffrementStandard(configuration, service_de_chiffrement)
