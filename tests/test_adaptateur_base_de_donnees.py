@@ -6,6 +6,7 @@ from adaptateurs import (
     AdaptateurBaseDeDonneesEnMemoire,
     AdaptateurBaseDeDonneesPostgres,
 )
+from infra.chiffrement.chiffrement import FournisseurDeServiceDeChiffrement
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
 from schemas.albert import ReponseQuestion, Paragraphe
 from configuration import recupere_configuration_postgres
@@ -37,7 +38,9 @@ def cree_adaptateur_postgres():
             cursor.execute(f"CREATE DATABASE {nom_bdd_test}")
     conn_admin.close()
 
-    adaptateur = AdaptateurBaseDeDonneesPostgres(nom_bdd_test)
+    adaptateur = AdaptateurBaseDeDonneesPostgres(
+        nom_bdd_test, FournisseurDeServiceDeChiffrement.service
+    )
 
     yield adaptateur
 
