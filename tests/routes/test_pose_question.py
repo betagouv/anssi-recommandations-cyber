@@ -11,6 +11,7 @@ from schemas.violations import (
     ViolationThematique,
 )
 from configuration import Mode
+from schemas.type_utilisateur import TypeUtilisateur
 
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
@@ -18,7 +19,10 @@ from serveur_de_test import (
     ConstructeurServiceAlbert,
     ConstructeurServeur,
 )
-from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
+from adaptateur_chiffrement import (
+    ConstructeurAdaptateurChiffrement,
+    ConstructeurAdaptateurChiffrementDeTest,
+)
 
 
 def test_route_pose_question_repond_correctement(adaptateur_chiffrement) -> None:
@@ -311,3 +315,97 @@ def test_route_pose_question_rejette_question_trop_longue(
     service_albert.pose_question.assert_not_called()
 
     serveur.dependency_overrides.clear()
+
+
+@pytest.mark.parametrize(
+    "type_utilisateur",
+    [TypeUtilisateur.ANSSI, TypeUtilisateur.LAMBDA, TypeUtilisateur.EXPERT_SSI],
+)
+def test_route_pose_question_identifie_le_type_d_utilisateur(type_utilisateur):
+    reponse = ReponseQuestion(
+        reponse="ok", paragraphes=[], question="Q?", violation=None
+    )
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_chiffrement = ConstructeurAdaptateurChiffrementDeTest().qui_dechiffre(
+        type_utilisateur
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
+    )
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.post(
+        "/api/pose_question?type_utilisateur=ABCD", json={"question": "Une question"}
+    )
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].type_utilisateur == type_utilisateur
+
+
+def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur():
+    reponse = ReponseQuestion(
+        reponse="ok", paragraphes=[], question="Q?", violation=None
+    )
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_chiffrement = ConstructeurAdaptateurChiffrementDeTest().qui_dechiffre(
+        "une chaine inconnue"
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
+    )
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.post(
+        "/api/pose_question?type_utilisateur=ABCD", json={"question": "Une question"}
+    )
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
+
+
+def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le_dechiffrement_echoue():
+    reponse = ReponseQuestion(
+        reponse="ok", paragraphes=[], question="Q?", violation=None
+    )
+    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_chiffrement = (
+        ConstructeurAdaptateurChiffrementDeTest().qui_leve_une_erreur_au_dechiffrement()
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    service_albert = (
+        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
+    )
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .avec_service_albert(service_albert)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.post(
+        "/api/pose_question?type_utilisateur=ABCD", json={"question": "Une question"}
+    )
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.INCONNU

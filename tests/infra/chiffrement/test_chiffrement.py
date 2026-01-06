@@ -3,15 +3,8 @@ from unittest.mock import patch
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
     CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
 )
-from infra.chiffrement.chiffrement import ServiceDeChiffrementAES, ServiceDeChiffrement
-
-
-class ServiceDeChiffrementDeTest(ServiceDeChiffrement):
-    def chiffre(self, contenu: str) -> str:
-        return f"{contenu}_chiffre"
-
-    def dechiffre(self, contenu_chiffre: str) -> str:
-        return contenu_chiffre.removesuffix("_chiffre")
+from infra.chiffrement.chiffrement import ServiceDeChiffrementAES
+from service_chiffrement_de_test import ServiceDeChiffrementDeTest
 
 
 def test_chiffre_une_chaine_de_caractere_avec_aes():

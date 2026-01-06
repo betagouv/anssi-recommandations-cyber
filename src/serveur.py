@@ -10,7 +10,9 @@ from slowapi.util import get_remote_address
 from typing import Dict, Optional
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from adaptateurs import AdaptateurBaseDeDonnees
-from infra.fast_api.fabrique_adaptateur_base_de_donnees import fabrique_adaptateur_base_de_donnees
+from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
+    fabrique_adaptateur_base_de_donnees,
+)
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
     fabrique_adaptateur_chiffrement,
@@ -33,6 +35,7 @@ from schemas.api import (
 )
 from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
 from schemas.retour_utilisatrice import RetourUtilisatrice
+from schemas.type_utilisateur import TypeUtilisateur
 from services.fabrique_service_albert import fabrique_service_albert
 from services.service_albert import ServiceAlbert
 
@@ -86,6 +89,7 @@ def route_pose_question(
         fabrique_adaptateur_base_de_donnees
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
+    type_utilisateur: str | None = None,
 ) -> ReponseQuestion:
     reponse_question = service_albert.pose_question(request.question)
     id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
@@ -98,6 +102,9 @@ def route_pose_question(
             longueur_reponse=len(reponse_question.reponse.strip()),
             longueur_paragraphes=sum(
                 (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
+            ),
+            type_utilisateur=extrais_type_utilisateur(
+                adaptateur_chiffrement, type_utilisateur
             ),
         ),
     )
@@ -114,6 +121,22 @@ def route_pose_question(
     return ReponseQuestion(
         **reponse_question.model_dump(), interaction_id=id_interaction
     )
+
+
+def extrais_type_utilisateur(
+    adaptateur_chiffrement: AdaptateurChiffrement, type_utilisateur: str | None
+) -> TypeUtilisateur:
+    try:
+        type_utilisateur = (
+            TypeUtilisateur(adaptateur_chiffrement.dechiffre(type_utilisateur))
+            if type_utilisateur
+            else TypeUtilisateur.INCONNU
+        )
+        if type_utilisateur not in TypeUtilisateur:
+            type_utilisateur = TypeUtilisateur.INCONNU
+        return type_utilisateur
+    except Exception:
+        return TypeUtilisateur.INCONNU
 
 
 @api.post("/retour")
