@@ -1,27 +1,25 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from adaptateur_chiffrement import (
+    AdaptateurChiffrementDeTest,
+)
 from adaptateurs.journal import (
     TypeEvenement,
 )
+from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
+from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationIdentite,
     ViolationMalveillance,
     ViolationThematique,
 )
-from configuration import Mode
-from schemas.type_utilisateur import TypeUtilisateur
-
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurAdaptateurJournal,
     ConstructeurServiceAlbert,
     ConstructeurServeur,
-)
-from adaptateur_chiffrement import (
-    ConstructeurAdaptateurChiffrement,
-    ConstructeurAdaptateurChiffrementDeTest,
 )
 
 
@@ -134,9 +132,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
-    )
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
@@ -160,9 +156,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
     assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
     assert kwargs["donnees"].id_interaction == valeur_hachee
-    adaptateur_chiffrement.hache.assert_called_once()
-    [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
-    assert args[0] == "id-interaction-test"
+    assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
 
 
 def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_interaction_creee():
@@ -175,9 +169,7 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
         violation=None,
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
-    )
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
@@ -219,9 +211,7 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
         violation=None,
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
-    )
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
@@ -259,9 +249,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrement().qui_hache(valeur_hachee).construis()
-    )
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
@@ -289,8 +277,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     assert kwargs["donnees"].model_dump_json()
 
     assert adaptateur_journal.consigne_evenement.call_count == 2
-    [args, kwargs] = adaptateur_chiffrement.hache._mock_call_args
-    assert args[0] == "id-interaction-test"
+    assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
 
 
 def test_route_pose_question_rejette_question_trop_longue(
@@ -326,7 +313,7 @@ def test_route_pose_question_identifie_le_type_d_utilisateur(type_utilisateur):
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = ConstructeurAdaptateurChiffrementDeTest().qui_dechiffre(
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         type_utilisateur
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
@@ -356,7 +343,7 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur():
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = ConstructeurAdaptateurChiffrementDeTest().qui_dechiffre(
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         "une chaine inconnue"
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
@@ -387,7 +374,7 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     adaptateur_chiffrement = (
-        ConstructeurAdaptateurChiffrementDeTest().qui_leve_une_erreur_au_dechiffrement()
+        AdaptateurChiffrementDeTest().qui_leve_une_erreur_au_dechiffrement()
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (

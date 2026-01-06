@@ -1,67 +1,54 @@
-from unittest.mock import Mock
-
-from adaptateurs.chiffrement import AdaptateurChiffrement, AdaptateurChiffrementStandard
+from adaptateurs.chiffrement import AdaptateurChiffrement
 from configuration import Chiffrement
 from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
 from schemas.type_utilisateur import TypeUtilisateur
 from service_chiffrement_de_test import ServiceDeChiffrementDeTest
 
 
-class ConstructeurAdaptateurChiffrement:
-    def __init__(self):
-        self._mock = Mock()
-        self._mock.service_de_chiffrement = ServiceDeChiffrementEnClair()
-
-    def qui_hache(self, hache: str):
-        self._mock.hache.return_value = hache
-        return self
-
-    def qui_retourne_nonce(self, nonce: str):
-        self._mock.recupere_nonce.return_value = nonce
-        return self
-
-    def qui_dechiffre(self, type_utilisateur: TypeUtilisateur):
-        self._mock.dechiffre.return_value = type_utilisateur
-        return self
-
-    def construis(self):
-        return self._mock
-
-
 configuration_chiffrement = Chiffrement(clef_chiffrement="", sel_de_hachage="")
 
 
-class ConstructeurAdaptateurChiffrementDeTest(AdaptateurChiffrement):
+class AdaptateurChiffrementDeTest(AdaptateurChiffrement):
     def __init__(self):
         super().__init__(
             configuration=configuration_chiffrement,
             service_de_chiffrement=ServiceDeChiffrementEnClair(),
         )
+        self._nonce = None
+        self._hache = None
+        self.valeur_recue_pour_le_hache = None
 
     def hache(self, valeur: str) -> str:
-        return valeur
+        self.valeur_recue_pour_le_hache = valeur
+        return self._hache if self._hache is not None else valeur
 
     def recupere_nonce(self) -> str:
-        return "nonce"
+        return self._nonce
 
     def chiffre(self, contenu: str) -> str:
         return contenu
 
     def dechiffre(self, contenu_chiffre: str) -> str:
-        return contenu_chiffre
+        return self.service_de_chiffrement.dechiffre(contenu_chiffre)
+
+    def qui_retourne_nonce(self, nonce: str):
+        self._nonce = nonce
+        return self
+
+    def qui_hache(self, hache: str):
+        self._hache = hache
+        return self
 
     def qui_dechiffre(
         self, type_utilisateur: TypeUtilisateur | str
     ) -> AdaptateurChiffrement:
-        return AdaptateurChiffrementStandard(
-            configuration=configuration_chiffrement,
-            service_de_chiffrement=ServiceDeChiffrementDeTest().qui_dechiffre(
-                type_utilisateur
-            ),
+        self.service_de_chiffrement = ServiceDeChiffrementDeTest().qui_dechiffre(
+            type_utilisateur
         )
+        return self
 
     def qui_leve_une_erreur_au_dechiffrement(self) -> AdaptateurChiffrement:
-        return AdaptateurChiffrementStandard(
-            configuration=configuration_chiffrement,
-            service_de_chiffrement=ServiceDeChiffrementDeTest().qui_leve_une_erreur_au_dechiffrement(),
+        self.service_de_chiffrement = (
+            ServiceDeChiffrementDeTest().qui_leve_une_erreur_au_dechiffrement()
         )
+        return self
