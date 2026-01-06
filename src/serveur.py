@@ -11,7 +11,7 @@ from typing import Dict, Optional
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
-    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
+    fabrique_adaptateur_base_de_donnees,
 )
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
@@ -52,7 +52,7 @@ def route_pose_question_avec_prompt(
     request: QuestionRequeteAvecPrompt,
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+        fabrique_adaptateur_base_de_donnees
     ),
 ) -> ReponseQuestion:
     reponse_question = service_albert.pose_question(request.question, request.prompt)
@@ -82,7 +82,7 @@ def route_pose_question(
     request: QuestionRequete,
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+        fabrique_adaptateur_base_de_donnees
     ),
     adaptateur_chiffrement: AdaptateurChiffrement = Depends(
         fabrique_adaptateur_chiffrement
@@ -122,7 +122,7 @@ def route_pose_question(
 def ajoute_retour(
     body: DonneesCreationRetourUtilisateur,
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+        fabrique_adaptateur_base_de_donnees
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> RetourUtilisatrice:
@@ -149,7 +149,7 @@ def ajoute_retour(
 def supprime_retour(
     id_interaction: str,
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees_retour_utilisatrice
+        fabrique_adaptateur_base_de_donnees
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> Optional[str]:

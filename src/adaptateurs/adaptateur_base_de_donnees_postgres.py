@@ -135,7 +135,5 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             self._connexion.close()
 
 
-def fabrique_adaptateur_base_de_donnees_retour_utilisatrice() -> (
-    AdaptateurBaseDeDonnees
-):
+def fabrique_adaptateur_base_de_donnees() -> AdaptateurBaseDeDonnees:
     return AdaptateurBaseDeDonneesPostgres(recupere_configuration().base_de_donnees.nom)
