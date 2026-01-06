@@ -10,9 +10,7 @@ from slowapi.util import get_remote_address
 from typing import Dict, Optional
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from adaptateurs import AdaptateurBaseDeDonnees
-from adaptateurs.adaptateur_base_de_donnees_postgres import (
-    fabrique_adaptateur_base_de_donnees,
-)
+from infra.fast_api.fabrique_adaptateur_base_de_donnees import fabrique_adaptateur_base_de_donnees
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
     fabrique_adaptateur_chiffrement,
@@ -81,11 +79,11 @@ def route_recherche(
 def route_pose_question(
     request: QuestionRequete,
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees
-    ),
     adaptateur_chiffrement: AdaptateurChiffrement = Depends(
         fabrique_adaptateur_chiffrement
+    ),
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ) -> ReponseQuestion:

@@ -1,9 +1,12 @@
 from unittest.mock import Mock
+from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
 
 
 class ConstructeurAdaptateurChiffrement:
     def __init__(self):
         self._mock = Mock()
+        service_chiffrement_en_clair = ServiceDeChiffrementEnClair()
+        self._mock.service_de_chiffrement = service_chiffrement_en_clair
 
     def qui_hache(self, hache: str):
         self._mock.hache.return_value = hache

@@ -3,11 +3,13 @@ import json
 import psycopg2
 import psycopg2.extras
 from typing import Optional, Any
-from infra.chiffrement.chiffrement import FournisseurDeServiceDeChiffrement
+from infra.chiffrement.chiffrement import (
+    ServiceDeChiffrement,
+)
 from infra.postgres.encodeurs_json import EncodeurDeDate
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
 from schemas.albert import ReponseQuestion
-from configuration import recupere_configuration_postgres, recupere_configuration
+from configuration import recupere_configuration_postgres
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
@@ -21,7 +23,9 @@ CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
 
 
 class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
-    def __init__(self, nom_base_donnees: str) -> None:
+    def __init__(
+        self, nom_base_donnees: str, service_chiffrement: ServiceDeChiffrement
+    ) -> None:
         config_postgres = recupere_configuration_postgres(nom_base_donnees)
         self._connexion = psycopg2.connect(
             host=config_postgres.hote,
@@ -31,6 +35,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             port=config_postgres.port,
         )
         self._connexion.autocommit = True
+        self._service_chiffrement = service_chiffrement
         self._initialise_tables()
 
     def _initialise_tables(self) -> None:
@@ -109,18 +114,15 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         if not ligne:
             return None
 
-        interaction_dechiffree = (
-            FournisseurDeServiceDeChiffrement.service.dechiffre_dict(
-                ligne["contenu"],
-                CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
-            )
+        interaction_dechiffree = self._service_chiffrement.dechiffre_dict(
+            ligne["contenu"],
+            CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
         )
 
         return Interaction.model_validate(interaction_dechiffree)
 
-    @staticmethod
-    def __chiffre_interaction(dump_interaction: dict[str, Any]) -> str:
-        interaction_chiffree = FournisseurDeServiceDeChiffrement.service.chiffre_dict(
+    def __chiffre_interaction(self, dump_interaction: dict[str, Any]) -> str:
+        interaction_chiffree = self._service_chiffrement.chiffre_dict(
             dump_interaction,
             CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
         )
@@ -135,5 +137,3 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             self._connexion.close()
 
 
-def fabrique_adaptateur_base_de_donnees() -> AdaptateurBaseDeDonnees:
-    return AdaptateurBaseDeDonneesPostgres(recupere_configuration().base_de_donnees.nom)

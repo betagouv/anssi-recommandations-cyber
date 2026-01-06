@@ -8,9 +8,7 @@ from services.service_albert import ServiceAlbert
 from services.fabrique_service_albert import fabrique_service_albert
 from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
-from adaptateurs.adaptateur_base_de_donnees_postgres import (
-    fabrique_adaptateur_base_de_donnees,
-)
+from infra.fast_api.fabrique_adaptateur_base_de_donnees import fabrique_adaptateur_base_de_donnees
 from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
