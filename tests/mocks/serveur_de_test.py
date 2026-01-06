@@ -9,7 +9,7 @@ from services.fabrique_service_albert import fabrique_service_albert
 from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from adaptateurs.adaptateur_base_de_donnees_postgres import (
-    fabrique_adaptateur_base_de_donnees_retour_utilisatrice,
+    fabrique_adaptateur_base_de_donnees,
 )
 from adaptateurs.journal import (
     AdaptateurJournal,
@@ -96,7 +96,7 @@ class ConstructeurServeur:
     def avec_adaptateur_base_de_donnees(
         self, adaptateur_base_de_donnees: AdaptateurBaseDeDonnees
     ):
-        self._dependances[fabrique_adaptateur_base_de_donnees_retour_utilisatrice] = (
+        self._dependances[fabrique_adaptateur_base_de_donnees] = (
             lambda: adaptateur_base_de_donnees
         )
         return self
