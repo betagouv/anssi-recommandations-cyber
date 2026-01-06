@@ -145,7 +145,11 @@ def ajoute_retour(
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees
     ),
+    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+        fabrique_adaptateur_chiffrement
+    ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
+    type_utilisateur: str | None = None,
 ) -> RetourUtilisatrice:
     retour = adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
         body.id_interaction, body.retour
@@ -160,6 +164,10 @@ def ajoute_retour(
             id_interaction=body.id_interaction,
             type_retour=body.retour.type,
             tags=list(body.retour.tags),
+            type_utilisateur=extrais_type_utilisateur(
+                adaptateur_chiffrement=adaptateur_chiffrement,
+                type_utilisateur=type_utilisateur,
+            ),
         ),
     )
 
@@ -172,7 +180,11 @@ def supprime_retour(
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees
     ),
+    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+        fabrique_adaptateur_chiffrement
+    ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
+    type_utilisateur: str | None = None,
 ) -> Optional[str]:
     id_interaction_retour_supprime = (
         adaptateur_base_de_donnees.supprime_retour_utilisatrice(id_interaction)
@@ -183,7 +195,13 @@ def supprime_retour(
 
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.AVIS_UTILISATEUR_SUPPRIME,
-        donnees=DonneesAvisUtilisateurSupprime(id_interaction=id_interaction),
+        donnees=DonneesAvisUtilisateurSupprime(
+            id_interaction=id_interaction,
+            type_utilisateur=extrais_type_utilisateur(
+                adaptateur_chiffrement=adaptateur_chiffrement,
+                type_utilisateur=type_utilisateur,
+            ),
+        ),
     )
 
     return id_interaction_retour_supprime

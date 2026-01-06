@@ -31,10 +31,12 @@ class DonneesAvisUtilisateurSoumis(Donnees):
     id_interaction: str
     type_retour: Literal["positif", "negatif"]
     tags: list[TagPositif | TagNegatif]
+    type_utilisateur: TypeUtilisateur
 
 
 class DonneesAvisUtilisateurSupprime(Donnees):
     id_interaction: str
+    type_utilisateur: TypeUtilisateur
 
 
 class TypeEvenement(StrEnum):

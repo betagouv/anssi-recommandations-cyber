@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
 
+from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs.journal import TypeEvenement
 from schemas.retour_utilisatrice import RetourPositif, TagPositif
+from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurAdaptateurJournal,
@@ -232,3 +234,59 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
     assert kwargs["type"] == TypeEvenement.AVIS_UTILISATEUR_SUPPRIME
     assert kwargs["donnees"].id_interaction == "id-interaction-test"
+
+
+def test_route_route_retour_identifie_le_type_d_utilisateur():
+    retour = RetourPositif(commentaire="Très utile !")
+    adaptateur_base_de_donnees = (
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    )
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
+        TypeUtilisateur.ANSSI
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    payload = {
+        "id_interaction": "id-456",
+        "retour": {
+            "type": "positif",
+            "commentaire": "Excellent !",
+            "tags": ["complete"],
+        },
+    }
+    client.post("/api/retour?type_utilisateur=EFGH", json=payload)
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
+
+
+def test_route_route_suppression_retour_identifie_le_type_d_utilisateur():
+    retour = RetourPositif(commentaire="Très utile !")
+    adaptateur_base_de_donnees = (
+        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    )
+    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
+        TypeUtilisateur.ANSSI
+    )
+    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    serveur = (
+        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
+        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
+        .avec_adaptateur_journal(adaptateur_journal)
+        .construis()
+    )
+
+    client = TestClient(serveur)
+    client.delete("/api/retour/id-interaction-test?type_utilisateur=IJKL")
+
+    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
+    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
