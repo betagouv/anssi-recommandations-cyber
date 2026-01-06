@@ -135,5 +135,3 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def ferme_connexion(self) -> None:
         if self._connexion:
             self._connexion.close()
-
-

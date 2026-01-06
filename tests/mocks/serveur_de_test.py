@@ -1,30 +1,29 @@
+from unittest.mock import Mock
+
 from typing import Callable, Dict, Optional
 
-from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
-from serveur import fabrique_serveur
-from configuration import Mode
-from unittest.mock import Mock
-from services.service_albert import ServiceAlbert
-from services.fabrique_service_albert import fabrique_service_albert
-from schemas.albert import Paragraphe, ReponseQuestion
-from schemas.retour_utilisatrice import RetourUtilisatrice
-from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
-    fabrique_adaptateur_base_de_donnees,
+from adaptateur_chiffrement import AdaptateurChiffrementDeTest
+from adaptateurs import AdaptateurBaseDeDonnees
+from adaptateurs.chiffrement import (
+    AdaptateurChiffrement,
+    fabrique_adaptateur_chiffrement,
 )
 from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
 )
-from adaptateurs.chiffrement import (
-    AdaptateurChiffrement,
-    fabrique_adaptateur_chiffrement,
+from configuration import Mode
+from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
+    fabrique_adaptateur_base_de_donnees,
 )
-from adaptateurs import AdaptateurBaseDeDonnees
+from schemas.albert import Paragraphe, ReponseQuestion
+from schemas.retour_utilisatrice import RetourUtilisatrice
+from serveur import fabrique_serveur
+from services.fabrique_service_albert import fabrique_service_albert
+from services.service_albert import ServiceAlbert
 
 NONCE = "un-nonce"
-adaptateur_chiffrement = (
-    ConstructeurAdaptateurChiffrement().qui_retourne_nonce(NONCE).construis()
-)
+adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
 
 
 class ConstructeurAdaptateurBaseDeDonnees:

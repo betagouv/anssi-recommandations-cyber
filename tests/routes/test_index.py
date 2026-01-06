@@ -1,17 +1,14 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from configuration import Mode
-
-from adaptateur_chiffrement import ConstructeurAdaptateurChiffrement
 from serveur_de_test import (
     ConstructeurServeur,
 )
 
 NONCE = "un-nonce"
-adaptateur_chiffrement = (
-    ConstructeurAdaptateurChiffrement().qui_retourne_nonce(NONCE).construis()
-)
+adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
 serveur = ConstructeurServeur(
     mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
 ).construis()
