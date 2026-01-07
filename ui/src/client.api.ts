@@ -1,12 +1,26 @@
 const urlAPI = import.meta.env.VITE_URL_API;
 
+const forgeURLAvecTypeUtilisateur = (chemin: string): string => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const a_type_utilisateur = urlParams.has("type_utilisateur");
+
+  console.log(`URL API ${urlAPI}`);
+  if (a_type_utilisateur) {
+    return new URL(
+      `${chemin}?type_utilisateur=${urlParams.get("type_utilisateur")}`,
+      urlAPI,
+    ).toString();
+  }
+  return new URL(`${chemin}`, urlAPI).toString();
+};
+
 export const soumetsAvisUtilisateurAPI = async (
   idInteraction: string,
   positif: boolean,
   commentaire?: string,
   tags?: string[],
 ) =>
-  await fetch(`${urlAPI}/api/retour`, {
+  await fetch(forgeURLAvecTypeUtilisateur("/api/retour"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -22,7 +36,7 @@ export const soumetsAvisUtilisateurAPI = async (
   });
 
 export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
-  await fetch(`${urlAPI}/api/retour/${idInteraction}`, {
+  await fetch(forgeURLAvecTypeUtilisateur(`/api/retour/${idInteraction}`), {
     method: "DELETE",
   });
 
@@ -36,10 +50,10 @@ export const publieMessageUtilisateurAPI = async (
   avecPromptSysteme: boolean,
 ) => {
   const endpoint = avecPromptSysteme
-    ? `${urlAPI}/api/pose_question_avec_prompt`
-    : `${urlAPI}/api/pose_question`;
+    ? "/api/pose_question_avec_prompt"
+    : "/api/pose_question";
 
-  const reponse = await fetch(endpoint, {
+  const reponse = await fetch(forgeURLAvecTypeUtilisateur(endpoint), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
