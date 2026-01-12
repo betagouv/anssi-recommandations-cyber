@@ -402,3 +402,29 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
     assert reponse.reponse == "Un contenu"
     assert len(reponse.paragraphes) == 1
     assert reponse.question == "Une question de test ?"
+
+
+def test_retourne_au_maximum_5_paragraphes_meme_si_le_reclassement_echoue():
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.reclassement_vide()
+
+    resultats_20_paragraphes = [
+        un_resultat_de_recherche().ayant_pour_contenu(f"paragraphe {i}").construis()
+        for i in range(20)
+    ]
+
+    client_albert_memoire.avec_les_resultats(resultats_20_paragraphes)
+    client_albert_memoire.avec_les_propositions(
+        [
+            un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
+        ]
+    )
+
+    reponse = ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question("Une question de test ?")
+
+    assert len(reponse.paragraphes) == 5
