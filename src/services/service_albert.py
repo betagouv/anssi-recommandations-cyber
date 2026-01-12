@@ -148,10 +148,12 @@ class ServiceAlbert:
             contenus_tries = reclassement["paragraphes_tries"]
             reclassement_non_vide = len(contenus_tries) > 0
             if reclassement_non_vide:
-                paragraphes = [
+                return [
                     next(p for p in paragraphes if p.contenu == contenu)
                     for contenu in contenus_tries
                 ][:5]
+            else:
+                return paragraphes[:5]
         return paragraphes
 
     def _recupere_reponse_paragraphes_et_violation(
