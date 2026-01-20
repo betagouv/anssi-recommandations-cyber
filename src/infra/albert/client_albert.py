@@ -80,7 +80,7 @@ class ClientAlbertApi(ClientAlbert):
                     source_url=meta_dict.get("source_url", ""),
                     page=meta_dict.get("page", 0)
                     + self.decalage_index_Albert_et_numero_de_page_lecteur,
-                    nom_document=meta_dict.get("document_name", ""),
+                    nom_document=meta_dict.get("nom_document", ""),
                 )
                 chunk = RechercheChunk(
                     content=chunk_dict.get("content", ""),
