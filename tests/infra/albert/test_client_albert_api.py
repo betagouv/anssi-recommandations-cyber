@@ -119,7 +119,7 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
     assert chunks == [
         RechercheChunk(
             content="contenu",
-            metadata=RechercheMetadonnees(source_url="", page=1, nom_document=""),
+            metadata=RechercheMetadonnees(source_url="", page=0, nom_document=""),
         )
     ]
     assert scores == [0.9]

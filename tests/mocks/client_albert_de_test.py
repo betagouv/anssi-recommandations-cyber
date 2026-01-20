@@ -117,6 +117,7 @@ class ConstructeurServiceAlbert:
         temps_reponse_maximum_pose_question=10.0,
         temps_reponse_maximum_recherche_paragraphes=1.0,
         utilise_recherche_hybride=False,
+        decalage_index_Albert_et_numero_de_page_lecteur=0,
     )
     FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
         collection_nom_anssi_lab="",

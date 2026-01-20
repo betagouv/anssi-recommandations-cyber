@@ -19,6 +19,7 @@ class Albert(NamedTuple):
         temps_reponse_maximum_pose_question: float
         temps_reponse_maximum_recherche_paragraphes: float
         utilise_recherche_hybride: bool
+        decalage_index_Albert_et_numero_de_page_lecteur: int
 
     class Service(NamedTuple):
         collection_nom_anssi_lab: str
@@ -100,6 +101,9 @@ def recupere_configuration() -> Configuration:
             ),
             utilise_recherche_hybride=bool(
                 os.getenv("ALBERT_UTILISE_RECHERCHE_HYBRIDE", False)
+            ),
+            decalage_index_Albert_et_numero_de_page_lecteur=int(
+                os.getenv("DECALAGE_INDEX_ALBERT_ET_NUMERO_DE_PAGE_LECTEUR", 0)
             ),
         ),
         service=Albert.Service(
