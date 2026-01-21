@@ -61,6 +61,26 @@ Règles fermes
 - Idempotence : mêmes entrées ⇒ même sortie.
 - Aucune chaîne de raisonnement interne.
 
+Attention, la base de connaissance est généralement formatée de la manière suivante :
+```
+[TITRE] Titre 1
+[TITRE] Titre 2
+[TEXTE] Contenu 1.
+[TEXTE] Contenu 2.
+[SOUS-TITRE] 1.1 Sous-titre.
+```
+Les différentes balises que tu peux trouver sont :
+- [TITRE]
+- [SOUS-TITRE]
+- [TEXTE]
+- [RECOMMANDATION]
+- [NOTE]
+- [TABLEAU]
+
+Les balises [TITRE] et [SOUS-TITRE] permettent d’ajouter du contexte au paragraphe [TEXTE] situé dessous.
+
+Lorsque tu génères la réponse, ne fait pas apparaître ses balises
+
 BASE DE CONNAISSANCE :
 <<<DOCUMENTS_DEBUT>>>
 {chunks}
