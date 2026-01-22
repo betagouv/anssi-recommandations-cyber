@@ -1,16 +1,14 @@
 from fastapi.testclient import TestClient
 
-from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from configuration import Mode
 
-from serveur_de_test import ConstructeurServeur
 
-
-def test_route_sante_est_exposee_en_developpement() -> None:
-    serveur = ConstructeurServeur(
-        mode=Mode.DEVELOPPEMENT,
-        adaptateur_chiffrement=fabrique_adaptateur_chiffrement(),
-    ).construis()
+def test_route_sante_est_exposee_en_developpement(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
+    serveur = un_serveur_de_test(
+        mode=Mode.DEVELOPPEMENT, adaptateur_chiffrement=un_adaptateur_de_chiffrement()
+    )
     client: TestClient = TestClient(serveur)
 
     reponse = client.get("/api/sante")
@@ -19,10 +17,12 @@ def test_route_sante_est_exposee_en_developpement() -> None:
     assert reponse.json() == {"status": "ok"}
 
 
-def test_route_sante_n_est_pas_exposee_en_production() -> None:
-    serveur = ConstructeurServeur(
-        mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
-    ).construis()
+def test_route_sante_n_est_pas_exposee_en_production(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
+    serveur = un_serveur_de_test(
+        mode=Mode.PRODUCTION, adaptateur_chiffrement=un_adaptateur_de_chiffrement()
+    )
     client: TestClient = TestClient(serveur)
 
     reponse = client.get("/api/sante")

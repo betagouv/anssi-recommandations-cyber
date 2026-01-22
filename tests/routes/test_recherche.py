@@ -1,19 +1,20 @@
 from fastapi.testclient import TestClient
 
+from configuration import Mode
 from schemas.albert import Paragraphe
-
 from serveur_de_test import (
     ConstructeurServiceAlbert,
-    ConstructeurServeur,
 )
 
 
-def test_route_recherche_repond_correctement(adaptateur_chiffrement) -> None:
+def test_route_recherche_repond_correctement(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
     service_albert = ConstructeurServiceAlbert().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        service_albert=service_albert,
     )
     client: TestClient = TestClient(serveur)
 
@@ -23,17 +24,19 @@ def test_route_recherche_repond_correctement(adaptateur_chiffrement) -> None:
     service_albert.recherche_paragraphes.assert_called_once()
 
 
-def test_route_recherche_donnees_correctes(adaptateur_chiffrement) -> None:
+def test_route_recherche_donnees_correctes(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
     paragraphes: list[Paragraphe] = []
     service_albert = (
         ConstructeurServiceAlbert()
         .qui_retourne_les_paragraphes(paragraphes)
         .construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        service_albert=service_albert,
     )
     client: TestClient = TestClient(serveur)
 
@@ -46,7 +49,8 @@ def test_route_recherche_donnees_correctes(adaptateur_chiffrement) -> None:
 
 
 def test_route_recherche_retourne_la_bonne_structure_d_objet(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     paragraphes = [
         Paragraphe(
@@ -63,10 +67,10 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet(
         .qui_retourne_les_paragraphes(paragraphes)
         .construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        service_albert=service_albert,
     )
 
     client: TestClient = TestClient(serveur)

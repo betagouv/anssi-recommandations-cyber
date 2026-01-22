@@ -208,8 +208,7 @@ def supprime_retour(
 
 
 def fabrique_serveur(
-    max_requetes_par_minute: int,
-    mode: Mode,
+    max_requetes_par_minute: int, mode: Mode, static_root_directory="ui/dist/"
 ) -> FastAPI:
     serveur = FastAPI()
 
@@ -233,7 +232,9 @@ def fabrique_serveur(
         serveur.include_router(api_developpement)
 
     for static in ["assets", "fonts", "icons", "images"]:
-        serveur.mount(f"/{static}", StaticFiles(directory=f"ui/dist/{static}"))
+        serveur.mount(
+            f"/{static}", StaticFiles(directory=f"{static_root_directory}{static}")
+        )
 
     @serveur.get("/")
     def index(
@@ -241,7 +242,9 @@ def fabrique_serveur(
             fabrique_adaptateur_chiffrement
         ),
     ):
-        return sert_la_page_statique(adaptateur_chiffrement, "ui/dist/index.html")
+        return sert_la_page_statique(
+            adaptateur_chiffrement, f"{static_root_directory}/index.html"
+        )
 
     @serveur.get("/cgu")
     def cgu(
@@ -249,7 +252,9 @@ def fabrique_serveur(
             fabrique_adaptateur_chiffrement
         ),
     ):
-        return sert_la_page_statique(adaptateur_chiffrement, "ui/dist/cgu.html")
+        return sert_la_page_statique(
+            adaptateur_chiffrement, f"{static_root_directory}/cgu.html"
+        )
 
     @serveur.get("/politique-confidentialite")
     def politique_confidentialite(
@@ -258,7 +263,8 @@ def fabrique_serveur(
         ),
     ):
         return sert_la_page_statique(
-            adaptateur_chiffrement, "ui/dist/politique-confidentialite.html"
+            adaptateur_chiffrement,
+            f"{static_root_directory}/politique-confidentialite.html",
         )
 
     def sert_la_page_statique(

@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import Mock
 
 from typing import Callable, Dict, Optional
@@ -87,6 +88,7 @@ class ConstructeurServeur:
         self._dependances[fabrique_adaptateur_chiffrement] = (
             lambda: adaptateur_chiffrement
         )
+        self.pages_statiques: Path = Path()
 
     def avec_service_albert(self, service_albert: ServiceAlbert):
         self._dependances[fabrique_service_albert] = lambda: service_albert
@@ -112,11 +114,16 @@ class ConstructeurServeur:
         self._dependances[fabrique_adaptateur_journal] = lambda: adaptateur_journal
         return self
 
+    def avec_pages_statiques(self, pages_statiques):
+        self.pages_statiques = pages_statiques
+        return self
+
     def construis(self):
-        self._serveur = fabrique_serveur(self._max_requetes_par_minute, self._mode)
+        self._serveur = fabrique_serveur(
+            self._max_requetes_par_minute,
+            self._mode,
+            f"{self.pages_statiques}/ui/dist/",
+        )
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
         return self._serveur
-
-
-serveur = ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement).construis()

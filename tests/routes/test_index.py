@@ -1,20 +1,18 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from configuration import Mode
-from serveur_de_test import (
-    ConstructeurServeur,
-)
 
 NONCE = "un-nonce"
-adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
-serveur = ConstructeurServeur(
-    mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
-).construis()
 
 
-def test_route_index_sert_une_page_html() -> None:
+def test_route_index_sert_une_page_html(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
+    serveur = un_serveur_de_test(
+        mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(nonce=NONCE),
+    )
     client: TestClient = TestClient(serveur)
     reponse = client.get("/")
 
@@ -49,9 +47,9 @@ def test_route_index_sert_une_page_html() -> None:
     ),
 )
 def test_route_index_sert_des_entetes_securisant_la_page_servie_avec_les_bonnes_valeurs(
-    entete: str, valeur_attendue: str
+    entete: str, valeur_attendue: str, un_serveur_de_test
 ) -> None:
-    client: TestClient = TestClient(serveur)
+    client: TestClient = TestClient(un_serveur_de_test(mode=Mode.DEVELOPPEMENT))
     reponse = client.get("/")
 
     valeur_entete = reponse.headers.get(entete)

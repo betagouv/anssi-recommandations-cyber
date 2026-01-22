@@ -1,18 +1,16 @@
 from fastapi.testclient import TestClient
 
-from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
-
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurServiceAlbert,
-    ConstructeurServeur,
 )
 
 
 def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
@@ -33,13 +31,11 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(
-            mode=Mode.DEVELOPPEMENT, adaptateur_chiffrement=adaptateur_chiffrement
-        )
-        .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        mode=Mode.DEVELOPPEMENT,
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        service_albert=service_albert,
     )
 
     client: TestClient = TestClient(serveur)
@@ -55,10 +51,12 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
     service_albert.pose_question.assert_called_once()
 
 
-def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production() -> None:
-    serveur = ConstructeurServeur(
-        mode=Mode.PRODUCTION, adaptateur_chiffrement=fabrique_adaptateur_chiffrement()
-    ).construis()
+def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
+    serveur = un_serveur_de_test(
+        mode=Mode.PRODUCTION, adaptateur_chiffrement=un_adaptateur_de_chiffrement()
+    )
     client: TestClient = TestClient(serveur)
 
     reponse = client.post(

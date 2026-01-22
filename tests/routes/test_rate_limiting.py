@@ -1,16 +1,9 @@
-import pytest
-
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from adaptateurs.chiffrement import (
-    fabrique_adaptateur_chiffrement,
-)
-from configuration import Mode
-
-from serveur_de_test import (
-    ConstructeurServeur,
-)
 from starlette.routing import Route
+from typing import Any
+
+from configuration import Mode
 
 
 # Semble résoudre une confusion de `mypy` qui apparait quand inlinée...
@@ -18,59 +11,53 @@ def dans_l_ensemble(ensemble, element) -> bool:
     return element in ensemble
 
 
-# Par simplicité, on teste seulement les routes GET.
-routes_get = list(
-    map(
-        lambda r: r.path,
-        filter(
-            lambda r: isinstance(r, Route) and dans_l_ensemble(r.methods, "GET"),
-            ConstructeurServeur(
-                mode=Mode.DEVELOPPEMENT,
-                adaptateur_chiffrement=fabrique_adaptateur_chiffrement(),
-            )
-            .construis()
-            .routes,
-        ),
+def les_routes_du_serveur(serveur: FastAPI) -> list[Any]:
+    return list(
+        map(
+            lambda r: r.path,  # type:ignore[attr-defined]
+            filter(
+                lambda r: isinstance(r, Route) and dans_l_ensemble(r.methods, "GET"),
+                serveur.routes,
+            ),
+        )
     )
-)
 
 
-@pytest.mark.parametrize("route", routes_get)
 def test_les_routes_limitent_le_nombre_de_requetes_quand_un_utilisateur_fait_trop_de_requetes(
-    route,
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
-    serveur = ConstructeurServeur(
-        max_requetes_par_minute=1,
-        mode=Mode.DEVELOPPEMENT,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-    ).construis()
-    client: TestClient = TestClient(serveur)
-
+    serveur = un_serveur_de_test(
+        rate_limit=1, adaptateur_chiffrement=un_adaptateur_de_chiffrement()
+    )
     ip_client = "123.123.123.123"
 
-    client.get(route, headers={"X-Forwarded-For": f"{ip_client}"})
-    reponse = client.get(route, headers={"X-Forwarded-For": f"{ip_client}"})
+    routes = les_routes_du_serveur(serveur)
+    for route in routes:
+        client: TestClient = TestClient(serveur)
+        client.get(route, headers={"X-Forwarded-For": f"{ip_client}"})
+        reponse = client.get(route, headers={"X-Forwarded-For": f"{ip_client}"})
 
-    assert reponse.status_code == 429
+        assert reponse.status_code == 429
 
 
-@pytest.mark.parametrize("route", routes_get)
 def test_les_routes_ne_limitent_PAS_le_nombre_de_requetes_quand_elles_viennent_d_utilisateurs_differents(
-    route,
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
-    serveur = ConstructeurServeur(
-        max_requetes_par_minute=1,
+    serveur = un_serveur_de_test(
         mode=Mode.DEVELOPPEMENT,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-    ).construis()
+        rate_limit=1,
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+    )
     client: TestClient = TestClient(serveur)
 
     ip_client = "123.123.123.123"
     ip_autre_client = "122.122.122.122"
 
-    client.get(route, headers={"X-Forwarded-For": f"{ip_client}"})
-    reponse = client.get(route, headers={"X-Forwarded-For": f"{ip_autre_client}"})
+    routes = les_routes_du_serveur(serveur)
+    for route in routes:
+        client.get(route, headers={"X-Forwarded-For": f"{ip_client}"})
+        reponse = client.get(route, headers={"X-Forwarded-For": f"{ip_autre_client}"})
 
-    assert reponse.status_code == 200
+        assert reponse.status_code == 200
