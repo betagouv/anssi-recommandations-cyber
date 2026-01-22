@@ -1,9 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from adaptateur_chiffrement import (
-    AdaptateurChiffrementDeTest,
-)
 from adaptateurs.journal import (
     TypeEvenement,
 )
@@ -19,11 +16,12 @@ from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurAdaptateurJournal,
     ConstructeurServiceAlbert,
-    ConstructeurServeur,
 )
 
 
-def test_route_pose_question_repond_correctement(adaptateur_chiffrement) -> None:
+def test_route_pose_question_repond_correctement(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
@@ -43,11 +41,10 @@ def test_route_pose_question_repond_correctement(adaptateur_chiffrement) -> None
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client: TestClient = TestClient(serveur)
@@ -59,7 +56,9 @@ def test_route_pose_question_repond_correctement(adaptateur_chiffrement) -> None
     serveur.dependency_overrides.clear()
 
 
-def test_route_pose_question_retourne_donnees_correctes(adaptateur_chiffrement) -> None:
+def test_route_pose_question_retourne_donnees_correctes(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
     reponse = ReponseQuestion(
         reponse="Réponse de test d'Albert",
         paragraphes=[
@@ -86,11 +85,10 @@ def test_route_pose_question_retourne_donnees_correctes(adaptateur_chiffrement) 
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client_http = TestClient(serveur)
@@ -124,26 +122,24 @@ def test_route_pose_question_retourne_donnees_correctes(adaptateur_chiffrement) 
 
 @pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
 def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_une_interaction(
-    mode,
+    mode, un_serveur_de_test, un_adaptateur_de_chiffrement
 ) -> None:
     valeur_hachee = "haché"
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
-
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(mode=mode, adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
+    serveur = un_serveur_de_test(
+        mode=mode,
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client: TestClient = TestClient(serveur)
@@ -159,7 +155,9 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
 
 
-def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_interaction_creee():
+def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_interaction_creee(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
     question_posee = " Qui es-tu ? "
     valeur_hachee = "haché"
     reponse = ReponseQuestion(
@@ -169,20 +167,17 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
         violation=None,
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(
-            mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
-        )
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
+    serveur = un_serveur_de_test(
+        mode=Mode.PRODUCTION,
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -197,6 +192,8 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
 
 
 def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_paragraphes_sur_l_interaction_creee(
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
     un_constructeur_de_paragraphe,
 ):
     question_posee = " Qui es-tu ? "
@@ -211,20 +208,17 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
         violation=None,
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(
-            mode=Mode.PRODUCTION, adaptateur_chiffrement=adaptateur_chiffrement
-        )
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        mode=Mode.PRODUCTION,
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -241,7 +235,7 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
     "violation", [ViolationIdentite(), ViolationMalveillance(), ViolationThematique()]
 )
 def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
-    violation,
+    violation, un_serveur_de_test, un_adaptateur_de_chiffrement
 ) -> None:
     valeur_hachee = "haché"
     reponse = ReponseQuestion(
@@ -249,18 +243,16 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     )
 
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_hache(valeur_hachee)
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client: TestClient = TestClient(serveur)
@@ -281,15 +273,15 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
 
 
 def test_route_pose_question_rejette_question_trop_longue(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
     service_albert = ConstructeurServiceAlbert().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_service_albert(service_albert)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        service_albert=service_albert,
     )
 
     client = TestClient(serveur)
@@ -308,25 +300,23 @@ def test_route_pose_question_rejette_question_trop_longue(
     "type_utilisateur",
     [TypeUtilisateur.ANSSI, TypeUtilisateur.LAMBDA, TypeUtilisateur.EXPERT_SSI],
 )
-def test_route_pose_question_identifie_le_type_d_utilisateur(type_utilisateur):
+def test_route_pose_question_identifie_le_type_d_utilisateur(
+    type_utilisateur, un_serveur_de_test, un_adaptateur_de_chiffrement
+):
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
-        type_utilisateur
-    )
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(dechiffre=type_utilisateur)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -338,25 +328,25 @@ def test_route_pose_question_identifie_le_type_d_utilisateur(type_utilisateur):
     assert kwargs["donnees"].type_utilisateur == type_utilisateur
 
 
-def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur():
+def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+):
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
-        "une chaine inconnue"
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(
+        dechiffre="une chaine inconnue"
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -368,25 +358,23 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur():
     assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
 
 
-def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le_dechiffrement_echoue():
+def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le_dechiffrement_echoue(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+):
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    adaptateur_chiffrement = (
-        AdaptateurChiffrementDeTest().qui_leve_une_erreur_au_dechiffrement()
-    )
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(leve_une_erreur=True)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .avec_service_albert(service_albert)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)

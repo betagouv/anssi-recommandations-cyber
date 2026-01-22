@@ -7,11 +7,12 @@ from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import (
     ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurAdaptateurJournal,
-    ConstructeurServeur,
 )
 
 
-def test_route_retour_avec_mock_retourne_succes_200(adaptateur_chiffrement) -> None:
+def test_route_retour_avec_mock_retourne_succes_200(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
         tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
@@ -19,10 +20,9 @@ def test_route_retour_avec_mock_retourne_succes_200(adaptateur_chiffrement) -> N
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -41,7 +41,8 @@ def test_route_retour_avec_mock_retourne_succes_200(adaptateur_chiffrement) -> N
 
 
 def test_route_retour_avec_mock_retourne_donnees_attendues(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
@@ -50,10 +51,9 @@ def test_route_retour_avec_mock_retourne_donnees_attendues(
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -75,15 +75,15 @@ def test_route_retour_avec_mock_retourne_donnees_attendues(
 
 
 def test_route_retour_avec_interaction_inexistante_retourne_404(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(None).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -103,13 +103,13 @@ def test_route_retour_avec_interaction_inexistante_retourne_404(
 
 
 def test_route_retour_avec_payload_invalide_rejette_la_requete(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -127,7 +127,8 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete(
 
 
 def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
@@ -136,10 +137,9 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -153,7 +153,8 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
 
 
 def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_erreur(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     retour = RetourPositif(
         commentaire="Très utile !",
@@ -162,10 +163,9 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
 
     client = TestClient(serveur)
@@ -178,18 +178,18 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
 
 
 def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     retour = RetourPositif(commentaire="Excellent !", tags=[TagPositif.Complete])
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
     )
 
     client = TestClient(serveur)
@@ -213,18 +213,18 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
 
 
 def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
-    adaptateur_chiffrement,
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
 ) -> None:
     retour = RetourPositif(commentaire="Très utile !")
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
     )
 
     client = TestClient(serveur)
@@ -236,7 +236,9 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     assert kwargs["donnees"].id_interaction == "id-interaction-test"
 
 
-def test_route_route_retour_identifie_le_type_d_utilisateur():
+def test_route_route_retour_identifie_le_type_d_utilisateur(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+):
     retour = RetourPositif(commentaire="Très utile !")
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
@@ -245,12 +247,10 @@ def test_route_route_retour_identifie_le_type_d_utilisateur():
         TypeUtilisateur.ANSSI
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
     )
 
     client = TestClient(serveur)
@@ -268,7 +268,9 @@ def test_route_route_retour_identifie_le_type_d_utilisateur():
     assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
 
 
-def test_route_route_suppression_retour_identifie_le_type_d_utilisateur():
+def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+):
     retour = RetourPositif(commentaire="Très utile !")
     adaptateur_base_de_donnees = (
         ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
@@ -277,12 +279,10 @@ def test_route_route_suppression_retour_identifie_le_type_d_utilisateur():
         TypeUtilisateur.ANSSI
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
-    serveur = (
-        ConstructeurServeur(adaptateur_chiffrement=adaptateur_chiffrement)
-        .avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
-        .avec_adaptateur_chiffrement_pour_les_routes_d_api(adaptateur_chiffrement)
-        .avec_adaptateur_journal(adaptateur_journal)
-        .construis()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
     )
 
     client = TestClient(serveur)
