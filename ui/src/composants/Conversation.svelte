@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
+  import {fade} from "svelte/transition";
   import BandeauAvisUtilisateur from "./BandeauAvisUtilisateur.svelte";
-  import { storeConversation } from "../stores/conversation.store";
-  import { onMount } from "svelte";
-  import { storeAffichage } from "../stores/affichage.store.js";
+  import {storeConversation} from "../stores/conversation.store";
+  import {onMount} from "svelte";
+  import {storeAffichage} from "../stores/affichage.store.js";
+  import {infobulle} from "../directives/infobulle";
 
   let afficheBoutonScroll: boolean = $state(false);
 
@@ -19,7 +20,7 @@
     return () => window.removeEventListener('scroll', gereScrollConversation);
   });
 
-  const copieLaReponse = (e: MouseEvent, contenu: string) => {
+  const copieLaReponse = (contenu: string) => {
       navigator.clipboard.writeText(contenu);
   };
 </script>
@@ -40,6 +41,7 @@
     {#if message.emetteur === "systeme"}
       <div class="copie-reponse">
         <dsfr-button
+            use:infobulle={{contenu:"Réponse copiée", mode: 'click'}}
           label="Copier la réponse"
           kind="tertiary-no-outline"
           size="md"
@@ -47,7 +49,7 @@
           title="Copier la réponse"
           markup="button"
           type="button"
-          onclick={(e: MouseEvent) => copieLaReponse(e, contenu)}
+          onclick={() => copieLaReponse(contenu)}
         ></dsfr-button>
       </div>
     {/if}
