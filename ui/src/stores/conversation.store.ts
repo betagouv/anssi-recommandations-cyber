@@ -17,6 +17,15 @@ export type Message = {
   idInteraction?: string;
 };
 
+export type MessageUtilisateur = Message & {
+  emetteur: "utilisateur";
+};
+
+export type MessageSysteme = Message & {
+  emetteur: "systeme";
+  contenuMarkdown: string;
+};
+
 const { subscribe, update } = writable<Message[]>([]);
 
 export const storeConversation = {
@@ -42,6 +51,7 @@ export const storeConversation = {
         ...messages,
         {
           contenu: contenuHTML,
+          contenuMarkdown: reponse,
           emetteur: "systeme",
           references,
           idInteraction,
