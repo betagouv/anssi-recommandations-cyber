@@ -24,6 +24,7 @@
 <div class="conversation">
   {#each $storeConversation as message, index (index)}
     <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
+
       {#if message.emetteur === "systeme"}
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         <p>{@html message.contenu}</p>
@@ -31,7 +32,19 @@
         <p>{message.contenu}</p>
       {/if}
     </div>
-
+    {#if message.emetteur === "systeme"}
+      <div class="copie-reponse">
+        <dsfr-button
+          label="Copier la réponse"
+          kind="tertiary-no-outline"
+          size="md"
+          id="copie-reponse"
+          title="Copier la réponse"
+          markup="button"
+          type="button"
+        ></dsfr-button>
+      </div>
+    {/if}
     {#if message.references && message.references.length > 0}
       <details class="conteneur-sources">
         <summary>
@@ -202,6 +215,10 @@
 
     .fondu-bas.visible {
       opacity: 1;
+    }
+    .copie-reponse {
+      display: flex;
+      justify-content: flex-end;
     }
   }
 
