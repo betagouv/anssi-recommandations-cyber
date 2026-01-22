@@ -1,5 +1,6 @@
 <script lang="ts">
   let bandeauOuvert: boolean = $state(true);
+  let bandeauBetaTestOuvert: boolean = $state(true);
 </script>
 
 {#if bandeauOuvert}
@@ -12,6 +13,19 @@
       </button>
     </div>
   </div>
+{/if}
+
+{#if bandeauBetaTestOuvert}
+<div class="bandeau-information">
+    <div class="contenu-bandeau-information">
+        <img src="./icons/information.svg" alt="" />
+        <div><b>MesQuestionsCyber a pour but de vous fournir des réponses à des questions concernant la cybersécurité.</b> Le service prend aujourd'hui appui sur une base de connaissances composées de l'ensemble des guides et publications de l'ANSSI. MesQuestionsCyber est actuellement en phase d'expérimentation (Alpha) en vue d'améliorer la structuration de la base de connaissances et le "prompt system", à partir de vos retours.
+            Ce que nous attendons de vous : poser un maximum de questions et pour chaque laisser un retour : 👍 ou 👎 , des tags et des commentaires. Merci pour votre participation !</div>
+        <button onclick={() => bandeauBetaTestOuvert = false} aria-label="Fermeture du bandeau d'information">
+            <lab-anssi-icone nom="close-line" taille="sm"></lab-anssi-icone>
+        </button>
+    </div>
+</div>
 {/if}
 
 <style lang="scss">
