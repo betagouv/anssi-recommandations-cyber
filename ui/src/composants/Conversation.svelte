@@ -1,7 +1,12 @@
 <script lang="ts">
   import {fade} from "svelte/transition";
   import BandeauAvisUtilisateur from "./BandeauAvisUtilisateur.svelte";
-  import {storeConversation} from "../stores/conversation.store";
+  import {
+      type Message,
+      type MessageSysteme,
+      type MessageUtilisateur,
+      storeConversation
+  } from "../stores/conversation.store";
   import {onMount} from "svelte";
   import {storeAffichage} from "../stores/affichage.store.js";
   import {infobulle} from "../directives/infobulle";
@@ -23,12 +28,15 @@
   const copieLaReponse = (contenu: string) => {
       navigator.clipboard.writeText(contenu);
   };
+
+  const estMessageSysteme = (message: Message | MessageSysteme | MessageUtilisateur): message is MessageSysteme => message.emetteur === "systeme";
 </script>
 
 
 <div class="conversation">
   {#each $storeConversation as message, index (index)}
       {@const contenu = message.contenu}
+      {@const contenuMarkdown = estMessageSysteme(message) ? message.contenuMarkdown : message.contenu}
     <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
 
       {#if message.emetteur === "systeme"}
@@ -49,7 +57,7 @@
           title="Copier la réponse"
           markup="button"
           type="button"
-          onclick={() => copieLaReponse(contenu)}
+          onclick={() => copieLaReponse(contenuMarkdown)}
         ></dsfr-button>
       </div>
     {/if}
