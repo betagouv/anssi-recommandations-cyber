@@ -18,16 +18,21 @@
     gereScrollConversation();
     return () => window.removeEventListener('scroll', gereScrollConversation);
   });
+
+  const copieLaReponse = (e: MouseEvent, contenu: string) => {
+      navigator.clipboard.writeText(contenu);
+  };
 </script>
 
 
 <div class="conversation">
   {#each $storeConversation as message, index (index)}
+      {@const contenu = message.contenu}
     <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
 
       {#if message.emetteur === "systeme"}
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-        <p>{@html message.contenu}</p>
+          <p id={`reponse-mqc-${index}`}>{@html contenu}</p>
       {:else}
         <p>{message.contenu}</p>
       {/if}
@@ -42,6 +47,7 @@
           title="Copier la réponse"
           markup="button"
           type="button"
+          onclick={(e: MouseEvent) => copieLaReponse(e, contenu)}
         ></dsfr-button>
       </div>
     {/if}
