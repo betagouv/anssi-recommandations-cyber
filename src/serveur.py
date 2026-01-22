@@ -241,21 +241,42 @@ def fabrique_serveur(
             fabrique_adaptateur_chiffrement
         ),
     ):
+        return sert_la_page_statique(adaptateur_chiffrement, "ui/dist/index.html")
+
+    @serveur.get("/cgu")
+    def cgu(
+        adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+            fabrique_adaptateur_chiffrement
+        ),
+    ):
+        return sert_la_page_statique(adaptateur_chiffrement, "ui/dist/cgu.html")
+
+    @serveur.get("/politique-confidentialite")
+    def politique_confidentialite(
+        adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+            fabrique_adaptateur_chiffrement
+        ),
+    ):
+        return sert_la_page_statique(
+            adaptateur_chiffrement, "ui/dist/politique-confidentialite.html"
+        )
+
+    def sert_la_page_statique(
+        adaptateur_chiffrement: AdaptateurChiffrement, page_statique: str
+    ) -> HTMLResponse:
         nonce = adaptateur_chiffrement.recupere_nonce()
-        index = (
-            Path("ui/dist/index.html")
+        politique_html = (
+            Path(page_statique)
             .read_text(encoding="utf-8")
             .replace("%%NONCE_A_INJECTER%%", nonce)
         )
-
-        response = HTMLResponse(content=index)
+        response = HTMLResponse(content=politique_html)
         headers = PRESETS["strict"] | {
             "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}'; script-src 'self' 'nonce-{nonce}'",
             "Cross-Origin-Embedder-Policy": "credentialless",
         }
         for header_name, header_value in headers.items():
             response.headers[header_name] = header_value
-
         return response
 
     return serveur

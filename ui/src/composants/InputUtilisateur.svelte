@@ -93,7 +93,8 @@
 </script>
 
 <svelte:body onkeydown={touchePressee} />
-<form onsubmit={soumetQuestion} class="question-utilisateur">
+<div class="conteneur-question-utilisateur">
+  <form onsubmit={soumetQuestion} class="question-utilisateur">
     {#if afficheInputPromptSysteme}
       <InputPromptSysteme bind:prompt={promptSysteme} />
     {/if}
@@ -115,11 +116,16 @@
   {#if erreurValidation}
     <div class="message-erreur">{erreurValidation}</div>
   {/if}
-</form>
-
+  </form>
+</div>
 <style lang="scss">
+  .conteneur-question-utilisateur {
+    display: flex;
+    justify-content: stretch;
+    justify-items: center;
+  }
+
   .question-utilisateur {
-    position: fixed;
     max-width: 840px;
     width: calc(100% - 32px);
     bottom: 24px;
@@ -136,7 +142,6 @@
 
     @media screen and (min-width: 768px) {
       left: 50%;
-      transform: translateX(-50%);
       margin: 0 auto;
       width: 100%;
     }
