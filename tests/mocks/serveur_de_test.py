@@ -1,6 +1,7 @@
 from pathlib import Path
 from unittest.mock import Mock
 
+from openai.types.chat.chat_completion import Choice
 from typing import Callable, Dict, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
@@ -13,15 +14,17 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
 )
-from configuration import Mode
+from client_albert_de_test import ClientAlbertMemoire
+from configuration import Mode, Albert
 from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
-from schemas.albert import Paragraphe, ReponseQuestion
+from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, ReclasseReponse
 from schemas.retour_utilisatrice import RetourUtilisatrice
+from schemas.violations import Violation
 from serveur import fabrique_serveur
 from services.fabrique_service_albert import fabrique_service_albert
-from services.service_albert import ServiceAlbert
+from services.service_albert import ServiceAlbert, Prompts
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
@@ -70,6 +73,45 @@ class ConstructeurServiceAlbert:
 
     def construis(self):
         return self._mock
+
+
+class ServiceAlbertMemoire(ServiceAlbert):
+    def __init__(self) -> None:
+        self.leve_une_erreur_sur_pose_question = False
+        super().__init__(
+            Albert.Service(  # type: ignore[attr-defined]
+                collection_nom_anssi_lab="",
+                collection_id_anssi_lab=1,
+                reclassement_active=False,
+                modele_reclassement="",
+            ),
+            ClientAlbertMemoire(),
+            False,
+            Prompts(prompt_systeme="", prompt_reclassement=""),
+        )
+
+    def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
+        return []
+
+    def pose_question(
+        self, question: str, prompt: Optional[str] = None
+    ) -> ReponseQuestion:
+        if self.leve_une_erreur_sur_pose_question:
+            raise Exception("Erreur sur pose_question")
+        return ReponseQuestion(
+            reponse="", paragraphes=[], question=question, violation=None
+        )
+
+    def reclasse(self, payload: ReclassePayload):
+        return ReclasseReponse(data=[])
+
+    def _recupere_reponse_paragraphes_et_violation(
+        self, propositions_albert: list[Choice], paragraphes: list[Paragraphe]
+    ) -> tuple[str, list[Paragraphe], Violation | None]:
+        return "", paragraphes, None
+
+    def qui_leve_une_erreur_sur_pose_question(self):
+        self.leve_une_erreur_sur_pose_question = True
 
 
 class ConstructeurServeur:

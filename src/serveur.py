@@ -21,17 +21,21 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     DonneesAvisUtilisateurSoumis,
     DonneesAvisUtilisateurSupprime,
-    DonneesInteractionCreee,
-    DonneesViolationDetectee,
     TypeEvenement,
     fabrique_adaptateur_journal,
 )
 from configuration import Mode
+from question.question import (
+    pose_question_utilisateur,
+    ConfigurationQuestion,
+    ResultatInteraction,
+    ResultatInteractionEnErreur,
+)
 from schemas.albert import Paragraphe
 from schemas.api import (
     QuestionRequete,
     QuestionRequeteAvecPrompt,
-    ReponseQuestion,
+    ReponseQuestionAPI,
 )
 from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
 from schemas.retour_utilisatrice import RetourUtilisatrice
@@ -55,10 +59,10 @@ def route_pose_question_avec_prompt(
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
         fabrique_adaptateur_base_de_donnees
     ),
-) -> ReponseQuestion:
+) -> ReponseQuestionAPI:
     reponse_question = service_albert.pose_question(request.question, request.prompt)
     id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
-    return ReponseQuestion(
+    return ReponseQuestionAPI(
         **reponse_question.model_dump(), interaction_id=id_interaction
     )
 
@@ -90,37 +94,34 @@ def route_pose_question(
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
     type_utilisateur: str | None = None,
-) -> ReponseQuestion:
-    reponse_question = service_albert.pose_question(request.question)
-    id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
+) -> ReponseQuestionAPI:
+    question = request.question
 
-    adaptateur_journal.consigne_evenement(
-        type=TypeEvenement.INTERACTION_CREEE,
-        donnees=DonneesInteractionCreee(
-            id_interaction=adaptateur_chiffrement.hache(id_interaction),
-            longueur_question=len(reponse_question.question.strip()),
-            longueur_reponse=len(reponse_question.reponse.strip()),
-            longueur_paragraphes=sum(
-                (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
-            ),
-            type_utilisateur=extrais_type_utilisateur(
-                adaptateur_chiffrement, type_utilisateur
-            ),
-        ),
+    configuration: ConfigurationQuestion = ConfigurationQuestion(
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
+        adaptateur_chiffrement=adaptateur_chiffrement,
+    )
+    resultat_interaction = pose_question_utilisateur(
+        configuration,
+        question,
+        extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
     )
 
-    if reponse_question.violation is not None:
-        adaptateur_journal.consigne_evenement(
-            type=TypeEvenement.VIOLATION_DETECTEE,
-            donnees=DonneesViolationDetectee(
-                id_interaction=adaptateur_chiffrement.hache(id_interaction),
-                type_violation=reponse_question.violation.__class__.__name__,
-            ),
-        )
-
-    return ReponseQuestion(
-        **reponse_question.model_dump(), interaction_id=id_interaction
-    )
+    match resultat_interaction:
+        case ResultatInteraction():
+            return ReponseQuestionAPI(
+                **resultat_interaction.reponse_question.model_dump(),
+                interaction_id=resultat_interaction.id_interaction,
+            )
+        case ResultatInteractionEnErreur():
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": resultat_interaction.message_mqc,
+                },
+            )
 
 
 def extrais_type_utilisateur(
