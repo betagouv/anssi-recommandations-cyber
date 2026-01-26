@@ -14,7 +14,7 @@ class QuestionRequeteAvecPrompt(QuestionRequete):
     prompt: Optional[str] = None
 
 
-class ReponseQuestion(BaseModel):
+class ReponseQuestionAPI(BaseModel):
     reponse: str
     paragraphes: list[Paragraphe]
     question: str
