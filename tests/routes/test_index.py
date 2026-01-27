@@ -28,7 +28,7 @@ def test_route_index_sert_une_page_html(
             [
                 [
                     "content-security-policy",
-                    f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{NONCE}'; script-src 'self' 'nonce-{NONCE}'",
+                    f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{NONCE}' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; script-src 'self' 'nonce-{NONCE}'; img-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com",
                 ],
                 ["cross-origin-embedder-policy", "credentialless"],
                 ["cross-origin-opener-policy", "same-origin"],

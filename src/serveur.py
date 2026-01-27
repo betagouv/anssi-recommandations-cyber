@@ -25,6 +25,7 @@ from adaptateurs.journal import (
     fabrique_adaptateur_journal,
 )
 from configuration import Mode
+from infra.ui_kit.version_ui_kit import version_ui_kit
 from question.question import (
     pose_question_utilisateur,
     ConfigurationQuestion,
@@ -209,7 +210,7 @@ def supprime_retour(
 
 
 def fabrique_serveur(
-    max_requetes_par_minute: int, mode: Mode, static_root_directory="ui/dist/"
+    max_requetes_par_minute: int, mode: Mode, static_root_directory="ui/dist/", la_version_ui_kit=version_ui_kit
 ) -> FastAPI:
     serveur = FastAPI()
 
@@ -272,14 +273,15 @@ def fabrique_serveur(
         adaptateur_chiffrement: AdaptateurChiffrement, page_statique: str
     ) -> HTMLResponse:
         nonce = adaptateur_chiffrement.recupere_nonce()
-        politique_html = (
+        page_html = (
             Path(page_statique)
             .read_text(encoding="utf-8")
             .replace("%%NONCE_A_INJECTER%%", nonce)
+            .replace("%%VERSION_UI_KIT%%", la_version_ui_kit())
         )
-        response = HTMLResponse(content=politique_html)
+        response = HTMLResponse(content=page_html)
         headers = PRESETS["strict"] | {
-            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}'; script-src 'self' 'nonce-{nonce}'",
+            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; script-src 'self' 'nonce-{nonce}'; img-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com",
             "Cross-Origin-Embedder-Policy": "credentialless",
         }
         for header_name, header_value in headers.items():
