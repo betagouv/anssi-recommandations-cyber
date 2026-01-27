@@ -1,12 +1,12 @@
 <script lang="ts">
-  import InputPromptSysteme from "./InputPromptSysteme.svelte";
-  import { storeAffichage } from "../stores/affichage.store";
-  import { storeConversation } from "../stores/conversation.store";
-  import { publieMessageUtilisateurAPI } from "../client.api";
-  import { onMount, tick } from "svelte";
-  import {ValidateurQuestionUtilisateur} from "./ValidateurQuestionUtilisateur";
+    import InputPromptSysteme from "./InputPromptSysteme.svelte";
+    import {storeAffichage} from "../stores/affichage.store";
+    import {storeConversation} from "../stores/conversation.store";
+    import {publieMessageUtilisateurAPI, type ReponseEnErreur, type ReponseMessageUtilisateurAPI} from "../client.api";
+    import {onMount, tick} from "svelte";
+    import {ValidateurQuestionUtilisateur} from "./ValidateurQuestionUtilisateur";
 
-  let { urlAPI }: { urlAPI: string } = $props();
+    let { urlAPI }: { urlAPI: string} = $props();
 
   let question: string = $state("");
   let promptSysteme: string = $state("");
@@ -25,31 +25,39 @@
     promptSysteme = await reponse.json();
   }
 
+  export async function soumetLaQuestion(questionASoumettre: string = question) {
+      const estReponseMessageUtilisateur = (reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur): reponse is ReponseMessageUtilisateurAPI => {
+          return "reponse" in reponse && "paragraphes" in reponse && "interaction_id" in reponse
+      };
+      storeAffichage.estEnAttenteDeReponse(true);
+      storeConversation.ajouteMessageUtilisateur(questionASoumettre);
+      await storeAffichage.scrollVersDernierMessage();
+
+      const message = afficheInputPromptSysteme
+          ? {question: questionASoumettre, prompt: promptSysteme}
+          : {question: questionASoumettre};
+
+      question = "";
+      await tick();
+      redimensionneZoneDeTexte();
+
+      const reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur = await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
+      if (estReponseMessageUtilisateur(reponse)) {
+          await storeConversation.ajouteMessageSysteme(reponse.reponse, reponse.paragraphes, reponse.interaction_id);
+          storeAffichage.erreurAlbert(false)
+      } else {
+          storeAffichage.erreurAlbert(true)
+      }
+
+      storeAffichage.estEnAttenteDeReponse(false);
+      await storeAffichage.scrollVersDernierMessage();
+  }
+
   async function soumetQuestion(e: Event) {
-    e.preventDefault();
+      e.preventDefault();
       if (validateurQuestionUtilisateur.estValide(question)) {
           erreurValidation = "";
-          storeAffichage.estEnAttenteDeReponse(true);
-          storeConversation.ajouteMessageUtilisateur(question);
-          await storeAffichage.scrollVersDernierMessage();
-
-          const message = afficheInputPromptSysteme
-              ? {question, prompt: promptSysteme}
-              : {question};
-
-          question = "";
-          await tick();
-          redimensionneZoneDeTexte();
-
-          const {
-              reponse,
-              paragraphes,
-              interaction_id
-          } = await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
-          await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
-
-          storeAffichage.estEnAttenteDeReponse(false);
-          await storeAffichage.scrollVersDernierMessage();
+          await soumetLaQuestion();
       } else {
           erreurValidation = validateurQuestionUtilisateur.valide(question);
       }

@@ -10,6 +10,7 @@
   import PiedDePage from "./composants/PiedDePage.svelte";
 
   let { urlAPI }: { urlAPI: string } = $props();
+  let inputUtilisateur: InputUtilisateur | undefined = $state(undefined)
 </script>
 
 <Entete />
@@ -26,13 +27,13 @@
             </div>
         {:else}
             <div transition:fade>
-                <Conversation/>
+                <Conversation {inputUtilisateur}/>
             </div>
         {/if}
     </div>
 
     <div class="question-utilisateur">
-        <InputUtilisateur {urlAPI}/>
+        <InputUtilisateur {urlAPI} bind:this={inputUtilisateur} />
     </div>
 </main>
 
