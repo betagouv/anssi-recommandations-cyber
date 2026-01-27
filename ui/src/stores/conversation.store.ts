@@ -26,18 +26,34 @@ export type MessageSysteme = Message & {
   contenuMarkdown: string;
 };
 
-const { subscribe, update } = writable<Message[]>([]);
+export type Conversation = {
+  messages: Message[];
+  derniereQuestion: string;
+};
+
+const { subscribe, update } = writable<Conversation>({
+  messages: [],
+  derniereQuestion: "",
+});
+export const nettoyeurDOM = {
+  nettoie: async (contenu: string): Promise<string> =>
+    DOMPurify.sanitize(await marked.parse(contenu)),
+};
 
 export const storeConversation = {
   ajouteMessageUtilisateur: (question: string) => {
-    update((messages) => {
-      return [
-        ...messages,
-        {
-          contenu: question,
-          emetteur: "utilisateur",
-        },
-      ];
+    update((conversation) => {
+      return {
+        ...conversation,
+        messages: [
+          ...conversation.messages,
+          {
+            contenu: question,
+            emetteur: "utilisateur",
+          },
+        ],
+        derniereQuestion: question,
+      };
     });
   },
   ajouteMessageSysteme: async (
@@ -45,18 +61,21 @@ export const storeConversation = {
     references: Paragraphe[],
     idInteraction: string,
   ) => {
-    const contenuHTML = DOMPurify.sanitize(await marked.parse(reponse));
-    update((messages) => {
-      return [
-        ...messages,
-        {
-          contenu: contenuHTML,
-          contenuMarkdown: reponse,
-          emetteur: "systeme",
-          references,
-          idInteraction,
-        },
-      ];
+    const contenuHTML = await nettoyeurDOM.nettoie(reponse);
+    update((conversation) => {
+      return {
+        ...conversation,
+        messages: [
+          ...conversation.messages,
+          {
+            contenu: contenuHTML,
+            contenuMarkdown: reponse,
+            emetteur: "systeme",
+            references,
+            idInteraction,
+          },
+        ],
+      };
     });
   },
   subscribe,

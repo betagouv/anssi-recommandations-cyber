@@ -1,7 +1,11 @@
 <script lang="ts">
   import { storeAffichage } from "../stores/affichage.store";
   import { storeConversation } from "../stores/conversation.store";
-  import { publieMessageUtilisateurAPI } from "../client.api";
+  import {
+      estReponseMessageUtilisateur,
+      publieMessageUtilisateurAPI, type ReponseEnErreur,
+      type ReponseMessageUtilisateurAPI
+  } from "../client.api";
 
   async function rempliQuestion(e: MouseEvent & { currentTarget: EventTarget & { label: string }} ) {
     e.preventDefault();
@@ -10,8 +14,13 @@
     storeConversation.ajouteMessageUtilisateur(suggestion);
     await storeAffichage.scrollVersDernierMessage();
 
-    const { reponse, paragraphes, interaction_id } = await publieMessageUtilisateurAPI({ question: suggestion }, false);
-    await storeConversation.ajouteMessageSysteme(reponse, paragraphes, interaction_id);
+      const reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur = await publieMessageUtilisateurAPI({question: suggestion}, false);
+      if (estReponseMessageUtilisateur(reponse)) {
+          await storeConversation.ajouteMessageSysteme(reponse.reponse, reponse.paragraphes, reponse.interaction_id);
+          storeAffichage.erreurAlbert(false)
+      } else {
+          storeAffichage.erreurAlbert(true)
+      }
 
     storeAffichage.estEnAttenteDeReponse(false);
     await storeAffichage.scrollVersDernierMessage();

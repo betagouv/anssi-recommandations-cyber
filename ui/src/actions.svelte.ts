@@ -1,4 +1,4 @@
-import type { Action } from 'svelte/action';
+import type { Action } from "svelte/action";
 
 export const clic: Action<
   HTMLElement,
@@ -11,18 +11,18 @@ export const clic: Action<
     clicOuTouchePressee(event);
   };
   const gereLeClavier = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       clicOuTouchePressee(event);
     }
   };
 
-  element.addEventListener('click', gereLeClic);
-  element.addEventListener('keydown', gereLeClavier);
+  element.addEventListener("click", gereLeClic);
+  element.addEventListener("keydown", gereLeClavier);
 
   return {
     destroy() {
-      element.removeEventListener('click', gereLeClic);
-      element.removeEventListener('keydown', gereLeClavier);
+      element.removeEventListener("click", gereLeClic);
+      element.removeEventListener("keydown", gereLeClavier);
     },
   };
 };

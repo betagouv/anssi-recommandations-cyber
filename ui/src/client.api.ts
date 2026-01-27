@@ -48,15 +48,15 @@ type MessageUtilisateurAPI = {
 };
 
 export type ReponseMessageUtilisateurAPI = {
-  reponse: string,
-  paragraphes: Paragraphe[],
-  interaction_id: string,
-  question:string,
-}
+  reponse: string;
+  paragraphes: Paragraphe[];
+  interaction_id: string;
+  question: string;
+};
 
 export type ReponseEnErreur = {
-  erreur: string,
-}
+  erreur: string;
+};
 
 export const publieMessageUtilisateurAPI = async (
   message: MessageUtilisateurAPI,
@@ -74,10 +74,20 @@ export const publieMessageUtilisateurAPI = async (
     body: JSON.stringify(message),
   });
   const reponseJson = await reponse.json();
-  if(!reponse.ok) {
+  if (!reponse.ok) {
     return {
       erreur: reponseJson.detail.message,
     };
   }
   return reponseJson;
+};
+
+export const estReponseMessageUtilisateur = (
+  reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur,
+): reponse is ReponseMessageUtilisateurAPI => {
+  return (
+    "reponse" in reponse &&
+    "paragraphes" in reponse &&
+    "interaction_id" in reponse
+  );
 };

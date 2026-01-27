@@ -2,7 +2,12 @@
     import InputPromptSysteme from "./InputPromptSysteme.svelte";
     import {storeAffichage} from "../stores/affichage.store";
     import {storeConversation} from "../stores/conversation.store";
-    import {publieMessageUtilisateurAPI, type ReponseEnErreur, type ReponseMessageUtilisateurAPI} from "../client.api";
+    import {
+        estReponseMessageUtilisateur,
+        publieMessageUtilisateurAPI,
+        type ReponseEnErreur,
+        type ReponseMessageUtilisateurAPI
+    } from "../client.api";
     import {onMount, tick} from "svelte";
     import {ValidateurQuestionUtilisateur} from "./ValidateurQuestionUtilisateur";
 
@@ -25,10 +30,7 @@
     promptSysteme = await reponse.json();
   }
 
-  export async function soumetLaQuestion(questionASoumettre: string = question) {
-      const estReponseMessageUtilisateur = (reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur): reponse is ReponseMessageUtilisateurAPI => {
-          return "reponse" in reponse && "paragraphes" in reponse && "interaction_id" in reponse
-      };
+    export async function soumetLaQuestion(questionASoumettre: string = question) {
       storeAffichage.estEnAttenteDeReponse(true);
       storeConversation.ajouteMessageUtilisateur(questionASoumettre);
       await storeAffichage.scrollVersDernierMessage();
