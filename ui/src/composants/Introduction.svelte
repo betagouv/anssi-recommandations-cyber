@@ -1,26 +1,34 @@
 <script lang="ts">
-  import { storeAffichage } from "../stores/affichage.store";
-  import { storeConversation } from "../stores/conversation.store";
+  import { storeAffichage } from '../stores/affichage.store';
+  import { storeConversation } from '../stores/conversation.store';
   import {
-      estReponseMessageUtilisateur,
-      publieMessageUtilisateurAPI, type ReponseEnErreur,
-      type ReponseMessageUtilisateurAPI
-  } from "../client.api";
+    estReponseMessageUtilisateur,
+    publieMessageUtilisateurAPI,
+    type ReponseEnErreur,
+    type ReponseMessageUtilisateurAPI,
+  } from '../client.api';
 
-  async function rempliQuestion(e: MouseEvent & { currentTarget: EventTarget & { label: string }} ) {
+  async function rempliQuestion(
+    e: MouseEvent & { currentTarget: EventTarget & { label: string } }
+  ) {
     e.preventDefault();
     const suggestion: string = e.currentTarget.label;
     storeAffichage.estEnAttenteDeReponse(true);
     storeConversation.ajouteMessageUtilisateur(suggestion);
     await storeAffichage.scrollVersDernierMessage();
 
-      const reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur = await publieMessageUtilisateurAPI({question: suggestion}, false);
-      if (estReponseMessageUtilisateur(reponse)) {
-          await storeConversation.ajouteMessageSysteme(reponse.reponse, reponse.paragraphes, reponse.interaction_id);
-          storeAffichage.erreurAlbert(false)
-      } else {
-          storeAffichage.erreurAlbert(true)
-      }
+    const reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur =
+      await publieMessageUtilisateurAPI({ question: suggestion }, false);
+    if (estReponseMessageUtilisateur(reponse)) {
+      await storeConversation.ajouteMessageSysteme(
+        reponse.reponse,
+        reponse.paragraphes,
+        reponse.interaction_id
+      );
+      storeAffichage.erreurAlbert(false);
+    } else {
+      storeAffichage.erreurAlbert(true);
+    }
 
     storeAffichage.estEnAttenteDeReponse(false);
     await storeAffichage.scrollVersDernierMessage();
@@ -28,8 +36,17 @@
 </script>
 
 <div class="introduction">
-  <p>MesQuestionsCyber a pour but de vous <b>fournir des réponses précises et sourcées aux questions de cybersécurité</b> à partir de <b>sources sélectionnées par l’ANSSI</b>.</p>
-  <p>Pour cette version bêta, <b>la base de connaissance est uniquement basée sur les guides de l’ANSSI</b>. D'autres sources pourront venir enrichir la base de connaissance.</p>
+  <p>
+    MesQuestionsCyber a pour but de vous <b
+      >fournir des réponses précises et sourcées aux questions de cybersécurité</b
+    >
+    à partir de <b>sources sélectionnées par l’ANSSI</b>.
+  </p>
+  <p>
+    Pour cette version bêta, <b
+      >la base de connaissance est uniquement basée sur les guides de l’ANSSI</b
+    >. D'autres sources pourront venir enrichir la base de connaissance.
+  </p>
   <p>Posez votre question ou choisissez parmi nos suggestions :</p>
 
   <ul>
@@ -85,7 +102,7 @@
         align-items: center;
 
         &:before {
-          content: url("/icons/fleche-bas-scroll.svg");
+          content: url('/icons/fleche-bas-scroll.svg');
           transform: rotate(-90deg);
           display: flex;
           width: 16px;

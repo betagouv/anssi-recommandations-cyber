@@ -1,16 +1,16 @@
-import type { Paragraphe } from "./stores/conversation.store";
+import type { Paragraphe } from './stores/conversation.store';
 
 const urlAPI = import.meta.env.VITE_URL_API;
 
 const forgeURLAvecTypeUtilisateur = (chemin: string): string => {
   const urlParams = new URLSearchParams(window.location.search);
-  const a_type_utilisateur = urlParams.has("type_utilisateur");
+  const a_type_utilisateur = urlParams.has('type_utilisateur');
 
   console.log(`URL API ${urlAPI}`);
   if (a_type_utilisateur) {
     return new URL(
-      `${chemin}?type_utilisateur=${urlParams.get("type_utilisateur")}`,
-      urlAPI,
+      `${chemin}?type_utilisateur=${urlParams.get('type_utilisateur')}`,
+      urlAPI
     ).toString();
   }
   return new URL(`${chemin}`, urlAPI).toString();
@@ -20,17 +20,17 @@ export const soumetsAvisUtilisateurAPI = async (
   idInteraction: string,
   positif: boolean,
   commentaire?: string,
-  tags?: string[],
+  tags?: string[]
 ) =>
-  await fetch(forgeURLAvecTypeUtilisateur("/api/retour"), {
-    method: "POST",
+  await fetch(forgeURLAvecTypeUtilisateur('/api/retour'), {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       id_interaction: idInteraction,
       retour: {
-        type: positif ? "positif" : "negatif",
+        type: positif ? 'positif' : 'negatif',
         ...(commentaire ? { commentaire } : {}),
         ...(tags ? { tags } : {}),
       },
@@ -39,7 +39,7 @@ export const soumetsAvisUtilisateurAPI = async (
 
 export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
   await fetch(forgeURLAvecTypeUtilisateur(`/api/retour/${idInteraction}`), {
-    method: "DELETE",
+    method: 'DELETE',
   });
 
 type MessageUtilisateurAPI = {
@@ -60,16 +60,16 @@ export type ReponseEnErreur = {
 
 export const publieMessageUtilisateurAPI = async (
   message: MessageUtilisateurAPI,
-  avecPromptSysteme: boolean,
+  avecPromptSysteme: boolean
 ): Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur> => {
   const endpoint = avecPromptSysteme
-    ? "/api/pose_question_avec_prompt"
-    : "/api/pose_question";
+    ? '/api/pose_question_avec_prompt'
+    : '/api/pose_question';
 
   const reponse = await fetch(forgeURLAvecTypeUtilisateur(endpoint), {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(message),
   });
@@ -83,11 +83,9 @@ export const publieMessageUtilisateurAPI = async (
 };
 
 export const estReponseMessageUtilisateur = (
-  reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur,
+  reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur
 ): reponse is ReponseMessageUtilisateurAPI => {
   return (
-    "reponse" in reponse &&
-    "paragraphes" in reponse &&
-    "interaction_id" in reponse
+    'reponse' in reponse && 'paragraphes' in reponse && 'interaction_id' in reponse
   );
 };

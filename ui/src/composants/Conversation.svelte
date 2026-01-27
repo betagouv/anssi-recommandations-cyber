@@ -1,26 +1,28 @@
 <script lang="ts">
-  import {fade} from "svelte/transition";
-  import BandeauAvisUtilisateur from "./BandeauAvisUtilisateur.svelte";
+  import { fade } from 'svelte/transition';
+  import BandeauAvisUtilisateur from './BandeauAvisUtilisateur.svelte';
   import {
-      type Message,
-      type MessageSysteme,
-      type MessageUtilisateur,
-      storeConversation
-  } from "../stores/conversation.store";
-  import {onMount} from "svelte";
-  import {storeAffichage} from "../stores/affichage.store.js";
-  import {infobulle} from "../directives/infobulle";
-  import EcranErreur from "./EcranErreur.svelte";
-  import InputUtilisateur from "./InputUtilisateur.svelte";
+    type Message,
+    type MessageSysteme,
+    type MessageUtilisateur,
+    storeConversation,
+  } from '../stores/conversation.store';
+  import { onMount } from 'svelte';
+  import { storeAffichage } from '../stores/affichage.store.js';
+  import { infobulle } from '../directives/infobulle';
+  import EcranErreur from './EcranErreur.svelte';
+  import InputUtilisateur from './InputUtilisateur.svelte';
 
   let afficheBoutonScroll: boolean = $state(false);
-  let {inputUtilisateur}: {inputUtilisateur: InputUtilisateur | undefined} = $props();
+  let { inputUtilisateur }: { inputUtilisateur: InputUtilisateur | undefined } =
+    $props();
 
   const SEUIL_AFFICHAGE_BOUTON_SCROLL = 100;
   const gereScrollConversation = () => {
-    const distanceFromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+    const distanceFromBottom =
+      document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
     afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
-  }
+  };
 
   onMount(() => {
     window.addEventListener('scroll', gereScrollConversation, { passive: true });
@@ -29,30 +31,36 @@
   });
 
   const copieLaReponse = (contenu: string) => {
-      navigator.clipboard.writeText(contenu);
+    navigator.clipboard.writeText(contenu);
   };
 
-  const estMessageSysteme = (message: Message | MessageSysteme | MessageUtilisateur): message is MessageSysteme => message.emetteur === "systeme";
+  const estMessageSysteme = (
+    message: Message | MessageSysteme | MessageUtilisateur
+  ): message is MessageSysteme => message.emetteur === 'systeme';
 </script>
-
 
 <div class="conversation">
   {#each $storeConversation.messages as message, index (index)}
-      {@const contenu = message.contenu}
-      {@const contenuMarkdown = estMessageSysteme(message) ? message.contenuMarkdown : message.contenu}
-    <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
-
-      {#if message.emetteur === "systeme"}
+    {@const contenu = message.contenu}
+    {@const contenuMarkdown = estMessageSysteme(message)
+      ? message.contenuMarkdown
+      : message.contenu}
+    <div
+      class="message"
+      class:utilisateur={message.emetteur === 'utilisateur'}
+      transition:fade
+    >
+      {#if message.emetteur === 'systeme'}
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          <p id={`reponse-mqc-${index}`}>{@html contenu}</p>
+        <p id={`reponse-mqc-${index}`}>{@html contenu}</p>
       {:else}
         <p>{message.contenu}</p>
       {/if}
     </div>
-    {#if message.emetteur === "systeme"}
+    {#if message.emetteur === 'systeme'}
       <div class="copie-reponse">
         <dsfr-button
-            use:infobulle={{contenu:"Réponse copiée", mode: 'click'}}
+          use:infobulle={{ contenu: 'Réponse copiée', mode: 'click' }}
           label="Copier la réponse"
           kind="tertiary-no-outline"
           size="md"
@@ -82,7 +90,7 @@
                 title={reference.nom_document}
               />
               {#if index !== message.references.length - 1}
-                <hr>
+                <hr />
               {/if}
             </div>
           {/each}
@@ -101,13 +109,19 @@
       <span>Un instant... Je parcours les guides de l’ANSSI.</span>
     </div>
   {/if}
-    {#if $storeAffichage.aUneErreurAlbert && !$storeAffichage.enAttenteDeReponse}
-        <EcranErreur onclick={() =>inputUtilisateur?.soumetLaQuestion($storeConversation.derniereQuestion)}/>
-    {/if}
+  {#if $storeAffichage.aUneErreurAlbert && !$storeAffichage.enAttenteDeReponse}
+    <EcranErreur
+      onclick={() =>
+        inputUtilisateur?.soumetLaQuestion($storeConversation.derniereQuestion)}
+    />
+  {/if}
   <div id="cible-scroll"></div>
 </div>
 {#if afficheBoutonScroll}
-  <button class="bouton-scroll-rapide" onclick={storeAffichage.scrollVersDernierMessage}>
+  <button
+    class="bouton-scroll-rapide"
+    onclick={storeAffichage.scrollVersDernierMessage}
+  >
     <img src="./icons/fleche-bas-scroll.svg" alt="Flêche de scroll rapide" />
   </button>
 {/if}
@@ -150,7 +164,7 @@
     .message.utilisateur {
       padding: 8px 16px;
       border-radius: 24px;
-      background-color: #EEEEEE;
+      background-color: #eeeeee;
       align-self: flex-end;
       width: fit-content;
       max-width: 600px;
@@ -162,7 +176,7 @@
     .conteneur-sources {
       margin: 24px 0;
       padding: 16px;
-      background-color: #F6F6F6;
+      background-color: #f6f6f6;
       &[open] {
         summary {
           img {
@@ -188,11 +202,11 @@
         }
 
         &::marker {
-          content: "";
+          content: '';
         }
 
         &::-webkit-details-marker {
-          content: "";
+          content: '';
           display: none !important;
           visibility: hidden;
         }
@@ -217,7 +231,7 @@
         hr {
           width: 100%;
           border: none;
-          border-top: 1px solid #DDDDDD;
+          border-top: 1px solid #dddddd;
           margin: 16px 0;
         }
       }
@@ -255,7 +269,7 @@
     justify-content: center;
     align-items: center;
     border: 1px solid #000091;
-    background: #FFF;
+    background: #fff;
     cursor: pointer;
   }
 </style>

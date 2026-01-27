@@ -2,16 +2,15 @@
 </script>
 
 <div class="bandeau">
-    <div class="contenu-bandeau">
-        <slot></slot>
-    </div>
+  <div class="contenu-bandeau">
+    <slot></slot>
+  </div>
 </div>
 
 <style lang="scss">
-
   .bandeau {
-    background-color: #E8EDFF;
-    color: #0063CB;
+    background-color: #e8edff;
+    color: #0063cb;
     font-size: 1rem;
     line-height: 1.5rem;
     padding: 1rem 0 1.5rem;

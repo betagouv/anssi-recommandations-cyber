@@ -1,5 +1,5 @@
-import { writable } from "svelte/store";
-import { tick } from "svelte";
+import { writable } from 'svelte/store';
+import { tick } from 'svelte';
 
 type EtatAffichage = {
   enAttenteDeReponse: boolean;
@@ -22,9 +22,9 @@ export const storeAffichage = {
   },
   scrollVersDernierMessage: async () => {
     await tick();
-    const cibleScroll = document.getElementById("cible-scroll");
+    const cibleScroll = document.getElementById('cible-scroll');
     if (cibleScroll)
-      cibleScroll.scrollIntoView({ behavior: "smooth", block: "end" });
+      cibleScroll.scrollIntoView({ behavior: 'smooth', block: 'end' });
   },
   subscribe,
 };
