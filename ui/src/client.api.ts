@@ -1,3 +1,5 @@
+import type { Paragraphe } from "./stores/conversation.store";
+
 const urlAPI = import.meta.env.VITE_URL_API;
 
 const forgeURLAvecTypeUtilisateur = (chemin: string): string => {
@@ -45,10 +47,21 @@ type MessageUtilisateurAPI = {
   prompt?: string;
 };
 
+export type ReponseMessageUtilisateurAPI = {
+  reponse: string,
+  paragraphes: Paragraphe[],
+  interaction_id: string,
+  question:string,
+}
+
+export type ReponseEnErreur = {
+  erreur: string,
+}
+
 export const publieMessageUtilisateurAPI = async (
   message: MessageUtilisateurAPI,
   avecPromptSysteme: boolean,
-) => {
+): Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur> => {
   const endpoint = avecPromptSysteme
     ? "/api/pose_question_avec_prompt"
     : "/api/pose_question";
@@ -60,5 +73,11 @@ export const publieMessageUtilisateurAPI = async (
     },
     body: JSON.stringify(message),
   });
-  return await reponse.json();
+  const reponseJson = await reponse.json();
+  if(!reponse.ok) {
+    return {
+      erreur: reponseJson.detail.message,
+    };
+  }
+  return reponseJson;
 };

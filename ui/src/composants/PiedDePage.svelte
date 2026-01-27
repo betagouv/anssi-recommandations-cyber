@@ -3,7 +3,7 @@
 
 <footer>
     <div>
-        En envoyant des messages à MesQuestionsCyber, vous confirmez que vous acceptez nos <a href="/cgu">conditions d’utilisation</a> et que vous avez pris connaissance de notre <a href="/politique-confidentialite">mention d"information</a>.
+        En envoyant des messages à MesQuestionsCyber, vous confirmez que vous acceptez nos <a href="/cgu">conditions d’utilisation</a> et que vous avez pris connaissance de notre <a href="/politique-confidentialite">mention d’information</a>.
     </div>
 </footer>
 

@@ -10,8 +10,11 @@
   import {onMount} from "svelte";
   import {storeAffichage} from "../stores/affichage.store.js";
   import {infobulle} from "../directives/infobulle";
+  import EcranErreur from "./EcranErreur.svelte";
+  import InputUtilisateur from "./InputUtilisateur.svelte";
 
   let afficheBoutonScroll: boolean = $state(false);
+  let {inputUtilisateur}: {inputUtilisateur: InputUtilisateur | undefined} = $props();
 
   const SEUIL_AFFICHAGE_BOUTON_SCROLL = 100;
   const gereScrollConversation = () => {
@@ -98,6 +101,9 @@
       <span>Un instant... Je parcours les guides de l’ANSSI.</span>
     </div>
   {/if}
+    {#if $storeAffichage.aUneErreurAlbert}
+        <EcranErreur onclick={() =>inputUtilisateur?.soumetLaQuestion("albert")}/>
+    {/if}
   <div id="cible-scroll"></div>
 </div>
 {#if afficheBoutonScroll}
