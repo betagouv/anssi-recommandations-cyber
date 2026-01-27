@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@lab-anssi/ui-kit':
+        specifier: ~1.40.0
+        version: 1.40.0(svelte@5.39.13)
       dompurify:
         specifier: ~3.3.1
         version: 3.3.1
@@ -319,6 +322,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lab-anssi/ui-kit@1.40.0':
+    resolution: {integrity: sha512-MeCI3WP1XT5z7f1l2owYgPxuUeinCNtKJRcf5ecQc1UYTcfwrTg/raS3U+/iZNC9Wi4pyp6HS48n9UVQ3aNdCw==}
+    peerDependencies:
+      svelte: ~5.38.8
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -1778,6 +1786,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lab-anssi/ui-kit@1.40.0(svelte@5.39.13)':
+    dependencies:
+      svelte: 5.39.13
 
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
