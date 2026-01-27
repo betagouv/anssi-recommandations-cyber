@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd ui
+./node_modules/.bin/lint-staged

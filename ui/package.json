@@ -16,6 +16,12 @@
     "preinstall": "npx only-allow@1.2.2 pnpm",
     "test": "vitest run"
   },
+  "lint-staged": {
+    "*.{ts,js,json,css,md}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
   "devDependencies": {
     "@eslint/compat": "~1.2.5",
     "@eslint/js": "~9.22.0",
@@ -23,9 +29,12 @@
     "@tsconfig/svelte": "~5.0.5",
     "@types/node": "~22",
     "eslint": "~9.22.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "~3.0.0",
     "globals": "~16.0.0",
+    "lint-staged": "^16.2.7",
     "prettier": "3.6.2",
+    "prettier-plugin-svelte": "^3.4.1",
     "sass-embedded": "~1.93.2",
     "svelte": "~5.39.4",
     "svelte-check": "~4.3.1",
