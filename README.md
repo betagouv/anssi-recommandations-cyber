@@ -4,6 +4,13 @@ Une interface permettant d'interroger [Albert](https://albert.etalab.gouv.fr), l
 
 ## 📦 Comment installer ?
 
+### Installer le `hook` de `pre-commit`
+
+```shell
+$ chmod +x .githooks/pre-commit
+$ git config core.hooksPath .githooks
+```
+
 ### Directement sur l'hôte
 
 Il faut installer deux dépendances systèmes, `python` et `uv`.
