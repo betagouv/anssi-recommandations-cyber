@@ -1,6 +1,6 @@
-import { writable } from "svelte/store";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
+import { writable } from 'svelte/store';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
 export type Paragraphe = {
   score_similarite: number;
@@ -12,17 +12,17 @@ export type Paragraphe = {
 
 export type Message = {
   contenu: string;
-  emetteur: "utilisateur" | "systeme";
+  emetteur: 'utilisateur' | 'systeme';
   references?: Paragraphe[];
   idInteraction?: string;
 };
 
 export type MessageUtilisateur = Message & {
-  emetteur: "utilisateur";
+  emetteur: 'utilisateur';
 };
 
 export type MessageSysteme = Message & {
-  emetteur: "systeme";
+  emetteur: 'systeme';
   contenuMarkdown: string;
 };
 
@@ -33,7 +33,7 @@ export type Conversation = {
 
 const { subscribe, update } = writable<Conversation>({
   messages: [],
-  derniereQuestion: "",
+  derniereQuestion: '',
 });
 export const nettoyeurDOM = {
   nettoie: async (contenu: string): Promise<string> =>
@@ -49,7 +49,7 @@ export const storeConversation = {
           ...conversation.messages,
           {
             contenu: question,
-            emetteur: "utilisateur",
+            emetteur: 'utilisateur',
           },
         ],
         derniereQuestion: question,
@@ -59,7 +59,7 @@ export const storeConversation = {
   ajouteMessageSysteme: async (
     reponse: string,
     references: Paragraphe[],
-    idInteraction: string,
+    idInteraction: string
   ) => {
     const contenuHTML = await nettoyeurDOM.nettoie(reponse);
     update((conversation) => {
@@ -70,7 +70,7 @@ export const storeConversation = {
           {
             contenu: contenuHTML,
             contenuMarkdown: reponse,
-            emetteur: "systeme",
+            emetteur: 'systeme',
             references,
             idInteraction,
           },
