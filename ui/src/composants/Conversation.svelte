@@ -37,7 +37,7 @@
 
 
 <div class="conversation">
-  {#each $storeConversation as message, index (index)}
+  {#each $storeConversation.messages as message, index (index)}
       {@const contenu = message.contenu}
       {@const contenuMarkdown = estMessageSysteme(message) ? message.contenuMarkdown : message.contenu}
     <div class="message" class:utilisateur={message.emetteur === "utilisateur"} transition:fade>
@@ -101,8 +101,8 @@
       <span>Un instant... Je parcours les guides de l’ANSSI.</span>
     </div>
   {/if}
-    {#if $storeAffichage.aUneErreurAlbert}
-        <EcranErreur onclick={() =>inputUtilisateur?.soumetLaQuestion("albert")}/>
+    {#if $storeAffichage.aUneErreurAlbert && !$storeAffichage.enAttenteDeReponse}
+        <EcranErreur onclick={() =>inputUtilisateur?.soumetLaQuestion($storeConversation.derniereQuestion)}/>
     {/if}
   <div id="cible-scroll"></div>
 </div>

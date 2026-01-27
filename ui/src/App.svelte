@@ -21,7 +21,7 @@
     </div>
 
     <div class="contenu">
-        {#if $storeConversation.length === 0}
+        {#if $storeConversation?.messages.length === 0}
             <div transition:fade>
                 <Introduction/>
             </div>
