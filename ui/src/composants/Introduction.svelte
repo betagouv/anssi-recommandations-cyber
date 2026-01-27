@@ -35,21 +35,21 @@
   <ul>
     <li>
       <dsfr-link
-        label="Les réflexes à adopter en cas d’attaque par rançongiciel"
+        label="Quels sont les réflexes à adopter en cas d’attaque par rançongiciel en tant que PME française ?"
         href="#"
         onclick={rempliQuestion}
       ></dsfr-link>
     </li>
     <li>
       <dsfr-link
-        label="Organiser un exercice de gestion de crise cyber"
+        label="Quel est l'intérêt d'organiser un exercice de gestion de crise cyber pour une PME ?"
         href="#"
         onclick={rempliQuestion}
       ></dsfr-link>
     </li>
     <li>
       <dsfr-link
-        label="Réaliser une cartographie de mon SI"
+        label="Pourquoi réaliser une cartographie de mon SI ?"
         href="#"
         onclick={rempliQuestion}
       ></dsfr-link>
