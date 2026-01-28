@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional, Dict
+
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -21,6 +22,7 @@ from adaptateurs.journal import (
     TypeEvenement,
     fabrique_adaptateur_journal,
 )
+from adaptateurs.sentry import fabrique_adaptateur_sentry
 from configuration import Mode
 from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
@@ -227,6 +229,7 @@ def fabrique_serveur(
     static_root_directory="ui/dist/",
     la_version_ui_kit=version_ui_kit,
 ) -> FastAPI:
+    fabrique_adaptateur_sentry()
     serveur = FastAPI()
 
     limiteur = Limiter(
