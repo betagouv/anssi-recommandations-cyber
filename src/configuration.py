@@ -44,9 +44,15 @@ class Chiffrement(NamedTuple):
     sel_de_hachage: str
 
 
+class TypeAdaptateurSentry(StrEnum):
+    MEMOIRE = "memoire"
+    STANDARD = "standard"
+
+
 class Sentry(NamedTuple):
     dsn: Optional[str]
     environnement: str
+    type_adaptateur_sentry: TypeAdaptateurSentry
 
 
 class Mode(StrEnum):
@@ -138,6 +144,9 @@ def recupere_configuration() -> Configuration:
     configuration_sentry = Sentry(
         dsn=os.getenv("SENTRY_DSN"),
         environnement=os.getenv("SENTRY_ENVIRONNEMENT", "developpement"),
+        type_adaptateur_sentry=TypeAdaptateurSentry(
+            os.getenv("SENTRY_TYPE_ADAPTATEUR", "memoire")
+        ),
     )
 
     return Configuration(

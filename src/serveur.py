@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional, Dict
+
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles

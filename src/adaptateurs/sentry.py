@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
+import sentry_sdk
+
+from configuration import logging, Sentry, recupere_configuration
 
 
 class AdaptateurSentry(ABC):
@@ -31,3 +34,29 @@ class AdaptateurSentryMemoire(AdaptateurSentry):
 
     def definis_contexte(self, cle: str, contexte: Dict[str, Any]) -> None:
         self.contextes[cle] = contexte
+
+
+class AdaptateurSentryStandard(AdaptateurSentry):
+    @staticmethod
+    def init(configuration: Sentry):
+        sentry_sdk.init(dsn=configuration.dsn, environment=configuration.environnement)
+
+    def capture_exception(self, exception: Exception) -> None:
+        pass
+        # sentry_sdk.capture_message("Hello Sentry!")
+
+    def capture_message(self, message: str) -> None:
+        pass
+        # sentry_sdk.capture_message("Hello Sentry!")
+
+    def definis_contexte(self, cle: str, contexte: Dict[str, Any]) -> None:
+        pass
+
+
+def fabrique_adaptateur_sentry() -> AdaptateurSentry:
+    configuration = recupere_configuration().sentry
+    logging.info(f"Configuration Sentry : {configuration.type_adaptateur_sentry}")
+    if configuration.type_adaptateur_sentry == "standard":
+        AdaptateurSentryStandard.init(configuration)
+        return AdaptateurSentryStandard()
+    return AdaptateurSentryMemoire()
