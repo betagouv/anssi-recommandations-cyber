@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 def version_ui_kit() -> str:
     racine_projet = Path(__file__).resolve().parent.parent.parent.parent
     print(f"Racine du projet : {racine_projet}")
