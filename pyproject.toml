@@ -17,6 +17,7 @@ dependencies = [
     "requests",
     "slowapi",
     "typing",
+    "urllib3>=2.6.3",
     "uvicorn",
 ]
 
@@ -27,6 +28,7 @@ dev = [
     "types-psycopg2",
     "types-requests",
     "pytest-dotenv",
+    "pipdeptree"
 ]
 
 [tool.mypy]
