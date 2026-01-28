@@ -44,6 +44,11 @@ class Chiffrement(NamedTuple):
     sel_de_hachage: str
 
 
+class Sentry(NamedTuple):
+    dsn: Optional[str]
+    environnement: str
+
+
 class Mode(StrEnum):
     DEVELOPPEMENT = auto()
     TEST = auto()
@@ -55,6 +60,7 @@ class Configuration(NamedTuple):
     base_de_donnees: BaseDeDonnees
     base_de_donnees_journal: Optional[BaseDeDonnees]
     chiffrement: Chiffrement
+    sentry: Sentry
     hote: str
     port: int
     mode: Mode
@@ -129,11 +135,17 @@ def recupere_configuration() -> Configuration:
         clef_chiffrement=os.getenv("CHIFFREMENT_CLEF_DE_CHIFFREMENT", None),
     )
 
+    configuration_sentry = Sentry(
+        dsn=os.getenv("SENTRY_DSN"),
+        environnement=os.getenv("SENTRY_ENVIRONNEMENT", "developpement"),
+    )
+
     return Configuration(
         albert=configuration_albert,
         base_de_donnees=configuration_base_de_donnees,
         base_de_donnees_journal=configuration_base_de_donnees_journal,
         chiffrement=configuration_chiffrement,
+        sentry=configuration_sentry,
         hote=os.getenv("HOST", "127.0.0.1"),
         port=int(os.getenv("PORT", "8000")),
         mode=mode,
