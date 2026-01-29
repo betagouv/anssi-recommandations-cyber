@@ -293,6 +293,7 @@ def fabrique_serveur(
             .read_text(encoding="utf-8")
             .replace("%%NONCE_A_INJECTER%%", nonce)
             .replace("%%VERSION_UI_KIT%%", la_version_ui_kit())
+            .replace("%%FAVICON%%", "/icons/favicon.ico")
         )
         response = HTMLResponse(content=page_html)
         headers = HEADERS_SECURITE | {
