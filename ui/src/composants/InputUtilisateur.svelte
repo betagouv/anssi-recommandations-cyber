@@ -107,9 +107,8 @@
 
   const gereChangementTexte = () => {
     redimensionneZoneDeTexte();
-    erreurValidation = validateurQuestionUtilisateur.estValide(question)
-      ? ''
-      : validateurQuestionUtilisateur.valide(question);
+    if (validateurQuestionUtilisateur.estValide(question))
+        erreurValidation = '';
   };
 
   const gereTouchePresseeZoneDeTexte = (e: KeyboardEvent) => {
@@ -139,7 +138,7 @@
         rows="1"
         class:erreur={erreurValidation !== ''}
       ></textarea>
-      <button type="submit" class:actif={question !== '' && erreurValidation === ''}>
+      <button type="submit" disabled={question === '' || erreurValidation !== '' } class:actif={question !== '' && erreurValidation === ''} >
         <img src="./icons/fleche-envoi-message.svg" alt="" />
       </button>
     </div>
