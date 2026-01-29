@@ -179,7 +179,6 @@
 
     &:focus-within {
       outline: 2px solid #0a76f6;
-      outline-offset: 2px;
 
       .information-donnees-personnelles {
         display: block;
@@ -193,7 +192,7 @@
       line-height: 1.25rem;
       width: 100%;
       position: absolute;
-      top: -8px;
+      top: -2px;
       transform: translateY(-100%);
       display: none;
       left: 0;
