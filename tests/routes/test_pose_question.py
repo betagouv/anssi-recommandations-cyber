@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import (
     TypeEvenement,
 )
@@ -13,7 +14,6 @@ from schemas.violations import (
     ViolationThematique,
 )
 from serveur_de_test import (
-    ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurAdaptateurJournal,
     ConstructeurServiceAlbert,
 )
@@ -37,7 +37,7 @@ def test_route_pose_question_repond_correctement(
         violation=None,
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -81,7 +81,7 @@ def test_route_pose_question_retourne_donnees_correctes(
         violation=None,
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -117,7 +117,10 @@ def test_route_pose_question_retourne_donnees_correctes(
     }
 
     service_albert.pose_question.assert_called_once()
-    adaptateur_base_de_donnees.sauvegarde_interaction.assert_called_once()
+    assert (
+        adaptateur_base_de_donnees.recupere_interaction("id-interaction-test")
+        is not None
+    )
 
 
 @pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
@@ -128,7 +131,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
@@ -166,7 +169,7 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
         question=question_posee,
         violation=None,
     )
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
@@ -207,7 +210,7 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
         question=question_posee,
         violation=None,
     )
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
@@ -242,7 +245,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
         reponse="", paragraphes=[], question="Q?", violation=violation
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
@@ -276,7 +279,7 @@ def test_route_pose_question_rejette_question_trop_longue(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
 ) -> None:
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     service_albert = ConstructeurServiceAlbert().construis()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -306,7 +309,7 @@ def test_route_pose_question_identifie_le_type_d_utilisateur(
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(dechiffre=type_utilisateur)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (
@@ -334,7 +337,7 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur(
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(
         dechiffre="une chaine inconnue"
     )
@@ -364,7 +367,7 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le
     reponse = ReponseQuestion(
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(leve_une_erreur=True)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     service_albert = (

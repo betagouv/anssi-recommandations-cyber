@@ -1,8 +1,8 @@
 from pathlib import Path
+from typing import Callable, Dict, Optional
 from unittest.mock import Mock
 
 from openai.types.chat.chat_completion import Choice
-from typing import Callable, Dict, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -20,7 +20,6 @@ from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
 from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, ReclasseReponse
-from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.violations import Violation
 from serveur import fabrique_serveur
 from services.fabrique_service_albert import fabrique_service_albert
@@ -28,22 +27,6 @@ from services.service_albert import ServiceAlbert, Prompts
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
-
-
-class ConstructeurAdaptateurBaseDeDonnees:
-    def __init__(self):
-        self._mock = Mock()
-        self._mock.sauvegarde_interaction.return_value = "id-interaction-test"
-
-    def avec_retour(self, retour: Optional[RetourUtilisatrice]):
-        self._mock.ajoute_retour_utilisatrice.return_value = retour
-        self._mock.supprime_retour_utilisatrice.side_effect = (
-            lambda i: i if i == "id-interaction-test" else None
-        )
-        return self
-
-    def construis(self):
-        return self._mock
 
 
 class ConstructeurAdaptateurJournal:

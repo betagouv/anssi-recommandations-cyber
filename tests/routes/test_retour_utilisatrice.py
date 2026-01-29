@@ -1,25 +1,24 @@
 from fastapi.testclient import TestClient
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
+
+from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import TypeEvenement
-from schemas.retour_utilisatrice import RetourPositif, TagPositif
+from schemas.retour_utilisatrice import TagPositif
 from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import (
-    ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurAdaptateurJournal,
 )
 
 
-def test_route_retour_avec_mock_retourne_succes_200(
-    un_serveur_de_test, un_adaptateur_de_chiffrement
+def test_route_retour_avec_retourne_succes_200(
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    une_reponse_question,
+    un_retour_positif,
 ) -> None:
-    retour = RetourPositif(
-        commentaire="Très utile !",
-        tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
-    )
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
-    )
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -27,7 +26,7 @@ def test_route_retour_avec_mock_retourne_succes_200(
 
     client = TestClient(serveur)
     payload = {
-        "id_interaction": "id-123",
+        "id_interaction": "id-interaction-test",
         "retour": {
             "type": "positif",
             "commentaire": "Très utile",
@@ -37,20 +36,19 @@ def test_route_retour_avec_mock_retourne_succes_200(
     reponse = client.post("/api/retour", json=payload)
 
     assert reponse.status_code == 200
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
+    assert (
+        adaptateur_base_de_donnees.recupere_interaction(  # type: ignore[union-attr]
+            "id-interaction-test"
+        ).retour_utilisatrice
+        == un_retour_positif
+    )
 
 
-def test_route_retour_avec_mock_retourne_donnees_attendues(
-    un_serveur_de_test,
-    un_adaptateur_de_chiffrement,
+def test_route_retour_retourne_donnees_attendues(
+    un_serveur_de_test, un_adaptateur_de_chiffrement, une_reponse_question
 ) -> None:
-    retour = RetourPositif(
-        commentaire="Très utile !",
-        tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
-    )
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
-    )
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -58,10 +56,10 @@ def test_route_retour_avec_mock_retourne_donnees_attendues(
 
     client = TestClient(serveur)
     payload = {
-        "id_interaction": "id-123",
+        "id_interaction": "id-interaction-test",
         "retour": {
             "type": "positif",
-            "commentaire": "Très utile !",
+            "commentaire": "Très utile",
             "tags": ["complete", "facileacomprendre"],
         },
     }
@@ -69,18 +67,15 @@ def test_route_retour_avec_mock_retourne_donnees_attendues(
     reponse = client.post("/api/retour", json=payload)
     data = reponse.json()
 
-    assert data["commentaire"] == "Très utile !"
+    assert data["commentaire"] == "Très utile"
     assert data["tags"] == [TagPositif.Complete, TagPositif.FacileAComprendre]
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
 
 
 def test_route_retour_avec_interaction_inexistante_retourne_404(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
 ) -> None:
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(None).construis()
-    )
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -88,7 +83,7 @@ def test_route_retour_avec_interaction_inexistante_retourne_404(
 
     client = TestClient(serveur)
     payload = {
-        "id_interaction": "id-123",
+        "id_interaction": "id-inconnu",
         "retour": {
             "type": "positif",
             "commentaire": "Très utile",
@@ -99,14 +94,14 @@ def test_route_retour_avec_interaction_inexistante_retourne_404(
 
     assert reponse.status_code == 404
     assert reponse.json() == {"detail": "Interaction non trouvée"}
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_called_once()
+    assert adaptateur_base_de_donnees.recupere_interaction("id-inconnu") is None
 
 
 def test_route_retour_avec_payload_invalide_rejette_la_requete(
-    un_serveur_de_test,
-    un_adaptateur_de_chiffrement,
+    un_serveur_de_test, un_adaptateur_de_chiffrement, une_reponse_question
 ) -> None:
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("23")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -114,7 +109,7 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete(
 
     client = TestClient(serveur)
     payload = {
-        "id": 23,
+        "id": "23",
         "retour": {
             "type": "positif",
             "commentaire": "Très utile",
@@ -123,19 +118,22 @@ def test_route_retour_avec_payload_invalide_rejette_la_requete(
     reponse = client.post("/api/retour", json=payload)
 
     assert reponse.status_code == 422
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice.assert_not_called()
+    assert (
+        adaptateur_base_de_donnees.recupere_interaction("23").retour_utilisatrice  # type: ignore[union-attr]
+        is None
+    )
 
 
 def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
+    une_reponse_question,
+    un_retour_positif,
 ) -> None:
-    retour = RetourPositif(
-        commentaire="Très utile !",
-        tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
-    )
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
+        "id-interaction-test", un_retour_positif
     )
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -147,21 +145,24 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
 
     assert reponse.status_code == 200
     assert reponse.content.decode() == '"id-interaction-test"'
-    adaptateur_base_de_donnees.supprime_retour_utilisatrice.assert_called_once()
-    [args, _] = adaptateur_base_de_donnees.supprime_retour_utilisatrice._mock_call_args
-    assert args[0] == "id-interaction-test"
+    assert (
+        adaptateur_base_de_donnees.recupere_interaction(  # type: ignore[union-attr]
+            "id-interaction-test"
+        ).retour_utilisatrice
+        is None
+    )
 
 
 def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_erreur(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
+    une_reponse_question,
+    un_retour_positif,
 ) -> None:
-    retour = RetourPositif(
-        commentaire="Très utile !",
-        tags=[TagPositif.Complete, TagPositif.FacileAComprendre],
-    )
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
+        "id-interaction-test", un_retour_positif
     )
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -172,19 +173,25 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
     reponse = client.delete("/api/retour/id-interaction-inexistant")
 
     assert reponse.status_code == 404
-    adaptateur_base_de_donnees.supprime_retour_utilisatrice.assert_called_once()
-    [args, _] = adaptateur_base_de_donnees.supprime_retour_utilisatrice._mock_call_args
-    assert args[0] == "id-interaction-inexistant"
+    assert (
+        adaptateur_base_de_donnees.recupere_interaction("id-interaction-inexistant")
+        is None
+    )
+    assert (
+        adaptateur_base_de_donnees.recupere_interaction(  # type: ignore[union-attr]
+            "id-interaction-test"
+        ).retour_utilisatrice
+        == un_retour_positif
+    )
 
 
 def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
+    une_reponse_question,
 ) -> None:
-    retour = RetourPositif(commentaire="Excellent !", tags=[TagPositif.Complete])
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
-    )
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-456")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -215,10 +222,13 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
 def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
+    une_reponse_question,
+    un_retour_positif,
 ) -> None:
-    retour = RetourPositif(commentaire="Très utile !")
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
+        "id-interaction-test", un_retour_positif
     )
     adaptateur_journal = ConstructeurAdaptateurJournal().construis()
     serveur = un_serveur_de_test(
@@ -237,12 +247,14 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
 
 
 def test_route_route_retour_identifie_le_type_d_utilisateur(
-    un_serveur_de_test, un_adaptateur_de_chiffrement
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    une_reponse_question,
+    un_retour_positif,
 ):
-    retour = RetourPositif(commentaire="Très utile !")
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
-    )
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-456")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice("id-456", un_retour_positif)
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )
@@ -269,11 +281,15 @@ def test_route_route_retour_identifie_le_type_d_utilisateur(
 
 
 def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
-    un_serveur_de_test, un_adaptateur_de_chiffrement
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    une_reponse_question,
+    un_retour_positif,
 ):
-    retour = RetourPositif(commentaire="Très utile !")
-    adaptateur_base_de_donnees = (
-        ConstructeurAdaptateurBaseDeDonnees().avec_retour(retour).construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
+        "id-interaction-test", un_retour_positif
     )
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
