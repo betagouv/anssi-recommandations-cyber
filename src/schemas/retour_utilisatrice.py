@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Generic, Literal, Optional, TypeVar, Union
+
+from adaptateurs.horloge import AdaptateurHorloge
 from schemas.albert import ReponseQuestion
 from enum import StrEnum, auto
 
@@ -39,7 +41,7 @@ class AbstractRetourUtilisatrice(BaseModel, Generic[TypeDesTags]):
         return object.__new__(cls)
 
     commentaire: Optional[str] = None
-    horodatage: datetime = Field(default_factory=datetime.now)
+    horodatage: datetime = Field(default_factory=AdaptateurHorloge.maintenant)
     tags: list[TypeDesTags] = []
 
 

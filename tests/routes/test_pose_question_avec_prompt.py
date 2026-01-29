@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
 
+from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
 from serveur_de_test import (
-    ConstructeurAdaptateurBaseDeDonnees,
     ConstructeurServiceAlbert,
 )
 
@@ -27,7 +27,7 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
         violation=None,
     )
 
-    adaptateur_base_de_donnees = ConstructeurAdaptateurBaseDeDonnees().construis()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )

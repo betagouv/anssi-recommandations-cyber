@@ -6,11 +6,16 @@ from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 
 class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
-    def __init__(self) -> None:
+    def __init__(self, id_interaction: str | None = None) -> None:
+        self.id_interaction = id_interaction
         self._interactions: Dict[str, Interaction] = {}
 
     def sauvegarde_interaction(self, reponse_question: ReponseQuestion) -> str:
-        identifiant_interaction = str(uuid.uuid4())
+        identifiant_interaction = (
+            self.id_interaction
+            if self.id_interaction is not None
+            else str(uuid.uuid4())
+        )
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=None
         )

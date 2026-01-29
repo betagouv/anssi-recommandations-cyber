@@ -9,6 +9,7 @@ from typing import Callable, Optional
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import AdaptateurChiffrement
+from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal
 from configuration import Mode
 from schemas.albert import Paragraphe
@@ -142,3 +143,9 @@ def un_serveur_de_test(
         return serveur.construis()
 
     return _un_serveur_de_test
+
+
+@pytest.fixture(autouse=True)
+def reset_horloge_apres_test():
+    yield
+    Horloge.reinitialise()
