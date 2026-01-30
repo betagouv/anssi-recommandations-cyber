@@ -14,7 +14,7 @@ def une_reponse_question():
 
 
 @pytest.fixture()
-def un_retour_positif(reset_horloge_apres_test):
+def un_retour_positif():
     Horloge.frise(dt.datetime(2024, 1, 2, 3, 4, 5))
     return RetourPositif(
         commentaire="Très utile",
