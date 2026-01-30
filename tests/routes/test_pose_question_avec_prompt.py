@@ -1,11 +1,8 @@
 from fastapi.testclient import TestClient
-
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
-from serveur_de_test import (
-    ConstructeurServiceAlbert,
-)
+from serveur_de_test import ServiceAlbertMemoire
 
 
 def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
@@ -28,9 +25,8 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
     )
 
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    service_albert = (
-        ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
-    )
+    service_albert = ServiceAlbertMemoire()
+    service_albert.ajoute_reponse(reponse)
     serveur = un_serveur_de_test(
         mode=Mode.DEVELOPPEMENT,
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -42,13 +38,13 @@ def test_route_pose_question_avec_prompt_repond_correctement_en_developpement(
     r = client.post(
         "/api/pose_question_avec_prompt",
         json={
-            "question": "Qui es-tu ?",
+            "question": "Qui es-tu?",
             "prompt": "Vous êtes un assistant virtuel.",
         },
     )
 
     assert r.status_code == 200
-    service_albert.pose_question.assert_called_once()
+    assert service_albert.question_recue == "Qui es-tu?"
 
 
 def test_route_pose_question_avec_prompt_n_est_pas_exposee_en_production(

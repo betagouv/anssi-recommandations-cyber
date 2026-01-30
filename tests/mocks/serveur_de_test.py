@@ -1,8 +1,7 @@
 from pathlib import Path
-from typing import Callable, Dict, Optional
-from unittest.mock import Mock
 
 from openai.types.chat.chat_completion import Choice
+from typing import Callable, Dict, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -29,30 +28,13 @@ NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
 
 
-class ConstructeurServiceAlbert:
-    def __init__(self):
-        self._mock = Mock()
-        self._mock.recherche_paragraphes.return_value = []
-
-    def avec_prompt_systeme(self, prompt: str):
-        self._mock.prompt_systeme = prompt
-        return self
-
-    def qui_retourne_les_paragraphes(self, paragraphes: list[Paragraphe]):
-        self._mock.recherche_paragraphes.return_value = paragraphes
-        return self
-
-    def qui_repond_aux_questions(self, reponse: ReponseQuestion):
-        self._mock.pose_question.return_value = reponse
-        return self
-
-    def construis(self):
-        return self._mock
-
-
 class ServiceAlbertMemoire(ServiceAlbert):
     def __init__(self) -> None:
+        self.paragraphes: list[Paragraphe] = []
+        self.reponse = None
+        self.recherche_paragraphes_a_ete_appele = False
         self.leve_une_erreur_sur_pose_question = False
+        self.question_recue: str | None = None
         super().__init__(
             Albert.Service(  # type: ignore[attr-defined]
                 collection_nom_anssi_lab="",
@@ -66,13 +48,17 @@ class ServiceAlbertMemoire(ServiceAlbert):
         )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
-        return []
+        self.recherche_paragraphes_a_ete_appele = True
+        return self.paragraphes
 
     def pose_question(
         self, question: str, prompt: Optional[str] = None
     ) -> ReponseQuestion:
+        self.question_recue = question
         if self.leve_une_erreur_sur_pose_question:
             raise Exception("Erreur sur pose_question")
+        if self.reponse is not None:
+            return self.reponse
         return ReponseQuestion(
             reponse="", paragraphes=[], question=question, violation=None
         )
@@ -87,6 +73,12 @@ class ServiceAlbertMemoire(ServiceAlbert):
 
     def qui_leve_une_erreur_sur_pose_question(self):
         self.leve_une_erreur_sur_pose_question = True
+
+    def ajoute_reponse(self, reponse):
+        self.reponse = reponse
+
+    def ajoute_paragraphes(self, paragraphes):
+        self.paragraphes.extend(paragraphes)
 
 
 class ConstructeurServeur:

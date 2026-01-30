@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 
 from configuration import Mode
 from serveur_de_test import (
-    ConstructeurServiceAlbert,
+    ServiceAlbertMemoire,
 )
 
 
@@ -10,14 +10,11 @@ def test_route_prompt_retourne_le_prompt_systeme_en_developpement(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
 ) -> None:
-    service_albert = (
-        ConstructeurServiceAlbert()
-        .avec_prompt_systeme("Tu es une fougère.")
-        .construis()
-    )
+    service_albert = ServiceAlbertMemoire()
+    service_albert.prompt_systeme = "Tu es une fougère."
     serveur = un_serveur_de_test(
         mode=Mode.DEVELOPPEMENT,
-        service_albert=service_albert,
+        service_albert=(service_albert),
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
     )
 

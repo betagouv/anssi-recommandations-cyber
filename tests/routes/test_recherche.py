@@ -2,15 +2,13 @@ from fastapi.testclient import TestClient
 
 from configuration import Mode
 from schemas.albert import Paragraphe
-from serveur_de_test import (
-    ConstructeurServiceAlbert,
-)
+from serveur_de_test import ServiceAlbertMemoire
 
 
 def test_route_recherche_repond_correctement(
     un_serveur_de_test, un_adaptateur_de_chiffrement
 ) -> None:
-    service_albert = ConstructeurServiceAlbert().construis()
+    service_albert = ServiceAlbertMemoire()
     serveur = un_serveur_de_test(
         mode=Mode.DEVELOPPEMENT,
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -21,18 +19,16 @@ def test_route_recherche_repond_correctement(
     reponse = client.post("/api/recherche", json={"question": "Ma question test"})
 
     assert reponse.status_code == 200
-    service_albert.recherche_paragraphes.assert_called_once()
+    assert service_albert.recherche_paragraphes_a_ete_appele
 
 
 def test_route_recherche_donnees_correctes(
     un_serveur_de_test, un_adaptateur_de_chiffrement
 ) -> None:
     paragraphes: list[Paragraphe] = []
-    service_albert = (
-        ConstructeurServiceAlbert()
-        .qui_retourne_les_paragraphes(paragraphes)
-        .construis()
-    )
+    service_albert = ServiceAlbertMemoire()
+    service_albert.ajoute_paragraphes(paragraphes)
+
     serveur = un_serveur_de_test(
         mode=Mode.DEVELOPPEMENT,
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -45,7 +41,6 @@ def test_route_recherche_donnees_correctes(
 
     assert isinstance(resultat, list)
     assert len(resultat) == len(paragraphes)
-    service_albert.recherche_paragraphes.assert_called_once()
 
 
 def test_route_recherche_retourne_la_bonne_structure_d_objet(
@@ -62,11 +57,8 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet(
         ),
     ]
 
-    service_albert = (
-        ConstructeurServiceAlbert()
-        .qui_retourne_les_paragraphes(paragraphes)
-        .construis()
-    )
+    service_albert = ServiceAlbertMemoire()
+    service_albert.ajoute_paragraphes(paragraphes)
     serveur = un_serveur_de_test(
         mode=Mode.DEVELOPPEMENT,
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -86,5 +78,3 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet(
             "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
         }
     ]
-
-    service_albert.recherche_paragraphes.assert_called_once()

@@ -1,6 +1,5 @@
 import pytest
 from client_albert_de_test import (
-    ConstructeurServiceAlbert,
     ConstructeurClientOpenai,
     ConstructeurClientHttp,
     ConstructeurRetourRouteSearch,
@@ -14,7 +13,7 @@ FAUX_RETOURS_ALBERT_API = (
 )
 
 
-def test_recupere_propositions():
+def test_recupere_propositions(une_configuration_albert_client):
     mock_client_http = (
         ConstructeurClientHttp()
         .qui_retourne(ConstructeurRetourRouteSearch().construis())
@@ -26,7 +25,7 @@ def test_recupere_propositions():
     mock_service_avec_reponse = ClientAlbertApi(
         mock_client_openai_avec_reponse,
         mock_client_http,
-        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        une_configuration_albert_client,
     )
 
     propositions = mock_service_avec_reponse.recupere_propositions([])
@@ -35,7 +34,9 @@ def test_recupere_propositions():
     assert propositions[0].message.content == REPONSE
 
 
-def test_recupere_propositions_si_timeout_retourne_un_resultat_vide():
+def test_recupere_propositions_si_timeout_retourne_un_resultat_vide(
+    une_configuration_albert_client,
+):
     mock_client_http = (
         ConstructeurClientHttp()
         .qui_retourne(ConstructeurRetourRouteSearch().construis())
@@ -46,7 +47,7 @@ def test_recupere_propositions_si_timeout_retourne_un_resultat_vide():
     mock_service_avec_reponse = ClientAlbertApi(
         mock_client_openai,
         mock_client_http,
-        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        une_configuration_albert_client,
     )
 
     retour = mock_service_avec_reponse.recupere_propositions([])
@@ -54,7 +55,9 @@ def test_recupere_propositions_si_timeout_retourne_un_resultat_vide():
     assert len(retour) == 0
 
 
-def test_recherche_si_timeout_retourne_un_resultat_vide():
+def test_recherche_si_timeout_retourne_un_resultat_vide(
+    une_configuration_albert_client,
+):
     payload = RecherchePayload(
         collections=[1],
         k=5,
@@ -67,7 +70,7 @@ def test_recherche_si_timeout_retourne_un_resultat_vide():
     mock_service_avec_reponse = ClientAlbertApi(
         mock_client_openai,
         mock_client_http,
-        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        une_configuration_albert_client,
     )
 
     retour = mock_service_avec_reponse.recherche(payload)
@@ -75,7 +78,7 @@ def test_recherche_si_timeout_retourne_un_resultat_vide():
     assert retour == []
 
 
-def test_recherche_appelle_la_route_search_d_albert():
+def test_recherche_appelle_la_route_search_d_albert(une_configuration_albert_client):
     mock_client_http = (
         ConstructeurClientHttp().qui_retourne(FAUX_RETOURS_ALBERT_API).construis()
     )
@@ -85,7 +88,7 @@ def test_recherche_appelle_la_route_search_d_albert():
     mock_client_albert_api = ClientAlbertApi(
         mock_client_openai_sans_reponse,
         mock_client_http,
-        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        une_configuration_albert_client,
     )
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
@@ -96,7 +99,9 @@ def test_recherche_appelle_la_route_search_d_albert():
     assert call_kwargs["json"] == payload._asdict()
 
 
-def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
+def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
+    une_configuration_albert_client,
+):
     mock_client_http = (
         ConstructeurClientHttp().qui_retourne(FAUX_RETOURS_ALBERT_API).construis()
     )
@@ -107,7 +112,7 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
     mock_client_albert_api = ClientAlbertApi(
         mock_client_openai_sans_reponse,
         mock_client_http,
-        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        une_configuration_albert_client,
     )
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
@@ -138,7 +143,9 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes():
         ),
     ],
 )
-def test_recherche_retourne_gracieusement_en_cas_de_probleme(erreur):
+def test_recherche_retourne_gracieusement_en_cas_de_probleme(
+    erreur, une_configuration_albert_client
+):
     mock_client_http = (
         ConstructeurClientHttp().qui_retourne_une_erreur(erreur).construis()
     )
@@ -149,7 +156,7 @@ def test_recherche_retourne_gracieusement_en_cas_de_probleme(erreur):
     mock_client_albert_api = ClientAlbertApi(
         mock_client_openai_sans_reponse,
         mock_client_http,
-        ConstructeurServiceAlbert.FAUSSE_CONFIGURATION_ALBERT_CLIENT,
+        une_configuration_albert_client,
     )
 
     payload = RecherchePayload([], 0, "un prompt", "semantic")
