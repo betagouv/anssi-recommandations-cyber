@@ -53,8 +53,14 @@ class AdaptateurJournal(ABC):
 
 
 class AdaptateurJournalMemoire(AdaptateurJournal):
+    def __init__(self):
+        self.evenements: list[tuple[TypeEvenement, Donnees]] = []
+
     def consigne_evenement(self, type: TypeEvenement, donnees: Donnees) -> None:
-        pass
+        self.evenements.append((type, donnees))
+
+    def les_evenements(self):
+        return list(map(lambda e: {"donnees": e[1], "type": e[0]}, self.evenements))
 
 
 class AdaptateurJournalPostgres(AdaptateurJournal):

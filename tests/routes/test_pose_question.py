@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import (
     TypeEvenement,
+    AdaptateurJournalMemoire,
 )
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
@@ -14,7 +15,6 @@ from schemas.violations import (
     ViolationThematique,
 )
 from serveur_de_test import (
-    ConstructeurAdaptateurJournal,
     ConstructeurServiceAlbert,
 )
 
@@ -132,7 +132,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
         reponse="ok", paragraphes=[], question="Q?", violation=None
     )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -151,10 +151,9 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
         json={"question": "Qui es-tu ?"},
     )
 
-    adaptateur_journal.consigne_evenement.assert_called_once()
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["type"] == TypeEvenement.INTERACTION_CREEE
-    assert kwargs["donnees"].id_interaction == valeur_hachee
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["type"] == TypeEvenement.INTERACTION_CREEE
+    assert evenements[0]["donnees"].id_interaction == valeur_hachee
     assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
 
 
@@ -170,7 +169,7 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
         violation=None,
     )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -189,9 +188,9 @@ def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_in
         json={"question": question_posee},
     )
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].longueur_question == 11
-    assert kwargs["donnees"].longueur_reponse == 32
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].longueur_question == 11
+    assert evenements[0]["donnees"].longueur_reponse == 32
 
 
 def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_paragraphes_sur_l_interaction_creee(
@@ -212,7 +211,7 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
     )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -230,8 +229,8 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
         json={"question": question_posee},
     )
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].longueur_paragraphes == 18
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].longueur_paragraphes == 18
 
 
 @pytest.mark.parametrize(
@@ -247,7 +246,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
 
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -264,14 +263,13 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
         json={"question": "Qui es-tu ?"},
     )
 
-    assert adaptateur_journal.consigne_evenement.call_count == 2
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["type"] == TypeEvenement.VIOLATION_DETECTEE
-    assert kwargs["donnees"].id_interaction == valeur_hachee
-    assert kwargs["donnees"].type_violation == violation.__class__.__name__
-    assert kwargs["donnees"].model_dump_json()
+    evenements = adaptateur_journal.les_evenements()
+    assert len(evenements) == 2
+    assert evenements[1]["type"] == TypeEvenement.VIOLATION_DETECTEE
+    assert evenements[1]["donnees"].id_interaction == valeur_hachee
+    assert evenements[1]["donnees"].type_violation == violation.__class__.__name__
+    assert evenements[1]["donnees"].model_dump_json()
 
-    assert adaptateur_journal.consigne_evenement.call_count == 2
     assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
 
 
@@ -311,7 +309,7 @@ def test_route_pose_question_identifie_le_type_d_utilisateur(
     )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(dechiffre=type_utilisateur)
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -327,8 +325,8 @@ def test_route_pose_question_identifie_le_type_d_utilisateur(
         "/api/pose_question?type_utilisateur=ABCD", json={"question": "Une question"}
     )
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].type_utilisateur == type_utilisateur
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].type_utilisateur == type_utilisateur
 
 
 def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur(
@@ -341,7 +339,7 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur(
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(
         dechiffre="une chaine inconnue"
     )
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -357,8 +355,8 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur(
         "/api/pose_question?type_utilisateur=ABCD", json={"question": "Une question"}
     )
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
 
 
 def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le_dechiffrement_echoue(
@@ -369,7 +367,7 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le
     )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(leve_une_erreur=True)
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = (
         ConstructeurServiceAlbert().qui_repond_aux_questions(reponse).construis()
     )
@@ -385,5 +383,5 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le
         "/api/pose_question?type_utilisateur=ABCD", json={"question": "Une question"}
     )
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
