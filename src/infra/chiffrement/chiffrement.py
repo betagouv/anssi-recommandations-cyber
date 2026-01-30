@@ -1,11 +1,11 @@
 import base64
 import copy
 import logging
-from abc import abstractmethod, ABCMeta
 import secrets
+from abc import abstractmethod, ABCMeta
+
 import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from typing import Callable
 
 from configuration import Configuration
 
@@ -81,19 +81,6 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
                                     )
                             case dict():
                                 self.__dechiffre_tout(chemin, element, f"{clef}/*")
-
-    @staticmethod
-    def __applique(
-        chemins: list[str], fonction: Callable[[str], str], dictionnaire: dict
-    ) -> dict:
-        dictionnaire_chiffre = dictionnaire
-        for chemin in chemins:
-            for recherche in dpath.search(dictionnaire, chemin, yielded=True):
-                if recherche[1] is not None:
-                    dpath.set(
-                        dictionnaire_chiffre, recherche[0], fonction(recherche[1])
-                    )
-        return dictionnaire_chiffre
 
 
 class ServiceDeChiffrementAES(ServiceDeChiffrement):
