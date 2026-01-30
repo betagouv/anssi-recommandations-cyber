@@ -29,14 +29,6 @@ NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
 
 
-class ConstructeurAdaptateurJournal:
-    def __init__(self):
-        self._mock = Mock()
-
-    def construis(self):
-        return self._mock
-
-
 class ConstructeurServiceAlbert:
     def __init__(self):
         self._mock = Mock()

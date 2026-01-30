@@ -1,14 +1,9 @@
-from fastapi.testclient import TestClient
-
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
-
+from fastapi.testclient import TestClient
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
-from adaptateurs.journal import TypeEvenement
+from adaptateurs.journal import TypeEvenement, AdaptateurJournalMemoire
 from schemas.retour_utilisatrice import TagPositif
 from schemas.type_utilisateur import TypeUtilisateur
-from serveur_de_test import (
-    ConstructeurAdaptateurJournal,
-)
 
 
 def test_route_retour_avec_retourne_succes_200(
@@ -192,7 +187,7 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-456")
     adaptateur_base_de_donnees.sauvegarde_interaction(une_reponse_question)
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -210,13 +205,13 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
     }
     client.post("/api/retour", json=payload)
 
-    adaptateur_journal.consigne_evenement.assert_called_once()
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["type"] == TypeEvenement.AVIS_UTILISATEUR_SOUMIS
-    assert kwargs["donnees"].id_interaction == "id-456"
-    assert kwargs["donnees"].type_retour == "positif"
-    assert kwargs["donnees"].tags == [TagPositif.Complete]
-    assert kwargs["donnees"].model_dump_json()
+    evenements = adaptateur_journal.les_evenements()
+    assert len(evenements) == 1
+    assert evenements[0]["type"] == TypeEvenement.AVIS_UTILISATEUR_SOUMIS
+    assert evenements[0]["donnees"].id_interaction == "id-456"
+    assert evenements[0]["donnees"].type_retour == "positif"
+    assert evenements[0]["donnees"].tags == [TagPositif.Complete]
+    assert evenements[0]["donnees"].model_dump_json()
 
 
 def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
@@ -230,7 +225,7 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
         "id-interaction-test", un_retour_positif
     )
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -240,10 +235,9 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     client = TestClient(serveur)
     client.delete("/api/retour/id-interaction-test")
 
-    adaptateur_journal.consigne_evenement.assert_called_once()
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["type"] == TypeEvenement.AVIS_UTILISATEUR_SUPPRIME
-    assert kwargs["donnees"].id_interaction == "id-interaction-test"
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["type"] == TypeEvenement.AVIS_UTILISATEUR_SUPPRIME
+    assert evenements[0]["donnees"].id_interaction == "id-interaction-test"
 
 
 def test_route_route_retour_identifie_le_type_d_utilisateur(
@@ -258,7 +252,7 @@ def test_route_route_retour_identifie_le_type_d_utilisateur(
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=adaptateur_chiffrement,
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -276,8 +270,8 @@ def test_route_route_retour_identifie_le_type_d_utilisateur(
     }
     client.post("/api/retour?type_utilisateur=EFGH", json=payload)
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
 
 
 def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
@@ -294,7 +288,7 @@ def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )
-    adaptateur_journal = ConstructeurAdaptateurJournal().construis()
+    adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=adaptateur_chiffrement,
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -304,5 +298,5 @@ def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
     client = TestClient(serveur)
     client.delete("/api/retour/id-interaction-test?type_utilisateur=IJKL")
 
-    [args, kwargs] = adaptateur_journal.consigne_evenement._mock_call_args
-    assert kwargs["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.ANSSI
