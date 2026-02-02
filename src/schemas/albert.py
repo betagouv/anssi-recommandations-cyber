@@ -1,7 +1,5 @@
+from pydantic import BaseModel
 from typing import NamedTuple, Optional
-
-from pydantic import BaseModel, field_validator
-
 from schemas.violations import Violation
 
 
@@ -18,13 +16,6 @@ class ReponseQuestion(BaseModel):
     paragraphes: list[Paragraphe]
     question: str
     violation: Optional[Violation]
-
-    @field_validator("violation", mode="before")
-    @classmethod
-    def convert_empty_dict_to_none(cls, v):
-        if v == {}:
-            return None
-        return v
 
 
 class RecherchePayload(NamedTuple):
