@@ -1,6 +1,4 @@
-from configuration import logging
 from pathlib import Path
-from typing import Optional, Dict
 
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import HTMLResponse
@@ -9,6 +7,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
+from typing import Optional, Dict
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -143,8 +142,6 @@ def route_pose_question(
 def extrais_type_utilisateur(
     adaptateur_chiffrement: AdaptateurChiffrement, type_utilisateur: str | None
 ) -> TypeUtilisateur:
-
-    logging.info(f"type_utilisateur reçu : {type_utilisateur}")
     try:
         if (
             type_utilisateur is not None
