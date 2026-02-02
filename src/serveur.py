@@ -149,9 +149,9 @@ def extrais_type_utilisateur(
         if (
             type_utilisateur is not None
             and type_utilisateur.startswith("jOr")
-            and "%20" in type_utilisateur
+            and type_utilisateur[-6] == " "
         ):
-            type_utilisateur = type_utilisateur.replace("%20", "+")
+            type_utilisateur = type_utilisateur.replace(" ", "+")
         type_utilisateur = (
             TypeUtilisateur(adaptateur_chiffrement.dechiffre(type_utilisateur))
             if type_utilisateur
