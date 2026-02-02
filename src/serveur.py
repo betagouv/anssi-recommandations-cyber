@@ -1,3 +1,4 @@
+from configuration import logging
 from pathlib import Path
 from typing import Optional, Dict
 
@@ -142,6 +143,8 @@ def route_pose_question(
 def extrais_type_utilisateur(
     adaptateur_chiffrement: AdaptateurChiffrement, type_utilisateur: str | None
 ) -> TypeUtilisateur:
+
+    logging.info(f"type_utilisateur reçu : {type_utilisateur}")
     try:
         if (
             type_utilisateur is not None
