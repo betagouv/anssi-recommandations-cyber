@@ -14,6 +14,7 @@ class AdaptateurChiffrementDeTest(AdaptateurChiffrement):
             configuration=configuration_chiffrement,
             service_de_chiffrement=ServiceDeChiffrementEnClair(),
         )
+        self.contenu_recu = None
         self._nonce = None
         self._hache = None
         self.valeur_recue_pour_le_hache = None
@@ -29,6 +30,7 @@ class AdaptateurChiffrementDeTest(AdaptateurChiffrement):
         return contenu
 
     def dechiffre(self, contenu_chiffre: str) -> str:
+        self.contenu_recu = contenu_chiffre
         return self.service_de_chiffrement.dechiffre(contenu_chiffre)
 
     def qui_retourne_nonce(self, nonce: str):
