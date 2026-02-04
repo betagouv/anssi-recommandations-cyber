@@ -1,3 +1,6 @@
+import uuid
+from uuid import UUID
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -74,8 +77,10 @@ def test_route_pose_question_retourne_donnees_correctes(
     client_http = TestClient(serveur)
     r = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
 
-    assert r.json() == {
-        "interaction_id": "id-interaction-test",
+    response_data = r.json()
+    assert response_data["interaction_id"]
+    assert response_data == {
+        "interaction_id": response_data["interaction_id"],
         "question": "Qui es-tu",
         "reponse": "Réponse de test d'Albert",
         "paragraphes": [
@@ -95,9 +100,10 @@ def test_route_pose_question_retourne_donnees_correctes(
             },
         ],
     }
-
     assert (
-        adaptateur_base_de_donnees.recupere_interaction("id-interaction-test")
+        adaptateur_base_de_donnees.recupere_interaction(
+            uuid.UUID(response_data["interaction_id"])
+        )
         is not None
     )
 
@@ -128,7 +134,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_creation_d_u
     evenements = adaptateur_journal.les_evenements()
     assert evenements[0]["type"] == TypeEvenement.INTERACTION_CREEE
     assert evenements[0]["donnees"].id_interaction == valeur_hachee
-    assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
+    assert isinstance(UUID(adaptateur_chiffrement.valeur_recue_pour_le_hache), UUID)
 
 
 def test_route_pose_question_emet_un_evenement_donnant_les_informations_sur_l_interaction_creee(
@@ -216,7 +222,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
         reponse="", paragraphes=[], question="Q?", violation=violation
     )
 
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
     adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = ServiceAlbertMemoire()
@@ -240,8 +246,7 @@ def test_route_pose_question_emet_un_evenement_journal_indiquant_la_detection_d_
     assert evenements[1]["donnees"].id_interaction == valeur_hachee
     assert evenements[1]["donnees"].type_violation == violation.__class__.__name__
     assert evenements[1]["donnees"].model_dump_json()
-
-    assert adaptateur_chiffrement.valeur_recue_pour_le_hache == "id-interaction-test"
+    assert isinstance(UUID(adaptateur_chiffrement.valeur_recue_pour_le_hache), UUID)
 
 
 def test_route_pose_question_rejette_question_trop_longue(

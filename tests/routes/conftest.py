@@ -1,8 +1,9 @@
 import pytest
+import uuid
 
 from adaptateurs.horloge import Horloge
 from schemas.albert import ReponseQuestion
-from schemas.retour_utilisatrice import RetourPositif, TagPositif
+from schemas.retour_utilisatrice import RetourPositif, TagPositif, Interaction
 import datetime as dt
 
 
@@ -10,6 +11,13 @@ import datetime as dt
 def une_reponse_question():
     return ReponseQuestion(
         reponse="Une réponse", question="Une question", paragraphes=[], violation=None
+    )
+
+
+@pytest.fixture()
+def une_interaction(une_reponse_question):
+    return Interaction(
+        reponse_question=une_reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
 
 

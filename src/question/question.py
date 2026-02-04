@@ -1,3 +1,4 @@
+import uuid
 from typing import NamedTuple, Union
 
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -9,6 +10,7 @@ from adaptateurs.journal import (
     AdaptateurJournal,
 )
 from schemas.albert import ReponseQuestion
+from schemas.retour_utilisatrice import Interaction
 from schemas.type_utilisateur import TypeUtilisateur
 from services.service_albert import ServiceAlbert
 
@@ -21,9 +23,15 @@ class ConfigurationQuestion(NamedTuple):
 
 
 class ResultatInteraction:
-    def __init__(self, id_interaction: str, reponse_question: ReponseQuestion):
+    def __init__(
+        self,
+        id_interaction: str,
+        reponse_question: ReponseQuestion,
+        interaction: Interaction,
+    ):
         self.id_interaction = id_interaction
         self.reponse_question = reponse_question
+        self.interaction = interaction
 
 
 class ResultatInteractionEnErreur:
@@ -39,12 +47,11 @@ def pose_question_utilisateur(
 ) -> Union[ResultatInteraction, ResultatInteractionEnErreur]:
     try:
         reponse_question = configuration.service_albert.pose_question(question)
-        id_interaction = (
-            configuration.adaptateur_base_de_donnees.sauvegarde_interaction(
-                reponse_question
-            )
+        interaction = Interaction(
+            reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
         )
-
+        id_interaction = str(interaction.id)
+        (configuration.adaptateur_base_de_donnees.sauvegarde_interaction(interaction))
         configuration.adaptateur_journal.consigne_evenement(
             type=TypeEvenement.INTERACTION_CREEE,
             donnees=DonneesInteractionCreee(
@@ -70,6 +77,6 @@ def pose_question_utilisateur(
                     type_violation=reponse_question.violation.__class__.__name__,
                 ),
             )
-        return ResultatInteraction(id_interaction, reponse_question)
+        return ResultatInteraction(id_interaction, reponse_question, interaction)
     except Exception as e:
         return ResultatInteractionEnErreur(e)

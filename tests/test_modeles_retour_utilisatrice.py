@@ -1,3 +1,5 @@
+import uuid
+
 from schemas.retour_utilisatrice import (
     RetourNegatif,
     RetourPositif,
@@ -90,7 +92,9 @@ class TestInteraction:
         )
 
         interaction = Interaction(
-            reponse_question=reponse_question, retour_utilisatrice=retour_utilisatrice
+            reponse_question=reponse_question,
+            retour_utilisatrice=retour_utilisatrice,
+            id=uuid.uuid4(),
         )
 
         assert (
@@ -117,7 +121,7 @@ class TestInteraction:
             violation=None,
         )
 
-        interaction = Interaction(reponse_question=reponse_question)
+        interaction = Interaction(reponse_question=reponse_question, id=uuid.uuid4())
 
         assert (
             interaction.reponse_question.question

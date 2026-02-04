@@ -1,3 +1,4 @@
+import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
@@ -40,11 +41,13 @@ from schemas.api import (
     QuestionRequeteAvecPrompt,
     ReponseQuestionAPI,
 )
-from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur
+from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur, Interaction
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
 from services.fabrique_service_albert import fabrique_service_albert
 from services.service_albert import ServiceAlbert
+from uuid import UUID
+
 
 api = APIRouter(prefix="/api")
 api_developpement = APIRouter(prefix="/api")
@@ -76,9 +79,12 @@ def route_pose_question_avec_prompt(
     ),
 ) -> ReponseQuestionAPI:
     reponse_question = service_albert.pose_question(request.question, request.prompt)
-    id_interaction = adaptateur_base_de_donnees.sauvegarde_interaction(reponse_question)
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
     return ReponseQuestionAPI(
-        **reponse_question.model_dump(), interaction_id=id_interaction
+        **reponse_question.model_dump(), interaction_id=str(interaction.id)
     )
 
 
@@ -174,7 +180,7 @@ def ajoute_retour(
     type_utilisateur: str | None = None,
 ) -> RetourUtilisatrice:
     retour = adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        body.id_interaction, body.retour
+        uuid.UUID(body.id_interaction), body.retour
     )
 
     if not retour:
@@ -208,11 +214,10 @@ def supprime_retour(
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
     type_utilisateur: str | None = None,
 ) -> Optional[str]:
-    id_interaction_retour_supprime = (
-        adaptateur_base_de_donnees.supprime_retour_utilisatrice(id_interaction)
-    )
+    adaptateur_base_de_donnees.supprime_retour_utilisatrice(UUID(id_interaction))
 
-    if not id_interaction_retour_supprime:
+    interaction = adaptateur_base_de_donnees.recupere_interaction(UUID(id_interaction))
+    if not interaction:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
 
     adaptateur_journal.consigne_evenement(
@@ -226,7 +231,7 @@ def supprime_retour(
         ),
     )
 
-    return id_interaction_retour_supprime
+    return id_interaction
 
 
 def fabrique_serveur(

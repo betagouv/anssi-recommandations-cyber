@@ -1,10 +1,12 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
+from enum import StrEnum, auto
 from typing import Generic, Literal, Optional, TypeVar, Union
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 from adaptateurs.horloge import AdaptateurHorloge
 from schemas.albert import ReponseQuestion
-from enum import StrEnum, auto
 
 
 class TagPositif(StrEnum):
@@ -59,6 +61,7 @@ type RetourUtilisatrice = Union[RetourNegatif, RetourPositif]
 class Interaction(BaseModel):
     reponse_question: ReponseQuestion
     retour_utilisatrice: Optional[RetourUtilisatrice] = None
+    id: UUID
 
 
 class DonneesCreationRetourUtilisateur(BaseModel):
