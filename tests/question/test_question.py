@@ -5,6 +5,7 @@ from question.question import (
     ConfigurationQuestion,
     ResultatInteractionEnErreur,
 )
+from schemas.albert import ReponseQuestion
 from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import ServiceAlbertMemoire
 
@@ -28,3 +29,28 @@ def test_pose_question_retourne_un_resultat_d_interaction_en_erreur(
     assert isinstance(reponse, ResultatInteractionEnErreur)
     assert reponse.message_mqc == "Erreur lors de l’appel à Albert"
     assert reponse.erreur == "Erreur sur pose_question"
+
+
+def test_pose_question_retourne_une_interaction(un_adaptateur_de_chiffrement):
+    service_albert = ServiceAlbertMemoire()
+    reponse_question = ReponseQuestion(
+        reponse="La réponse d'MQC",
+        paragraphes=[],
+        question="une question",
+        violation=None,
+    )
+    service_albert.ajoute_reponse(reponse_question)
+
+    resultat_interaction = pose_question_utilisateur(
+        ConfigurationQuestion(
+            adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+            adaptateur_base_de_donnees=AdaptateurBaseDeDonneesEnMemoire(),
+            adaptateur_journal=AdaptateurJournalMemoire(),
+            service_albert=service_albert,
+        ),
+        "une question",
+        TypeUtilisateur.EXPERT_SSI,
+    )
+    assert resultat_interaction.id_interaction is not None
+    assert resultat_interaction.interaction.reponse_question == reponse_question
+    assert resultat_interaction.interaction.retour_utilisatrice is None

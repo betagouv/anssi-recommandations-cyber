@@ -1,15 +1,17 @@
 import os
 import uuid
-import pytest
+
 import psycopg2
+import pytest
+
 from adaptateurs import (
     AdaptateurBaseDeDonneesEnMemoire,
     AdaptateurBaseDeDonneesPostgres,
 )
-from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
-from schemas.retour_utilisatrice import RetourPositif, TagPositif
-from schemas.albert import ReponseQuestion, Paragraphe
 from configuration import recupere_configuration_postgres
+from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
+from schemas.albert import ReponseQuestion
+from schemas.retour_utilisatrice import RetourPositif, TagPositif, Interaction
 
 
 def cree_connexion_postgres() -> psycopg2.extensions.connection:
@@ -67,28 +69,6 @@ def test_initialisation_adaptateur_base_de_donnees(adaptateur_test) -> None:
     assert adaptateur_test is not None
 
 
-def test_sauvegarde_interaction(adaptateur_test) -> None:
-    paragraphe = Paragraphe(
-        score_similarite=0.95,
-        numero_page=10,
-        url="https://example.com/doc.pdf",
-        nom_document="Guide ANSSI",
-        contenu="Contenu du paragraphe",
-    )
-
-    reponse_question = ReponseQuestion(
-        reponse="Il est recommandé d'utiliser au moins 12 caractères.",
-        paragraphes=[paragraphe],
-        question="Quelle est la longueur recommandée pour un mot de passe ?",
-        violation=None,
-    )
-
-    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
-
-    assert id_interaction is not None
-    assert isinstance(id_interaction, str)
-
-
 def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Test réponse",
@@ -96,11 +76,14 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
         question="Test question",
         violation=None,
     )
-    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    adaptateur_test.sauvegarde_interaction(interaction)
 
     retour = RetourPositif(commentaire="Très utile")
 
-    resultat = adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
+    resultat = adaptateur_test.ajoute_retour_utilisatrice(interaction.id, retour)
     assert resultat == retour
 
 
@@ -121,14 +104,16 @@ def test_recupere_interaction_existante(adaptateur_test) -> None:
         question="Question test",
         violation=None,
     )
-    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    adaptateur_test.sauvegarde_interaction(interaction)
+    interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
 
-    interaction = adaptateur_test.recupere_interaction(id_interaction)
-
-    assert interaction is not None
-    assert interaction.reponse_question.reponse == "Réponse test"
-    assert interaction.reponse_question.question == "Question test"
-    assert interaction.retour_utilisatrice is None
+    assert interaction_recuperee is not None
+    assert interaction_recuperee.reponse_question.reponse == "Réponse test"
+    assert interaction_recuperee.reponse_question.question == "Question test"
+    assert interaction_recuperee.retour_utilisatrice is None
 
 
 def test_recupere_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
@@ -138,7 +123,11 @@ def test_recupere_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
         question="Question test",
         violation=None,
     )
-    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    adaptateur_test.sauvegarde_interaction(interaction)
+    id_interaction = interaction.id
 
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
@@ -164,22 +153,29 @@ def test_supprime_retour_existant(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test", paragraphes=[], question="Question test", violation=None
     )
-    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    adaptateur_test.sauvegarde_interaction(interaction)
+    id_interaction = interaction.id
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
 
-    id_interaction_avec_retour_supprime = adaptateur_test.supprime_retour_utilisatrice(
-        id_interaction
-    )
+    adaptateur_test.supprime_retour_utilisatrice(id_interaction)
 
-    assert id_interaction_avec_retour_supprime == id_interaction
+    interaction_recuperee = adaptateur_test.recupere_interaction(id_interaction)
+    assert interaction_recuperee.retour_utilisatrice is None
 
 
 def test_supprime_retour_inexistant_echoue(adaptateur_test) -> None:
     reponse_question = ReponseQuestion(
         reponse="Réponse test", paragraphes=[], question="Question test", violation=None
     )
-    id_interaction = adaptateur_test.sauvegarde_interaction(reponse_question)
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    adaptateur_test.sauvegarde_interaction(interaction)
+    id_interaction = interaction.id
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     adaptateur_test.ajoute_retour_utilisatrice(id_interaction, retour)
 

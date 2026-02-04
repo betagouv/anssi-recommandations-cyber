@@ -1,29 +1,28 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+from uuid import UUID
+
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
-from schemas.albert import ReponseQuestion
 
 
 class AdaptateurBaseDeDonnees(ABC):
     @abstractmethod
-    def sauvegarde_interaction(self, reponse_question: ReponseQuestion) -> str:
+    def sauvegarde_interaction(self, interaction: Interaction) -> None:
         pass
 
     @abstractmethod
     def ajoute_retour_utilisatrice(
-        self, identifiant_interaction: str, retour: RetourUtilisatrice
+        self, identifiant_interaction: UUID, retour: RetourUtilisatrice
     ) -> Optional[RetourUtilisatrice]:
         pass
 
     @abstractmethod
-    def supprime_retour_utilisatrice(
-        self, identifiant_interaction: str
-    ) -> Optional[str]:
+    def supprime_retour_utilisatrice(self, identifiant_interaction: UUID) -> None:
         pass
 
     @abstractmethod
     def recupere_interaction(
-        self, identifiant_interaction: str
+        self, identifiant_interaction: UUID
     ) -> Optional[Interaction]:
         pass
 

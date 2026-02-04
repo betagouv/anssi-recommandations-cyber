@@ -1,29 +1,21 @@
-import uuid
 from typing import Dict, Optional
+from uuid import UUID
+
 from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
-from schemas.albert import ReponseQuestion
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 
 class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
     def __init__(self, id_interaction: str | None = None) -> None:
         self.id_interaction = id_interaction
-        self._interactions: Dict[str, Interaction] = {}
+        self._interactions: Dict[UUID, Interaction] = {}
 
-    def sauvegarde_interaction(self, reponse_question: ReponseQuestion) -> str:
-        identifiant_interaction = (
-            self.id_interaction
-            if self.id_interaction is not None
-            else str(uuid.uuid4())
-        )
-        interaction = Interaction(
-            reponse_question=reponse_question, retour_utilisatrice=None
-        )
-        self._interactions[identifiant_interaction] = interaction
-        return identifiant_interaction
+    def sauvegarde_interaction(self, interaction: Interaction) -> None:
+        self._interactions[interaction.id] = interaction
+        return None
 
     def ajoute_retour_utilisatrice(
-        self, identifiant_interaction: str, retour: RetourUtilisatrice
+        self, identifiant_interaction: UUID, retour: RetourUtilisatrice
     ) -> Optional[RetourUtilisatrice]:
         interaction = self.recupere_interaction(identifiant_interaction)
 
@@ -31,27 +23,29 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
             return None
 
         interaction_mise_a_jour = Interaction(
-            reponse_question=interaction.reponse_question, retour_utilisatrice=retour
+            reponse_question=interaction.reponse_question,
+            retour_utilisatrice=retour,
+            id=interaction.id,
         )
         self._interactions[identifiant_interaction] = interaction_mise_a_jour
         return retour
 
-    def supprime_retour_utilisatrice(
-        self, identifiant_interaction: str
-    ) -> Optional[str]:
+    def supprime_retour_utilisatrice(self, identifiant_interaction: UUID) -> None:
         interaction = self.recupere_interaction(identifiant_interaction)
 
         if not interaction:
             return None
 
         interaction_mise_a_jour = Interaction(
-            reponse_question=interaction.reponse_question, retour_utilisatrice=None
+            reponse_question=interaction.reponse_question,
+            retour_utilisatrice=None,
+            id=interaction.id,
         )
         self._interactions[identifiant_interaction] = interaction_mise_a_jour
-        return identifiant_interaction
+        return None
 
     def recupere_interaction(
-        self, identifiant_interaction: str
+        self, identifiant_interaction: UUID
     ) -> Optional[Interaction]:
         return self._interactions.get(identifiant_interaction)
 
