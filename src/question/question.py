@@ -47,6 +47,13 @@ def pose_question_utilisateur(
 ) -> Union[ResultatInteraction, ResultatInteractionEnErreur]:
     try:
         reponse_question = configuration.service_albert.pose_question(question)
+        if reponse_question.violation is not None:
+            reponse_question = ReponseQuestion(
+                reponse=reponse_question.violation.reponse,
+                paragraphes=[],
+                question=question,
+                violation=reponse_question.violation,
+            )
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
         )

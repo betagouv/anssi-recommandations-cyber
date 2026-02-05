@@ -5,8 +5,9 @@ from question.question import (
     ConfigurationQuestion,
     ResultatInteractionEnErreur,
 )
-from schemas.albert import ReponseQuestion
+from schemas.albert import ReponseQuestion, Paragraphe
 from schemas.type_utilisateur import TypeUtilisateur
+from schemas.violations import ViolationMalveillance
 from serveur_de_test import ServiceAlbertMemoire
 
 
@@ -51,6 +52,41 @@ def test_pose_question_retourne_une_interaction(un_adaptateur_de_chiffrement):
         "une question",
         TypeUtilisateur.EXPERT_SSI,
     )
+
     assert resultat_interaction.id_interaction is not None
     assert resultat_interaction.interaction.reponse_question == reponse_question
     assert resultat_interaction.interaction.retour_utilisatrice is None
+
+
+def test_ne_conserve_pas_les_paragraphes_en_cas_de_violation(
+    un_adaptateur_de_chiffrement,
+):
+    service_albert = ServiceAlbertMemoire()
+    reponse_question = ReponseQuestion(
+        reponse="La réponse d'MQC",
+        paragraphes=[
+            Paragraphe(
+                numero_page=1,
+                url="https://example.com",
+                contenu="un paragraphe",
+                score_similarite=0.9,
+                nom_document="un document",
+            )
+        ],
+        question="une question",
+        violation=ViolationMalveillance(),
+    )
+    service_albert.ajoute_reponse(reponse_question)
+
+    resultat_interaction = pose_question_utilisateur(
+        ConfigurationQuestion(
+            adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+            adaptateur_base_de_donnees=AdaptateurBaseDeDonneesEnMemoire(),
+            adaptateur_journal=AdaptateurJournalMemoire(),
+            service_albert=service_albert,
+        ),
+        "une question",
+        TypeUtilisateur.EXPERT_SSI,
+    )
+
+    assert resultat_interaction.interaction.reponse_question.paragraphes == []
