@@ -16,6 +16,7 @@ from schemas.violations import (
     ViolationIdentite,
     ViolationThematique,
     ViolationMalveillance,
+    ViolationMeconnaissance,
     REPONSE_PAR_DEFAUT,
 )
 
@@ -172,6 +173,8 @@ class ServiceAlbert:
                 return retourne_violation(ViolationThematique())
             elif "ERREUR_MALVEILLANCE" in reponse_albert:
                 return retourne_violation(ViolationMalveillance())
+            elif "ERREUR_MECONNAISSANCE" in reponse_albert:
+                return retourne_violation(ViolationMeconnaissance())
             return reponse_albert, paragraphes, None
         else:
             return REPONSE_PAR_DEFAUT, [], None
