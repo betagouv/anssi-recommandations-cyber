@@ -3,6 +3,7 @@ from schemas.violations import (
     ViolationThematique,
     ViolationMalveillance,
     ViolationIdentite,
+    ViolationMeconnaissance,
     Violation,
 )
 
@@ -12,15 +13,19 @@ from schemas.violations import (
     [
         (
             ViolationThematique(),
-            "Cette thématique n’entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d’un enjeu cybersécurité ou informatique.",
+            "Cette thématique n'entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d'un enjeu cybersécurité ou informatique.",
         ),
         (
             ViolationMalveillance(),
-            "Désolé, nous n’avons pu générer aucune réponse correspondant à votre question.",
+            "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question.",
         ),
         (
             ViolationIdentite(),
-            "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence.",
+            "Je suis un service développé par ou pour l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence.",
+        ),
+        (
+            ViolationMeconnaissance(),
+            "Les sources actuellement disponibles ne me permettent pas de répondre à la question.",
         ),
     ],
 )
@@ -34,16 +39,20 @@ def test_serialise_la_violation(violation, reponse_attendue):
     "violation, violation_attendue",
     [
         (
-            "Cette thématique n’entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d’un enjeu cybersécurité ou informatique.",
+            "Cette thématique n'entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d'un enjeu cybersécurité ou informatique.",
             ViolationThematique(),
         ),
         (
-            "Désolé, nous n’avons pu générer aucune réponse correspondant à votre question.",
+            "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question.",
             ViolationMalveillance(),
         ),
         (
-            "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence.",
+            "Je suis un service développé par ou pour l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence.",
             ViolationIdentite(),
+        ),
+        (
+            "Les sources actuellement disponibles ne me permettent pas de répondre à la question.",
+            ViolationMeconnaissance(),
         ),
     ],
 )

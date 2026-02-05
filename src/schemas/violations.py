@@ -7,11 +7,12 @@ from typing_extensions import Self
 
 
 class Reponse(StrEnum):
-    IDENTITE = "Je suis un service développé par ou pour l’ANSSI afin de répondre aux questions en cybersécurité et informatique, en m’appuyant sur les guides officiels disponibles sur le site de l’agence."
-    THEMATIQUE = "Cette thématique n’entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d’un enjeu cybersécurité ou informatique."
+    IDENTITE = "Je suis un service développé par ou pour l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence."
+    THEMATIQUE = "Cette thématique n'entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d'un enjeu cybersécurité ou informatique."
     MALVEILLANCE = (
-        "Désolé, nous n’avons pu générer aucune réponse correspondant à votre question."
+        "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
     )
+    MECONNAISSANCE = "Les sources actuellement disponibles ne me permettent pas de répondre à la question."
 
 
 REPONSE_PAR_DEFAUT = Reponse.MALVEILLANCE
@@ -43,6 +44,8 @@ class Violation(BaseModel):
                 return cast(Self, ViolationThematique())
             case Reponse.MALVEILLANCE:
                 return cast(Self, ViolationMalveillance())
+            case Reponse.MECONNAISSANCE:
+                return cast(Self, ViolationMeconnaissance())
         return cast(Self, Violation())
 
 
@@ -62,3 +65,9 @@ class ViolationThematique(Violation):
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
         self.reponse = Reponse.THEMATIQUE
+
+
+class ViolationMeconnaissance(Violation):
+    def __init__(self, /, **data: Any) -> None:
+        super().__init__(**data)
+        self.reponse = Reponse.MECONNAISSANCE
