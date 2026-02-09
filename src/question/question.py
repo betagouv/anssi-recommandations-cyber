@@ -1,4 +1,5 @@
 import uuid
+
 from typing import NamedTuple, Union
 
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -10,7 +11,11 @@ from adaptateurs.journal import (
     AdaptateurJournal,
 )
 from schemas.albert import ReponseQuestion
-from schemas.retour_utilisatrice import Interaction
+from schemas.retour_utilisatrice import (
+    Interaction,
+    RetourUtilisatrice,
+    DonneesCreationRetourUtilisateur,
+)
 from schemas.type_utilisateur import TypeUtilisateur
 from services.service_albert import ServiceAlbert
 
@@ -87,3 +92,19 @@ def pose_question_utilisateur(
         return ResultatInteraction(id_interaction, reponse_question, interaction)
     except Exception as e:
         return ResultatInteractionEnErreur(e)
+
+
+def ajoute_retour_utilisatrice(
+    donnees_ajout_retour: DonneesCreationRetourUtilisateur,
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees,
+) -> RetourUtilisatrice | None:
+    interaction = adaptateur_base_de_donnees.recupere_interaction(
+        uuid.UUID(donnees_ajout_retour.id_interaction)
+    )
+
+    if not interaction:
+        return None
+
+    interaction.retour_utilisatrice = donnees_ajout_retour.retour
+    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(interaction)
+    return interaction.retour_utilisatrice

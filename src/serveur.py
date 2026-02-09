@@ -34,6 +34,7 @@ from question.question import (
     ConfigurationQuestion,
     ResultatInteraction,
     ResultatInteractionEnErreur,
+    ajoute_retour_utilisatrice,
 )
 from schemas.albert import Paragraphe
 from schemas.api import (
@@ -179,9 +180,7 @@ def ajoute_retour(
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
     type_utilisateur: str | None = None,
 ) -> RetourUtilisatrice:
-    retour = adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        uuid.UUID(body.id_interaction), body.retour
-    )
+    retour = ajoute_retour_utilisatrice(body, adaptateur_base_de_donnees)
 
     if not retour:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
