@@ -43,7 +43,11 @@ from schemas.api import (
     QuestionRequeteAvecPrompt,
     ReponseQuestionAPI,
 )
-from schemas.retour_utilisatrice import DonneesCreationRetourUtilisateur, Interaction
+from schemas.retour_utilisatrice import (
+    DonneesCreationRetourUtilisateur,
+    Interaction,
+    Conversation,
+)
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
 from services.fabrique_service_albert import fabrique_service_albert
@@ -84,9 +88,12 @@ def route_pose_question_avec_prompt(
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
+    conversation = Conversation(interaction)
     adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
     return ReponseQuestionAPI(
-        **reponse_question.model_dump(), interaction_id=str(interaction.id)
+        **reponse_question.model_dump(),
+        interaction_id=str(interaction.id),
+        conversation_id=str(conversation.id_conversation),
     )
 
 
@@ -137,6 +144,7 @@ def route_pose_question(
             return ReponseQuestionAPI(
                 **resultat_interaction.reponse_question.model_dump(),
                 interaction_id=resultat_interaction.id_interaction,
+                conversation_id=str(resultat_interaction.id_conversation),
             )
         case ResultatInteractionEnErreur():
             raise HTTPException(

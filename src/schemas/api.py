@@ -19,3 +19,4 @@ class ReponseQuestionAPI(BaseModel):
     paragraphes: list[Paragraphe]
     question: str
     interaction_id: str
+    conversation_id: str
