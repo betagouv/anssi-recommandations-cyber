@@ -99,6 +99,7 @@ def test_route_pose_question_retourne_donnees_correctes(
                 "contenu": "Contenu du paragraphe 2",
             },
         ],
+        "conversation_id": response_data["conversation_id"],
     }
     assert (
         adaptateur_base_de_donnees.recupere_interaction(
