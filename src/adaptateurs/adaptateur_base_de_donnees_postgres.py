@@ -10,7 +10,7 @@ from infra.chiffrement.chiffrement import (
     ServiceDeChiffrement,
 )
 from infra.postgres.encodeurs_json import EncodeurJson
-from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
+from schemas.retour_utilisatrice import Interaction
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
@@ -51,30 +51,17 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         interaction_json = self.__chiffre_interaction(interaction.model_dump())
         identifiant_interaction = str(interaction.id)
 
-        self._get_curseur().execute(
-            "INSERT INTO interactions (id_interaction, contenu) VALUES (%s, %s)",
-            (identifiant_interaction, interaction_json),
-        )
-
-    def ajoute_retour_utilisatrice(
-        self, interaction: Interaction
-    ) -> Optional[RetourUtilisatrice]:
-        interaction_json = self.__chiffre_interaction(interaction.model_dump())
-
-        self._get_curseur().execute(
-            "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_json, str(interaction.id)),
-        )
-        return interaction.retour_utilisatrice
-
-    def supprime_retour_utilisatrice(self, interaction: Interaction) -> None:
-        interaction_json = self.__chiffre_interaction(interaction.model_dump())
-
-        self._get_curseur().execute(
-            "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_json, str(interaction.id)),
-        )
-        return None
+        interaction_existante = self.recupere_interaction(interaction.id)
+        if interaction_existante is not None:
+            self._get_curseur().execute(
+                "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
+                (interaction_json, identifiant_interaction),
+            )
+        else:
+            self._get_curseur().execute(
+                "INSERT INTO interactions (id_interaction, contenu) VALUES (%s, %s)",
+                (identifiant_interaction, interaction_json),
+            )
 
     def recupere_interaction(
         self, identifiant_interaction: UUID
