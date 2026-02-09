@@ -8,10 +8,12 @@ from adaptateurs import (
     AdaptateurBaseDeDonneesEnMemoire,
     AdaptateurBaseDeDonneesPostgres,
 )
+from adaptateurs.horloge import Horloge
 from configuration import recupere_configuration_postgres
 from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import RetourPositif, TagPositif, Interaction
+import datetime as dt
 
 
 def cree_connexion_postgres() -> psycopg2.extensions.connection:
@@ -155,3 +157,17 @@ def test_supprime_retour_existant(adaptateur_test) -> None:
 
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
     assert interaction_recuperee.retour_utilisatrice is None
+
+
+def test_la_date_d_une_interaction_est_persistee(adaptateur_test) -> None:
+    date_creation = dt.datetime(2026, 2, 15, 3, 4, 5)
+    Horloge.frise(date_creation)
+    interaction = Interaction(id=uuid.uuid4(),
+                              reponse_question=ReponseQuestion(reponse="test", question="test", paragraphes=[],
+                                                               violation=None))
+
+    adaptateur_test.sauvegarde_interaction(interaction)
+    Horloge.frise(dt.datetime(2026, 6, 7, 3, 4, 6))
+
+    interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
+    assert interaction_recuperee.date_creation == interaction.date_creation

@@ -61,6 +61,7 @@ type RetourUtilisatrice = Union[RetourNegatif, RetourPositif]
 class Interaction(BaseModel):
     reponse_question: ReponseQuestion
     retour_utilisatrice: Optional[RetourUtilisatrice] = None
+    date_creation: datetime = Field(default_factory=AdaptateurHorloge.maintenant)
     id: UUID
 
 
