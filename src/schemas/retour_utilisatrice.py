@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from enum import StrEnum, auto
 from typing import Generic, Literal, Optional, TypeVar, Union
@@ -63,6 +64,12 @@ class Interaction(BaseModel):
     retour_utilisatrice: Optional[RetourUtilisatrice] = None
     date_creation: datetime = Field(default_factory=AdaptateurHorloge.maintenant)
     id: UUID
+
+
+class Conversation:
+    def __init__(self, interaction: Interaction):
+        self.id_conversation = uuid.uuid4()
+        self.interactions = [interaction]
 
 
 class DonneesCreationRetourUtilisateur(BaseModel):

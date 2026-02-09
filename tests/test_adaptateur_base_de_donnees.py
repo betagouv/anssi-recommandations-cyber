@@ -162,9 +162,12 @@ def test_supprime_retour_existant(adaptateur_test) -> None:
 def test_la_date_d_une_interaction_est_persistee(adaptateur_test) -> None:
     date_creation = dt.datetime(2026, 2, 15, 3, 4, 5)
     Horloge.frise(date_creation)
-    interaction = Interaction(id=uuid.uuid4(),
-                              reponse_question=ReponseQuestion(reponse="test", question="test", paragraphes=[],
-                                                               violation=None))
+    interaction = Interaction(
+        id=uuid.uuid4(),
+        reponse_question=ReponseQuestion(
+            reponse="test", question="test", paragraphes=[], violation=None
+        ),
+    )
 
     adaptateur_test.sauvegarde_interaction(interaction)
     Horloge.frise(dt.datetime(2026, 6, 7, 3, 4, 6))

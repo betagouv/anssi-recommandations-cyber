@@ -1,4 +1,5 @@
 import json
+import uuid
 from uuid import UUID
 
 import psycopg2
@@ -10,7 +11,7 @@ from infra.chiffrement.chiffrement import (
     ServiceDeChiffrement,
 )
 from infra.postgres.encodeurs_json import EncodeurJson
-from schemas.retour_utilisatrice import Interaction
+from schemas.retour_utilisatrice import Interaction, Conversation
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
@@ -96,3 +97,9 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def ferme_connexion(self) -> None:
         if self._connexion:
             self._connexion.close()
+
+    def recupere_conversation(self, id_conversation: uuid.UUID):
+        pass
+
+    def sauvegarde_conversation(self, conversation: Conversation):
+        pass
