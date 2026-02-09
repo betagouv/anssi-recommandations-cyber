@@ -12,7 +12,7 @@ class AdaptateurBaseDeDonnees(ABC):
 
     @abstractmethod
     def ajoute_retour_utilisatrice(
-        self, identifiant_interaction: UUID, retour: RetourUtilisatrice
+        self, interaction: Interaction
     ) -> Optional[RetourUtilisatrice]:
         pass
 

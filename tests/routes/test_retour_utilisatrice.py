@@ -1,7 +1,8 @@
 import uuid
 
-from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from fastapi.testclient import TestClient
+
+from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import TypeEvenement, AdaptateurJournalMemoire
 from schemas.retour_utilisatrice import TagPositif
@@ -128,10 +129,8 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
     un_retour_positif,
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+    une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        une_interaction.id, un_retour_positif
-    )
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -156,11 +155,9 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
     une_interaction,
     un_retour_positif,
 ) -> None:
+    une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        une_interaction.id, un_retour_positif
-    )
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -223,11 +220,9 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     une_interaction,
     un_retour_positif,
 ) -> None:
+    une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        une_interaction.id, un_retour_positif
-    )
     adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -249,11 +244,9 @@ def test_route_route_retour_identifie_le_type_d_utilisateur(
     une_interaction,
     un_retour_positif,
 ):
+    une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        une_interaction.id, un_retour_positif
-    )
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )
@@ -285,11 +278,9 @@ def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
     une_interaction,
     un_retour_positif,
 ):
+    une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(
-        une_interaction.id, un_retour_positif
-    )
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )
