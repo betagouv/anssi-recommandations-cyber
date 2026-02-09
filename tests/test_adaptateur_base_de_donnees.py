@@ -82,9 +82,10 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     adaptateur_test.sauvegarde_interaction(interaction)
     retour = RetourPositif(commentaire="Très utile")
     interaction.retour_utilisatrice = retour
+    adaptateur_test.sauvegarde_interaction(interaction)
 
-    resultat = adaptateur_test.ajoute_retour_utilisatrice(interaction)
-    assert resultat == retour
+    resultat = adaptateur_test.recupere_interaction(interaction.id)
+    assert resultat.retour_utilisatrice == retour
 
 
 def test_recupere_interaction_existante(adaptateur_test) -> None:
@@ -121,7 +122,7 @@ def test_recupere_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
 
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     interaction.retour_utilisatrice = retour
-    adaptateur_test.ajoute_retour_utilisatrice(interaction)
+    adaptateur_test.sauvegarde_interaction(interaction)
 
     interaction = adaptateur_test.recupere_interaction(id_interaction)
     assert interaction is not None
@@ -150,7 +151,7 @@ def test_supprime_retour_existant(adaptateur_test) -> None:
     adaptateur_test.sauvegarde_interaction(interaction)
 
     interaction.retour_utilisatrice = None
-    adaptateur_test.supprime_retour_utilisatrice(interaction)
+    adaptateur_test.sauvegarde_interaction(interaction)
 
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
     assert interaction_recuperee.retour_utilisatrice is None

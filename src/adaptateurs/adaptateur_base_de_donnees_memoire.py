@@ -1,7 +1,8 @@
-from typing import Dict, Optional
 from uuid import UUID
 
-from schemas.retour_utilisatrice import RetourUtilisatrice, Interaction
+from typing import Dict, Optional
+
+from schemas.retour_utilisatrice import Interaction
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 
@@ -11,16 +12,6 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
         self._interactions: Dict[UUID, Interaction] = {}
 
     def sauvegarde_interaction(self, interaction: Interaction) -> None:
-        self._interactions[interaction.id] = interaction
-        return None
-
-    def ajoute_retour_utilisatrice(
-        self, interaction: Interaction
-    ) -> Optional[RetourUtilisatrice]:
-        self._interactions[interaction.id] = interaction
-        return interaction.retour_utilisatrice
-
-    def supprime_retour_utilisatrice(self, interaction: Interaction) -> None:
         self._interactions[interaction.id] = interaction
         return None
 

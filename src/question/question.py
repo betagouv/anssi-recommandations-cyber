@@ -107,7 +107,7 @@ def ajoute_retour_utilisatrice(
         return None
 
     interaction.retour_utilisatrice = donnees_ajout_retour.retour
-    adaptateur_base_de_donnees.ajoute_retour_utilisatrice(interaction)
+    adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
     return interaction.retour_utilisatrice
 
 
@@ -122,5 +122,5 @@ def supprime_retour_utilisatrice(
         return None
 
     interaction.retour_utilisatrice = None
-    adaptateur_base_de_donnees.supprime_retour_utilisatrice(interaction)
+    adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
     return None
