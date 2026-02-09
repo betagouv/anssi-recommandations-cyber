@@ -95,10 +95,18 @@ def test_ne_conserve_pas_les_paragraphes_en_cas_de_violation(
 
     assert resultat_interaction.interaction.reponse_question.paragraphes == []
 
+
 def test_pose_question_une_interaction_a_une_date(un_adaptateur_de_chiffrement):
     Horloge.frise(dt.datetime(2026, 2, 15, 3, 4, 5))
     service_albert = ServiceAlbertMemoire()
-    service_albert.ajoute_reponse(ReponseQuestion(reponse="La réponse d'MQC",question="une question", paragraphes=[], violation=None))
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse="La réponse d'MQC",
+            question="une question",
+            paragraphes=[],
+            violation=None,
+        )
+    )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     reponse = pose_question_utilisateur(
         ConfigurationQuestion(
@@ -111,5 +119,37 @@ def test_pose_question_une_interaction_a_une_date(un_adaptateur_de_chiffrement):
         TypeUtilisateur.EXPERT_SSI,
     )
 
-    assert adaptateur_base_de_donnees.recupere_interaction(uuid.UUID(reponse.id_interaction)).date_creation == dt.datetime(2026, 2, 15, 3, 4, 5)
+    assert adaptateur_base_de_donnees.recupere_interaction(
+        uuid.UUID(reponse.id_interaction)
+    ).date_creation == dt.datetime(2026, 2, 15, 3, 4, 5)
 
+
+def test_cree_une_conversation(un_adaptateur_de_chiffrement):
+    Horloge.frise(dt.datetime(2026, 2, 15, 3, 4, 5))
+    service_albert = ServiceAlbertMemoire()
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse="La réponse d'MQC",
+            question="une question",
+            paragraphes=[],
+            violation=None,
+        )
+    )
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+
+    reponse = pose_question_utilisateur(
+        ConfigurationQuestion(
+            adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+            adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+            adaptateur_journal=AdaptateurJournalMemoire(),
+            service_albert=service_albert,
+        ),
+        "une question",
+        TypeUtilisateur.EXPERT_SSI,
+    )
+
+    conversation = adaptateur_base_de_donnees.recupere_conversation(
+        reponse.id_conversation
+    )
+    assert conversation is not None
+    assert len(conversation.interactions) == 1

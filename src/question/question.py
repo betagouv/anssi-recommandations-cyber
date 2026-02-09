@@ -16,6 +16,7 @@ from schemas.retour_utilisatrice import (
     Interaction,
     RetourUtilisatrice,
     DonneesCreationRetourUtilisateur,
+    Conversation,
 )
 from schemas.type_utilisateur import TypeUtilisateur
 from services.service_albert import ServiceAlbert
@@ -28,16 +29,18 @@ class ConfigurationQuestion(NamedTuple):
     adaptateur_chiffrement: AdaptateurChiffrement
 
 
-class ResultatInteraction:
+class ResultatConversation:
     def __init__(
         self,
-        id_interaction: str,
+        id_conversation: uuid.UUID,
         reponse_question: ReponseQuestion,
         interaction: Interaction,
+        id_interaction: str,
     ):
         self.id_interaction = id_interaction
         self.reponse_question = reponse_question
         self.interaction = interaction
+        self.id_conversation = id_conversation
 
 
 class ResultatInteractionEnErreur:
@@ -50,7 +53,7 @@ def pose_question_utilisateur(
     configuration: ConfigurationQuestion,
     question: str,
     type_utilisateur: TypeUtilisateur,
-) -> Union[ResultatInteraction, ResultatInteractionEnErreur]:
+) -> Union[ResultatConversation, ResultatInteractionEnErreur]:
     try:
         reponse_question = configuration.service_albert.pose_question(question)
         if reponse_question.violation is not None:
@@ -63,6 +66,8 @@ def pose_question_utilisateur(
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
         )
+        conversation = Conversation(interaction)
+        configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
         id_interaction = str(interaction.id)
         (configuration.adaptateur_base_de_donnees.sauvegarde_interaction(interaction))
         configuration.adaptateur_journal.consigne_evenement(
@@ -90,7 +95,9 @@ def pose_question_utilisateur(
                     type_violation=reponse_question.violation.__class__.__name__,
                 ),
             )
-        return ResultatInteraction(id_interaction, reponse_question, interaction)
+        return ResultatConversation(
+            conversation.id_conversation, reponse_question, interaction, id_interaction
+        )
     except Exception as e:
         return ResultatInteractionEnErreur(e)
 

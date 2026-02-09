@@ -32,7 +32,7 @@ from infra.ui_kit.version_ui_kit import version_ui_kit
 from question.question import (
     pose_question_utilisateur,
     ConfigurationQuestion,
-    ResultatInteraction,
+    ResultatConversation,
     ResultatInteractionEnErreur,
     ajoute_retour_utilisatrice,
     supprime_retour_utilisatrice,
@@ -133,7 +133,7 @@ def route_pose_question(
     )
 
     match resultat_interaction:
-        case ResultatInteraction():
+        case ResultatConversation():
             return ReponseQuestionAPI(
                 **resultat_interaction.reponse_question.model_dump(),
                 interaction_id=resultat_interaction.id_interaction,
