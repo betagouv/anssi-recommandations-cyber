@@ -20,18 +20,8 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
         self._interactions[interaction.id] = interaction
         return interaction.retour_utilisatrice
 
-    def supprime_retour_utilisatrice(self, identifiant_interaction: UUID) -> None:
-        interaction = self.recupere_interaction(identifiant_interaction)
-
-        if not interaction:
-            return None
-
-        interaction_mise_a_jour = Interaction(
-            reponse_question=interaction.reponse_question,
-            retour_utilisatrice=None,
-            id=interaction.id,
-        )
-        self._interactions[identifiant_interaction] = interaction_mise_a_jour
+    def supprime_retour_utilisatrice(self, interaction: Interaction) -> None:
+        self._interactions[interaction.id] = interaction
         return None
 
     def recupere_interaction(

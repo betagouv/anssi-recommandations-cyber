@@ -35,6 +35,7 @@ from question.question import (
     ResultatInteraction,
     ResultatInteractionEnErreur,
     ajoute_retour_utilisatrice,
+    supprime_retour_utilisatrice,
 )
 from schemas.albert import Paragraphe
 from schemas.api import (
@@ -213,11 +214,11 @@ def supprime_retour(
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
     type_utilisateur: str | None = None,
 ) -> Optional[str]:
-    adaptateur_base_de_donnees.supprime_retour_utilisatrice(UUID(id_interaction))
-
     interaction = adaptateur_base_de_donnees.recupere_interaction(UUID(id_interaction))
     if not interaction:
         raise HTTPException(status_code=404, detail="Interaction non trouvée")
+
+    supprime_retour_utilisatrice(UUID(id_interaction), adaptateur_base_de_donnees)
 
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.AVIS_UTILISATEUR_SUPPRIME,
