@@ -149,22 +149,8 @@ def test_supprime_retour_existant(adaptateur_test) -> None:
     )
     adaptateur_test.sauvegarde_interaction(interaction)
 
-    adaptateur_test.supprime_retour_utilisatrice(interaction.id)
+    interaction.retour_utilisatrice = None
+    adaptateur_test.supprime_retour_utilisatrice(interaction)
 
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
     assert interaction_recuperee.retour_utilisatrice is None
-
-
-def test_supprime_retour_inexistant_echoue(adaptateur_test) -> None:
-    reponse_question = ReponseQuestion(
-        reponse="Réponse test", paragraphes=[], question="Question test", violation=None
-    )
-    retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
-    interaction = Interaction(
-        reponse_question=reponse_question, retour_utilisatrice=retour, id=uuid.uuid4()
-    )
-    adaptateur_test.sauvegarde_interaction(interaction)
-
-    retour = adaptateur_test.supprime_retour_utilisatrice("id-d-une-autre-interaction")
-
-    assert retour is None

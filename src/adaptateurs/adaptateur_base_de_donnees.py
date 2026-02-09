@@ -17,7 +17,7 @@ class AdaptateurBaseDeDonnees(ABC):
         pass
 
     @abstractmethod
-    def supprime_retour_utilisatrice(self, identifiant_interaction: UUID) -> None:
+    def supprime_retour_utilisatrice(self, interaction: Interaction) -> None:
         pass
 
     @abstractmethod

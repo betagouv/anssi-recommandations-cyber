@@ -1,4 +1,5 @@
 import uuid
+from uuid import UUID
 
 from typing import NamedTuple, Union
 
@@ -108,3 +109,18 @@ def ajoute_retour_utilisatrice(
     interaction.retour_utilisatrice = donnees_ajout_retour.retour
     adaptateur_base_de_donnees.ajoute_retour_utilisatrice(interaction)
     return interaction.retour_utilisatrice
+
+
+def supprime_retour_utilisatrice(
+    identifiant_interaction: UUID, adaptateur_base_de_donnees: AdaptateurBaseDeDonnees
+) -> None:
+    interaction = adaptateur_base_de_donnees.recupere_interaction(
+        identifiant_interaction
+    )
+
+    if not interaction:
+        return None
+
+    interaction.retour_utilisatrice = None
+    adaptateur_base_de_donnees.supprime_retour_utilisatrice(interaction)
+    return None

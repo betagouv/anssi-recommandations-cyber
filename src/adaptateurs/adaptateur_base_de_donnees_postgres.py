@@ -67,24 +67,12 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         )
         return interaction.retour_utilisatrice
 
-    def supprime_retour_utilisatrice(self, identifiant_interaction: UUID) -> None:
-        interaction = self.recupere_interaction(identifiant_interaction)
-
-        if not interaction:
-            return None
-
-        interaction_mise_a_jour = Interaction(
-            reponse_question=interaction.reponse_question,
-            retour_utilisatrice=None,
-            id=identifiant_interaction,
-        )
-        interaction_json = self.__chiffre_interaction(
-            interaction_mise_a_jour.model_dump()
-        )
+    def supprime_retour_utilisatrice(self, interaction: Interaction) -> None:
+        interaction_json = self.__chiffre_interaction(interaction.model_dump())
 
         self._get_curseur().execute(
             "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_json, str(identifiant_interaction)),
+            (interaction_json, str(interaction.id)),
         )
         return None
 
