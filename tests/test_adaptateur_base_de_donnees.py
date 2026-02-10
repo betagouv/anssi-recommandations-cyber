@@ -8,22 +8,23 @@ from adaptateurs import (
     AdaptateurBaseDeDonneesEnMemoire,
     AdaptateurBaseDeDonneesPostgres,
 )
+from adaptateurs.connecteur import ConnecteurPostgresql
 from adaptateurs.horloge import Horloge
-from configuration import recupere_configuration_postgres
+from adaptateurs.migrateur import Migrateur
+from configuration import recupere_configuration_postgres, BaseDeDonnees
 from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import RetourPositif, TagPositif, Interaction
 import datetime as dt
 
 
-def cree_connexion_postgres() -> psycopg2.extensions.connection:
-    config_postgres = recupere_configuration_postgres("postgres")
+def cree_connexion_postgres(postgres) -> psycopg2.extensions.connection:
     return psycopg2.connect(
-        host=config_postgres.hote,
-        database=config_postgres.nom,
-        user=config_postgres.utilisateur,
-        password=config_postgres.mot_de_passe,
-        port=config_postgres.port,
+        host=postgres.hote,
+        database=postgres.nom,
+        user=postgres.utilisateur,
+        password=postgres.mot_de_passe,
+        port=postgres.port,
     )
 
 
@@ -33,15 +34,27 @@ def cree_adaptateur_memoire():
 
 def cree_adaptateur_postgres():
     nom_bdd_test = f"test_anssi_{str(uuid.uuid4()).replace('-', '_')}"
-
-    conn_admin = cree_connexion_postgres()
-    conn_admin.autocommit = True
-    with conn_admin.cursor() as cursor:
+    configuration_postgres = recupere_configuration_postgres("postgres")
+    connecteur_postgresql = ConnecteurPostgresql(configuration_postgres)
+    connecteur_postgresql.auto_commit()
+    with connecteur_postgresql.cursor() as cursor:
         cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{nom_bdd_test}'")
         if not cursor.fetchone():
             cursor.execute(f"CREATE DATABASE {nom_bdd_test}")
-    conn_admin.close()
+    connecteur_postgresql.close()
 
+    connecteur_migration = ConnecteurPostgresql(
+        BaseDeDonnees(
+            hote=configuration_postgres.hote,
+            nom=nom_bdd_test,
+            utilisateur=configuration_postgres.utilisateur,
+            mot_de_passe=configuration_postgres.mot_de_passe,
+            port=configuration_postgres.port,
+        )
+    )
+    migrateur = Migrateur(connecteur_migration, "migrations")
+    migrateur.execute_migrations()
+    connecteur_migration.close()
     adaptateur = AdaptateurBaseDeDonneesPostgres(
         nom_bdd_test, ServiceDeChiffrementEnClair()
     )
@@ -49,8 +62,8 @@ def cree_adaptateur_postgres():
     yield adaptateur
 
     adaptateur.ferme_connexion()
-    conn_cleanup = cree_connexion_postgres()
-    conn_cleanup.autocommit = True
+    conn_cleanup = ConnecteurPostgresql(configuration_postgres)
+    conn_cleanup.auto_commit()
     with conn_cleanup.cursor() as cursor:
         cursor.execute(f"DROP DATABASE IF EXISTS {nom_bdd_test}")
     conn_cleanup.close()

@@ -51,6 +51,11 @@ env $(cat .env) python src/main.py
 NODE_VERSION="$(cat ./ui/.nvmrc)" docker compose up
 ```
 
+### Migration des données
+Exécuter la commande suivante, suivant l’environnement dans lequel on se trouve :
+- depuis l’hôte (à la racine du projet) : `PYTHONPATH=src uv run --env-file .env src/infra/postgres/execute_migration.py` 
+- depuis un conteneur : `scripts/clever-cloud/post-build-clever.sh`
+
 ## 💬 Comment utiliser l'application ?
 
 ### 1. Déterminer l'adresse de l'application

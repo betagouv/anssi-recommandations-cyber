@@ -38,15 +38,6 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         )
         self._connexion.autocommit = True
         self._service_chiffrement = service_chiffrement
-        self._initialise_tables()
-
-    def _initialise_tables(self) -> None:
-        self._get_curseur().execute("""
-            CREATE TABLE IF NOT EXISTS interactions (
-                id_interaction TEXT PRIMARY KEY,
-                contenu JSONB NOT NULL
-            )
-        """)
 
     def sauvegarde_interaction(self, interaction: Interaction) -> None:
         interaction_json = self.__chiffre_interaction(interaction.model_dump())
