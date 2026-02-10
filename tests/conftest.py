@@ -12,7 +12,8 @@ from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal
 from configuration import Mode
-from schemas.albert import Paragraphe
+from schemas.albert import Paragraphe, ReponseQuestion
+from schemas.api import QuestionRequete
 from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import (
     ConstructeurServeur,
@@ -28,6 +29,23 @@ class ConstructeurDeParagraphe:
         self.numero_page = random.randint(1, 100)
         self.nom_document = "Mon document"
 
+    def avec_contenu(self, contenu: str):
+        self.contenu = contenu
+        return self
+
+    def ayant_comme_score(self, score: float):
+        self.score_similarite = score
+        return self
+
+    def a_la_page(self, numero_page: int):
+        self.numero_page = numero_page
+        return self
+
+    def dans_le_document(self, nom_document: str):
+        self.nom_document = nom_document
+        self.url = f"{self.url}/{nom_document}"
+        return self
+
     def construis(self) -> Paragraphe:
         return Paragraphe(
             nom_document=self.nom_document,
@@ -37,14 +55,62 @@ class ConstructeurDeParagraphe:
             url=self.url,
         )
 
-    def avec_contenu(self, contenu: str):
-        self.contenu = contenu
+
+@pytest.fixture()
+def un_constructeur_de_paragraphe() -> Callable[
+    [],
+    ConstructeurDeParagraphe,
+]:
+    def _un_constructeur_de_paragraphe():
+        return ConstructeurDeParagraphe()
+
+    return _un_constructeur_de_paragraphe
+
+
+class ConstructeurDeReponseQuestion:
+    def __init__(self):
+        super().__init__()
+        self.reponse = "Une réponse"
+        self.question = "Une question"
+        self.paragraphes = []
+        self.violation = None
+
+    def a_partir_d_une_requete(self, requete_question: QuestionRequete):
+        self.question = requete_question.question
         return self
+
+    def donnant_en_reponse(self, reponse: str):
+        self.reponse = reponse
+        return self
+
+    def avec_les_paragraphes(self, paragraphes: list[Paragraphe]):
+        self.paragraphes = paragraphes
+        return self
+
+    def construis(self) -> ReponseQuestion:
+        return ReponseQuestion(
+            reponse=self.reponse,
+            paragraphes=self.paragraphes,
+            question=self.question,
+            violation=self.violation,
+        )
 
 
 @pytest.fixture()
-def un_constructeur_de_paragraphe() -> ConstructeurDeParagraphe:
-    return ConstructeurDeParagraphe()
+def un_constructeur_de_reponse_question() -> Callable[
+    [], ConstructeurDeReponseQuestion
+]:
+    def _un_constructeur_de_reponse_question():
+        return ConstructeurDeReponseQuestion()
+
+    return _un_constructeur_de_reponse_question
+
+
+@pytest.fixture()
+def une_reponse_question():
+    return ReponseQuestion(
+        reponse="Une réponse", question="Une question", paragraphes=[], violation=None
+    )
 
 
 @pytest.fixture(autouse=True)
