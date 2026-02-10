@@ -129,9 +129,8 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
                     conversation.id_conversation, interactions_a_inserer
                 )
 
-            for interaction in interactions_a_mettre_a_jour:
-                interaction_json = self.__chiffre_interaction(interaction.model_dump())
-                self._mets_a_jour_une_interaction(interaction, interaction_json)
+            if interactions_a_mettre_a_jour:
+                self._mets_a_jour_toutes_les_interactions(interactions_a_mettre_a_jour)
             return
         self._get_curseur().execute(
             "INSERT INTO conversations (id) VALUES (%s)",
@@ -158,10 +157,17 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             interactions_a_inserer,
         )
 
-    def _mets_a_jour_une_interaction(
-        self, interaction: Interaction, interaction_json: str
-    ):
-        self._get_curseur().execute(
-            "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
-            (interaction_json, str(interaction.id)),
+    def _mets_a_jour_toutes_les_interactions(self, interactions: list[Interaction]):
+        interactions_a_mettre_a_jour = [
+            (
+                self.__chiffre_interaction(i.model_dump()),
+                str(i.id),
+            )
+            for i in interactions
+        ]
+
+        psycopg2.extras.execute_values(
+            self._get_curseur(),
+            "UPDATE interactions SET contenu = data.contenu::jsonb FROM (VALUES %s) AS data (contenu, id_interaction) WHERE interactions.id_interaction = data.id_interaction",
+            interactions_a_mettre_a_jour,
         )
