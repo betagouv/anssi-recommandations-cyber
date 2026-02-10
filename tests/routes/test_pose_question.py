@@ -10,7 +10,8 @@ from adaptateurs.journal import (
     AdaptateurJournalMemoire,
 )
 from configuration import Mode
-from schemas.albert import Paragraphe, ReponseQuestion
+from schemas.albert import ReponseQuestion
+from schemas.api import QuestionRequete
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationIdentite,
@@ -41,41 +42,47 @@ def test_route_pose_question_repond_correctement(
 
 
 def test_route_pose_question_retourne_donnees_correctes(
-    un_serveur_de_test, un_adaptateur_de_chiffrement
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    un_constructeur_de_reponse_question,
+    un_constructeur_de_paragraphe,
 ) -> None:
-    reponse = ReponseQuestion(
-        reponse="Réponse de test d'Albert",
-        paragraphes=[
-            Paragraphe(
-                score_similarite=0.75,
-                numero_page=29,
-                url="https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                nom_document="anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                contenu="Contenu du paragraphe 1",
-            ),
-            Paragraphe(
-                score_similarite=0.72,
-                numero_page=15,
-                url="https://cyber.gouv.fr/sites/default/files/2017/01/guide_hygiene_informatique_anssi.pdf",
-                nom_document="guide_hygiene_informatique_anssi.pdf",
-                contenu="Contenu du paragraphe 2",
-            ),
-        ],
-        question="Qui es-tu",
-        violation=None,
-    )
-
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     service_albert = ServiceAlbertMemoire()
-    service_albert.ajoute_reponse(reponse)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         service_albert=service_albert,
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
     )
+    requete_question = QuestionRequete(question="Qui es-tu")
+    reponse = (
+        un_constructeur_de_reponse_question()
+        .a_partir_d_une_requete(requete_question)
+        .donnant_en_reponse("Réponse de test d'Albert")
+        .avec_les_paragraphes(
+            [
+                un_constructeur_de_paragraphe()
+                .avec_contenu("Contenu du paragraphe 1")
+                .ayant_comme_score(0.75)
+                .a_la_page(29)
+                .dans_le_document(
+                    "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf"
+                )
+                .construis(),
+                un_constructeur_de_paragraphe()
+                .avec_contenu("Contenu du paragraphe 2")
+                .ayant_comme_score(0.72)
+                .a_la_page(15)
+                .dans_le_document("guide_hygiene_informatique_anssi.pdf")
+                .construis(),
+            ]
+        )
+        .construis()
+    )
+    service_albert.ajoute_reponse(reponse)
 
     client_http = TestClient(serveur)
-    r = client_http.post("/api/pose_question", json={"question": "Qui es-tu"})
+    r = client_http.post("/api/pose_question", json=requete_question.__dict__)
 
     response_data = r.json()
     assert response_data["interaction_id"]
@@ -87,14 +94,14 @@ def test_route_pose_question_retourne_donnees_correctes(
             {
                 "score_similarite": 0.75,
                 "numero_page": 29,
-                "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "url": "http://mondocument.local/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
                 "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
                 "contenu": "Contenu du paragraphe 1",
             },
             {
                 "score_similarite": 0.72,
                 "numero_page": 15,
-                "url": "https://cyber.gouv.fr/sites/default/files/2017/01/guide_hygiene_informatique_anssi.pdf",
+                "url": "http://mondocument.local/guide_hygiene_informatique_anssi.pdf",
                 "nom_document": "guide_hygiene_informatique_anssi.pdf",
                 "contenu": "Contenu du paragraphe 2",
             },
@@ -177,20 +184,23 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
     un_constructeur_de_paragraphe,
+    un_constructeur_de_reponse_question,
 ):
-    question_posee = " Qui es-tu ? "
-    valeur_hachee = "haché"
-    reponse = ReponseQuestion(
-        reponse=" Je suis Albert, pour vous servir ",
-        paragraphes=[
-            un_constructeur_de_paragraphe.avec_contenu("Contenu A").construis(),
-            un_constructeur_de_paragraphe.avec_contenu("Contenu B").construis(),
-        ],
-        question=question_posee,
-        violation=None,
+    question_posee = QuestionRequete(question=" Qui es-tu ? ")
+    reponse = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+        .avec_les_paragraphes(
+            [
+                un_constructeur_de_paragraphe().avec_contenu("Contenu A").construis(),
+                un_constructeur_de_paragraphe().avec_contenu("Contenu B").construis(),
+            ]
+        )
+        .a_partir_d_une_requete(question_posee)
+        .construis()
     )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage="haché")
     adaptateur_journal = AdaptateurJournalMemoire()
     service_albert = ServiceAlbertMemoire()
     service_albert.ajoute_reponse(reponse)
@@ -205,7 +215,7 @@ def test_route_pose_question_emet_un_evenement_donnant_la_longueur_totale_des_pa
     client = TestClient(serveur)
     client.post(
         "/api/pose_question",
-        json={"question": question_posee},
+        json=question_posee.__dict__,
     )
 
     evenements = adaptateur_journal.les_evenements()
