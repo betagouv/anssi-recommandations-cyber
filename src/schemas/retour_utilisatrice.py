@@ -69,7 +69,22 @@ class Interaction(BaseModel):
 class Conversation:
     def __init__(self, interaction: Interaction):
         self.id_conversation = uuid.uuid4()
-        self.interactions = [interaction]
+        self._interactions = [interaction]
+
+    @property
+    def interactions(self):
+        self._interactions.sort(key=lambda i: i.date_creation, reverse=True)
+        return self._interactions
+
+    def ajoute_interaction(self, interaction):
+        self._interactions.append(interaction)
+
+    @staticmethod
+    def hydrate(id_conversation: uuid.UUID, les_interactions: list[Interaction]):
+        conversation = Conversation(les_interactions[0])
+        conversation.id_conversation = id_conversation
+        conversation._interactions.extend(les_interactions[1:])
+        return conversation
 
 
 class DonneesCreationRetourUtilisateur(BaseModel):

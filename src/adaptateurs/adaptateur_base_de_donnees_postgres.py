@@ -89,8 +89,79 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         if self._connexion:
             self._connexion.close()
 
-    def recupere_conversation(self, id_conversation: uuid.UUID):
-        pass
+    def recupere_conversation(self, id_conversation: uuid.UUID) -> Conversation | None:
+        curseur = self._get_curseur()
+        curseur.execute(
+            "SELECT conversations.id AS id_conversation, interactions.id_interaction AS id_interaction, interactions.contenu AS contenu "
+            "FROM conversations, interactions WHERE conversations.id = interactions.id_conversation AND id_conversation = %s "
+            "ORDER BY contenu ->> 'date_creation' DESC",
+            (str(id_conversation),),
+        )
+        lignes = curseur.fetchall()
+        if len(lignes) == 0:
+            return None
+
+        les_interactions = []
+        for ligne in lignes:
+            interaction_dechiffree = self._service_chiffrement.dechiffre_dict(
+                {**ligne["contenu"], "id": ligne["id_interaction"]},
+                CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR,
+            )
+
+            les_interactions.append(Interaction.model_validate(interaction_dechiffree))
+        return Conversation.hydrate(id_conversation, les_interactions)
 
     def sauvegarde_conversation(self, conversation: Conversation):
-        pass
+        conversation_recuperee = self.recupere_conversation(
+            conversation.id_conversation
+        )
+        if conversation_recuperee is not None:
+            ids_existants = {i.id for i in conversation_recuperee.interactions}
+            interactions_a_inserer = [
+                i for i in conversation.interactions if i.id not in ids_existants
+            ]
+            interactions_a_mettre_a_jour = [
+                i for i in conversation.interactions if i.id in ids_existants
+            ]
+
+            if interactions_a_inserer:
+                self._insere_toutes_les_interactions(
+                    conversation.id_conversation, interactions_a_inserer
+                )
+
+            for interaction in interactions_a_mettre_a_jour:
+                interaction_json = self.__chiffre_interaction(interaction.model_dump())
+                self._mets_a_jour_une_interaction(interaction, interaction_json)
+            return
+        self._get_curseur().execute(
+            "INSERT INTO conversations (id) VALUES (%s)",
+            (str(conversation.id_conversation),),
+        )
+
+        self._insere_toutes_les_interactions(
+            conversation.id_conversation, conversation.interactions
+        )
+
+    def _insere_toutes_les_interactions(self, id_conversation, interactions):
+        interactions_a_inserer = [
+            (
+                str(i.id),
+                self.__chiffre_interaction(i.model_dump()),
+                str(id_conversation),
+            )
+            for i in interactions
+        ]
+
+        psycopg2.extras.execute_values(
+            self._get_curseur(),
+            "INSERT INTO interactions (id_interaction, contenu, id_conversation) VALUES %s",
+            interactions_a_inserer,
+        )
+
+    def _mets_a_jour_une_interaction(
+        self, interaction: Interaction, interaction_json: str
+    ):
+        self._get_curseur().execute(
+            "UPDATE interactions SET contenu = %s WHERE id_interaction = %s",
+            (interaction_json, str(interaction.id)),
+        )

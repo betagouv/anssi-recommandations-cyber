@@ -30,4 +30,6 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
 
     def sauvegarde_conversation(self, conversation: Conversation):
         self._conversations[conversation.id_conversation] = conversation
+        for interaction in conversation.interactions:
+            self._interactions[interaction.id] = interaction
         return None

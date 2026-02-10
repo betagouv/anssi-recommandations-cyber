@@ -89,7 +89,7 @@ def route_pose_question_avec_prompt(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
     conversation = Conversation(interaction)
-    adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     return ReponseQuestionAPI(
         **reponse_question.model_dump(),
         interaction_id=str(interaction.id),
