@@ -69,7 +69,6 @@ def pose_question_utilisateur(
         conversation = Conversation(interaction)
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
         id_interaction = str(interaction.id)
-        (configuration.adaptateur_base_de_donnees.sauvegarde_interaction(interaction))
         configuration.adaptateur_journal.consigne_evenement(
             type=TypeEvenement.INTERACTION_CREEE,
             donnees=DonneesInteractionCreee(
