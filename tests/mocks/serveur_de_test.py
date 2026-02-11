@@ -42,6 +42,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
                 collection_id_anssi_lab=1,
                 reclassement_active=False,
                 modele_reclassement="",
+                taille_fenetre_historique=2,
             ),
             ClientAlbertMemoire(),
             False,

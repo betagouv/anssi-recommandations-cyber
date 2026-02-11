@@ -21,6 +21,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
     collection_id_anssi_lab=42,
     reclassement_active=False,
     modele_reclassement="modele-reranking-de-test",
+    taille_fenetre_historique=2,
 )
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
@@ -28,6 +29,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
     collection_id_anssi_lab=42,
     reclassement_active=True,
     modele_reclassement="rerank-small",
+    taille_fenetre_historique=2,
 )
 
 PROMPT_SYSTEME_ALTERNATIF = (

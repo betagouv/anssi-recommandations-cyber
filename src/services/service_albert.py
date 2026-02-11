@@ -59,6 +59,9 @@ class ServiceAlbert:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.reclassement_active = configuration_service_albert.reclassement_active
         self.modele_reclassement = configuration_service_albert.modele_reclassement
+        self.taille_fenetre_historique = (
+            configuration_service_albert.taille_fenetre_historique
+        )
         self.prompt_systeme = prompts.prompt_systeme
         self.prompt_reclassement = prompts.prompt_reclassement
         self.client = client
