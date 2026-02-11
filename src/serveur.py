@@ -136,7 +136,12 @@ def route_pose_question(
     )
     resultat_interaction = pose_question_utilisateur(
         configuration,
-        QuestionUtilisateur(question=question),
+        QuestionUtilisateur(
+            question=question,
+            conversation=uuid.UUID(request.conversation_id)
+            if request.conversation_id is not None
+            else None,
+        ),
         extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
     )
 

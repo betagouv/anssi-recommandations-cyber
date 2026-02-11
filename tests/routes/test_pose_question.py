@@ -12,6 +12,7 @@ from adaptateurs.journal import (
 from configuration import Mode
 from schemas.albert import ReponseQuestion
 from schemas.api import QuestionRequete
+from schemas.retour_utilisatrice import Interaction, Conversation
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationIdentite,
@@ -357,3 +358,46 @@ def test_route_pose_question_identifie_comme_inconnu_le_type_d_utilisateur_si_le
 
     evenements = adaptateur_journal.les_evenements()
     assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
+
+
+def test_route_pose_question_avec_un_id_de_conversation(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+):
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+    interaction = Interaction(
+        id=uuid.uuid4(),
+        reponse_question=ReponseQuestion(
+            reponse="réponse 1", question="question 1", paragraphes=[], violation=None
+        ),
+    )
+    une_conversation = Conversation(interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(une_conversation)
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement()
+    adaptateur_journal = AdaptateurJournalMemoire()
+    service_albert = ServiceAlbertMemoire()
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse="réponse 2", question="question 2", paragraphes=[], violation=None
+        )
+    )
+
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+    )
+
+    client = TestClient(serveur)
+    reponse = client.post(
+        "/api/pose_question?type_utilisateur=ABCD",
+        json={
+            "question": "Une question",
+            "conversation_id": str(une_conversation.id_conversation),
+        },
+    )
+
+    reponse_recuperee = reponse.json()
+    assert reponse_recuperee["conversation_id"] == str(une_conversation.id_conversation)
+    assert reponse_recuperee["interaction_id"] is not None
+    assert reponse_recuperee["reponse"] == "réponse 2"
