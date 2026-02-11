@@ -3,6 +3,7 @@ import uuid
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournalMemoire
+from configuration import Albert
 from question.question import (
     pose_question_utilisateur,
     ConfigurationQuestion,
@@ -14,6 +15,9 @@ from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import ViolationMalveillance
 from serveur_de_test import ServiceAlbertMemoire
 import datetime as dt
+
+from services.service_albert import ServiceAlbert, Prompts
+from client_albert_de_test import ClientAlbertMemoire
 
 
 def test_pose_question_retourne_un_resultat_d_interaction_en_erreur(
@@ -195,3 +199,67 @@ def test_ajoute_une_interaction_a_une_conversation(
     assert len(conversation.interactions) == 2
     assert conversation.interactions[0].date_creation == deuxieme_interaction
     assert conversation.interactions[1].date_creation == premiere_interaction
+
+
+def test_interroge_Albert_en_mode_conversationnel(
+    un_adaptateur_de_chiffrement,
+    un_constructeur_de_conversation,
+    un_constructeur_de_reponse_question,
+):
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+    conversation = un_constructeur_de_conversation(
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse à la première question")
+        .avec_une_question("La première question")
+    ).construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+    client_albert_memoire = ClientAlbertMemoire()
+    service_albert = ServiceAlbert(
+        configuration_service_albert=Albert.Service(
+            collection_nom_anssi_lab="",
+            collection_id_anssi_lab=42,
+            reclassement_active=False,
+            modele_reclassement="Aucun",
+        ),
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=Prompts(
+            prompt_systeme=(
+                "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
+            ),
+            prompt_reclassement="Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
+        ),
+    )
+
+    pose_question_utilisateur(
+        ConfigurationQuestion(
+            adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+            adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+            adaptateur_journal=AdaptateurJournalMemoire(),
+            service_albert=service_albert,
+        ),
+        QuestionUtilisateur(
+            question="Une seconde question", conversation=conversation.id_conversation
+        ),
+        TypeUtilisateur.EXPERT_SSI,
+    )
+
+    messages_recus = client_albert_memoire.messages_recus
+    assert messages_recus == [
+        {
+            "role": "system",
+            "content": "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nLa première question",
+        },
+        {
+            "role": "assistant",
+            "content": "La réponse à la première question",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nUne seconde question",
+        },
+    ]

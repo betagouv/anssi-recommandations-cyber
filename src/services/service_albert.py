@@ -159,13 +159,18 @@ class ServiceAlbert:
         ]
         if conversation is not None:
             for interaction in reversed(conversation.interactions):
-                messages.extend([{
-                    "role": "user",
-                    "content": f"Question :\n{interaction.reponse_question.question}",
-                },{
-                    "role": "assistant",
-                    "content": interaction.reponse_question.reponse,
-                }])
+                messages.extend(
+                    [
+                        {
+                            "role": "user",
+                            "content": f"Question :\n{interaction.reponse_question.question}",
+                        },
+                        {
+                            "role": "assistant",
+                            "content": interaction.reponse_question.reponse,
+                        },
+                    ]
+                )
 
         messages.append(question_en_cours)
         return messages

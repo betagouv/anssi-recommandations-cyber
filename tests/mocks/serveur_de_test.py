@@ -19,6 +19,7 @@ from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
 from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, ReclasseReponse
+from schemas.retour_utilisatrice import Conversation
 from schemas.violations import Violation
 from serveur import fabrique_serveur
 from services.fabrique_service_albert import fabrique_service_albert
@@ -52,7 +53,11 @@ class ServiceAlbertMemoire(ServiceAlbert):
         return self.paragraphes
 
     def pose_question(
-        self, question: str, prompt: Optional[str] = None
+        self,
+        *,
+        question: str,
+        prompt: Optional[str] = None,
+        conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
         self.question_recue = question
         if self.leve_une_erreur_sur_pose_question:
