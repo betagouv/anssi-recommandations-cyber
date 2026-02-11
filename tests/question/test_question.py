@@ -7,6 +7,7 @@ from question.question import (
     pose_question_utilisateur,
     ConfigurationQuestion,
     ResultatInteractionEnErreur,
+    QuestionUtilisateur,
 )
 from schemas.albert import ReponseQuestion, Paragraphe
 from schemas.type_utilisateur import TypeUtilisateur
@@ -27,7 +28,7 @@ def test_pose_question_retourne_un_resultat_d_interaction_en_erreur(
             adaptateur_journal=AdaptateurJournalMemoire(),
             service_albert=service_albert,
         ),
-        "une question",
+        QuestionUtilisateur(question="une question"),
         TypeUtilisateur.EXPERT_SSI,
     )
 
@@ -53,7 +54,7 @@ def test_pose_question_retourne_une_interaction(un_adaptateur_de_chiffrement):
             adaptateur_journal=AdaptateurJournalMemoire(),
             service_albert=service_albert,
         ),
-        "une question",
+        QuestionUtilisateur(question="une question"),
         TypeUtilisateur.EXPERT_SSI,
     )
 
@@ -89,7 +90,7 @@ def test_ne_conserve_pas_les_paragraphes_en_cas_de_violation(
             adaptateur_journal=AdaptateurJournalMemoire(),
             service_albert=service_albert,
         ),
-        "une question",
+        QuestionUtilisateur(question="une question"),
         TypeUtilisateur.EXPERT_SSI,
     )
 
@@ -115,7 +116,7 @@ def test_pose_question_une_interaction_a_une_date(un_adaptateur_de_chiffrement):
             adaptateur_journal=AdaptateurJournalMemoire(),
             service_albert=service_albert,
         ),
-        "une question",
+        QuestionUtilisateur(question="une question"),
         TypeUtilisateur.EXPERT_SSI,
     )
 
@@ -144,7 +145,7 @@ def test_cree_une_conversation(un_adaptateur_de_chiffrement):
             adaptateur_journal=AdaptateurJournalMemoire(),
             service_albert=service_albert,
         ),
-        "une question",
+        QuestionUtilisateur(question="une question"),
         TypeUtilisateur.EXPERT_SSI,
     )
 
@@ -153,3 +154,44 @@ def test_cree_une_conversation(un_adaptateur_de_chiffrement):
     )
     assert conversation is not None
     assert len(conversation.interactions) == 1
+
+
+def test_ajoute_une_interaction_a_une_conversation(
+    un_adaptateur_de_chiffrement, un_constructeur_de_conversation
+):
+    premiere_interaction = dt.datetime(2026, 1, 15, 3, 4, 5)
+    Horloge.frise(premiere_interaction)
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+    conversation = un_constructeur_de_conversation().construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+    deuxieme_interaction = dt.datetime(2026, 3, 10, 3, 4, 5)
+    Horloge.frise(deuxieme_interaction)
+    service_albert = ServiceAlbertMemoire()
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse="La réponse d'MQC",
+            question="une question",
+            paragraphes=[],
+            violation=None,
+        )
+    )
+
+    reponse = pose_question_utilisateur(
+        ConfigurationQuestion(
+            adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+            adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+            adaptateur_journal=AdaptateurJournalMemoire(),
+            service_albert=service_albert,
+        ),
+        QuestionUtilisateur(
+            question="une question", conversation=conversation.id_conversation
+        ),
+        TypeUtilisateur.EXPERT_SSI,
+    )
+
+    conversation = adaptateur_base_de_donnees.recupere_conversation(
+        reponse.id_conversation
+    )
+    assert len(conversation.interactions) == 2
+    assert conversation.interactions[0].date_creation == deuxieme_interaction
+    assert conversation.interactions[1].date_creation == premiere_interaction
