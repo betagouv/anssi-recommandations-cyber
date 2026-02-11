@@ -161,7 +161,10 @@ class ServiceAlbert:
             },
         ]
         if conversation is not None:
-            for interaction in reversed(conversation.interactions):
+            interactions_limitees = conversation.interactions[
+                : self.taille_fenetre_historique
+            ]
+            for interaction in reversed(interactions_limitees):
                 messages.extend(
                     [
                         {

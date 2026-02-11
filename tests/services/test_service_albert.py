@@ -488,3 +488,59 @@ def test_initie_une_conversation(
             "content": "Question :\nUne troisieme question de test ?",
         },
     ]
+
+
+def test_limite_l_historique_a_2_interactions_passees(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    conversation = un_constructeur_de_conversation().construis()
+
+    for i in range(2, 7):
+        conversation.ajoute_interaction(
+            un_constructeur_d_interaction().avec_question(f"Question {i} ?").construis()
+        )
+
+    configuration_avec_fenetre_limitee = Albert.Service(
+        collection_nom_anssi_lab="",
+        collection_id_anssi_lab=42,
+        reclassement_active=False,
+        modele_reclassement="modele-reranking-de-test",
+        taille_fenetre_historique=2,
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=configuration_avec_fenetre_limitee,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question(question="Question actuelle ?", conversation=conversation)
+
+    messages_recus = client_albert_memoire.messages_recus
+
+    assert messages_recus == [
+        {
+            "role": "system",
+            "content": "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nQuestion 5 ?",
+        },
+        {
+            "role": "assistant",
+            "content": "réponse : Question 5 ?",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nQuestion 6 ?",
+        },
+        {
+            "role": "assistant",
+            "content": "réponse : Question 6 ?",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nQuestion actuelle ?",
+        },
+    ]
