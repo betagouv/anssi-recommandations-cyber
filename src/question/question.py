@@ -61,7 +61,7 @@ def pose_question_utilisateur(
 ) -> Union[ResultatConversation, ResultatInteractionEnErreur]:
     try:
         reponse_question = configuration.service_albert.pose_question(
-            question_utilisateur.question
+            question=question_utilisateur.question
         )
         if reponse_question.violation is not None:
             reponse_question = ReponseQuestion(
