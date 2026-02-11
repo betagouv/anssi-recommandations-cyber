@@ -220,6 +220,7 @@ def test_interroge_Albert_en_mode_conversationnel(
             collection_id_anssi_lab=42,
             reclassement_active=False,
             modele_reclassement="Aucun",
+            taille_fenetre_historique=10,
         ),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
