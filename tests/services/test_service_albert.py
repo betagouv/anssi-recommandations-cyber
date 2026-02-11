@@ -61,7 +61,7 @@ def test_pose_question_retourne_une_reponse():
         PROMPTS,
     )
 
-    reponse = service_albert.pose_question(QUESTION)
+    reponse = service_albert.pose_question(question=QUESTION)
 
     assert reponse.reponse == REPONSE
     assert len(reponse.paragraphes) == 1
@@ -78,7 +78,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
         PROMPTS,
     )
 
-    service_albert.pose_question(QUESTION)
+    service_albert.pose_question(question=QUESTION)
 
     messages = client_albert_memoire.messages_recus
     assert len(messages) == 2
@@ -110,7 +110,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme():
         PROMPTS,
     )
 
-    service_albert.pose_question(QUESTION)
+    service_albert.pose_question(question=QUESTION)
 
     messages = client_albert_memoire.messages_recus
     messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
@@ -129,7 +129,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
         PROMPTS,
     )
 
-    retour = service_albert.pose_question(QUESTION)
+    retour = service_albert.pose_question(question=QUESTION)
 
     assert retour.reponse == REPONSE_PAR_DEFAUT
     assert retour.paragraphes == []
@@ -175,7 +175,7 @@ def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
         PROMPTS,
     )
 
-    retour = service_albert.pose_question("question illégale ?")
+    retour = service_albert.pose_question(question="question illégale ?")
 
     assert retour.reponse == violation_attendue.reponse
     assert retour.paragraphes == []
@@ -235,7 +235,7 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert list(map(lambda p: p.contenu, reponse_de_pose_question.paragraphes)) == [
         "paragraphe 1",
@@ -271,7 +271,7 @@ def test_les_paragraphes_reclasses_sont_envoyes_a_albert():
         PROMPTS,
     )
 
-    service_albert.pose_question(QUESTION)
+    service_albert.pose_question(question=QUESTION)
 
     messages = client_albert_memoire.messages_recus
     assert len(messages) == 2
@@ -297,7 +297,7 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_recu.k == 20
 
@@ -315,7 +315,7 @@ def test_appelle_le_reclassement_uniquement_quand_active():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
 
@@ -335,7 +335,7 @@ def test_l_injection_du_prompt_de_reclassement():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert (
         client_albert_memoire.payload_reclassement_recu.prompt
@@ -358,7 +358,7 @@ def test_lis_le_nom_du_modele_de_reclassement():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu.model == "rerank-small"
 
@@ -372,7 +372,7 @@ def test_ne_reclasse_pas_si_la_recherche_de_paragraphes_retourne_un_resultat_vid
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
     assert reponse.reponse == REPONSE_PAR_DEFAUT
@@ -397,7 +397,7 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert reponse.reponse == "Un contenu"
     assert len(reponse.paragraphes) == 1
@@ -425,6 +425,6 @@ def test_retourne_au_maximum_5_paragraphes_meme_si_le_reclassement_echoue():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-    ).pose_question("Une question de test ?")
+    ).pose_question(question="Une question de test ?")
 
     assert len(reponse.paragraphes) == 5

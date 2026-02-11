@@ -85,7 +85,9 @@ def route_pose_question_avec_prompt(
         fabrique_adaptateur_base_de_donnees
     ),
 ) -> ReponseQuestionAPI:
-    reponse_question = service_albert.pose_question(request.question, request.prompt)
+    reponse_question = service_albert.pose_question(
+        question=request.question, prompt=request.prompt
+    )
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )

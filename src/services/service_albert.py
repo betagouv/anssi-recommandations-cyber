@@ -82,7 +82,7 @@ class ServiceAlbert:
         return list(map(_transforme_en_paragraphe, donnees))
 
     def pose_question(
-        self, question: str, prompt: Optional[str] = None
+        self, *, question: str, prompt: Optional[str] = None
     ) -> ReponseQuestion:
         recherche_paragraphes = self.recherche_paragraphes(question)
         paragraphes = self.__effectue_reclassement(recherche_paragraphes, question)
