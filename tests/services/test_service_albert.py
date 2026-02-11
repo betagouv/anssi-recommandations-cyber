@@ -428,3 +428,61 @@ def test_retourne_au_maximum_5_paragraphes_meme_si_le_reclassement_echoue():
     ).pose_question(question="Une question de test ?")
 
     assert len(reponse.paragraphes) == 5
+
+
+def test_initie_une_conversation(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    interaction = (
+        un_constructeur_d_interaction()
+        .avec_question("Une question de test ?")
+        .construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation()
+        .avec_interaction(interaction=interaction)
+        .ajoute_interaction(
+            un_constructeur_d_interaction()
+            .avec_question("Une deuxième question de test ?")
+            .construis()
+        )
+        .construis()
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+    ).pose_question(
+        question="Une troisieme question de test ?", conversation=conversation
+    )
+
+    messages_recus = client_albert_memoire.messages_recus
+    assert messages_recus == [
+        {
+            "role": "system",
+            "content": "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nUne question de test ?",
+        },
+        {
+            "role": "assistant",
+            "content": "réponse : Une question de test ?",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nUne deuxième question de test ?",
+        },
+        {
+            "role": "assistant",
+            "content": "réponse : Une deuxième question de test ?",
+        },
+        {
+            "role": "user",
+            "content": "Question :\nUne troisieme question de test ?",
+        },
+    ]

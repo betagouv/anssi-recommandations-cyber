@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
-from openai.types.chat import ChatCompletionMessageParam
-from openai.types.chat.chat_completion import Choice
 from typing import Optional, cast, NamedTuple
+
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionUserMessageParam,
+)
+from openai.types.chat.chat_completion import Choice
+
 from configuration import Albert
 from schemas.albert import (
     Paragraphe,
@@ -11,6 +16,7 @@ from schemas.albert import (
     ReclassePayload,
     ReclasseReponse,
 )
+from schemas.retour_utilisatrice import Conversation
 from schemas.violations import (
     Violation,
     ViolationIdentite,
@@ -82,12 +88,16 @@ class ServiceAlbert:
         return list(map(_transforme_en_paragraphe, donnees))
 
     def pose_question(
-        self, *, question: str, prompt: Optional[str] = None
+        self,
+        *,
+        question: str,
+        prompt: Optional[str] = None,
+        conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
         recherche_paragraphes = self.recherche_paragraphes(question)
         paragraphes = self.__effectue_reclassement(recherche_paragraphes, question)
         propositions_albert = self.__effectue_recuperation_propositions(
-            paragraphes, prompt, question
+            paragraphes, prompt, question, conversation
         )
 
         (reponse, paragraphes, violation) = (
@@ -114,23 +124,51 @@ class ServiceAlbert:
         return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}
 
     def __effectue_recuperation_propositions(
-        self, paragraphes: list[Paragraphe], prompt: str | None, question: str
+        self,
+        paragraphes: list[Paragraphe],
+        prompt: str | None,
+        question: str,
+        conversation: Conversation | None,
     ) -> list[Choice]:
         paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
 
         prompt_systeme = prompt if prompt else self.prompt_systeme
+
+        messages = self.__genere_les_messages_de_completion(
+            conversation, paragraphes_concatenes, prompt_systeme, question
+        )
+        propositions_albert = self.client.recupere_propositions(messages)
+        return propositions_albert
+
+    def __genere_les_messages_de_completion(
+        self,
+        conversation: Conversation | None,
+        paragraphes_concatenes: str,
+        prompt_systeme: str,
+        question: str,
+    ) -> list[ChatCompletionMessageParam]:
+        question_en_cours: ChatCompletionUserMessageParam = {
+            "role": "user",
+            "content": f"Question :\n{question}",
+        }
         messages: list[ChatCompletionMessageParam] = [
             {
                 "role": "system",
                 "content": prompt_systeme.format(chunks=paragraphes_concatenes),
             },
-            {
-                "role": "user",
-                "content": f"Question :\n{question}",
-            },
         ]
-        propositions_albert = self.client.recupere_propositions(messages)
-        return propositions_albert
+        if conversation is not None:
+            for interaction in reversed(conversation.interactions):
+                messages.extend([{
+                    "role": "user",
+                    "content": f"Question :\n{interaction.reponse_question.question}",
+                },{
+                    "role": "assistant",
+                    "content": interaction.reponse_question.reponse,
+                }])
+
+        messages.append(question_en_cours)
+        return messages
 
     def __effectue_reclassement(
         self, paragraphes: list[Paragraphe], question: str
