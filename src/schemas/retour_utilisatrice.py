@@ -72,7 +72,7 @@ class Conversation:
         self._interactions = [interaction]
 
     @property
-    def interactions(self):
+    def interactions(self) -> list[Interaction]:
         self._interactions.sort(key=lambda i: i.date_creation, reverse=True)
         return self._interactions
 

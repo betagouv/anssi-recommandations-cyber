@@ -49,24 +49,39 @@ class ResultatInteractionEnErreur:
         self.erreur = str(e)
 
 
+class QuestionUtilisateur(NamedTuple):
+    question: str
+    conversation: uuid.UUID | None = None
+
+
 def pose_question_utilisateur(
     configuration: ConfigurationQuestion,
-    question: str,
+    question_utilisateur: QuestionUtilisateur,
     type_utilisateur: TypeUtilisateur,
 ) -> Union[ResultatConversation, ResultatInteractionEnErreur]:
     try:
-        reponse_question = configuration.service_albert.pose_question(question)
+        reponse_question = configuration.service_albert.pose_question(
+            question_utilisateur.question
+        )
         if reponse_question.violation is not None:
             reponse_question = ReponseQuestion(
                 reponse=reponse_question.violation.reponse,
                 paragraphes=[],
-                question=question,
+                question=(question_utilisateur.question),
                 violation=reponse_question.violation,
             )
         interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
         )
-        conversation = Conversation(interaction)
+        if question_utilisateur.conversation is not None:
+            conversation = (
+                configuration.adaptateur_base_de_donnees.recupere_conversation(
+                    question_utilisateur.conversation
+                )
+            )
+            conversation.ajoute_interaction(interaction)
+        else:
+            conversation = Conversation(interaction)
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
         id_interaction = str(interaction.id)
         configuration.adaptateur_journal.consigne_evenement(

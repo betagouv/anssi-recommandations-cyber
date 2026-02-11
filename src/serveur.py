@@ -36,6 +36,7 @@ from question.question import (
     ResultatInteractionEnErreur,
     ajoute_retour_utilisatrice,
     supprime_retour_utilisatrice,
+    QuestionUtilisateur,
 )
 from schemas.albert import Paragraphe
 from schemas.api import (
@@ -135,7 +136,7 @@ def route_pose_question(
     )
     resultat_interaction = pose_question_utilisateur(
         configuration,
-        question,
+        QuestionUtilisateur(question=question),
         extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
     )
 
