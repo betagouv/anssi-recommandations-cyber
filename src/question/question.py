@@ -60,25 +60,20 @@ def pose_question_utilisateur(
     type_utilisateur: TypeUtilisateur,
 ) -> Union[ResultatConversation, ResultatInteractionEnErreur]:
     try:
-        reponse_question = configuration.service_albert.pose_question(
-            question=question_utilisateur.question
-        )
-        if reponse_question.violation is not None:
-            reponse_question = ReponseQuestion(
-                reponse=reponse_question.violation.reponse,
-                paragraphes=[],
-                question=(question_utilisateur.question),
-                violation=reponse_question.violation,
-            )
-        interaction = Interaction(
-            reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
-        )
+        conversation = None
         if question_utilisateur.conversation is not None:
             conversation = (
                 configuration.adaptateur_base_de_donnees.recupere_conversation(
                     question_utilisateur.conversation
                 )
             )
+        reponse_question = configuration.service_albert.pose_question(
+            question=question_utilisateur.question, conversation=conversation
+        )
+        interaction, reponse_question = __cree_interaction(
+            question_utilisateur, reponse_question
+        )
+        if conversation is not None:
             conversation.ajoute_interaction(interaction)
         else:
             conversation = Conversation(interaction)
@@ -114,6 +109,22 @@ def pose_question_utilisateur(
         )
     except Exception as e:
         return ResultatInteractionEnErreur(e)
+
+
+def __cree_interaction(
+    question_utilisateur: QuestionUtilisateur, reponse_question: ReponseQuestion
+) -> tuple[Interaction, ReponseQuestion]:
+    if reponse_question.violation is not None:
+        reponse_question = ReponseQuestion(
+            reponse=reponse_question.violation.reponse,
+            paragraphes=[],
+            question=(question_utilisateur.question),
+            violation=reponse_question.violation,
+        )
+    interaction = Interaction(
+        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+    )
+    return interaction, reponse_question
 
 
 def ajoute_retour_utilisatrice(

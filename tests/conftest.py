@@ -87,6 +87,10 @@ class ConstructeurDeReponseQuestion:
         self.paragraphes = paragraphes
         return self
 
+    def avec_une_question(self, question: str):
+        self.question = question
+        return self
+
     def construis(self) -> ReponseQuestion:
         return ReponseQuestion(
             reponse=self.reponse,

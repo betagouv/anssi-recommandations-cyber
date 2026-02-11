@@ -1,11 +1,12 @@
 import uuid
 
-from typing import Callable
+from typing import Callable, Optional
 
 import pytest
 
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import Conversation, Interaction
+from tests.conftest import ConstructeurDeReponseQuestion
 
 
 class ConstructeurDeConversation:
@@ -22,10 +23,16 @@ class ConstructeurDeConversation:
 @pytest.fixture()
 def un_constructeur_de_conversation(
     un_constructeur_de_reponse_question,
-) -> Callable[[], ConstructeurDeConversation]:
-    def _un_constructeur_de_conversation():
+) -> Callable[[Optional[ConstructeurDeReponseQuestion]], ConstructeurDeConversation]:
+    def _un_constructeur_de_conversation(
+        constructeur_de_reponse_question: Optional[
+            ConstructeurDeReponseQuestion
+        ] = None,
+    ):
         return ConstructeurDeConversation(
-            un_constructeur_de_reponse_question().construis()
+            constructeur_de_reponse_question.construis()
+            if constructeur_de_reponse_question is not None
+            else un_constructeur_de_reponse_question().construis()
         )
 
     return _un_constructeur_de_conversation
