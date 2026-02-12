@@ -9,6 +9,7 @@
     supprimeAvisUtilisateurAPI,
   } from '../client.api';
   import { SvelteSet } from 'svelte/reactivity';
+  import { storeTags } from '../stores/tags.store';
 
   let { idInteraction }: { idInteraction: string } = $props();
   const avisUtilisateur: AvisUtilisateur | undefined = $derived.by(
@@ -51,49 +52,6 @@
     );
     remiseAZero();
   };
-
-  const tags = {
-    positif: [
-      {
-        label: 'Facile à comprendre',
-        id: 'facileacomprendre',
-      },
-      {
-        label: 'Complète',
-        id: 'complete',
-      },
-      {
-        label: 'Bien structurée',
-        id: 'bienstructuree',
-      },
-      {
-        label: 'Sources utiles',
-        id: 'sourcesutiles',
-      },
-    ],
-    negatif: [
-      {
-        label: 'Pas assez détaillée',
-        id: 'pasassezdetaillee',
-      },
-      {
-        label: 'Trop complexe',
-        id: 'tropcomplexe',
-      },
-      {
-        label: 'Sources peu utiles',
-        id: 'sourcespeuutiles',
-      },
-      {
-        label: 'Information erronée',
-        id: 'informationerronee',
-      },
-      {
-        label: 'Hors sujet',
-        id: 'horssujet',
-      },
-    ],
-  };
 </script>
 
 <div class="avis-utilisateur">
@@ -131,8 +89,10 @@
           size="md"
           type="pressable"
           groupMarkup="ul"
-          hasIcon={false}
-          tags={avisUtilisateur.positif ? tags.positif : tags.negatif}
+          hasIcon={true}
+          tags={avisUtilisateur.positif
+            ? $storeTags.positifs()
+            : $storeTags.negatifs()}
           onselected={(e: CustomEvent) => {
             tagsSelectionnes.add(e.detail);
           }}
