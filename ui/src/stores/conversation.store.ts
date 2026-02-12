@@ -1,6 +1,12 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
+import {
+  clientAPI,
+  estReponseMessageUtilisateur,
+  type ReponseMessageUtilisateurAPI,
+} from '../client.api';
+import { storeAffichage } from './affichage.store';
 
 export type Paragraphe = {
   score_similarite: number;
@@ -12,6 +18,7 @@ export type Paragraphe = {
 
 export type Message = {
   contenu: string;
+  contenuMarkdown?: string;
   emetteur: 'utilisateur' | 'systeme';
   references?: Paragraphe[];
   idInteraction?: string;
@@ -29,58 +36,79 @@ export type MessageSysteme = Message & {
 export type Conversation = {
   messages: Message[];
   derniereQuestion: string;
-  conversationId: string | null;
+  idConversation: string | null;
 };
 
-const { subscribe, update } = writable<Conversation>({
+const { subscribe, update, set } = writable<Conversation>({
   messages: [],
   derniereQuestion: '',
-  conversationId: null,
+  idConversation: null,
 });
 export const nettoyeurDOM = {
   nettoie: async (contenu: string): Promise<string> =>
     DOMPurify.sanitize(await marked.parse(contenu)),
 };
 
-export const storeConversation = {
-  ajouteMessageUtilisateur: (question: string) => {
-    update((conversation) => {
+type QuestionUtilisateur = {
+  question: string;
+  prompt?: string;
+};
+
+const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
+  const sauvegarde = get(storeConversation);
+  const questionUtilisateur: MessageUtilisateur = {
+    contenu: question.question,
+    emetteur: 'utilisateur',
+  };
+  storeAffichage.estEnAttenteDeReponse(true);
+  const reponseAPI = await clientAPI.publieMessageUtilisateurAPI(
+    {
+      question: question.question,
+      conversation_id: sauvegarde.idConversation,
+      ...(question.prompt && { prompt: question.prompt }),
+    },
+    question.prompt !== undefined
+  );
+  const { estEnErreur, contenuHTML } = estReponseMessageUtilisateur(reponseAPI)
+    ? {
+        estEnErreur: false,
+        contenuHTML: await nettoyeurDOM.nettoie(reponseAPI.reponse),
+      }
+    : { estEnErreur: true, contenuHTML: reponseAPI.erreur };
+  update((conversation) => {
+    storeAffichage.estEnAttenteDeReponse(false);
+    if (estEnErreur) {
+      storeAffichage.erreurAlbert(true);
       return {
-        ...conversation,
-        messages: [
-          ...conversation.messages,
-          {
-            contenu: question,
-            emetteur: 'utilisateur',
-          },
-        ],
-        derniereQuestion: question,
+        ...sauvegarde,
+        messages: [...conversation.messages, questionUtilisateur],
+        derniereQuestion: question.question,
       };
-    });
-  },
-  ajouteMessageSysteme: async (
-    reponse: string,
-    references: Paragraphe[],
-    idInteraction: string,
-    conversationId: string
-  ) => {
-    const contenuHTML = await nettoyeurDOM.nettoie(reponse);
-    update((conversation) => {
+    } else {
+      storeAffichage.erreurAlbert(false);
+      const reponse = reponseAPI as ReponseMessageUtilisateurAPI;
       return {
         ...conversation,
         messages: [
           ...conversation.messages,
+          questionUtilisateur,
           {
             contenu: contenuHTML,
-            contenuMarkdown: reponse,
+            contenuMarkdown: reponse.reponse,
             emetteur: 'systeme',
-            references,
-            idInteraction,
+            references: reponse.paragraphes,
+            idInteraction: reponse.interaction_id,
           },
         ],
-        conversationId,
+        idConversation: reponse.conversation_id,
+        derniereQuestion: question.question,
       };
-    });
-  },
+    }
+  });
+};
+
+export const storeConversation = {
+  ajouteMessageUtilisateur,
   subscribe,
+  initialise: set,
 };

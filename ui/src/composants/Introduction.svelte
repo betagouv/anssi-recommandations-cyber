@@ -1,39 +1,17 @@
 <script lang="ts">
   import { storeAffichage } from '../stores/affichage.store';
   import { storeConversation } from '../stores/conversation.store';
-  import {
-    estReponseMessageUtilisateur,
-    publieMessageUtilisateurAPI,
-    type ReponseEnErreur,
-    type ReponseMessageUtilisateurAPI,
-  } from '../client.api';
 
-  async function rempliQuestion(
+  const rempliQuestion = async (
     e: MouseEvent & { currentTarget: EventTarget & { label: string } }
-  ) {
+  ) => {
     e.preventDefault();
     const suggestion: string = e.currentTarget.label;
     storeAffichage.estEnAttenteDeReponse(true);
-    storeConversation.ajouteMessageUtilisateur(suggestion);
     await storeAffichage.scrollVersDernierMessage();
-
-    const reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur =
-      await publieMessageUtilisateurAPI({ question: suggestion }, false);
-    if (estReponseMessageUtilisateur(reponse)) {
-      await storeConversation.ajouteMessageSysteme(
-        reponse.reponse,
-        reponse.paragraphes,
-        reponse.interaction_id,
-        reponse.conversation_id
-      );
-      storeAffichage.erreurAlbert(false);
-    } else {
-      storeAffichage.erreurAlbert(true);
-    }
-
-    storeAffichage.estEnAttenteDeReponse(false);
+    await storeConversation.ajouteMessageUtilisateur({ question: suggestion });
     await storeAffichage.scrollVersDernierMessage();
-  }
+  };
 </script>
 
 <div class="introduction">

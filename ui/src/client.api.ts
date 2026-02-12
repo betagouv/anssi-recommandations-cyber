@@ -6,7 +6,6 @@ const forgeURLAvecTypeUtilisateur = (chemin: string): string => {
   const urlParams = new URLSearchParams(window.location.search);
   const a_type_utilisateur = urlParams.has('type_utilisateur');
 
-  console.log(`URL API ${urlAPI}`);
   if (a_type_utilisateur) {
     return new URL(
       `${chemin}?type_utilisateur=${urlParams.get('type_utilisateur')}`,
@@ -42,7 +41,7 @@ export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
     method: 'DELETE',
   });
 
-type MessageUtilisateurAPI = {
+export type MessageUtilisateurAPI = {
   question: string;
   prompt?: string;
   conversation_id?: string | null;
@@ -60,7 +59,7 @@ export type ReponseEnErreur = {
   erreur: string;
 };
 
-export const publieMessageUtilisateurAPI = async (
+const publieMessageUtilisateurAPI = async (
   message: MessageUtilisateurAPI,
   avecPromptSysteme: boolean
 ): Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur> => {
@@ -93,4 +92,15 @@ export const estReponseMessageUtilisateur = (
     'interaction_id' in reponse &&
     'conversation_id' in reponse
   );
+};
+
+type ClientAPI = {
+  publieMessageUtilisateurAPI: (
+    message: MessageUtilisateurAPI,
+    avecPromptSysteme: boolean
+  ) => Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur>;
+};
+
+export const clientAPI: ClientAPI = {
+  publieMessageUtilisateurAPI,
 };
