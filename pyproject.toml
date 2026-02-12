@@ -8,7 +8,6 @@ dependencies = [
     "dpath",
     "fastapi",
     "httpx",
-    "matplotlib>=3.10.8",
     "openai",
     "psycopg2-binary",
     "pytest",
