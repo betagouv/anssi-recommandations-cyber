@@ -45,6 +45,7 @@ export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
 type MessageUtilisateurAPI = {
   question: string;
   prompt?: string;
+  conversation_id?: string | null;
 };
 
 export type ReponseMessageUtilisateurAPI = {
@@ -52,6 +53,7 @@ export type ReponseMessageUtilisateurAPI = {
   paragraphes: Paragraphe[];
   interaction_id: string;
   question: string;
+  conversation_id: string;
 };
 
 export type ReponseEnErreur = {
@@ -86,6 +88,9 @@ export const estReponseMessageUtilisateur = (
   reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur
 ): reponse is ReponseMessageUtilisateurAPI => {
   return (
-    'reponse' in reponse && 'paragraphes' in reponse && 'interaction_id' in reponse
+    'reponse' in reponse &&
+    'paragraphes' in reponse &&
+    'interaction_id' in reponse &&
+    'conversation_id' in reponse
   );
 };

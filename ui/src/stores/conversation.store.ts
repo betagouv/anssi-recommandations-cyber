@@ -29,11 +29,13 @@ export type MessageSysteme = Message & {
 export type Conversation = {
   messages: Message[];
   derniereQuestion: string;
+  conversationId: string | null;
 };
 
 const { subscribe, update } = writable<Conversation>({
   messages: [],
   derniereQuestion: '',
+  conversationId: null,
 });
 export const nettoyeurDOM = {
   nettoie: async (contenu: string): Promise<string> =>
@@ -59,7 +61,8 @@ export const storeConversation = {
   ajouteMessageSysteme: async (
     reponse: string,
     references: Paragraphe[],
-    idInteraction: string
+    idInteraction: string,
+    conversationId: string
   ) => {
     const contenuHTML = await nettoyeurDOM.nettoie(reponse);
     update((conversation) => {
@@ -75,6 +78,7 @@ export const storeConversation = {
             idInteraction,
           },
         ],
+        conversationId,
       };
     });
   },

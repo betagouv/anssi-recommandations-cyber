@@ -23,7 +23,8 @@
       await storeConversation.ajouteMessageSysteme(
         reponse.reponse,
         reponse.paragraphes,
-        reponse.interaction_id
+        reponse.interaction_id,
+        reponse.conversation_id
       );
       storeAffichage.erreurAlbert(false);
     } else {
