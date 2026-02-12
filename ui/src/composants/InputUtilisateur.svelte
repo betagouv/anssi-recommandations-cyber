@@ -35,9 +35,17 @@
     storeConversation.ajouteMessageUtilisateur(questionASoumettre);
     await storeAffichage.scrollVersDernierMessage();
 
+    const conversationActuelle = $storeConversation;
     const message = afficheInputPromptSysteme
-      ? { question: questionASoumettre, prompt: promptSysteme }
-      : { question: questionASoumettre };
+      ? {
+          question: questionASoumettre,
+          prompt: promptSysteme,
+          conversation_id: conversationActuelle.conversationId,
+        }
+      : {
+          question: questionASoumettre,
+          conversation_id: conversationActuelle.conversationId,
+        };
 
     question = '';
     await tick();
@@ -49,7 +57,8 @@
       await storeConversation.ajouteMessageSysteme(
         reponse.reponse,
         reponse.paragraphes,
-        reponse.interaction_id
+        reponse.interaction_id,
+        reponse.conversation_id
       );
       storeAffichage.erreurAlbert(false);
     } else {
