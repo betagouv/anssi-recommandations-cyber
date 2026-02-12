@@ -5,7 +5,7 @@
 <dsfr-textarea
   value={prompt}
   rows="10"
-  onvaluechanged={(e: CustomEvent<string>) => (prompt = e.detail)}
+  onvaluechanged={(e: CustomEvent) => (prompt = e.detail)}
 ></dsfr-textarea>
 
 <style>

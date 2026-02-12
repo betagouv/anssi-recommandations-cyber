@@ -2,12 +2,6 @@
   import InputPromptSysteme from './InputPromptSysteme.svelte';
   import { storeAffichage } from '../stores/affichage.store';
   import { storeConversation } from '../stores/conversation.store';
-  import {
-    estReponseMessageUtilisateur,
-    publieMessageUtilisateurAPI,
-    type ReponseEnErreur,
-    type ReponseMessageUtilisateurAPI,
-  } from '../client.api';
   import { onMount, tick } from 'svelte';
   import { ValidateurQuestionUtilisateur } from './ValidateurQuestionUtilisateur';
 
@@ -30,46 +24,24 @@
     promptSysteme = await reponse.json();
   }
 
-  export async function soumetLaQuestion(questionASoumettre: string = question) {
+  export const soumetLaQuestion = async (questionASoumettre: string = question) => {
     storeAffichage.estEnAttenteDeReponse(true);
-    storeConversation.ajouteMessageUtilisateur(questionASoumettre);
     await storeAffichage.scrollVersDernierMessage();
-
-    const conversationActuelle = $storeConversation;
-    const message = afficheInputPromptSysteme
-      ? {
-          question: questionASoumettre,
-          prompt: promptSysteme,
-          conversation_id: conversationActuelle.conversationId,
-        }
-      : {
-          question: questionASoumettre,
-          conversation_id: conversationActuelle.conversationId,
-        };
 
     question = '';
     await tick();
     redimensionneZoneDeTexte();
 
-    const reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur =
-      await publieMessageUtilisateurAPI(message, afficheInputPromptSysteme);
-    if (estReponseMessageUtilisateur(reponse)) {
-      await storeConversation.ajouteMessageSysteme(
-        reponse.reponse,
-        reponse.paragraphes,
-        reponse.interaction_id,
-        reponse.conversation_id
-      );
-      storeAffichage.erreurAlbert(false);
-    } else {
-      storeAffichage.erreurAlbert(true);
-    }
+    await storeConversation.ajouteMessageUtilisateur({
+      question: questionASoumettre,
+      ...(afficheInputPromptSysteme &&
+        promptSysteme !== '' && { prompt: promptSysteme }),
+    });
 
-    storeAffichage.estEnAttenteDeReponse(false);
     await storeAffichage.scrollVersDernierMessage();
-  }
+  };
 
-  async function soumetQuestion(e: Event) {
+  const soumetQuestion = async (e: Event) => {
     e.preventDefault();
     if (validateurQuestionUtilisateur.estValide(question)) {
       erreurValidation = '';
@@ -77,7 +49,7 @@
     } else {
       erreurValidation = validateurQuestionUtilisateur.valide(question);
     }
-  }
+  };
 
   const KONAMI_CODE = [
     'ArrowUp',
