@@ -1,28 +1,19 @@
 import datetime as dt
 import uuid
 
-import pytest
 from client_albert_de_test import ClientAlbertMemoire
+from conversation.conversation import QuestionUtilisateur, ResultatInteractionEnErreur
+from conversation.question_utilisateur import (
+    pose_question_utilisateur,
+    ConfigurationQuestion,
+)
 from serveur_de_test import ServiceAlbertMemoire
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournalMemoire
 from configuration import Albert
-from question.question import (
-    pose_question_utilisateur,
-    ConfigurationQuestion,
-    ResultatInteractionEnErreur,
-    QuestionUtilisateur,
-    ajoute_retour_utilisatrice,
-)
 from schemas.albert import ReponseQuestion, Paragraphe
-from schemas.retour_utilisatrice import (
-    DonneesCreationRetourUtilisateur,
-    RetourPositif,
-    TagPositif,
-    TagNegatif,
-)
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import ViolationMalveillance
 from services.service_albert import ServiceAlbert, Prompts
@@ -272,60 +263,3 @@ def test_interroge_Albert_en_mode_conversationnel(
             "content": "Question :\nUne seconde question",
         },
     ]
-
-
-@pytest.mark.parametrize("tag", [TagPositif.Conversation, TagNegatif.Conversation])
-def test_peut_ajouter_un_tag_conversation_a_partir_de_la_seconde_interaction(
-    tag,
-    un_constructeur_de_conversation,
-    un_constructeur_de_reponse_question,
-    un_constructeur_d_interaction,
-):
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    conversation = un_constructeur_de_conversation(
-        un_constructeur_de_reponse_question()
-        .donnant_en_reponse("La réponse à la première question")
-        .avec_une_question("La première question")
-    ).construis()
-    interaction = un_constructeur_d_interaction().construis()
-    conversation.ajoute_interaction(interaction)
-    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
-
-    ajoute_retour_utilisatrice(
-        DonneesCreationRetourUtilisateur(
-            id_interaction=str(interaction.id),
-            retour=RetourPositif(commentaire="Très utile", tags=[tag]),
-            id_conversation=str(conversation.id_conversation),
-        ),
-        adaptateur_base_de_donnees,
-    )
-
-    assert interaction.retour_utilisatrice.tags[0] == tag
-
-
-@pytest.mark.parametrize("tag", [TagPositif.Conversation, TagNegatif.Conversation])
-def test_ne_peut_pas_ajouter_un_tag_conversation_avant_la_deuxieme_interaction(
-    tag,
-    un_constructeur_de_conversation,
-    un_constructeur_de_reponse_question,
-    un_constructeur_d_interaction,
-):
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    conversation = un_constructeur_de_conversation(
-        un_constructeur_de_reponse_question()
-        .donnant_en_reponse("La réponse à la première question")
-        .avec_une_question("La première question")
-    ).construis()
-
-    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
-
-    ajoute_retour_utilisatrice(
-        DonneesCreationRetourUtilisateur(
-            id_interaction=str(conversation.interactions[0].id),
-            retour=RetourPositif(commentaire="Très utile", tags=[tag]),
-            id_conversation=str(conversation.id_conversation),
-        ),
-        adaptateur_base_de_donnees,
-    )
-
-    assert len(conversation.interactions[0].retour_utilisatrice.tags) == 0

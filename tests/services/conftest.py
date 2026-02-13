@@ -5,7 +5,7 @@ from typing import Callable
 import pytest
 
 from schemas.albert import ReponseQuestion
-from schemas.retour_utilisatrice import Conversation, Interaction
+from conversation.conversation import Interaction, Conversation
 
 
 class ConstructeurDeConversation:

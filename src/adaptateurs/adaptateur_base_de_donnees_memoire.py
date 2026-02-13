@@ -3,7 +3,7 @@ from uuid import UUID
 
 from typing import Dict, Optional
 
-from schemas.retour_utilisatrice import Interaction, Conversation
+from conversation.conversation import Interaction, Conversation
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 

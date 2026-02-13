@@ -6,8 +6,8 @@ from schemas.retour_utilisatrice import (
     RetourUtilisatrice,
     TagNegatif,
     TagPositif,
-    Interaction,
 )
+from conversation.conversation import Interaction
 from schemas.albert import ReponseQuestion, Paragraphe
 import pytest
 

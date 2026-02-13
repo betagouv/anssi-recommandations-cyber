@@ -17,9 +17,8 @@ from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import (
     RetourPositif,
     TagPositif,
-    Interaction,
-    Conversation,
 )
+from conversation.conversation import Interaction, Conversation
 import datetime as dt
 
 

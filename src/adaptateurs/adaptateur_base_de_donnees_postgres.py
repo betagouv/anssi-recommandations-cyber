@@ -11,7 +11,7 @@ from infra.chiffrement.chiffrement import (
     ServiceDeChiffrement,
 )
 from infra.postgres.encodeurs_json import EncodeurJson
-from schemas.retour_utilisatrice import Interaction, Conversation
+from conversation.conversation import Interaction, Conversation
 from .adaptateur_base_de_donnees import AdaptateurBaseDeDonnees
 
 CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [

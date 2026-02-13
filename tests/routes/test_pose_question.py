@@ -12,7 +12,7 @@ from adaptateurs.journal import (
 from configuration import Mode
 from schemas.albert import ReponseQuestion
 from schemas.api import QuestionRequete
-from schemas.retour_utilisatrice import Interaction, Conversation
+from conversation.conversation import Interaction, Conversation
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationIdentite,

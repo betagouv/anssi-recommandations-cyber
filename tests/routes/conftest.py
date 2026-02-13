@@ -2,7 +2,8 @@ import pytest
 import uuid
 
 from adaptateurs.horloge import Horloge
-from schemas.retour_utilisatrice import RetourPositif, TagPositif, Interaction
+from schemas.retour_utilisatrice import RetourPositif, TagPositif
+from conversation.conversation import Interaction
 import datetime as dt
 
 
