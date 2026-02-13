@@ -16,7 +16,7 @@ from schemas.albert import (
     ReclassePayload,
     ReclasseReponse,
 )
-from schemas.retour_utilisatrice import Conversation
+from conversation.conversation import Conversation
 from schemas.violations import (
     Violation,
     ViolationIdentite,

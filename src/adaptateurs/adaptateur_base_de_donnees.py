@@ -4,7 +4,7 @@ from uuid import UUID
 
 from typing import Optional
 
-from schemas.retour_utilisatrice import Interaction, Conversation
+from conversation.conversation import Interaction, Conversation
 
 
 class AdaptateurBaseDeDonnees(ABC):

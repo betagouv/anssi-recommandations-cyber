@@ -5,7 +5,7 @@ from typing import Callable, Optional
 import pytest
 
 from schemas.albert import ReponseQuestion
-from schemas.retour_utilisatrice import Conversation, Interaction
+from conversation.conversation import Interaction, Conversation
 from tests.conftest import ConstructeurDeReponseQuestion
 
 

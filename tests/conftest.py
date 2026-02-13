@@ -15,7 +15,7 @@ from adaptateurs.journal import AdaptateurJournal
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.api import QuestionRequete
-from schemas.retour_utilisatrice import Interaction
+from conversation.conversation import Interaction
 from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import (
     ConstructeurServeur,

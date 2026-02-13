@@ -19,7 +19,7 @@ from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
 from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, ReclasseReponse
-from schemas.retour_utilisatrice import Conversation
+from conversation.conversation import Conversation
 from schemas.violations import Violation
 from serveur import fabrique_serveur
 from services.fabrique_service_albert import fabrique_service_albert

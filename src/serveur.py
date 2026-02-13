@@ -29,15 +29,6 @@ from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
 from infra.ui_kit.version_ui_kit import version_ui_kit
-from question.question import (
-    pose_question_utilisateur,
-    ConfigurationQuestion,
-    ResultatConversation,
-    ResultatInteractionEnErreur,
-    ajoute_retour_utilisatrice,
-    supprime_retour_utilisatrice,
-    QuestionUtilisateur,
-)
 from schemas.albert import Paragraphe
 from schemas.api import (
     QuestionRequete,
@@ -46,8 +37,21 @@ from schemas.api import (
 )
 from schemas.retour_utilisatrice import (
     DonneesCreationRetourUtilisateur,
+)
+from conversation.conversation import (
     Interaction,
     Conversation,
+    QuestionUtilisateur,
+    ResultatConversation,
+    ResultatInteractionEnErreur,
+)
+from conversation.retour_utilisatrice import (
+    ajoute_retour_utilisatrice,
+    supprime_retour_utilisatrice,
+)
+from conversation.question_utilisateur import (
+    pose_question_utilisateur,
+    ConfigurationQuestion,
 )
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
