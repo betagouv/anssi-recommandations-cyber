@@ -52,6 +52,15 @@
     );
     remiseAZero();
   };
+  const onselected = (e: CustomEvent) => {
+    tagsSelectionnes.add(e.detail);
+  };
+  const onunselected = (e: CustomEvent) => {
+    tagsSelectionnes.delete(e.detail);
+  };
+  const onvaluechanged = (e: CustomEvent) => {
+    commentaire = e.detail;
+  };
 </script>
 
 <div class="avis-utilisateur">
@@ -93,12 +102,8 @@
           tags={avisUtilisateur.positif
             ? $storeTags.positifs()
             : $storeTags.negatifs()}
-          onselected={(e: CustomEvent) => {
-            tagsSelectionnes.add(e.detail);
-          }}
-          onunselected={(e: CustomEvent) => {
-            tagsSelectionnes.delete(e.detail);
-          }}
+          {onselected}
+          {onunselected}
         ></dsfr-tags-group>
       {/key}
       <dsfr-input
@@ -106,9 +111,7 @@
         type="text"
         id={idInteraction}
         nom={`avis-${idInteraction}`}
-        onvaluechanged={(e: CustomEvent) => {
-          commentaire = e.detail;
-        }}
+        {onvaluechanged}
       ></dsfr-input>
       <div class="conteneur-bouton">
         <dsfr-button

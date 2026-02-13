@@ -14,12 +14,16 @@
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "preinstall": "npx only-allow@1.2.2 pnpm",
-    "test": "vitest run"
+    "test": "pnpm run svelte:check && vitest run",
+    "svelte:check": "svelte-check --tsconfig ./tsconfig.app.json"
   },
   "lint-staged": {
-    "*.{ts,js,json,css,md}": [
+    "*.{ts,js,json,css,md,svelte}": [
       "prettier --write",
       "eslint --fix"
+    ],
+    "*.svelte": [
+      "svelte-check --tsconfig ./tsconfig.app.json --threshold error"
     ]
   },
   "devDependencies": {
