@@ -25,7 +25,7 @@
   }
 
   export const soumetLaQuestion = async (questionASoumettre: string = question) => {
-    storeAffichage.estEnAttenteDeReponse(true);
+    storeConversation.questionEnAttenteDeReponse(questionASoumettre);
     await storeAffichage.scrollVersDernierMessage();
 
     question = '';
@@ -37,7 +37,6 @@
       ...(afficheInputPromptSysteme &&
         promptSysteme !== '' && { prompt: promptSysteme }),
     });
-
     await storeAffichage.scrollVersDernierMessage();
   };
 

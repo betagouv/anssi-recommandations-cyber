@@ -107,8 +107,13 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   });
 };
 
+const questionEnAttenteDeReponse = (question: string) => {
+  update((conversation) => ({ ...conversation, derniereQuestion: question }));
+};
+
 export const storeConversation = {
   ajouteMessageUtilisateur,
-  subscribe,
   initialise: set,
+  questionEnAttenteDeReponse,
+  subscribe,
 };

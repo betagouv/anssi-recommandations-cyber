@@ -8,7 +8,7 @@
     storeConversation,
   } from '../stores/conversation.store';
   import { onMount } from 'svelte';
-  import { storeAffichage } from '../stores/affichage.store.js';
+  import { storeAffichage } from '../stores/affichage.store';
   import { infobulle } from '../directives/infobulle';
   import EcranErreur from './EcranErreur.svelte';
   import InputUtilisateur from './InputUtilisateur.svelte';
@@ -104,6 +104,9 @@
   {/each}
   <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
   {#if $storeAffichage.enAttenteDeReponse}
+    <div class="message utilisateur" transition:fade>
+      <p>{$storeConversation.derniereQuestion}</p>
+    </div>
     <div class="attente-reponse" in:fade>
       <img src="./icons/loader.svg" alt="" />
       <span>Un instant... Je parcours les guides de l’ANSSI.</span>
