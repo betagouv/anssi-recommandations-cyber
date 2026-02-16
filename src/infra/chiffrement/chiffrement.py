@@ -3,6 +3,7 @@ import copy
 import logging
 import secrets
 from abc import abstractmethod, ABCMeta
+from typing import Optional
 
 import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -15,7 +16,7 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
     def chiffre(self, contenu: str) -> str: ...
 
     @abstractmethod
-    def dechiffre(self, contenu_chiffre: str) -> str:
+    def dechiffre(self, contenu_chiffre: str, clef: Optional[str] = None) -> str:
         pass
 
     def chiffre_dict(
@@ -48,22 +49,23 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
     def dechiffre_dict(self, dictionnaire: dict, chemins: list[str]) -> dict:
         dictionnaire_chiffre = copy.deepcopy(dictionnaire)
 
-        for chemin in chemins:
-            self.__dechiffre_tout(chemin, dictionnaire_chiffre)
+        self.__dechiffre_tout(dictionnaire_chiffre, chemins)
         return dictionnaire_chiffre
 
     def __dechiffre_tout(
-        self, chemin: str, dictionnaire_chiffre: dict, chemin_parcouru: str = ""
+        self, dictionnaire_chiffre: dict, chemins: list[str], chemin_parcouru: str = ""
     ):
         for clef, valeur in dictionnaire_chiffre.items():
             match valeur:
                 case str():
-                    if clef != chemin or chemin_parcouru == chemin:
-                        dpath.set(dictionnaire_chiffre, clef, self.dechiffre(valeur))
+                    if f"{chemin_parcouru}/{clef}" not in chemins:
+                        dpath.set(
+                            dictionnaire_chiffre, clef, self.dechiffre(valeur, clef)
+                        )
                 case dict():
                     self.__dechiffre_tout(
-                        chemin,
                         valeur,
+                        chemins,
                         f"{clef}"
                         if chemin_parcouru == ""
                         else f"{chemin_parcouru}/{clef}",
@@ -73,14 +75,16 @@ class ServiceDeChiffrement(metaclass=ABCMeta):
                     for i, element in enumerate(valeur):
                         match element:
                             case str():
-                                if f"{chemin_parcouru}/{clef}" != chemin:
+                                if f"{chemin_parcouru}/{clef}" not in chemins:
                                     dpath.set(
                                         dictionnaire_chiffre,
                                         f"{clef}/{i}",
-                                        self.dechiffre(element),
+                                        self.dechiffre(element, clef),
                                     )
                             case dict():
-                                self.__dechiffre_tout(chemin, element, f"{clef}/*")
+                                self.__dechiffre_tout(
+                                    element, chemins, f"{chemin_parcouru}/{clef}/*"
+                                )
 
 
 class ServiceDeChiffrementAES(ServiceDeChiffrement):
@@ -96,7 +100,7 @@ class ServiceDeChiffrementAES(ServiceDeChiffrement):
             ciphertext
         ).decode("utf-8")
 
-    def dechiffre(self, contenu_chiffre: str) -> str:
+    def dechiffre(self, contenu_chiffre: str, clef: Optional[str] = None) -> str:
         try:
             return self.__dechiffre_la_chaine(contenu_chiffre)
         except DechiffrementException as e:
@@ -119,7 +123,7 @@ class DechiffrementException(Exception):
 
 
 class ServiceDeChiffrementEnClair(ServiceDeChiffrement):
-    def dechiffre(self, contenu_chiffre: str) -> str:
+    def dechiffre(self, contenu_chiffre: str, clef: Optional[str] = None) -> str:
         return contenu_chiffre.removesuffix("_chiffre")
 
     def chiffre(self, contenu: str) -> str:

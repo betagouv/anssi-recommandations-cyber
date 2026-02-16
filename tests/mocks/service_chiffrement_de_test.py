@@ -1,3 +1,5 @@
+from typing import Optional
+
 from infra.chiffrement.chiffrement import ServiceDeChiffrement
 
 
@@ -6,11 +8,16 @@ class ServiceDeChiffrementDeTest(ServiceDeChiffrement):
         super().__init__()
         self.chaine_en_clair = None
         self.leve_une_erreur = None
+        self.passages = {}
 
     def chiffre(self, contenu: str) -> str:
         return f"{contenu}_chiffre"
 
-    def dechiffre(self, contenu_chiffre: str) -> str:
+    def dechiffre(self, contenu_chiffre: str, clef: Optional[str] = None) -> str:
+        if clef is not None:
+            if clef not in self.passages:
+                self.passages[clef] = []
+            self.passages[clef].append(contenu_chiffre)
         if self.leve_une_erreur is not None:
             raise Exception(self.leve_une_erreur)
         if self.chaine_en_clair is None:
