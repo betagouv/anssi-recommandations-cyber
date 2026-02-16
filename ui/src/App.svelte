@@ -8,6 +8,7 @@
   import { fade } from 'svelte/transition';
   import { storeConversation } from './stores/conversation.store';
   import PiedDePage from './composants/PiedDePage.svelte';
+  import { storeAffichage } from './stores/affichage.store';
 
   let { urlAPI }: { urlAPI: string } = $props();
   let inputUtilisateur: InputUtilisateur | undefined = $state(undefined);
@@ -21,7 +22,7 @@
   </div>
 
   <div class="contenu">
-    {#if $storeConversation?.messages.length === 0}
+    {#if $storeConversation?.messages.length === 0 && !$storeAffichage.enAttenteDeReponse}
       <div transition:fade>
         <Introduction />
       </div>
