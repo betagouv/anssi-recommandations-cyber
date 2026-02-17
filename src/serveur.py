@@ -1,4 +1,3 @@
-import uuid
 from pathlib import Path
 from uuid import UUID
 
@@ -31,13 +30,13 @@ from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
 )
 from infra.ui_kit.version_ui_kit import version_ui_kit
 from question.question import (
-    pose_question_utilisateur,
+    cree_conversation,
     ConfigurationQuestion,
     ResultatConversation,
-    ResultatInteractionEnErreur,
+    ResultatConversationEnErreur,
     ajoute_retour_utilisatrice,
     supprime_retour_utilisatrice,
-    QuestionUtilisateur,
+    DemandeConversationUtilisateur,
     ajoute_interaction,
     ResultatConversationInconnue,
     DemandeInteractionUtilisateur,
@@ -45,7 +44,7 @@ from question.question import (
 from schemas.albert import Paragraphe
 from schemas.api import (
     QuestionRequete,
-    ReponseQuestionAPI,
+    ReponseDemandeConversationAPI,
     ReponseConversationAjouteInteractionAPI,
 )
 from schemas.retour_utilisatrice import (
@@ -97,7 +96,7 @@ def route_initie_conversation(
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
     type_utilisateur: str | None = None,
-) -> ReponseQuestionAPI:
+) -> ReponseDemandeConversationAPI:
     question = request.question
 
     configuration: ConfigurationQuestion = ConfigurationQuestion(
@@ -106,25 +105,22 @@ def route_initie_conversation(
         adaptateur_journal=adaptateur_journal,
         adaptateur_chiffrement=adaptateur_chiffrement,
     )
-    resultat_interaction = pose_question_utilisateur(
+    resultat_interaction = cree_conversation(
         configuration,
-        QuestionUtilisateur(
+        DemandeConversationUtilisateur(
             question=question,
-            conversation=uuid.UUID(request.id_conversation)
-            if request.id_conversation is not None
-            else None,
         ),
         extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
     )
 
     match resultat_interaction:
         case ResultatConversation():
-            return ReponseQuestionAPI(
+            return ReponseDemandeConversationAPI(
                 **resultat_interaction.reponse_question.model_dump(),
                 id_interaction=resultat_interaction.id_interaction,
                 id_conversation=str(resultat_interaction.id_conversation),
             )
-        case ResultatInteractionEnErreur():
+        case ResultatConversationEnErreur():
             raise HTTPException(
                 status_code=422,
                 detail={
@@ -169,7 +165,7 @@ def route_conversation_ajoute_interaction(
                 **resultat_interaction.reponse_question.model_dump(),
                 id_interaction=str(resultat_interaction.id_interaction),
             )
-        case ResultatInteractionEnErreur():
+        case ResultatConversationEnErreur():
             raise HTTPException(
                 status_code=422,
                 detail={
