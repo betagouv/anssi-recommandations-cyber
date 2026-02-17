@@ -142,10 +142,7 @@ def ajoute_interaction(
         interaction, reponse_question = __cree_interaction(
             question_utilisateur.question, reponse_question
         )
-        if conversation is not None:
-            conversation.ajoute_interaction(interaction)
-        else:
-            conversation = Conversation(interaction)
+        conversation.ajoute_interaction(interaction)
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
         id_interaction = str(interaction.id)
         configuration.adaptateur_journal.consigne_evenement(

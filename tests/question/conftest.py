@@ -43,10 +43,22 @@ def un_constructeur_de_conversation(
 
 
 @pytest.fixture()
-def une_configuration_complete() -> Callable[[], ConfigurationQuestion]:
-    def _une_configuration_complete():
+def une_configuration_complete() -> Callable[
+    [],
+    tuple[
+        ConfigurationQuestion,
+        ServiceAlbertMemoire,
+        AdaptateurBaseDeDonneesEnMemoire,
+        AdaptateurJournalMemoire,
+    ],
+]:
+    def _une_configuration_complete() -> tuple[
+        ConfigurationQuestion,
+        ServiceAlbertMemoire,
+        AdaptateurBaseDeDonneesEnMemoire,
+        AdaptateurJournalMemoire,
+    ]:
         service_albert = ServiceAlbertMemoire()
-        service_albert.qui_leve_une_erreur_sur_pose_question()
         adaptateur_chiffrement = AdaptateurChiffrementDeTest()
         adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
         adaptateur_journal = AdaptateurJournalMemoire()
@@ -57,6 +69,11 @@ def une_configuration_complete() -> Callable[[], ConfigurationQuestion]:
             service_albert=service_albert,
         )
 
-        return configuration
+        return (
+            configuration,
+            service_albert,
+            adaptateur_base_de_donnees,
+            adaptateur_journal,
+        )
 
     return _une_configuration_complete
