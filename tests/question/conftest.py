@@ -5,12 +5,16 @@ import pytest
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import AdaptateurJournalMemoire
+from client_albert_de_test import ClientAlbertMemoire
 from question.question import ConfigurationQuestion
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import Conversation, Interaction
 from tests.conftest import ConstructeurDeReponseQuestion
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from serveur_de_test import ServiceAlbertMemoire
+
+from configuration import Albert
+from services.service_albert import ServiceAlbert, Prompts
 
 
 class ConstructeurDeConversation:
@@ -44,21 +48,24 @@ def un_constructeur_de_conversation(
 
 @pytest.fixture()
 def une_configuration_complete() -> Callable[
-    [],
+    [Optional[ServiceAlbert]],
     tuple[
         ConfigurationQuestion,
-        ServiceAlbertMemoire,
+        ServiceAlbertMemoire | ServiceAlbert,
         AdaptateurBaseDeDonneesEnMemoire,
         AdaptateurJournalMemoire,
     ],
 ]:
-    def _une_configuration_complete() -> tuple[
+    def _une_configuration_complete(
+        service_albert: Optional[ServiceAlbert] = None,
+    ) -> tuple[
         ConfigurationQuestion,
-        ServiceAlbertMemoire,
+        ServiceAlbertMemoire | ServiceAlbert,
         AdaptateurBaseDeDonneesEnMemoire,
         AdaptateurJournalMemoire,
     ]:
-        service_albert = ServiceAlbertMemoire()
+        if service_albert is None:
+            service_albert = ServiceAlbertMemoire()
         adaptateur_chiffrement = AdaptateurChiffrementDeTest()
         adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
         adaptateur_journal = AdaptateurJournalMemoire()
@@ -77,3 +84,26 @@ def une_configuration_complete() -> Callable[
         )
 
     return _une_configuration_complete
+
+
+@pytest.fixture()
+def un_service_albert_avec_un_client_memoire() -> Callable[
+    [ClientAlbertMemoire, Prompts], ServiceAlbert
+]:
+    def _un_service_albert_avec_un_client_memoire(
+        client_albert_memoire: ClientAlbertMemoire, prompts: Prompts
+    ) -> ServiceAlbert:
+        return ServiceAlbert(
+            configuration_service_albert=Albert.Service(  # type:ignore[attr-defined]
+                collection_nom_anssi_lab="",
+                collection_id_anssi_lab=42,
+                reclassement_active=False,
+                modele_reclassement="Aucun",
+                taille_fenetre_historique=10,
+            ),
+            client=client_albert_memoire,
+            utilise_recherche_hybride=False,
+            prompts=prompts,
+        )
+
+    return _un_service_albert_avec_un_client_memoire
