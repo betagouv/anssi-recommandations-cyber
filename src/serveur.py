@@ -81,8 +81,8 @@ def route_recherche(
     return service_albert.recherche_paragraphes(request.question)
 
 
-@api.post("/pose_question")
-def route_pose_question(
+@api.post("/conversation")
+def route_initie_conversation(
     request: QuestionRequete,
     service_albert: ServiceAlbert = Depends(fabrique_service_albert),
     adaptateur_chiffrement: AdaptateurChiffrement = Depends(
