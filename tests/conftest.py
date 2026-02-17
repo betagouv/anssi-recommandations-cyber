@@ -8,17 +8,18 @@ from mypy_extensions import DefaultNamedArg
 from typing import Callable, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
-from adaptateurs import AdaptateurBaseDeDonnees
+from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.horloge import Horloge
-from adaptateurs.journal import AdaptateurJournal
+from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.api import QuestionRequete
-from schemas.retour_utilisatrice import Interaction
+from schemas.retour_utilisatrice import Interaction, Conversation
 from schemas.type_utilisateur import TypeUtilisateur
 from serveur_de_test import (
     ConstructeurServeur,
+    ServiceAlbertMemoire,
 )
 from services.service_albert import ServiceAlbert
 
@@ -147,7 +148,7 @@ def un_adaptateur_de_chiffrement() -> Callable[
         DefaultNamedArg(type=Optional[TypeUtilisateur | str], name="dechiffre"),
         DefaultNamedArg(type=Optional[bool], name="leve_une_erreur"),
     ],
-    AdaptateurChiffrement,
+    AdaptateurChiffrementDeTest,
 ]:
     def _un_adaptateur_de_chiffrement(
         *,
@@ -217,6 +218,43 @@ def un_serveur_de_test(
     return _un_serveur_de_test
 
 
+@pytest.fixture()
+def un_serveur_de_test_complet(
+    pages_statiques, un_adaptateur_de_chiffrement
+) -> Callable[
+    [],
+    tuple[
+        FastAPI,
+        AdaptateurChiffrementDeTest,
+        AdaptateurBaseDeDonneesEnMemoire,
+        AdaptateurJournalMemoire,
+        ServiceAlbertMemoire,
+    ],
+]:
+    def _un_serveur_de_test_complet():
+        adaptateur_chiffrement = un_adaptateur_de_chiffrement()
+        service_albert = ServiceAlbertMemoire()
+        adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+        adaptateur_journal = AdaptateurJournalMemoire()
+        serveur = ConstructeurServeur(
+            mode=Mode.DEVELOPPEMENT,  # type: ignore[arg-type]
+            adaptateur_chiffrement=adaptateur_chiffrement,  # type: ignore[arg-type]
+            max_requetes_par_minute=100,  # type: ignore[arg-type]
+        ).avec_pages_statiques(pages_statiques)
+        serveur = serveur.avec_service_albert(service_albert)
+        serveur = serveur.avec_adaptateur_base_de_donnees(adaptateur_base_de_donnees)
+        serveur = serveur.avec_adaptateur_journal(adaptateur_journal)
+        return (
+            (serveur.construis()),
+            adaptateur_chiffrement,
+            adaptateur_base_de_donnees,
+            adaptateur_journal,
+            service_albert,
+        )
+
+    return _un_serveur_de_test_complet
+
+
 @pytest.fixture(autouse=True)
 def reset_horloge_apres_test():
     yield
@@ -257,3 +295,38 @@ def un_constructeur_d_interaction() -> Callable[[], ConstructeurDInteraction]:
         return ConstructeurDInteraction()
 
     return _un_constructeur_d_interaction
+
+
+class ConstructeurDeConversation:
+    def __init__(self, reponse_question: ReponseQuestion):
+        super().__init__()
+        self.interactions: list[Interaction] = []
+        self.interaction = Interaction(
+            reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
+        )
+
+    def avec_interaction(self, interaction: Interaction):
+        self.interaction = interaction
+        return self
+
+    def ajoute_interaction(self, interaction: Interaction):
+        self.interactions.append(interaction)
+        return self
+
+    def construis(self) -> Conversation:
+        conversation = Conversation(self.interaction)
+        for interaction in self.interactions:
+            conversation.ajoute_interaction(interaction)
+        return conversation
+
+
+@pytest.fixture()
+def un_constructeur_de_conversation(
+    un_constructeur_de_reponse_question,
+) -> Callable[[], ConstructeurDeConversation]:
+    def _un_constructeur_de_conversation():
+        return ConstructeurDeConversation(
+            un_constructeur_de_reponse_question().construis()
+        )
+
+    return _un_constructeur_de_conversation

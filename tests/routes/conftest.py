@@ -1,9 +1,10 @@
-import pytest
+import datetime as dt
 import uuid
+
+import pytest
 
 from adaptateurs.horloge import Horloge
 from schemas.retour_utilisatrice import RetourPositif, TagPositif, Interaction
-import datetime as dt
 
 
 @pytest.fixture()

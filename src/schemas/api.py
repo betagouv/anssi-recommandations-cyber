@@ -17,3 +17,10 @@ class ReponseQuestionAPI(BaseModel):
     question: str
     id_interaction: str
     id_conversation: str
+
+
+class ReponseConversationAjouteInteractionAPI(BaseModel):
+    reponse: str
+    paragraphes: list[Paragraphe]
+    question: str
+    id_interaction: str
