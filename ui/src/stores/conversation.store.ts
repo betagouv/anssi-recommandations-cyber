@@ -3,8 +3,11 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import {
   clientAPI,
-  estReponseMessageUtilisateur,
-  type ReponseMessageUtilisateurAPI,
+  estReponseConversation,
+  estReponseCreationConversation,
+  type ReponseEnErreur,
+  type ReponseAjoutInteraction,
+  type ReponseCreationConversation,
 } from '../client.api';
 import { storeAffichage } from './affichage.store';
 
@@ -60,19 +63,26 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
     emetteur: 'utilisateur',
   };
   storeAffichage.estEnAttenteDeReponse(true);
-  const reponseAPI = await clientAPI.publieMessageUtilisateurAPI({
-    question: question.question,
-    id_conversation: sauvegarde.idConversation,
-  });
-  const { estEnErreur, contenuHTML } = estReponseMessageUtilisateur(reponseAPI)
-    ? {
-        estEnErreur: false,
-        contenuHTML: await nettoyeurDOM.nettoie(reponseAPI.reponse),
-      }
-    : { estEnErreur: true, contenuHTML: reponseAPI.erreur };
+  let reponseAPI:
+    | ReponseCreationConversation
+    | ReponseAjoutInteraction
+    | ReponseEnErreur;
+  if (sauvegarde.idConversation === null) {
+    reponseAPI = await clientAPI.creeUneConversation({
+      question: question.question,
+      id_conversation: sauvegarde.idConversation,
+    });
+  } else {
+    reponseAPI = await clientAPI.ajouteInteraction(sauvegarde.idConversation, {
+      question: question.question,
+    });
+  }
+  const contenuHTML = estReponseConversation(reponseAPI)
+    ? await nettoyeurDOM.nettoie(reponseAPI.reponse)
+    : reponseAPI.erreur;
   update((conversation) => {
     storeAffichage.estEnAttenteDeReponse(false);
-    if (estEnErreur) {
+    if (!estReponseConversation(reponseAPI)) {
       storeAffichage.erreurAlbert(true);
       return {
         ...sauvegarde,
@@ -81,7 +91,7 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
       };
     } else {
       storeAffichage.erreurAlbert(false);
-      const reponse = reponseAPI as ReponseMessageUtilisateurAPI;
+      const reponse = reponseAPI;
       return {
         ...conversation,
         messages: [
@@ -95,7 +105,9 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
             idInteraction: reponse.id_interaction,
           },
         ],
-        idConversation: reponse.id_conversation,
+        ...(estReponseCreationConversation(reponse) && {
+          idConversation: reponse.id_conversation,
+        }),
         derniereQuestion: question.question,
       };
     }

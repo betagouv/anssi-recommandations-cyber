@@ -46,7 +46,7 @@ export type MessageUtilisateurAPI = {
   id_conversation?: string | null;
 };
 
-export type ReponseMessageUtilisateurAPI = {
+export type ReponseCreationConversation = {
   reponse: string;
   paragraphes: Paragraphe[];
   id_interaction: string;
@@ -54,13 +54,18 @@ export type ReponseMessageUtilisateurAPI = {
   id_conversation: string;
 };
 
+export type ReponseAjoutInteraction = Omit<
+  ReponseCreationConversation,
+  'id_conversation'
+>;
+
 export type ReponseEnErreur = {
   erreur: string;
 };
 
-const publieMessageUtilisateurAPI = async (
+const creeUneConversation = async (
   message: MessageUtilisateurAPI
-): Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur> => {
+): Promise<ReponseCreationConversation | ReponseEnErreur> => {
   const endpoint = '/api/conversation';
 
   const reponse = await fetch(forgeURLAvecTypeUtilisateur(endpoint), {
@@ -79,9 +84,39 @@ const publieMessageUtilisateurAPI = async (
   return reponseJson;
 };
 
-export const estReponseMessageUtilisateur = (
-  reponse: ReponseMessageUtilisateurAPI | ReponseEnErreur
-): reponse is ReponseMessageUtilisateurAPI => {
+const ajouteInteraction = async (
+  idConversation: string,
+  message: MessageUtilisateurAPI
+) => {
+  const endpoint = `/api/conversation/${idConversation}`;
+
+  const reponse = await fetch(forgeURLAvecTypeUtilisateur(endpoint), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+  const reponseJson = await reponse.json();
+  if (!reponse.ok) {
+    return {
+      erreur: reponseJson.detail.message,
+    };
+  }
+  return reponseJson;
+};
+
+export const estReponseConversation = (
+  reponse: ReponseCreationConversation | ReponseAjoutInteraction | ReponseEnErreur
+): reponse is ReponseCreationConversation | ReponseAjoutInteraction => {
+  return (
+    'reponse' in reponse && 'paragraphes' in reponse && 'id_interaction' in reponse
+  );
+};
+
+export const estReponseCreationConversation = (
+  reponse: ReponseCreationConversation | ReponseAjoutInteraction
+): reponse is ReponseCreationConversation => {
   return (
     'reponse' in reponse &&
     'paragraphes' in reponse &&
@@ -91,11 +126,16 @@ export const estReponseMessageUtilisateur = (
 };
 
 type ClientAPI = {
-  publieMessageUtilisateurAPI: (
+  creeUneConversation: (
     message: MessageUtilisateurAPI
-  ) => Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur>;
+  ) => Promise<ReponseCreationConversation | ReponseEnErreur>;
+  ajouteInteraction: (
+    idConversation: string,
+    message: MessageUtilisateurAPI
+  ) => Promise<ReponseAjoutInteraction | ReponseEnErreur>;
 };
 
 export const clientAPI: ClientAPI = {
-  publieMessageUtilisateurAPI,
+  creeUneConversation,
+  ajouteInteraction,
 };
