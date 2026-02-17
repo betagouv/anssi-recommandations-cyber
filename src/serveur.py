@@ -43,6 +43,7 @@ from schemas.albert import Paragraphe
 from schemas.api import (
     QuestionRequete,
     ReponseQuestionAPI,
+    ReponseConversationAjouteInteractionAPI,
 )
 from schemas.retour_utilisatrice import (
     DonneesCreationRetourUtilisateur,
@@ -119,6 +120,51 @@ def route_initie_conversation(
                 **resultat_interaction.reponse_question.model_dump(),
                 id_interaction=resultat_interaction.id_interaction,
                 id_conversation=str(resultat_interaction.id_conversation),
+            )
+        case ResultatInteractionEnErreur():
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": resultat_interaction.message_mqc,
+                },
+            )
+
+
+@api.post("/conversation/{id_conversation}", status_code=201)
+def route_conversation_ajoute_interaction(
+    id_conversation: str,
+    request: QuestionRequete,
+    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
+    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+        fabrique_adaptateur_chiffrement
+    ),
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
+        fabrique_adaptateur_base_de_donnees
+    ),
+    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
+    type_utilisateur: str | None = None,
+) -> ReponseConversationAjouteInteractionAPI:
+    question = request.question
+
+    configuration: ConfigurationQuestion = ConfigurationQuestion(
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
+        adaptateur_chiffrement=adaptateur_chiffrement,
+    )
+    resultat_interaction = pose_question_utilisateur(
+        configuration,
+        QuestionUtilisateur(
+            question=question,
+            conversation=UUID(id_conversation),
+        ),
+        extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
+    )
+    match resultat_interaction:
+        case ResultatConversation():
+            return ReponseConversationAjouteInteractionAPI(
+                **resultat_interaction.reponse_question.model_dump(),
+                id_interaction=str(resultat_interaction.id_interaction),
             )
         case ResultatInteractionEnErreur():
             raise HTTPException(
