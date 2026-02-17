@@ -1,12 +1,16 @@
 import uuid
-
 from typing import Callable, Optional
 
 import pytest
 
+from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
+from adaptateurs.journal import AdaptateurJournalMemoire
+from question.question import ConfigurationQuestion
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import Conversation, Interaction
 from tests.conftest import ConstructeurDeReponseQuestion
+from adaptateur_chiffrement import AdaptateurChiffrementDeTest
+from serveur_de_test import ServiceAlbertMemoire
 
 
 class ConstructeurDeConversation:
@@ -36,3 +40,23 @@ def un_constructeur_de_conversation(
         )
 
     return _un_constructeur_de_conversation
+
+
+@pytest.fixture()
+def une_configuration_complete() -> Callable[[], ConfigurationQuestion]:
+    def _une_configuration_complete():
+        service_albert = ServiceAlbertMemoire()
+        service_albert.qui_leve_une_erreur_sur_pose_question()
+        adaptateur_chiffrement = AdaptateurChiffrementDeTest()
+        adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+        adaptateur_journal = AdaptateurJournalMemoire()
+        configuration = ConfigurationQuestion(
+            adaptateur_chiffrement=adaptateur_chiffrement,
+            adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+            adaptateur_journal=adaptateur_journal,
+            service_albert=service_albert,
+        )
+
+        return configuration
+
+    return _une_configuration_complete

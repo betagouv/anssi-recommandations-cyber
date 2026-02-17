@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi.testclient import TestClient
 
 from adaptateurs.journal import TypeEvenement
@@ -144,3 +146,20 @@ def test_route_conversation_ajoute_interaction_retourne_une_reponse_en_erreur(
 
     assert reponse.status_code == 422
     assert reponse.json() == {"detail": {"message": "Erreur lors de l’appel à Albert"}}
+
+
+def test_retourne_une_404_si_la_conversation_n_existe_pas(
+    un_serveur_de_test_complet,
+):
+    serveur, _, adaptateur_base_de_donnees, _, service_albert = (
+        un_serveur_de_test_complet()
+    )
+
+    client = TestClient(serveur)
+    id = str(uuid.uuid4())
+    reponse = client.post(
+        f"/api/conversation/{id}?type_utilisateur=ABCD",
+        json={"question": "Une question"},
+    )
+
+    assert reponse.status_code == 404
