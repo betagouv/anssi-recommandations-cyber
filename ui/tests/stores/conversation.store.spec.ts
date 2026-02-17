@@ -39,9 +39,9 @@ describe('le store de conversation', () => {
     clientAPI.publieMessageUtilisateurAPI = async () => ({
       reponse: 'une réponse',
       paragraphes: [],
-      interaction_id: 'id-interaction',
+      id_interaction: 'id-interaction',
       question: 'une question ?',
-      conversation_id: 'id-conversation',
+      id_conversation: 'id-conversation',
     });
     await storeConversation.ajouteMessageUtilisateur({ question: 'une question ?' });
 
@@ -107,9 +107,9 @@ describe('le store de conversation', () => {
     clientAPI.publieMessageUtilisateurAPI = async () => ({
       reponse: 'une réponse',
       paragraphes: [],
-      interaction_id: 'id-interaction',
+      id_interaction: 'id-interaction',
       question: 'une question ?',
-      conversation_id: 'id-conversation',
+      id_conversation: 'id-conversation',
     });
     nettoyeurDOM.nettoie = (contenu) => Promise.resolve(`<div>${contenu}</div>`);
 
@@ -138,7 +138,7 @@ describe('le store de conversation', () => {
 
     expect(messageRecu).toStrictEqual({
       question: 'une question ?',
-      conversation_id: 'id-conversation',
+      id_conversation: 'id-conversation',
     });
   });
 
@@ -160,9 +160,9 @@ describe('le store de conversation', () => {
       clientAPI.publieMessageUtilisateurAPI = async () => ({
         reponse: 'une réponse',
         paragraphes: [],
-        interaction_id: 'id-interaction',
+        id_interaction: 'id-interaction',
         question: 'une question ?',
-        conversation_id: 'id-conversation',
+        id_conversation: 'id-conversation',
       });
 
       await storeConversation.ajouteMessageUtilisateur({
@@ -175,23 +175,23 @@ describe('le store de conversation', () => {
 });
 
 describe('la validation de réponse API', () => {
-  it('valide une réponse avec tous les champs requis incluant conversation_id', () => {
+  it('valide une réponse avec tous les champs requis incluant id de conversation', () => {
     const reponse = {
       reponse: 'une réponse',
       paragraphes: [],
-      interaction_id: 'id1',
+      id_interaction: 'id1',
       question: 'une question',
-      conversation_id: 'conv1',
+      id_conversation: 'conv1',
     };
 
     expect(estReponseMessageUtilisateur(reponse)).toBe(true);
   });
 
-  it('invalide une réponse sans conversation_id', () => {
+  it('invalide une réponse sans id de conversation', () => {
     const reponse = {
       reponse: 'une réponse',
       paragraphes: [],
-      interaction_id: 'id1',
+      id_interaction: 'id1',
       question: 'une question',
     } as unknown as ReponseMessageUtilisateurAPI | ReponseEnErreur;
 

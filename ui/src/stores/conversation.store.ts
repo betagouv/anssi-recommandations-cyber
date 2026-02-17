@@ -62,7 +62,7 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   storeAffichage.estEnAttenteDeReponse(true);
   const reponseAPI = await clientAPI.publieMessageUtilisateurAPI({
     question: question.question,
-    conversation_id: sauvegarde.idConversation,
+    id_conversation: sauvegarde.idConversation,
   });
   const { estEnErreur, contenuHTML } = estReponseMessageUtilisateur(reponseAPI)
     ? {
@@ -92,10 +92,10 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
             contenuMarkdown: reponse.reponse,
             emetteur: 'systeme',
             references: reponse.paragraphes,
-            idInteraction: reponse.interaction_id,
+            idInteraction: reponse.id_interaction,
           },
         ],
-        idConversation: reponse.conversation_id,
+        idConversation: reponse.id_conversation,
         derniereQuestion: question.question,
       };
     }
