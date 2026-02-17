@@ -51,9 +51,19 @@ class ResultatInteractionEnErreur:
         self.erreur = str(e)
 
 
+class ResultatConversationInconnue:
+    def __init__(self):
+        self.message_mqc = "La conversation demandée n'existe pas"
+
+
 class QuestionUtilisateur(NamedTuple):
     question: str
     conversation: uuid.UUID | None = None
+
+
+class DemandeInteractionUtilisateur(NamedTuple):
+    question: str
+    conversation: uuid.UUID
 
 
 def pose_question_utilisateur(
@@ -73,7 +83,64 @@ def pose_question_utilisateur(
             question=question_utilisateur.question, conversation=conversation
         )
         interaction, reponse_question = __cree_interaction(
-            question_utilisateur, reponse_question
+            question_utilisateur.question, reponse_question
+        )
+        if conversation is not None:
+            conversation.ajoute_interaction(interaction)
+        else:
+            conversation = Conversation(interaction)
+        configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+        id_interaction = str(interaction.id)
+        configuration.adaptateur_journal.consigne_evenement(
+            type=TypeEvenement.INTERACTION_CREEE,
+            donnees=DonneesInteractionCreee(
+                id_interaction=configuration.adaptateur_chiffrement.hache(
+                    id_interaction
+                ),
+                longueur_question=len(reponse_question.question.strip()),
+                longueur_reponse=len(reponse_question.reponse.strip()),
+                longueur_paragraphes=sum(
+                    (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
+                ),
+                type_utilisateur=type_utilisateur,
+            ),
+        )
+
+        if reponse_question.violation is not None:
+            configuration.adaptateur_journal.consigne_evenement(
+                type=TypeEvenement.VIOLATION_DETECTEE,
+                donnees=DonneesViolationDetectee(
+                    id_interaction=configuration.adaptateur_chiffrement.hache(
+                        id_interaction
+                    ),
+                    type_violation=reponse_question.violation.__class__.__name__,
+                ),
+            )
+        return ResultatConversation(
+            conversation.id_conversation, reponse_question, interaction, id_interaction
+        )
+    except Exception as e:
+        return ResultatInteractionEnErreur(e)
+
+
+def ajoute_interaction(
+    configuration: ConfigurationQuestion,
+    question_utilisateur: DemandeInteractionUtilisateur,
+    type_utilisateur: TypeUtilisateur,
+) -> Union[
+    ResultatConversation, ResultatInteractionEnErreur, ResultatConversationInconnue
+]:
+    try:
+        conversation = configuration.adaptateur_base_de_donnees.recupere_conversation(
+            question_utilisateur.conversation
+        )
+        if conversation is None:
+            return ResultatConversationInconnue()
+        reponse_question = configuration.service_albert.pose_question(
+            question=question_utilisateur.question, conversation=conversation
+        )
+        interaction, reponse_question = __cree_interaction(
+            question_utilisateur.question, reponse_question
         )
         if conversation is not None:
             conversation.ajoute_interaction(interaction)
@@ -114,13 +181,14 @@ def pose_question_utilisateur(
 
 
 def __cree_interaction(
-    question_utilisateur: QuestionUtilisateur, reponse_question: ReponseQuestion
+    question: str,
+    reponse_question: ReponseQuestion,
 ) -> tuple[Interaction, ReponseQuestion]:
     if reponse_question.violation is not None:
         reponse_question = ReponseQuestion(
             reponse=reponse_question.violation.reponse,
             paragraphes=[],
-            question=(question_utilisateur.question),
+            question=(question),
             violation=reponse_question.violation,
         )
     interaction = Interaction(

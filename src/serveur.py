@@ -38,6 +38,9 @@ from question.question import (
     ajoute_retour_utilisatrice,
     supprime_retour_utilisatrice,
     QuestionUtilisateur,
+    ajoute_interaction,
+    ResultatConversationInconnue,
+    DemandeInteractionUtilisateur,
 )
 from schemas.albert import Paragraphe
 from schemas.api import (
@@ -152,9 +155,9 @@ def route_conversation_ajoute_interaction(
         adaptateur_journal=adaptateur_journal,
         adaptateur_chiffrement=adaptateur_chiffrement,
     )
-    resultat_interaction = pose_question_utilisateur(
+    resultat_interaction = ajoute_interaction(
         configuration,
-        QuestionUtilisateur(
+        DemandeInteractionUtilisateur(
             question=question,
             conversation=UUID(id_conversation),
         ),
@@ -172,6 +175,11 @@ def route_conversation_ajoute_interaction(
                 detail={
                     "message": resultat_interaction.message_mqc,
                 },
+            )
+        case ResultatConversationInconnue():
+            raise HTTPException(
+                status_code=404,
+                detail={"message": "La conversation demandée n'existe pas"},
             )
 
 
