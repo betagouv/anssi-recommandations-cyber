@@ -45,7 +45,7 @@ class ResultatConversation:
         self.id_conversation = id_conversation
 
 
-class ResultatInteractionEnErreur:
+class ResultatConversationEnErreur:
     def __init__(self, e: Exception):
         self.message_mqc = "Erreur lors de l’appel à Albert"
         self.erreur = str(e)
@@ -56,9 +56,8 @@ class ResultatConversationInconnue:
         self.message_mqc = "La conversation demandée n'existe pas"
 
 
-class QuestionUtilisateur(NamedTuple):
+class DemandeConversationUtilisateur(NamedTuple):
     question: str
-    conversation: uuid.UUID | None = None
 
 
 class DemandeInteractionUtilisateur(NamedTuple):
@@ -66,29 +65,19 @@ class DemandeInteractionUtilisateur(NamedTuple):
     conversation: uuid.UUID
 
 
-def pose_question_utilisateur(
+def cree_conversation(
     configuration: ConfigurationQuestion,
-    question_utilisateur: QuestionUtilisateur,
+    question_utilisateur: DemandeConversationUtilisateur,
     type_utilisateur: TypeUtilisateur,
-) -> Union[ResultatConversation, ResultatInteractionEnErreur]:
+) -> Union[ResultatConversation, ResultatConversationEnErreur]:
     try:
-        conversation = None
-        if question_utilisateur.conversation is not None:
-            conversation = (
-                configuration.adaptateur_base_de_donnees.recupere_conversation(
-                    question_utilisateur.conversation
-                )
-            )
         reponse_question = configuration.service_albert.pose_question(
-            question=question_utilisateur.question, conversation=conversation
+            question=question_utilisateur.question
         )
         interaction, reponse_question = __cree_interaction(
             question_utilisateur.question, reponse_question
         )
-        if conversation is not None:
-            conversation.ajoute_interaction(interaction)
-        else:
-            conversation = Conversation(interaction)
+        conversation = Conversation(interaction)
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
         id_interaction = str(interaction.id)
         configuration.adaptateur_journal.consigne_evenement(
@@ -120,7 +109,7 @@ def pose_question_utilisateur(
             conversation.id_conversation, reponse_question, interaction, id_interaction
         )
     except Exception as e:
-        return ResultatInteractionEnErreur(e)
+        return ResultatConversationEnErreur(e)
 
 
 def ajoute_interaction(
@@ -128,7 +117,7 @@ def ajoute_interaction(
     question_utilisateur: DemandeInteractionUtilisateur,
     type_utilisateur: TypeUtilisateur,
 ) -> Union[
-    ResultatConversation, ResultatInteractionEnErreur, ResultatConversationInconnue
+    ResultatConversation, ResultatConversationEnErreur, ResultatConversationInconnue
 ]:
     try:
         conversation = configuration.adaptateur_base_de_donnees.recupere_conversation(
@@ -174,7 +163,7 @@ def ajoute_interaction(
             conversation.id_conversation, reponse_question, interaction, id_interaction
         )
     except Exception as e:
-        return ResultatInteractionEnErreur(e)
+        return ResultatConversationEnErreur(e)
 
 
 def __cree_interaction(

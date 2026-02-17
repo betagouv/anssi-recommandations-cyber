@@ -11,7 +11,7 @@ class QuestionRequete(BaseModel):
     id_conversation: str | None = None
 
 
-class ReponseQuestionAPI(BaseModel):
+class ReponseDemandeConversationAPI(BaseModel):
     reponse: str
     paragraphes: list[Paragraphe]
     question: str
