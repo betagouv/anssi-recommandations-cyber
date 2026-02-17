@@ -1,62 +1,22 @@
 from pathlib import Path
-from uuid import UUID
 
-from fastapi import FastAPI, Depends, HTTPException, APIRouter
+from fastapi import FastAPI, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
-from typing import Optional, Dict
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
     fabrique_adaptateur_chiffrement,
 )
-from adaptateurs.journal import (
-    AdaptateurJournal,
-    DonneesAvisUtilisateurSoumis,
-    DonneesAvisUtilisateurSupprime,
-    TypeEvenement,
-    fabrique_adaptateur_journal,
-)
 from adaptateurs.sentry import fabrique_adaptateur_sentry
+from api.api import api, api_developpement
 from configuration import Mode
-from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
-    fabrique_adaptateur_base_de_donnees,
-)
 from infra.ui_kit.version_ui_kit import version_ui_kit
-from question.question import (
-    cree_conversation,
-    ConfigurationQuestion,
-    ResultatConversation,
-    ResultatConversationEnErreur,
-    ajoute_retour_utilisatrice,
-    supprime_retour_utilisatrice,
-    DemandeConversationUtilisateur,
-    ajoute_interaction,
-    ResultatConversationInconnue,
-    DemandeInteractionUtilisateur,
-)
-from schemas.albert import Paragraphe
-from schemas.api import (
-    QuestionRequete,
-    ReponseDemandeConversationAPI,
-    ReponseConversationAjouteInteractionAPI,
-)
-from schemas.retour_utilisatrice import (
-    DonneesCreationRetourUtilisateur,
-)
-from schemas.retour_utilisatrice import RetourUtilisatrice
-from schemas.type_utilisateur import TypeUtilisateur
-from services.fabrique_service_albert import fabrique_service_albert
-from services.service_albert import ServiceAlbert
-
-api = APIRouter(prefix="/api")
-api_developpement = APIRouter(prefix="/api")
 
 HEADERS_SECURITE = {
     "cross-origin-embedder-policy": "credentialless",
@@ -69,201 +29,6 @@ HEADERS_SECURITE = {
     "x-content-type-options": "nosniff",
     "x-dns-prefetch-control": "off",
 }
-
-
-@api_developpement.get("/sante")
-def route_sante() -> Dict[str, str]:
-    return {"status": "ok"}
-
-
-@api.post("/recherche")
-def route_recherche(
-    request: QuestionRequete,
-    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-) -> list[Paragraphe]:
-    return service_albert.recherche_paragraphes(request.question)
-
-
-@api.post("/conversation")
-def route_initie_conversation(
-    request: QuestionRequete,
-    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
-        fabrique_adaptateur_chiffrement
-    ),
-    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees
-    ),
-    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
-    type_utilisateur: str | None = None,
-) -> ReponseDemandeConversationAPI:
-    question = request.question
-
-    configuration: ConfigurationQuestion = ConfigurationQuestion(
-        service_albert=service_albert,
-        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
-        adaptateur_journal=adaptateur_journal,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-    )
-    resultat_interaction = cree_conversation(
-        configuration,
-        DemandeConversationUtilisateur(
-            question=question,
-        ),
-        extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
-    )
-
-    match resultat_interaction:
-        case ResultatConversation():
-            return ReponseDemandeConversationAPI(
-                **resultat_interaction.reponse_question.model_dump(),
-                id_interaction=resultat_interaction.id_interaction,
-                id_conversation=str(resultat_interaction.id_conversation),
-            )
-        case ResultatConversationEnErreur():
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "message": resultat_interaction.message_mqc,
-                },
-            )
-
-
-@api.post("/conversation/{id_conversation}", status_code=201)
-def route_conversation_ajoute_interaction(
-    id_conversation: str,
-    request: QuestionRequete,
-    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
-        fabrique_adaptateur_chiffrement
-    ),
-    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees
-    ),
-    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
-    type_utilisateur: str | None = None,
-) -> ReponseConversationAjouteInteractionAPI:
-    question = request.question
-
-    configuration: ConfigurationQuestion = ConfigurationQuestion(
-        service_albert=service_albert,
-        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
-        adaptateur_journal=adaptateur_journal,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-    )
-    resultat_interaction = ajoute_interaction(
-        configuration,
-        DemandeInteractionUtilisateur(
-            question=question,
-            conversation=UUID(id_conversation),
-        ),
-        extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
-    )
-    match resultat_interaction:
-        case ResultatConversation():
-            return ReponseConversationAjouteInteractionAPI(
-                **resultat_interaction.reponse_question.model_dump(),
-                id_interaction=str(resultat_interaction.id_interaction),
-            )
-        case ResultatConversationEnErreur():
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "message": resultat_interaction.message_mqc,
-                },
-            )
-        case ResultatConversationInconnue():
-            raise HTTPException(
-                status_code=404,
-                detail={"message": "La conversation demandée n'existe pas"},
-            )
-
-
-def extrais_type_utilisateur(
-    adaptateur_chiffrement: AdaptateurChiffrement, type_utilisateur: str | None
-) -> TypeUtilisateur:
-    try:
-        if (
-            type_utilisateur is not None
-            and type_utilisateur.startswith("jOr")
-            and type_utilisateur[-6] == " "
-        ):
-            type_utilisateur = type_utilisateur.replace(" ", "+")
-        type_utilisateur = (
-            TypeUtilisateur(adaptateur_chiffrement.dechiffre(type_utilisateur))
-            if type_utilisateur
-            else TypeUtilisateur.INCONNU
-        )
-        if type_utilisateur not in TypeUtilisateur:
-            type_utilisateur = TypeUtilisateur.INCONNU
-        return type_utilisateur
-    except Exception:
-        return TypeUtilisateur.INCONNU
-
-
-@api.post("/retour")
-def ajoute_retour(
-    body: DonneesCreationRetourUtilisateur,
-    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees
-    ),
-    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
-        fabrique_adaptateur_chiffrement
-    ),
-    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
-    type_utilisateur: str | None = None,
-) -> RetourUtilisatrice:
-    retour = ajoute_retour_utilisatrice(body, adaptateur_base_de_donnees)
-
-    if not retour:
-        raise HTTPException(status_code=404, detail="Interaction non trouvée")
-
-    adaptateur_journal.consigne_evenement(
-        type=TypeEvenement.AVIS_UTILISATEUR_SOUMIS,
-        donnees=DonneesAvisUtilisateurSoumis(
-            id_interaction=body.id_interaction,
-            type_retour=body.retour.type,
-            tags=list(body.retour.tags),
-            type_utilisateur=extrais_type_utilisateur(
-                adaptateur_chiffrement=adaptateur_chiffrement,
-                type_utilisateur=type_utilisateur,
-            ),
-        ),
-    )
-
-    return retour
-
-
-@api.delete("/retour/{id_interaction}")
-def supprime_retour(
-    id_interaction: str,
-    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees
-    ),
-    adaptateur_chiffrement: AdaptateurChiffrement = Depends(
-        fabrique_adaptateur_chiffrement
-    ),
-    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
-    type_utilisateur: str | None = None,
-) -> Optional[str]:
-    interaction = adaptateur_base_de_donnees.recupere_interaction(UUID(id_interaction))
-    if not interaction:
-        raise HTTPException(status_code=404, detail="Interaction non trouvée")
-
-    supprime_retour_utilisatrice(UUID(id_interaction), adaptateur_base_de_donnees)
-
-    adaptateur_journal.consigne_evenement(
-        type=TypeEvenement.AVIS_UTILISATEUR_SUPPRIME,
-        donnees=DonneesAvisUtilisateurSupprime(
-            id_interaction=id_interaction,
-            type_utilisateur=extrais_type_utilisateur(
-                adaptateur_chiffrement=adaptateur_chiffrement,
-                type_utilisateur=type_utilisateur,
-            ),
-        ),
-    )
-
-    return id_interaction
 
 
 def fabrique_serveur(
