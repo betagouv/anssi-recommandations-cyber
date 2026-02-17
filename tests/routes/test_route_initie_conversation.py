@@ -86,9 +86,9 @@ def test_route_initie_conversation_retourne_donnees_correctes(
     r = client_http.post("/api/conversation", json=requete_question.__dict__)
 
     response_data = r.json()
-    assert response_data["interaction_id"]
+    assert response_data["id_interaction"]
     assert response_data == {
-        "interaction_id": response_data["interaction_id"],
+        "id_interaction": response_data["id_interaction"],
         "question": "Qui es-tu",
         "reponse": "Réponse de test d'Albert",
         "paragraphes": [
@@ -107,11 +107,11 @@ def test_route_initie_conversation_retourne_donnees_correctes(
                 "contenu": "Contenu du paragraphe 2",
             },
         ],
-        "conversation_id": response_data["conversation_id"],
+        "id_conversation": response_data["id_conversation"],
     }
     assert (
         adaptateur_base_de_donnees.recupere_interaction(
-            uuid.UUID(response_data["interaction_id"])
+            uuid.UUID(response_data["id_interaction"])
         )
         is not None
     )
@@ -393,11 +393,11 @@ def test_route_initie_conversation_avec_un_id_de_conversation(
         "/api/conversation?type_utilisateur=ABCD",
         json={
             "question": "Une question",
-            "conversation_id": str(une_conversation.id_conversation),
+            "id_conversation": str(une_conversation.id_conversation),
         },
     )
 
     reponse_recuperee = reponse.json()
-    assert reponse_recuperee["conversation_id"] == str(une_conversation.id_conversation)
-    assert reponse_recuperee["interaction_id"] is not None
+    assert reponse_recuperee["id_conversation"] == str(une_conversation.id_conversation)
+    assert reponse_recuperee["id_interaction"] is not None
     assert reponse_recuperee["reponse"] == "réponse 2"

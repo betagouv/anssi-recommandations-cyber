@@ -106,8 +106,8 @@ def route_initie_conversation(
         configuration,
         QuestionUtilisateur(
             question=question,
-            conversation=uuid.UUID(request.conversation_id)
-            if request.conversation_id is not None
+            conversation=uuid.UUID(request.id_conversation)
+            if request.id_conversation is not None
             else None,
         ),
         extrais_type_utilisateur(adaptateur_chiffrement, type_utilisateur),
@@ -117,8 +117,8 @@ def route_initie_conversation(
         case ResultatConversation():
             return ReponseQuestionAPI(
                 **resultat_interaction.reponse_question.model_dump(),
-                interaction_id=resultat_interaction.id_interaction,
-                conversation_id=str(resultat_interaction.id_conversation),
+                id_interaction=resultat_interaction.id_interaction,
+                id_conversation=str(resultat_interaction.id_conversation),
             )
         case ResultatInteractionEnErreur():
             raise HTTPException(
