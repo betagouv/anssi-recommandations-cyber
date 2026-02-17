@@ -10,7 +10,7 @@ import {
   type ReponseMessageUtilisateurAPI,
 } from '../../src/client.api';
 import { get } from 'svelte/store';
-import { storeAffichage } from '../../src/stores/affichage.store.ts';
+import { storeAffichage } from '../../src/stores/affichage.store';
 
 describe('le store de conversation', () => {
   beforeEach(() => {
@@ -43,16 +43,7 @@ describe('le store de conversation', () => {
       question: 'une question ?',
       conversation_id: 'id-conversation',
     });
-    await storeConversation.ajouteMessageUtilisateur(
-      { question: 'une question ?' },
-      async () => ({
-        reponse: 'une réponse',
-        paragraphes: [],
-        interaction_id: 'id-interaction',
-        question: 'une question ?',
-        conversation_id: 'id-conversation',
-      })
-    );
+    await storeConversation.ajouteMessageUtilisateur({ question: 'une question ?' });
 
     const conversation = get(storeConversation);
     expect(conversation).toStrictEqual({
@@ -90,12 +81,9 @@ describe('le store de conversation', () => {
       idConversation: 'id-conversation',
     });
 
-    await storeConversation.ajouteMessageUtilisateur(
-      { question: 'une nouvelle question ?' },
-      async () => ({
-        erreur: 'une erreur',
-      })
-    );
+    await storeConversation.ajouteMessageUtilisateur({
+      question: 'une nouvelle question ?',
+    });
 
     const conversation = get(storeConversation);
     expect(conversation).toStrictEqual({
@@ -125,16 +113,7 @@ describe('le store de conversation', () => {
     });
     nettoyeurDOM.nettoie = (contenu) => Promise.resolve(`<div>${contenu}</div>`);
 
-    await storeConversation.ajouteMessageUtilisateur(
-      { question: 'une question ?' },
-      async () => ({
-        reponse: 'une réponse',
-        paragraphes: [],
-        interaction_id: 'id-interaction',
-        question: 'une question ?',
-        conversation_id: 'id-conversation',
-      })
-    );
+    await storeConversation.ajouteMessageUtilisateur({ question: 'une question ?' });
 
     const conversation = get(storeConversation);
     expect(conversation.messages[1].contenu).toStrictEqual('<div>une réponse</div>');
@@ -143,10 +122,8 @@ describe('le store de conversation', () => {
 
   it('transmet la question de l’utilisateur', async () => {
     let messageRecu = undefined;
-    let promptDemande = false;
-    clientAPI.publieMessageUtilisateurAPI = async (message, avecPromptSysteme) => {
+    clientAPI.publieMessageUtilisateurAPI = async (message) => {
       messageRecu = message;
-      promptDemande = avecPromptSysteme;
       return {
         erreur: 'une erreur',
       };
@@ -157,65 +134,12 @@ describe('le store de conversation', () => {
       idConversation: 'id-conversation',
     });
 
-    await storeConversation.ajouteMessageUtilisateur(
-      { question: 'une question ?' },
-      async (message, avecPrompt) => {
-        messageRecu = message;
-        promptDemande = avecPrompt;
-        return {
-          reponse: 'une réponse',
-          paragraphes: [],
-          interaction_id: 'id-interaction',
-          question: 'une question ?',
-          conversation_id: 'id-conversation',
-        };
-      }
-    );
+    await storeConversation.ajouteMessageUtilisateur({ question: 'une question ?' });
 
     expect(messageRecu).toStrictEqual({
       question: 'une question ?',
       conversation_id: 'id-conversation',
     });
-    expect(promptDemande).toBe(false);
-  });
-
-  it('transmet la question de l’utilisateur avec le prompt', async () => {
-    let messageRecu = undefined;
-    let promptDemande = false;
-    clientAPI.publieMessageUtilisateurAPI = async (message, avecPromptSysteme) => {
-      messageRecu = message;
-      promptDemande = avecPromptSysteme;
-      return {
-        erreur: 'une erreur',
-      };
-    };
-    storeConversation.initialise({
-      messages: [],
-      derniereQuestion: '',
-      idConversation: 'id-conversation',
-    });
-
-    await storeConversation.ajouteMessageUtilisateur(
-      { question: 'une question ?', prompt: 'Le prompt' },
-      async (message, avecPrompt) => {
-        messageRecu = message;
-        promptDemande = avecPrompt;
-        return {
-          reponse: 'une réponse',
-          paragraphes: [],
-          interaction_id: 'id-interaction',
-          question: 'une question ?',
-          conversation_id: 'id-conversation',
-        };
-      }
-    );
-
-    expect(messageRecu).toStrictEqual({
-      question: 'une question ?',
-      conversation_id: 'id-conversation',
-      prompt: 'Le prompt',
-    });
-    expect(promptDemande).toBe(true);
   });
 
   describe('mets à jour le store affichage', () => {
@@ -224,16 +148,9 @@ describe('le store de conversation', () => {
         erreur: 'une erreur',
       });
 
-      await storeConversation.ajouteMessageUtilisateur(
-        { question: 'une question ?' },
-        async () => ({
-          reponse: 'une réponse',
-          paragraphes: [],
-          interaction_id: 'id-interaction',
-          question: 'une question ?',
-          conversation_id: 'id-conversation',
-        })
-      );
+      await storeConversation.ajouteMessageUtilisateur({
+        question: 'une question ?',
+      });
 
       expect(get(storeAffichage).aUneErreurAlbert).toBe(true);
     });
@@ -248,16 +165,9 @@ describe('le store de conversation', () => {
         conversation_id: 'id-conversation',
       });
 
-      await storeConversation.ajouteMessageUtilisateur(
-        { question: 'une question ?' },
-        async () => ({
-          reponse: 'une réponse',
-          paragraphes: [],
-          interaction_id: 'id-interaction',
-          question: 'une question ?',
-          conversation_id: 'id-conversation',
-        })
-      );
+      await storeConversation.ajouteMessageUtilisateur({
+        question: 'une question ?',
+      });
 
       expect(get(storeAffichage).aUneErreurAlbert).toBe(false);
     });

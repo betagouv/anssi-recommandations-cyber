@@ -51,7 +51,6 @@ export const nettoyeurDOM = {
 
 type QuestionUtilisateur = {
   question: string;
-  prompt?: string;
 };
 
 const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
@@ -61,14 +60,10 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
     emetteur: 'utilisateur',
   };
   storeAffichage.estEnAttenteDeReponse(true);
-  const reponseAPI = await clientAPI.publieMessageUtilisateurAPI(
-    {
-      question: question.question,
-      conversation_id: sauvegarde.idConversation,
-      ...(question.prompt && { prompt: question.prompt }),
-    },
-    question.prompt !== undefined
-  );
+  const reponseAPI = await clientAPI.publieMessageUtilisateurAPI({
+    question: question.question,
+    conversation_id: sauvegarde.idConversation,
+  });
   const { estEnErreur, contenuHTML } = estReponseMessageUtilisateur(reponseAPI)
     ? {
         estEnErreur: false,

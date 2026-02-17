@@ -10,7 +10,6 @@
   import PiedDePage from './composants/PiedDePage.svelte';
   import { storeAffichage } from './stores/affichage.store';
 
-  let { urlAPI }: { urlAPI: string } = $props();
   let inputUtilisateur: InputUtilisateur | undefined = $state(undefined);
 </script>
 
@@ -34,7 +33,7 @@
   </div>
 
   <div class="question-utilisateur">
-    <InputUtilisateur {urlAPI} bind:this={inputUtilisateur} />
+    <InputUtilisateur bind:this={inputUtilisateur} />
   </div>
 </main>
 

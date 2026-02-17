@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+
 from schemas.albert import Paragraphe
 
 
@@ -9,10 +9,6 @@ class QuestionRequete(BaseModel):
         description="Votre question d'une longueur maximale de 5000 caractères.",
     )
     conversation_id: str | None = None
-
-
-class QuestionRequeteAvecPrompt(QuestionRequete):
-    prompt: Optional[str] = None
 
 
 class ReponseQuestionAPI(BaseModel):

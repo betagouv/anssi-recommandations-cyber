@@ -43,7 +43,6 @@ export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
 
 export type MessageUtilisateurAPI = {
   question: string;
-  prompt?: string;
   conversation_id?: string | null;
 };
 
@@ -60,12 +59,9 @@ export type ReponseEnErreur = {
 };
 
 const publieMessageUtilisateurAPI = async (
-  message: MessageUtilisateurAPI,
-  avecPromptSysteme: boolean
+  message: MessageUtilisateurAPI
 ): Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur> => {
-  const endpoint = avecPromptSysteme
-    ? '/api/pose_question_avec_prompt'
-    : '/api/pose_question';
+  const endpoint = '/api/pose_question';
 
   const reponse = await fetch(forgeURLAvecTypeUtilisateur(endpoint), {
     method: 'POST',
@@ -96,8 +92,7 @@ export const estReponseMessageUtilisateur = (
 
 type ClientAPI = {
   publieMessageUtilisateurAPI: (
-    message: MessageUtilisateurAPI,
-    avecPromptSysteme: boolean
+    message: MessageUtilisateurAPI
   ) => Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur>;
 };
 

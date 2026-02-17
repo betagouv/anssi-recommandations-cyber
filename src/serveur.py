@@ -1,5 +1,6 @@
 import uuid
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.responses import HTMLResponse
@@ -41,20 +42,15 @@ from question.question import (
 from schemas.albert import Paragraphe
 from schemas.api import (
     QuestionRequete,
-    QuestionRequeteAvecPrompt,
     ReponseQuestionAPI,
 )
 from schemas.retour_utilisatrice import (
     DonneesCreationRetourUtilisateur,
-    Interaction,
-    Conversation,
 )
 from schemas.retour_utilisatrice import RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
 from services.fabrique_service_albert import fabrique_service_albert
 from services.service_albert import ServiceAlbert
-from uuid import UUID
-
 
 api = APIRouter(prefix="/api")
 api_developpement = APIRouter(prefix="/api")
@@ -75,36 +71,6 @@ HEADERS_SECURITE = {
 @api_developpement.get("/sante")
 def route_sante() -> Dict[str, str]:
     return {"status": "ok"}
-
-
-@api_developpement.post("/pose_question_avec_prompt")
-def route_pose_question_avec_prompt(
-    request: QuestionRequeteAvecPrompt,
-    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees = Depends(
-        fabrique_adaptateur_base_de_donnees
-    ),
-) -> ReponseQuestionAPI:
-    reponse_question = service_albert.pose_question(
-        question=request.question, prompt=request.prompt
-    )
-    interaction = Interaction(
-        reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
-    )
-    conversation = Conversation(interaction)
-    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
-    return ReponseQuestionAPI(
-        **reponse_question.model_dump(),
-        interaction_id=str(interaction.id),
-        conversation_id=str(conversation.id_conversation),
-    )
-
-
-@api_developpement.get("/prompt")
-def route_prompt_systeme(
-    service_albert: ServiceAlbert = Depends(fabrique_service_albert),
-) -> str:
-    return service_albert.prompt_systeme
 
 
 @api.post("/recherche")
