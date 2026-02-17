@@ -61,7 +61,7 @@ export type ReponseEnErreur = {
 const publieMessageUtilisateurAPI = async (
   message: MessageUtilisateurAPI
 ): Promise<ReponseMessageUtilisateurAPI | ReponseEnErreur> => {
-  const endpoint = '/api/pose_question';
+  const endpoint = '/api/conversation';
 
   const reponse = await fetch(forgeURLAvecTypeUtilisateur(endpoint), {
     method: 'POST',
