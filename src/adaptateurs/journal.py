@@ -14,6 +14,15 @@ class Donnees(BaseModel):
     pass
 
 
+class DonneesConversationCreee(Donnees):
+    id_conversation: str
+    id_interaction: str
+    longueur_question: int
+    longueur_reponse: int
+    longueur_paragraphes: int
+    type_utilisateur: TypeUtilisateur
+
+
 class DonneesInteractionCreee(Donnees):
     id_interaction: str
     longueur_question: int
@@ -40,6 +49,7 @@ class DonneesAvisUtilisateurSupprime(Donnees):
 
 
 class TypeEvenement(StrEnum):
+    CONVERSATION_CREEE = "CONVERSATION_CREEE"
     INTERACTION_CREEE = "INTERACTION_CREEE"
     VIOLATION_DETECTEE = "VIOLATION_DETECTEE"
     AVIS_UTILISATEUR_SOUMIS = "AVIS_UTILISATEUR_SOUMIS"

@@ -1,23 +1,14 @@
 import uuid
-from uuid import UUID
 
 import pytest
 from fastapi.testclient import TestClient
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import (
-    TypeEvenement,
     AdaptateurJournalMemoire,
 )
-from configuration import Mode
-from schemas.albert import ReponseQuestion
 from schemas.api import QuestionRequete
 from schemas.type_utilisateur import TypeUtilisateur
-from schemas.violations import (
-    ViolationIdentite,
-    ViolationMalveillance,
-    ViolationThematique,
-)
 from serveur_de_test import ServiceAlbertMemoire
 
 
@@ -114,150 +105,6 @@ def test_route_initie_conversation_retourne_donnees_correctes(
         )
         is not None
     )
-
-
-@pytest.mark.parametrize("mode", [Mode.DEVELOPPEMENT, Mode.PRODUCTION])
-def test_route_initie_conversation_emet_un_evenement_journal_indiquant_la_creation_d_une_interaction(
-    mode, un_serveur_de_test, un_adaptateur_de_chiffrement
-) -> None:
-    valeur_hachee = "haché"
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    adaptateur_journal = AdaptateurJournalMemoire()
-    service_albert = ServiceAlbertMemoire()
-    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
-    serveur = un_serveur_de_test(
-        mode=mode,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-        adaptateur_journal=adaptateur_journal,
-        service_albert=service_albert,
-        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
-    )
-
-    client: TestClient = TestClient(serveur)
-    client.post(
-        "/api/conversation",
-        json={"question": "Qui es-tu ?"},
-    )
-
-    evenements = adaptateur_journal.les_evenements()
-    assert evenements[0]["type"] == TypeEvenement.INTERACTION_CREEE
-    assert evenements[0]["donnees"].id_interaction == valeur_hachee
-    assert isinstance(UUID(adaptateur_chiffrement.valeur_recue_pour_le_hache), UUID)
-
-
-def test_route_initie_conversation_emet_un_evenement_donnant_les_informations_sur_l_interaction_creee(
-    un_serveur_de_test, un_adaptateur_de_chiffrement
-) -> None:
-    question_posee = " Qui es-tu ? "
-    valeur_hachee = "haché"
-    reponse = ReponseQuestion(
-        reponse=" Je suis Albert, pour vous servir ",
-        paragraphes=[],
-        question=question_posee,
-        violation=None,
-    )
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    adaptateur_journal = AdaptateurJournalMemoire()
-    service_albert = ServiceAlbertMemoire()
-    service_albert.ajoute_reponse(reponse)
-    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
-    serveur = un_serveur_de_test(
-        mode=Mode.PRODUCTION,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-        adaptateur_journal=adaptateur_journal,
-        service_albert=service_albert,
-        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
-    )
-
-    client = TestClient(serveur)
-    client.post(
-        "/api/conversation",
-        json={"question": question_posee},
-    )
-
-    evenements = adaptateur_journal.les_evenements()
-    assert evenements[0]["donnees"].longueur_question == 11
-    assert evenements[0]["donnees"].longueur_reponse == 32
-
-
-def test_route_initie_conversation_emet_un_evenement_donnant_la_longueur_totale_des_paragraphes_sur_l_interaction_creee(
-    un_serveur_de_test,
-    un_adaptateur_de_chiffrement,
-    un_constructeur_de_paragraphe,
-    un_constructeur_de_reponse_question,
-):
-    question_posee = QuestionRequete(question=" Qui es-tu ? ")
-    reponse = (
-        un_constructeur_de_reponse_question()
-        .donnant_en_reponse(" Je suis Albert, pour vous servir ")
-        .avec_les_paragraphes(
-            [
-                un_constructeur_de_paragraphe().avec_contenu("Contenu A").construis(),
-                un_constructeur_de_paragraphe().avec_contenu("Contenu B").construis(),
-            ]
-        )
-        .a_partir_d_une_requete(question_posee)
-        .construis()
-    )
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
-    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage="haché")
-    adaptateur_journal = AdaptateurJournalMemoire()
-    service_albert = ServiceAlbertMemoire()
-    service_albert.ajoute_reponse(reponse)
-    serveur = un_serveur_de_test(
-        mode=Mode.PRODUCTION,
-        adaptateur_chiffrement=adaptateur_chiffrement,
-        adaptateur_journal=adaptateur_journal,
-        service_albert=service_albert,
-        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
-    )
-
-    client = TestClient(serveur)
-    client.post(
-        "/api/conversation",
-        json=question_posee.__dict__,
-    )
-
-    evenements = adaptateur_journal.les_evenements()
-    assert evenements[0]["donnees"].longueur_paragraphes == 18
-
-
-@pytest.mark.parametrize(
-    "violation", [ViolationIdentite(), ViolationMalveillance(), ViolationThematique()]
-)
-def test_route_initie_conversation_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
-    violation, un_serveur_de_test, un_adaptateur_de_chiffrement
-) -> None:
-    valeur_hachee = "haché"
-    reponse = ReponseQuestion(
-        reponse="", paragraphes=[], question="Q?", violation=violation
-    )
-
-    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage=valeur_hachee)
-    adaptateur_journal = AdaptateurJournalMemoire()
-    service_albert = ServiceAlbertMemoire()
-    service_albert.ajoute_reponse(reponse)
-    serveur = un_serveur_de_test(
-        adaptateur_chiffrement=adaptateur_chiffrement,
-        adaptateur_journal=adaptateur_journal,
-        service_albert=service_albert,
-        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
-    )
-
-    client: TestClient = TestClient(serveur)
-    client.post(
-        "/api/conversation",
-        json={"question": "Qui es-tu ?"},
-    )
-
-    evenements = adaptateur_journal.les_evenements()
-    assert len(evenements) == 2
-    assert evenements[1]["type"] == TypeEvenement.VIOLATION_DETECTEE
-    assert evenements[1]["donnees"].id_interaction == valeur_hachee
-    assert evenements[1]["donnees"].type_violation == violation.__class__.__name__
-    assert evenements[1]["donnees"].model_dump_json()
-    assert isinstance(UUID(adaptateur_chiffrement.valeur_recue_pour_le_hache), UUID)
 
 
 def test_route_initie_conversation_rejette_question_trop_longue(

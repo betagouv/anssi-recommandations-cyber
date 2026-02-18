@@ -21,7 +21,7 @@ class AdaptateurChiffrementDeTest(AdaptateurChiffrement):
 
     def hache(self, valeur: str) -> str:
         self.valeur_recue_pour_le_hache = valeur
-        return self._hache if self._hache is not None else valeur
+        return self._hache if self._hache is not None else f"hache_{valeur}"
 
     def recupere_nonce(self) -> str:
         return self._nonce
