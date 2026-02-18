@@ -567,3 +567,33 @@ def test_peut_reformuler_une_question(une_configuration_de_service_albert):
     ).pose_question(question="Question actuelle ?", conversation=None)
 
     assert reponse_question.question_reformulee == "Ma question reformulee"
+
+
+def test_recherche_paragraphes_utilise_la_question_reformulee(
+    une_configuration_de_service_albert,
+):
+    client_albert_recherche = ClientAlbertMemoire()
+    client_albert_reformulation = ClientAlbertMemoire()
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_reformulation,
+        prompt_de_reformulation="Mon prompt",
+    )
+    choix_reformulation = (
+        ConstructeurDeChoix()
+        .ayant_pour_contenu("Question reformulee pour recherche")
+        .construis()
+    )
+    client_albert_reformulation.avec_les_propositions([choix_reformulation])
+
+    ServiceAlbert(
+        configuration_service_albert=une_configuration_de_service_albert(),
+        client=client_albert_recherche,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Ma question brute ?")
+
+    assert (
+        client_albert_recherche.payload_recu.prompt
+        == "Question reformulee pour recherche"
+    )
