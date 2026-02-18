@@ -15,7 +15,9 @@ def fabrique_service_albert() -> ServiceAlbert:
     prompt_reformulation = lis_fichier_prompt("prompt_reformulation.txt")
 
     reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_api, prompt_de_reformulation=prompt_reformulation
+        client_albert=client_albert_api,
+        prompt_de_reformulation=prompt_reformulation,
+        modele_reformulation=configuration.albert.client.modele_reformulation,
     )
 
     return ServiceAlbert(

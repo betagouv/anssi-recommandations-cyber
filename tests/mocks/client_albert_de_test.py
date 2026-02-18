@@ -121,7 +121,7 @@ class ClientAlbertMemoire(ClientAlbert):
         return self.resultats if self.resultats_vides is False else []
 
     def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam]
+        self, messages: list[ChatCompletionMessageParam], modele: str | None = None
     ) -> list[Choice]:
         self.messages_recus = messages
         return self.choix if self.propositions_vides is False else []

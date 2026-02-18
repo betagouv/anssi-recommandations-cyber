@@ -4,6 +4,7 @@ from client_albert_de_test import (
     ConstructeurClientHttp,
     ConstructeurRetourRouteSearch,
 )
+
 from infra.albert.client_albert import ClientAlbertApi
 from schemas.albert import RecherchePayload, RechercheChunk, RechercheMetadonnees
 
