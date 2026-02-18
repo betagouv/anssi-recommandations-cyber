@@ -89,7 +89,9 @@ class ServiceAlbert:
             question_reformulee if question_reformulee else question
         )
         recherche_paragraphes = self.recherche_paragraphes(question_pour_recherche)
-        paragraphes = self.__effectue_reclassement(recherche_paragraphes, question)
+        paragraphes = self.__effectue_reclassement(
+            recherche_paragraphes, question_pour_recherche
+        )
         propositions_albert = self.__effectue_recuperation_propositions(
             paragraphes, prompt, question, conversation
         )
