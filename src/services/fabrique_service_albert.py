@@ -2,6 +2,7 @@ from pathlib import Path
 
 from configuration import recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
+from question.reformulateur_de_question import ReformulateurDeQuestion
 from services.service_albert import ServiceAlbert, Prompts
 
 
@@ -11,6 +12,11 @@ def fabrique_service_albert() -> ServiceAlbert:
     client_albert_api = fabrique_client_albert(configuration.albert.client)
     prompt_systeme = lis_fichier_prompt("prompt_assistant_cyber.txt")
     prompt_reclassement = lis_fichier_prompt("prompt_reclassement.txt")
+    prompt_reformulation = lis_fichier_prompt("prompt_reformulation.txt")
+
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_api, prompt_de_reformulation=prompt_reformulation
+    )
 
     return ServiceAlbert(
         configuration_service_albert=configuration.albert.service,
@@ -19,6 +25,7 @@ def fabrique_service_albert() -> ServiceAlbert:
         prompts=Prompts(
             prompt_systeme=prompt_systeme, prompt_reclassement=prompt_reclassement
         ),
+        reformulateur=reformulateur,
     )
 
 
