@@ -597,3 +597,36 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
         client_albert_recherche.payload_recu.prompt
         == "Question reformulee pour recherche"
     )
+
+
+def test_reclassement_utilise_la_question_reformulee():
+    reponse = un_constructeur_de_reponse_de_reclassement().construis()
+    client_albert_recherche = ClientAlbertMemoire()
+    client_albert_reformulation = ClientAlbertMemoire()
+    client_albert_recherche.avec_le_reclassement(reponse)
+    client_albert_recherche.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
+    )
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_reformulation,
+        prompt_de_reformulation="Mon prompt",
+    )
+    choix_reformulation = (
+        ConstructeurDeChoix()
+        .ayant_pour_contenu("Question reformulee pour reclassement")
+        .construis()
+    )
+    client_albert_reformulation.avec_les_propositions([choix_reformulation])
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_recherche,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Ma question brute ?")
+
+    assert (
+        "Question reformulee pour reclassement"
+        in client_albert_recherche.payload_reclassement_recu.prompt
+    )
