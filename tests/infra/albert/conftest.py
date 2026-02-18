@@ -8,6 +8,7 @@ def une_configuration_albert_client():
         api_key="",
         base_url="",
         modele_reponse="",
+        modele_reformulation="",
         temps_reponse_maximum_pose_question=10.0,
         temps_reponse_maximum_recherche_paragraphes=1.0,
         utilise_recherche_hybride=False,

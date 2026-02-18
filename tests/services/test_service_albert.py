@@ -551,7 +551,9 @@ def test_limite_l_historique_a_2_interactions_passees(
 def test_peut_reformuler_une_question(une_configuration_de_service_albert):
     client_albert_memoire = ClientAlbertMemoire()
     reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_memoire, prompt_de_reformulation="Mon prompt"
+        client_albert=client_albert_memoire,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
     )
     mon_choix = (
         ConstructeurDeChoix().ayant_pour_contenu("Ma question reformulee").construis()
@@ -577,6 +579,7 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
     reformulateur = ReformulateurDeQuestion(
         client_albert=client_albert_reformulation,
         prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -610,6 +613,7 @@ def test_reclassement_utilise_la_question_reformulee():
     reformulateur = ReformulateurDeQuestion(
         client_albert=client_albert_reformulation,
         prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -649,6 +653,7 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
     reformulateur = ReformulateurDeQuestion(
         client_albert=client_albert_reformulation,
         prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -697,6 +702,7 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
     reformulateur = ReformulateurDeQuestion(
         client_albert=client_albert_reformulation,
         prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
     )
     choix_reformulation = (
         ConstructeurDeChoix()

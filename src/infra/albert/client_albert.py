@@ -131,12 +131,13 @@ class ClientAlbertApi(ClientAlbert):
             )
 
     def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam]
+        self, messages: list[ChatCompletionMessageParam], modele: str | None = None
     ) -> list[Choice]:
+        modele_a_utiliser = modele if modele else self.modele_reponse
         try:
             propositions_albert = self.client_openai.chat.completions.create(
                 messages=messages,
-                model=self.modele_reponse,
+                model=modele_a_utiliser,
                 stream=False,
             ).choices
             return propositions_albert
@@ -145,7 +146,7 @@ class ClientAlbertApi(ClientAlbert):
             aucune_proposition = ChatCompletion(
                 id="tmp-empty",
                 created=int(time.time()),
-                model=self.modele_reponse,
+                model=modele_a_utiliser,
                 object="chat.completion",
                 choices=[],
                 usage=CompletionUsage(

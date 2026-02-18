@@ -16,6 +16,7 @@ class Albert(NamedTuple):
         api_key: str
         base_url: str
         modele_reponse: str
+        modele_reformulation: str
         temps_reponse_maximum_pose_question: float
         temps_reponse_maximum_recherche_paragraphes: float
         utilise_recherche_hybride: bool
@@ -106,6 +107,10 @@ def recupere_configuration() -> Configuration:
             base_url="https://albert.api.etalab.gouv.fr/v1",
             api_key=os.getenv("ALBERT_API_KEY"),
             modele_reponse=os.getenv("ALBERT_MODELE", "albert-large"),
+            modele_reformulation=os.getenv(
+                "ALBERT_MODELE_REFORMULATION",
+                "mistral-medium-2508",
+            ),
             temps_reponse_maximum_pose_question=float(
                 os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_REPONSE_QUESTION", 15.0)
             ),
