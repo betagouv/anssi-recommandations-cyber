@@ -118,7 +118,7 @@ def test_route_conversation_ajoute_interaction_emets_un_evenement_dans_le_journa
     )
 
     evenements = adaptateur_journal.les_evenements()
-    assert evenements[0]["type"] == TypeEvenement.INTERACTION_CREEE
+    assert evenements[0]["type"] == TypeEvenement.INTERACTION_AJOUTEE
     assert evenements[0]["donnees"].id_interaction == "id-interaction"
     assert evenements[0]["donnees"].longueur_question == 12
     assert evenements[0]["donnees"].longueur_reponse == 0

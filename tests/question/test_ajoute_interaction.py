@@ -1,12 +1,24 @@
 import datetime as dt
+from typing import cast
+
+import pytest
 
 from adaptateurs.horloge import Horloge
+from adaptateurs.journal import TypeEvenement
 from client_albert_de_test import ClientAlbertMemoire
 from question.question import (
     ajoute_interaction,
     DemandeInteractionUtilisateur,
+    ResultatConversation,
 )
+from schemas.albert import ReponseQuestion
 from schemas.type_utilisateur import TypeUtilisateur
+from schemas.violations import (
+    ViolationIdentite,
+    ViolationMalveillance,
+    ViolationThematique,
+    ViolationMeconnaissance,
+)
 from services.service_albert import Prompts
 
 
@@ -151,3 +163,146 @@ def test_interroge_albert_en_mode_conversationnel(
             "content": "Question :\nUne seconde question",
         },
     ]
+
+
+def test_ajoute_interaction_emet_un_evenement_journal_interaction_ajoutee(
+    une_configuration_complete,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_reponse_question,
+    un_constructeur_de_conversation,
+) -> None:
+    configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
+        une_configuration_complete()
+    )
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse=" Je suis Albert, pour vous servir ",
+            question="Une seconde question",
+            paragraphes=[
+                un_constructeur_de_paragraphe().avec_contenu("un contenu").construis()
+            ],
+            violation=None,
+        )
+    )
+    conversation = un_constructeur_de_conversation(
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse à la première question")
+        .avec_une_question("La première question")
+    ).construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+
+    interaction = cast(
+        ResultatConversation,
+        ajoute_interaction(
+            configuration,
+            question_utilisateur=DemandeInteractionUtilisateur(
+                question="Une seconde question",
+                conversation=conversation.id_conversation,
+            ),
+            type_utilisateur=TypeUtilisateur.EXPERT_SSI,
+        ),
+    )
+
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["type"] == TypeEvenement.INTERACTION_AJOUTEE
+    assert (
+        evenements[0]["donnees"].id_conversation
+        == f"hache_{conversation.id_conversation}"
+    )
+    assert (
+        evenements[0]["donnees"].id_interaction == f"hache_{interaction.id_interaction}"
+    )
+    assert evenements[0]["donnees"].longueur_question == 20
+    assert evenements[0]["donnees"].longueur_reponse == 32
+    assert evenements[0]["donnees"].longueur_paragraphes == 10
+    assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.EXPERT_SSI
+
+
+def test_ajoute_interaction_emet_un_evenement_donnant_la_longueur_totale_des_paragraphes(
+    une_configuration_complete,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_reponse_question,
+    un_constructeur_de_conversation,
+):
+    configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
+        une_configuration_complete()
+    )
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse=" Je suis Albert, pour vous servir ",
+            question="Une seconde question",
+            paragraphes=[
+                un_constructeur_de_paragraphe().avec_contenu("Contenu A").construis(),
+                un_constructeur_de_paragraphe().avec_contenu("Contenu B").construis(),
+            ],
+            violation=None,
+        )
+    )
+    conversation = un_constructeur_de_conversation(
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse à la première question")
+        .avec_une_question("La première question")
+    ).construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+
+    (
+        ResultatConversation,
+        ajoute_interaction(
+            configuration,
+            question_utilisateur=DemandeInteractionUtilisateur(
+                question="Une seconde question",
+                conversation=conversation.id_conversation,
+            ),
+            type_utilisateur=TypeUtilisateur.EXPERT_SSI,
+        ),
+    )
+
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].longueur_paragraphes == 18
+
+
+@pytest.mark.parametrize(
+    "violation",
+    [
+        ViolationIdentite(),
+        ViolationMalveillance(),
+        ViolationThematique(),
+        ViolationMeconnaissance(),
+    ],
+)
+def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
+    violation,
+    une_configuration_complete,
+    un_constructeur_de_conversation,
+    un_constructeur_de_reponse_question,
+) -> None:
+    configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
+        une_configuration_complete()
+    )
+    service_albert.ajoute_reponse(
+        ReponseQuestion(
+            reponse=" Je suis Albert, pour vous servir ",
+            question="Une seconde question",
+            paragraphes=[],
+            violation=violation,
+        )
+    )
+    conversation = un_constructeur_de_conversation(
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse à la première question")
+        .avec_une_question("La première question")
+    ).construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+
+    ajoute_interaction(
+        configuration,
+        question_utilisateur=DemandeInteractionUtilisateur(
+            question="Une seconde question", conversation=conversation.id_conversation
+        ),
+        type_utilisateur=TypeUtilisateur.EXPERT_SSI,
+    )
+
+    evenements = adaptateur_journal.les_evenements()
+    assert len(evenements) == 2
+    assert evenements[1]["type"] == TypeEvenement.VIOLATION_DETECTEE
+    assert evenements[1]["donnees"].type_violation == violation.__class__.__name__

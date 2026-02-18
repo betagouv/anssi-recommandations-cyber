@@ -23,12 +23,8 @@ class DonneesConversationCreee(Donnees):
     type_utilisateur: TypeUtilisateur
 
 
-class DonneesInteractionCreee(Donnees):
-    id_interaction: str
-    longueur_question: int
-    longueur_reponse: int
-    longueur_paragraphes: int
-    type_utilisateur: TypeUtilisateur
+class DonneesInteractionAjoutee(DonneesConversationCreee):
+    pass
 
 
 class DonneesViolationDetectee(Donnees):
@@ -50,7 +46,7 @@ class DonneesAvisUtilisateurSupprime(Donnees):
 
 class TypeEvenement(StrEnum):
     CONVERSATION_CREEE = "CONVERSATION_CREEE"
-    INTERACTION_CREEE = "INTERACTION_CREEE"
+    INTERACTION_AJOUTEE = "INTERACTION_AJOUTEE"
     VIOLATION_DETECTEE = "VIOLATION_DETECTEE"
     AVIS_UTILISATEUR_SOUMIS = "AVIS_UTILISATEUR_SOUMIS"
     AVIS_UTILISATEUR_SUPPRIME = "AVIS_UTILISATEUR_SUPPRIME"
