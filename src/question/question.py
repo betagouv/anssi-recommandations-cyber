@@ -7,7 +7,7 @@ from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.journal import (
     TypeEvenement,
-    DonneesInteractionCreee,
+    DonneesInteractionAjoutee,
     DonneesViolationDetectee,
     AdaptateurJournal,
     DonneesConversationCreee,
@@ -139,8 +139,11 @@ def ajoute_interaction(
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
         id_interaction = str(interaction.id)
         configuration.adaptateur_journal.consigne_evenement(
-            type=TypeEvenement.INTERACTION_CREEE,
-            donnees=DonneesInteractionCreee(
+            type=TypeEvenement.INTERACTION_AJOUTEE,
+            donnees=DonneesInteractionAjoutee(
+                id_conversation=configuration.adaptateur_chiffrement.hache(
+                    str(conversation.id_conversation)
+                ),
                 id_interaction=configuration.adaptateur_chiffrement.hache(
                     id_interaction
                 ),
