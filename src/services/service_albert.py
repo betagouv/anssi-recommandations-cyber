@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import Optional, cast, NamedTuple
 
 from openai.types.chat import (
@@ -8,13 +7,12 @@ from openai.types.chat import (
 from openai.types.chat.chat_completion import Choice
 
 from configuration import Albert
+from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
     Paragraphe,
     RecherchePayload,
     ReponseQuestion,
-    ResultatRecherche,
     ReclassePayload,
-    ReclasseReponse,
 )
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import (
@@ -25,22 +23,7 @@ from schemas.violations import (
     ViolationMeconnaissance,
     REPONSE_PAR_DEFAUT,
 )
-
-
-class ClientAlbert(ABC):
-    @abstractmethod
-    def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
-        pass
-
-    @abstractmethod
-    def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam]
-    ) -> list[Choice]:
-        pass
-
-    @abstractmethod
-    def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
-        pass
+from services.client_albert import ClientAlbert
 
 
 class Prompts(NamedTuple):
@@ -55,6 +38,7 @@ class ServiceAlbert:
         client: ClientAlbert,
         utilise_recherche_hybride: bool,
         prompts: Prompts,
+        reformulateur: Optional[ReformulateurDeQuestion] = None,
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.reclassement_active = configuration_service_albert.reclassement_active
@@ -66,6 +50,7 @@ class ServiceAlbert:
         self.prompt_reclassement = prompts.prompt_reclassement
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
+        self.reformulateur = reformulateur
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
@@ -97,6 +82,9 @@ class ServiceAlbert:
         prompt: Optional[str] = None,
         conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
+        question_reformulee = None
+        if self.reformulateur is not None:
+            question_reformulee = self.reformulateur.reformule(question)
         recherche_paragraphes = self.recherche_paragraphes(question)
         paragraphes = self.__effectue_reclassement(recherche_paragraphes, question)
         propositions_albert = self.__effectue_recuperation_propositions(
@@ -113,6 +101,7 @@ class ServiceAlbert:
             reponse=reponse,
             paragraphes=paragraphes,
             question=question,
+            question_reformulee=question_reformulee,
             violation=violation,
         )
 

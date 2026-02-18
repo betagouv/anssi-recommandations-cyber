@@ -2,16 +2,15 @@ import datetime as dt
 from typing import cast
 
 import pytest
+from client_albert_de_test import ClientAlbertMemoire
 
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import TypeEvenement
-from client_albert_de_test import ClientAlbertMemoire
 from question.question import (
     ajoute_interaction,
     DemandeInteractionUtilisateur,
     ResultatConversation,
 )
-from schemas.albert import ReponseQuestion
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationIdentite,
@@ -175,13 +174,14 @@ def test_ajoute_interaction_emet_un_evenement_journal_interaction_ajoutee(
         une_configuration_complete()
     )
     service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse=" Je suis Albert, pour vous servir ",
-            question="Une seconde question",
-            paragraphes=[
-                un_constructeur_de_paragraphe().avec_contenu("un contenu").construis()
-            ],
-            violation=None,
+        (
+            un_constructeur_de_reponse_question()
+            .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+            .avec_une_question("Une seconde question")
+            .avec_les_paragraphes(
+                [un_constructeur_de_paragraphe().avec_contenu("un contenu").construis()]
+            )
+            .construis()
         )
     )
     conversation = un_constructeur_de_conversation(
@@ -227,17 +227,20 @@ def test_ajoute_interaction_emet_un_evenement_donnant_la_longueur_totale_des_par
     configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
         une_configuration_complete()
     )
-    service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse=" Je suis Albert, pour vous servir ",
-            question="Une seconde question",
-            paragraphes=[
+
+    question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+        .avec_une_question("Une seconde question")
+        .avec_les_paragraphes(
+            [
                 un_constructeur_de_paragraphe().avec_contenu("Contenu A").construis(),
                 un_constructeur_de_paragraphe().avec_contenu("Contenu B").construis(),
-            ],
-            violation=None,
+            ]
         )
+        .construis()
     )
+    service_albert.ajoute_reponse(question)
     conversation = un_constructeur_de_conversation(
         un_constructeur_de_reponse_question()
         .donnant_en_reponse("La réponse à la première question")
@@ -279,12 +282,14 @@ def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_un
     configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
         une_configuration_complete()
     )
+
     service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse=" Je suis Albert, pour vous servir ",
-            question="Une seconde question",
-            paragraphes=[],
-            violation=violation,
+        (
+            un_constructeur_de_reponse_question()
+            .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+            .avec_une_question("Une seconde question")
+            .avec_une_violation(violation)
+            .construis()
         )
     )
     conversation = un_constructeur_de_conversation(

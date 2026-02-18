@@ -15,7 +15,7 @@ from configuration import logging, Albert
 from openai.types import CompletionUsage
 import time
 from openai import APITimeoutError, APIConnectionError
-from services.service_albert import ClientAlbert
+from services.client_albert import ClientAlbert
 
 
 class ClientAlbertHttp(requests.Session):

@@ -6,6 +6,7 @@ from client_albert_de_test import (
     un_constructeur_de_reponse_de_reclassement,
 )
 from configuration import Albert
+from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import ReclasseReponse, ResultatReclasse, ReclassePayload
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
@@ -15,6 +16,7 @@ from schemas.violations import (
     ViolationThematique,
 )
 from services.service_albert import ServiceAlbert, Prompts
+from client_albert_de_test import ConstructeurDeChoix
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="",
@@ -544,3 +546,24 @@ def test_limite_l_historique_a_2_interactions_passees(
             "content": "Question :\nQuestion actuelle ?",
         },
     ]
+
+
+def test_peut_reformuler_une_question(une_configuration_de_service_albert):
+    client_albert_memoire = ClientAlbertMemoire()
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_memoire, prompt_de_reformulation="Mon prompt"
+    )
+    mon_choix = (
+        ConstructeurDeChoix().ayant_pour_contenu("Ma question reformulee").construis()
+    )
+    client_albert_memoire.avec_les_propositions([mon_choix])
+
+    reponse_question = ServiceAlbert(
+        configuration_service_albert=une_configuration_de_service_albert(),
+        client=ClientAlbertMemoire(),
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Question actuelle ?", conversation=None)
+
+    assert reponse_question.question_reformulee == "Ma question reformulee"

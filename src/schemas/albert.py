@@ -15,6 +15,7 @@ class ReponseQuestion(BaseModel):
     reponse: str
     paragraphes: list[Paragraphe]
     question: str
+    question_reformulee: str | None
     violation: Optional[Violation]
 
 

@@ -66,7 +66,11 @@ class ServiceAlbertMemoire(ServiceAlbert):
         if self.reponse is not None:
             return self.reponse
         return ReponseQuestion(
-            reponse="", paragraphes=[], question=question, violation=None
+            reponse="",
+            paragraphes=[],
+            question=question,
+            question_reformulee=f"Question reformulée {question}",
+            violation=None,
         )
 
     def reclasse(self, payload: ReclassePayload):

@@ -1,6 +1,5 @@
 from openai.types.chat import ChatCompletionMessageParam
-
-from services.service_albert import ClientAlbert
+from services.client_albert import ClientAlbert
 
 
 class ReformulateurDeQuestion:
