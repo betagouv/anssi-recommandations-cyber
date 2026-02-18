@@ -95,7 +95,7 @@ class ServiceAlbert:
             recherche_paragraphes, question_pour_recherche
         )
         propositions_albert = self.__effectue_recuperation_propositions(
-            paragraphes, prompt, question, conversation
+            paragraphes, prompt, question_pour_recherche, conversation
         )
 
         (reponse, paragraphes, violation) = (

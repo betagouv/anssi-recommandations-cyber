@@ -678,3 +678,49 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
         client_albert_reformulation.messages_recus[3]["content"]
         == "Comment s'en protéger ?"
     )
+
+
+def test_recuperation_propositions_utilise_la_question_reformulee(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    interaction = (
+        un_constructeur_d_interaction()
+        .avec_question("Question brute historique")
+        .construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(interaction).construis()
+    )
+
+    client_albert_recherche = ClientAlbertMemoire()
+    client_albert_reformulation = ClientAlbertMemoire()
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_reformulation,
+        prompt_de_reformulation="Mon prompt",
+    )
+    choix_reformulation = (
+        ConstructeurDeChoix()
+        .ayant_pour_contenu("Question actuelle reformulee")
+        .construis()
+    )
+    client_albert_reformulation.avec_les_propositions([choix_reformulation])
+    client_albert_recherche.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=client_albert_recherche,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Question actuelle brute", conversation=conversation)
+
+    messages_recus = client_albert_recherche.messages_recus
+    assert len(messages_recus) == 4
+    assert messages_recus[0]["role"] == "system"
+    assert messages_recus[1]["role"] == "user"
+    assert messages_recus[1]["content"] == "Question :\nQuestion brute historique"
+    assert messages_recus[2]["role"] == "assistant"
+    assert messages_recus[3]["role"] == "user"
+    assert messages_recus[3]["content"] == "Question :\nQuestion actuelle reformulee"
