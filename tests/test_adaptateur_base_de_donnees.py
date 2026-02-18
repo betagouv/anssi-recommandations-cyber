@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 import uuid
 
@@ -13,14 +14,12 @@ from adaptateurs.horloge import Horloge
 from adaptateurs.migrateur import Migrateur
 from configuration import recupere_configuration_postgres, BaseDeDonnees
 from infra.chiffrement.chiffrement import ServiceDeChiffrementEnClair
-from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import (
     RetourPositif,
     TagPositif,
     Interaction,
     Conversation,
 )
-import datetime as dt
 
 
 def cree_connexion_postgres(postgres) -> psycopg2.extensions.connection:
@@ -89,12 +88,14 @@ def test_initialisation_adaptateur_base_de_donnees(adaptateur_test) -> None:
     assert adaptateur_test is not None
 
 
-def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
-    reponse_question = ReponseQuestion(
-        reponse="Test réponse",
-        paragraphes=[],
-        question="Test question",
-        violation=None,
+def test_ajout_retour_utilisatrice(
+    adaptateur_test, un_constructeur_de_reponse_question
+) -> None:
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Test réponse")
+        .avec_une_question("Test question")
+        .construis()
     )
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
@@ -102,23 +103,27 @@ def test_ajout_retour_utilisatrice(adaptateur_test) -> None:
     adaptateur_test.sauvegarde_interaction(interaction)
     retour = RetourPositif(commentaire="Très utile")
     interaction.retour_utilisatrice = retour
+
     adaptateur_test.sauvegarde_interaction(interaction)
 
     resultat = adaptateur_test.recupere_interaction(interaction.id)
     assert resultat.retour_utilisatrice == retour
 
 
-def test_recupere_interaction_existante(adaptateur_test) -> None:
-    reponse_question = ReponseQuestion(
-        reponse="Réponse test",
-        paragraphes=[],
-        question="Question test",
-        violation=None,
+def test_recupere_interaction_existante(
+    adaptateur_test, un_constructeur_de_reponse_question
+) -> None:
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Réponse test")
+        .avec_une_question("Question test")
+        .construis()
     )
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
     adaptateur_test.sauvegarde_interaction(interaction)
+
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
 
     assert interaction_recuperee is not None
@@ -127,13 +132,16 @@ def test_recupere_interaction_existante(adaptateur_test) -> None:
     assert interaction_recuperee.retour_utilisatrice is None
 
 
-def test_recupere_interaction_avec_retour_utilisatrice(adaptateur_test) -> None:
-    reponse_question = ReponseQuestion(
-        reponse="Réponse test",
-        paragraphes=[],
-        question="Question test",
-        violation=None,
+def test_recupere_interaction_avec_retour_utilisatrice(
+    adaptateur_test, un_constructeur_de_reponse_question
+) -> None:
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Réponse test")
+        .avec_une_question("Question test")
+        .construis()
     )
+
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
@@ -160,9 +168,14 @@ def test_recupere_interaction_inexistante(adaptateur_test) -> None:
     assert interaction is None
 
 
-def test_supprime_retour_existant(adaptateur_test) -> None:
-    reponse_question = ReponseQuestion(
-        reponse="Réponse test", paragraphes=[], question="Question test", violation=None
+def test_supprime_retour_existant(
+    adaptateur_test, un_constructeur_de_reponse_question
+) -> None:
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Réponse test")
+        .avec_une_question("Question test")
+        .construis()
     )
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     interaction = Interaction(
@@ -177,15 +190,18 @@ def test_supprime_retour_existant(adaptateur_test) -> None:
     assert interaction_recuperee.retour_utilisatrice is None
 
 
-def test_la_date_d_une_interaction_est_persistee(adaptateur_test) -> None:
+def test_la_date_d_une_interaction_est_persistee(
+    adaptateur_test, un_constructeur_de_reponse_question
+) -> None:
     date_creation = dt.datetime(2026, 2, 15, 3, 4, 5)
-    Horloge.frise(date_creation)
-    interaction = Interaction(
-        id=uuid.uuid4(),
-        reponse_question=ReponseQuestion(
-            reponse="test", question="test", paragraphes=[], violation=None
-        ),
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("test")
+        .avec_une_question("test")
+        .construis()
     )
+    Horloge.frise(date_creation)
+    interaction = Interaction(id=uuid.uuid4(), reponse_question=reponse_question)
 
     adaptateur_test.sauvegarde_interaction(interaction)
     Horloge.frise(dt.datetime(2026, 6, 7, 3, 4, 6))
@@ -194,13 +210,19 @@ def test_la_date_d_une_interaction_est_persistee(adaptateur_test) -> None:
     assert interaction_recuperee.date_creation == interaction.date_creation
 
 
-def test_persiste_une_conversation(adaptateur_test) -> None:
+def test_persiste_une_conversation(
+    adaptateur_test, un_constructeur_de_reponse_question
+) -> None:
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("test")
+        .avec_une_question("test")
+        .construis()
+    )
     conversation = Conversation(
         Interaction(
             id=uuid.uuid4(),
-            reponse_question=ReponseQuestion(
-                reponse="test", question="test", paragraphes=[], violation=None
-            ),
+            reponse_question=reponse_question,
         )
     )
 
@@ -214,27 +236,27 @@ def test_persiste_une_conversation(adaptateur_test) -> None:
 
 
 def test_persiste_une_conversation_avec_toutes_ses_interactions(
-    adaptateur_test,
+    adaptateur_test, un_constructeur_de_reponse_question
 ) -> None:
     conversation = Conversation(
         Interaction(
             id=uuid.uuid4(),
-            reponse_question=ReponseQuestion(
-                reponse="reéponse 1",
-                question="question 1",
-                paragraphes=[],
-                violation=None,
+            reponse_question=(
+                un_constructeur_de_reponse_question()
+                .donnant_en_reponse("réponse 1")
+                .avec_une_question("question 1")
+                .construis()
             ),
         )
     )
     conversation.interactions.append(
         Interaction(
             id=uuid.uuid4(),
-            reponse_question=ReponseQuestion(
-                reponse="reéponse 2",
-                question="question 2",
-                paragraphes=[],
-                violation=None,
+            reponse_question=(
+                un_constructeur_de_reponse_question()
+                .donnant_en_reponse("réponse 2")
+                .avec_une_question("question 2")
+                .construis()
             ),
         )
     )
@@ -255,15 +277,17 @@ def test_retourne_none_poure_une_conversation_inexistante(adaptateur_test) -> No
     assert conversation is None
 
 
-def test_mets_a_jour_une_conversation(adaptateur_test):
+def test_mets_a_jour_une_conversation(
+    adaptateur_test, un_constructeur_de_reponse_question
+):
     conversation = Conversation(
         Interaction(
             id=uuid.uuid4(),
-            reponse_question=ReponseQuestion(
-                reponse="réponse 1",
-                question="question 1",
-                paragraphes=[],
-                violation=None,
+            reponse_question=(
+                un_constructeur_de_reponse_question()
+                .donnant_en_reponse("réponse 1")
+                .avec_une_question("question 1")
+                .construis()
             ),
         )
     )
@@ -271,9 +295,10 @@ def test_mets_a_jour_une_conversation(adaptateur_test):
 
     interaction = Interaction(
         id=uuid.uuid4(),
-        reponse_question=ReponseQuestion(
-            reponse="réponse 2", question="question 2", paragraphes=[], violation=None
-        ),
+        reponse_question=un_constructeur_de_reponse_question()
+        .donnant_en_reponse("réponse 2")
+        .avec_une_question("question 2")
+        .construis(),
     )
     conversation.ajoute_interaction(interaction)
     adaptateur_test.sauvegarde_conversation(conversation)
@@ -286,24 +311,25 @@ def test_mets_a_jour_une_conversation(adaptateur_test):
     assert conversation_recuperee.__dict__ == conversation.__dict__
 
 
-def test_mets_a_jour_une_interaction_d_une_conversation(adaptateur_test):
+def test_mets_a_jour_une_interaction_d_une_conversation(
+    adaptateur_test, un_constructeur_de_reponse_question
+):
     Horloge.frise(dt.datetime(2026, 2, 15, 3, 4, 5))
     interaction_a_mettre_a_jour = Interaction(
         id=uuid.uuid4(),
-        reponse_question=ReponseQuestion(
-            reponse="reéponse 1", question="question 1", paragraphes=[], violation=None
-        ),
+        reponse_question=un_constructeur_de_reponse_question()
+        .donnant_en_reponse("réponse 1")
+        .avec_une_question("question 1")
+        .construis(),
     )
     conversation = Conversation(interaction_a_mettre_a_jour)
     conversation.interactions.append(
         Interaction(
             id=uuid.uuid4(),
-            reponse_question=ReponseQuestion(
-                reponse="reéponse 2",
-                question="question 2",
-                paragraphes=[],
-                violation=None,
-            ),
+            reponse_question=un_constructeur_de_reponse_question()
+            .donnant_en_reponse("réponse 2")
+            .avec_une_question("question 2")
+            .construis(),
         )
     )
     adaptateur_test.sauvegarde_conversation(conversation)

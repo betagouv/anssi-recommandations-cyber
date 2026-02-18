@@ -1,5 +1,8 @@
 import uuid
 
+import pytest
+
+from schemas.albert import Paragraphe
 from schemas.retour_utilisatrice import (
     RetourNegatif,
     RetourPositif,
@@ -8,8 +11,6 @@ from schemas.retour_utilisatrice import (
     TagPositif,
     Interaction,
 )
-from schemas.albert import ReponseQuestion, Paragraphe
-import pytest
 
 
 class TestRetourUtilisatrice:
@@ -70,61 +71,64 @@ class TestRetourUtilisatrice:
         assert retour.tags == []
 
 
-class TestInteraction:
-    def test_creation_interaction(self) -> None:
-        paragraphe = Paragraphe(
-            score_similarite=0.95,
-            numero_page=10,
-            url="https://example.com/doc.pdf",
-            nom_document="Guide ANSSI",
-            contenu="Contenu du paragraphe",
-        )
+def test_creation_interaction(un_constructeur_de_reponse_question) -> None:
+    paragraphe = Paragraphe(
+        score_similarite=0.95,
+        numero_page=10,
+        url="https://example.com/doc.pdf",
+        nom_document="Guide ANSSI",
+        contenu="Contenu du paragraphe",
+    )
 
-        reponse_question = ReponseQuestion(
-            reponse="Il est recommandé d'utiliser au moins 12 caractères.",
-            paragraphes=[paragraphe],
-            question="Quelle est la longueur recommandée pour un mot de passe ?",
-            violation=None,
-        )
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Il est recommandé d'utiliser au moins 12 caractères.")
+        .avec_les_paragraphes([paragraphe])
+        .avec_une_question("Quelle est la longueur recommandée pour un mot de passe ?")
+        .construis()
+    )
 
-        retour_utilisatrice = RetourPositif(
-            commentaire="Très utile", tags=[TagPositif.FacileAComprendre]
-        )
+    retour_utilisatrice = RetourPositif(
+        commentaire="Très utile", tags=[TagPositif.FacileAComprendre]
+    )
 
-        interaction = Interaction(
-            reponse_question=reponse_question,
-            retour_utilisatrice=retour_utilisatrice,
-            id=uuid.uuid4(),
-        )
+    interaction = Interaction(
+        reponse_question=reponse_question,
+        retour_utilisatrice=retour_utilisatrice,
+        id=uuid.uuid4(),
+    )
 
-        assert (
-            interaction.reponse_question.question
-            == "Quelle est la longueur recommandée pour un mot de passe ?"
-        )
-        assert interaction.retour_utilisatrice is not None
-        assert interaction.retour_utilisatrice.commentaire == "Très utile"
-        assert interaction.retour_utilisatrice.tags == [TagPositif.FacileAComprendre]
+    assert (
+        interaction.reponse_question.question
+        == "Quelle est la longueur recommandée pour un mot de passe ?"
+    )
+    assert interaction.retour_utilisatrice is not None
+    assert interaction.retour_utilisatrice.commentaire == "Très utile"
+    assert interaction.retour_utilisatrice.tags == [TagPositif.FacileAComprendre]
 
-    def test_creation_interaction_sans_retour_utilisatrice(self) -> None:
-        paragraphe = Paragraphe(
-            score_similarite=0.85,
-            numero_page=5,
-            url="https://example.com/guide.pdf",
-            nom_document="Guide sécurité",
-            contenu="Contenu du guide",
-        )
 
-        reponse_question = ReponseQuestion(
-            reponse="Utilisez des mots de passe complexes.",
-            paragraphes=[paragraphe],
-            question="Comment sécuriser mes mots de passe ?",
-            violation=None,
-        )
+def test_creation_interaction_sans_retour_utilisatrice(
+    un_constructeur_de_reponse_question,
+) -> None:
+    paragraphe = Paragraphe(
+        score_similarite=0.85,
+        numero_page=5,
+        url="https://example.com/guide.pdf",
+        nom_document="Guide sécurité",
+        contenu="Contenu du guide",
+    )
 
-        interaction = Interaction(reponse_question=reponse_question, id=uuid.uuid4())
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Utilisez des mots de passe complexes.")
+        .avec_les_paragraphes([paragraphe])
+        .avec_une_question("Comment sécuriser mes mots de passe ?")
+        .construis()
+    )
 
-        assert (
-            interaction.reponse_question.question
-            == "Comment sécuriser mes mots de passe ?"
-        )
-        assert interaction.retour_utilisatrice is None
+    interaction = Interaction(reponse_question=reponse_question, id=uuid.uuid4())
+
+    assert (
+        interaction.reponse_question.question == "Comment sécuriser mes mots de passe ?"
+    )
+    assert interaction.retour_utilisatrice is None

@@ -14,7 +14,7 @@ from schemas.albert import (
     ReclassePayload,
     ResultatReclasse,
 )
-from services.service_albert import ClientAlbert
+from services.client_albert import ClientAlbert
 
 
 class RetourRouteSearch:

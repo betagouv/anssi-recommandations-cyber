@@ -1,8 +1,9 @@
 import datetime as dt
 import uuid
+from typing import cast
 
 import pytest
-from typing import cast
+from serveur_de_test import ServiceAlbertMemoire
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.horloge import Horloge
@@ -14,7 +15,7 @@ from question.question import (
     DemandeConversationUtilisateur,
     ResultatConversation,
 )
-from schemas.albert import ReponseQuestion, Paragraphe
+from schemas.albert import Paragraphe
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationMalveillance,
@@ -22,7 +23,6 @@ from schemas.violations import (
     ViolationThematique,
     ViolationMeconnaissance,
 )
-from serveur_de_test import ServiceAlbertMemoire
 
 
 def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
@@ -41,13 +41,15 @@ def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
     assert resultat_conversation.erreur == "Erreur sur pose_question"
 
 
-def test_cree_conversation_retourne_une_conversation(une_configuration_complete):
+def test_cree_conversation_retourne_une_conversation(
+    une_configuration_complete, un_constructeur_de_reponse_question
+):
     la_configuration, service_albert, _, _, _ = une_configuration_complete()
-    reponse_question = ReponseQuestion(
-        reponse="La réponse d'MQC",
-        paragraphes=[],
-        question="une question",
-        violation=None,
+    reponse_question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse d'MQC")
+        .avec_une_question("une question")
+        .construis()
     )
     service_albert.ajoute_reponse(reponse_question)
 
@@ -63,23 +65,30 @@ def test_cree_conversation_retourne_une_conversation(une_configuration_complete)
 
 
 def test_ne_conserve_pas_les_paragraphes_en_cas_de_violation(
-    une_configuration_complete,
+    une_configuration_complete, un_constructeur_de_reponse_question
 ):
     la_configuration, service_albert, _, _, _ = une_configuration_complete()
-    reponse_question = ReponseQuestion(
-        reponse="La réponse d'MQC",
-        paragraphes=[
-            Paragraphe(
-                numero_page=1,
-                url="https://example.com",
-                contenu="un paragraphe",
-                score_similarite=0.9,
-                nom_document="un document",
-            )
-        ],
-        question="une question",
-        violation=ViolationMalveillance(),
-    )
+    reponse_question = (
+        (
+            (
+                un_constructeur_de_reponse_question().donnant_en_reponse(
+                    "La réponse d'MQC"
+                )
+            ).avec_une_question("une question")
+        )
+        .avec_les_paragraphes(
+            [
+                Paragraphe(
+                    numero_page=1,
+                    url="https://example.com",
+                    contenu="un paragraphe",
+                    score_similarite=0.9,
+                    nom_document="un document",
+                )
+            ]
+        )
+        .avec_une_violation(ViolationMalveillance())
+    ).construis()
     service_albert.ajoute_reponse(reponse_question)
 
     resultat_interaction = cree_conversation(
@@ -91,17 +100,18 @@ def test_ne_conserve_pas_les_paragraphes_en_cas_de_violation(
     assert resultat_interaction.interaction.reponse_question.paragraphes == []
 
 
-def test_cree_conversation_une_interaction_a_une_date(un_adaptateur_de_chiffrement):
+def test_cree_conversation_une_interaction_a_une_date(
+    un_adaptateur_de_chiffrement, un_constructeur_de_reponse_question
+):
     Horloge.frise(dt.datetime(2026, 2, 15, 3, 4, 5))
     service_albert = ServiceAlbertMemoire()
-    service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse="La réponse d'MQC",
-            question="une question",
-            paragraphes=[],
-            violation=None,
-        )
+    question = (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse d'MQC")
+        .avec_une_question("une question")
+        .construis()
     )
+    service_albert.ajoute_reponse(question)
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     reponse = cree_conversation(
         ConfigurationQuestion(
@@ -119,18 +129,18 @@ def test_cree_conversation_une_interaction_a_une_date(un_adaptateur_de_chiffreme
     ).date_creation == dt.datetime(2026, 2, 15, 3, 4, 5)
 
 
-def test_cree_une_conversation(une_configuration_complete):
+def test_cree_une_conversation(
+    une_configuration_complete, un_constructeur_de_reponse_question
+):
     Horloge.frise(dt.datetime(2026, 2, 15, 3, 4, 5))
     la_configuration, service_albert, adaptateur_base_de_donnees, _, _ = (
         une_configuration_complete()
     )
     service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse="La réponse d'MQC",
-            question="une question",
-            paragraphes=[],
-            violation=None,
-        )
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse d'MQC")
+        .avec_une_question("une question")
+        .construis()
     )
 
     reponse = cree_conversation(
@@ -147,19 +157,22 @@ def test_cree_une_conversation(une_configuration_complete):
 
 
 def test_cree_conversation_emet_un_evenement_journal_conversation_creee(
-    une_configuration_complete, un_constructeur_de_paragraphe
+    une_configuration_complete,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_reponse_question,
 ) -> None:
     configuration, service_albert, _, adaptateur_journal, _ = (
         une_configuration_complete()
     )
     service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse=" Je suis Albert, pour vous servir ",
-            question="une question",
-            paragraphes=[
-                un_constructeur_de_paragraphe().avec_contenu("un contenu").construis()
-            ],
-            violation=None,
+        (
+            un_constructeur_de_reponse_question()
+            .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+            .avec_une_question("une question")
+            .avec_les_paragraphes(
+                [un_constructeur_de_paragraphe().avec_contenu("un contenu").construis()]
+            )
+            .construis()
         )
     )
 
@@ -191,20 +204,33 @@ def test_cree_conversation_emet_un_evenement_journal_conversation_creee(
 
 
 def test_cree_conversation_emet_un_evenement_donnant_la_longueur_totale_des_paragraphes(
-    une_configuration_complete, un_constructeur_de_paragraphe
+    une_configuration_complete,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_reponse_question,
 ):
     configuration, service_albert, _, adaptateur_journal, _ = (
         une_configuration_complete()
     )
     service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse="La réponse d'MQC",
-            question="une question",
-            paragraphes=[
-                un_constructeur_de_paragraphe().avec_contenu("Contenu A").construis(),
-                un_constructeur_de_paragraphe().avec_contenu("Contenu B").construis(),
-            ],
-            violation=None,
+        (
+            (
+                (
+                    (
+                        un_constructeur_de_reponse_question().donnant_en_reponse(
+                            "La réponse d'MQC"
+                        )
+                    ).avec_une_question("une question")
+                ).avec_les_paragraphes(
+                    [
+                        un_constructeur_de_paragraphe()
+                        .avec_contenu("Contenu A")
+                        .construis(),
+                        un_constructeur_de_paragraphe()
+                        .avec_contenu("Contenu B")
+                        .construis(),
+                    ],
+                )
+            ).construis()
         )
     )
 
@@ -228,17 +254,18 @@ def test_cree_conversation_emet_un_evenement_donnant_la_longueur_totale_des_para
     ],
 )
 def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
-    violation, une_configuration_complete
+    violation, une_configuration_complete, un_constructeur_de_reponse_question
 ) -> None:
     configuration, service_albert, _, adaptateur_journal, _ = (
         une_configuration_complete()
     )
     service_albert.ajoute_reponse(
-        ReponseQuestion(
-            reponse="",
-            question="une question",
-            paragraphes=[],
-            violation=violation,
+        (
+            un_constructeur_de_reponse_question()
+            .donnant_en_reponse("")
+            .avec_une_question("une question")
+            .avec_une_violation(violation)
+            .construis()
         )
     )
 

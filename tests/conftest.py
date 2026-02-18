@@ -21,6 +21,8 @@ from serveur_de_test import (
     ConstructeurServeur,
     ServiceAlbertMemoire,
 )
+
+from schemas.violations import Violation
 from services.service_albert import ServiceAlbert
 
 
@@ -94,11 +96,16 @@ class ConstructeurDeReponseQuestion:
         self.question = question
         return self
 
+    def avec_une_violation(self, violation: Violation):
+        self.violation = violation
+        return self
+
     def construis(self) -> ReponseQuestion:
         return ReponseQuestion(
             reponse=self.reponse,
             paragraphes=self.paragraphes,
             question=self.question,
+            question_reformulee=f"Question reformulée : {self.question}",
             violation=self.violation,
         )
 
@@ -114,9 +121,12 @@ def un_constructeur_de_reponse_question() -> Callable[
 
 
 @pytest.fixture()
-def une_reponse_question():
-    return ReponseQuestion(
-        reponse="Une réponse", question="Une question", paragraphes=[], violation=None
+def une_reponse_question(un_constructeur_de_reponse_question):
+    return (
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("Une réponse")
+        .avec_une_question("Une question")
+        .construis()
     )
 
 
@@ -268,6 +278,7 @@ class ConstructeurDInteraction:
             reponse="Je suis Albert, pour vous servir",
             paragraphes=[],
             question="une question",
+            question_reformulee="Question reformulée : une question",
             violation=None,
         )
         self.retour_utilisatrice = None
@@ -284,6 +295,7 @@ class ConstructeurDInteraction:
             reponse=f"réponse : {question}",
             paragraphes=[],
             question=question,
+            question_reformulee=f"Question reformulée : {question}",
             violation=None,
         )
         return self

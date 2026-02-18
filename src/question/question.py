@@ -208,6 +208,7 @@ def __cree_interaction(
             reponse=reponse_question.violation.reponse,
             paragraphes=[],
             question=(question),
+            question_reformulee=reponse_question.question_reformulee,
             violation=reponse_question.violation,
         )
     interaction = Interaction(
