@@ -54,6 +54,7 @@ def une_configuration_complete() -> Callable[
         ServiceAlbertMemoire | ServiceAlbert,
         AdaptateurBaseDeDonneesEnMemoire,
         AdaptateurJournalMemoire,
+        AdaptateurChiffrementDeTest,
     ],
 ]:
     def _une_configuration_complete(
@@ -63,6 +64,7 @@ def une_configuration_complete() -> Callable[
         ServiceAlbertMemoire | ServiceAlbert,
         AdaptateurBaseDeDonneesEnMemoire,
         AdaptateurJournalMemoire,
+        AdaptateurChiffrementDeTest,
     ]:
         if service_albert is None:
             service_albert = ServiceAlbertMemoire()
@@ -81,6 +83,7 @@ def une_configuration_complete() -> Callable[
             service_albert,
             adaptateur_base_de_donnees,
             adaptateur_journal,
+            adaptateur_chiffrement,
         )
 
     return _une_configuration_complete

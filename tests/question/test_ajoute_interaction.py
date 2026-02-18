@@ -11,7 +11,7 @@ from services.service_albert import Prompts
 
 
 def test_retourne_none_si_la_conversation_n_existe_pas(une_configuration_complete):
-    la_configuration, _, _, _ = une_configuration_complete()
+    la_configuration, _, _, _, _ = une_configuration_complete()
 
     resultat_interaction = ajoute_interaction(
         la_configuration,
@@ -30,7 +30,7 @@ def test_ajoute_l_interaction_a_la_conversation(
     un_constructeur_d_interaction,
     un_constructeur_de_reponse_question,
 ):
-    la_configuration, service_albert, _, _ = une_configuration_complete()
+    la_configuration, service_albert, _, _, _ = une_configuration_complete()
     une_conversation = un_constructeur_de_conversation().construis()
     une_interaction = (
         un_constructeur_d_interaction().avec_question("une question ? ").construis()
@@ -67,7 +67,7 @@ def test_ajoute_une_interaction_a_une_conversation(
 ):
     premiere_interaction = dt.datetime(2026, 1, 15, 3, 4, 5)
     Horloge.frise(premiere_interaction)
-    la_configuration, service_albert, adaptateur_base_de_donnees, _ = (
+    la_configuration, service_albert, adaptateur_base_de_donnees, _, _ = (
         une_configuration_complete()
     )
     conversation = un_constructeur_de_conversation().construis()
@@ -114,7 +114,7 @@ def test_interroge_albert_en_mode_conversationnel(
             prompt_reclassement="Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
         ),
     )
-    la_configuration, service_albert, adaptateur_base_de_donnees, _ = (
+    la_configuration, service_albert, adaptateur_base_de_donnees, _, _ = (
         une_configuration_complete(service_albert)
     )
     conversation = un_constructeur_de_conversation(
