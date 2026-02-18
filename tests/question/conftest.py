@@ -24,6 +24,10 @@ class ConstructeurDeConversation:
             reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
         )
 
+    def avec_interaction(self, interaction: Interaction):
+        self.interaction = interaction
+        return self
+
     def construis(self) -> Conversation:
         return Conversation(self.interaction)
 

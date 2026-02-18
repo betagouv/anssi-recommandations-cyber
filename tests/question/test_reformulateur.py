@@ -35,3 +35,38 @@ def test_reformule_la_question_avec_un_prompt_de_reformulation():
     assert client_albert.messages_recus[0]["content"] == le_prompt
     assert client_albert.messages_recus[1]["role"] == "user"
     assert client_albert.messages_recus[1]["content"] == "ma question ?"
+
+
+def test_reformule_la_question_avec_l_historique_de_conversation(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    interaction = (
+        un_constructeur_d_interaction()
+        .avec_question("Qu'est-ce que le défacement ?")
+        .construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(interaction).construis()
+    )
+
+    mon_choix = (
+        ConstructeurDeChoix()
+        .ayant_pour_contenu(
+            "Quelles sont les bonnes pratiques pour se protéger du défacement ?"
+        )
+        .construis()
+    )
+    client_albert = ClientAlbertMemoire()
+    client_albert.avec_les_propositions([mon_choix])
+
+    ReformulateurDeQuestion(
+        client_albert=client_albert, prompt_de_reformulation="Mon prompt"
+    ).reformule(question="Comment s'en protéger ?", conversation=conversation)
+
+    assert len(client_albert.messages_recus) == 4
+    assert client_albert.messages_recus[0]["role"] == "system"
+    assert client_albert.messages_recus[1]["role"] == "user"
+    assert client_albert.messages_recus[1]["content"] == "Qu'est-ce que le défacement ?"
+    assert client_albert.messages_recus[2]["role"] == "assistant"
+    assert client_albert.messages_recus[3]["role"] == "user"
+    assert client_albert.messages_recus[3]["content"] == "Comment s'en protéger ?"

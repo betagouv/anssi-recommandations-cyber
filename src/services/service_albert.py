@@ -84,7 +84,9 @@ class ServiceAlbert:
     ) -> ReponseQuestion:
         question_reformulee = None
         if self.reformulateur is not None:
-            question_reformulee = self.reformulateur.reformule(question)
+            question_reformulee = self.reformulateur.reformule(
+                question, conversation=conversation
+            )
         question_pour_recherche = (
             question_reformulee if question_reformulee else question
         )
