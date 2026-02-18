@@ -19,7 +19,8 @@ from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
     ViolationMalveillance,
     ViolationIdentite,
-    ViolationThematique, ViolationMeconnaissance,
+    ViolationThematique,
+    ViolationMeconnaissance,
 )
 from serveur_de_test import ServiceAlbertMemoire
 
@@ -218,7 +219,13 @@ def test_cree_conversation_emet_un_evenement_donnant_la_longueur_totale_des_para
 
 
 @pytest.mark.parametrize(
-    "violation", [ViolationIdentite(), ViolationMalveillance(), ViolationThematique(), ViolationMeconnaissance()]
+    "violation",
+    [
+        ViolationIdentite(),
+        ViolationMalveillance(),
+        ViolationThematique(),
+        ViolationMeconnaissance(),
+    ],
 )
 def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
     violation, une_configuration_complete

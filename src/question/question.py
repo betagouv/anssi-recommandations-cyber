@@ -1,7 +1,7 @@
 import uuid
 from uuid import UUID
 
-from typing import NamedTuple, Union
+from typing import NamedTuple, Union, Type
 
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import AdaptateurChiffrement
@@ -80,37 +80,32 @@ def cree_conversation(
         )
         conversation = Conversation(interaction)
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
-        id_interaction = str(interaction.id)
-        configuration.adaptateur_journal.consigne_evenement(
-            type=TypeEvenement.CONVERSATION_CREEE,
-            donnees=DonneesConversationCreee(
-                id_conversation=configuration.adaptateur_chiffrement.hache(
-                    str(conversation.id_conversation)
-                ),
-                id_interaction=configuration.adaptateur_chiffrement.hache(
-                    id_interaction
-                ),
-                longueur_question=len(reponse_question.question.strip()),
-                longueur_reponse=len(reponse_question.reponse.strip()),
-                longueur_paragraphes=sum(
-                    (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
-                ),
-                type_utilisateur=type_utilisateur,
+        id_interaction_hachee = configuration.adaptateur_chiffrement.hache(
+            str(interaction.id)
+        )
+        __consigne_l_evenement(
+            TypeEvenement.CONVERSATION_CREEE,
+            DonneesConversationCreee,
+            configuration.adaptateur_journal,
+            configuration.adaptateur_chiffrement.hache(
+                str(conversation.id_conversation)
             ),
+            id_interaction_hachee,
+            reponse_question,
+            type_utilisateur,
         )
 
         if reponse_question.violation is not None:
-            configuration.adaptateur_journal.consigne_evenement(
-                type=TypeEvenement.VIOLATION_DETECTEE,
-                donnees=DonneesViolationDetectee(
-                    id_interaction=configuration.adaptateur_chiffrement.hache(
-                        id_interaction
-                    ),
-                    type_violation=reponse_question.violation.__class__.__name__,
-                ),
+            __consigne_la_violation(
+                configuration.adaptateur_journal,
+                id_interaction_hachee,
+                reponse_question,
             )
         return ResultatConversation(
-            conversation.id_conversation, reponse_question, interaction, id_interaction
+            conversation.id_conversation,
+            reponse_question,
+            interaction,
+            str(interaction.id),
         )
     except Exception as e:
         return ResultatConversationEnErreur(e)
@@ -137,40 +132,71 @@ def ajoute_interaction(
         )
         conversation.ajoute_interaction(interaction)
         configuration.adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
-        id_interaction = str(interaction.id)
-        configuration.adaptateur_journal.consigne_evenement(
-            type=TypeEvenement.INTERACTION_AJOUTEE,
-            donnees=DonneesInteractionAjoutee(
-                id_conversation=configuration.adaptateur_chiffrement.hache(
-                    str(conversation.id_conversation)
-                ),
-                id_interaction=configuration.adaptateur_chiffrement.hache(
-                    id_interaction
-                ),
-                longueur_question=len(reponse_question.question.strip()),
-                longueur_reponse=len(reponse_question.reponse.strip()),
-                longueur_paragraphes=sum(
-                    (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
-                ),
-                type_utilisateur=type_utilisateur,
+        id_interaction_hachee = configuration.adaptateur_chiffrement.hache(
+            str(interaction.id)
+        )
+        __consigne_l_evenement(
+            TypeEvenement.INTERACTION_AJOUTEE,
+            DonneesInteractionAjoutee,
+            configuration.adaptateur_journal,
+            configuration.adaptateur_chiffrement.hache(
+                str(conversation.id_conversation)
             ),
+            id_interaction_hachee,
+            reponse_question,
+            type_utilisateur,
         )
 
         if reponse_question.violation is not None:
-            configuration.adaptateur_journal.consigne_evenement(
-                type=TypeEvenement.VIOLATION_DETECTEE,
-                donnees=DonneesViolationDetectee(
-                    id_interaction=configuration.adaptateur_chiffrement.hache(
-                        id_interaction
-                    ),
-                    type_violation=reponse_question.violation.__class__.__name__,
-                ),
+            __consigne_la_violation(
+                configuration.adaptateur_journal,
+                id_interaction_hachee,
+                reponse_question,
             )
         return ResultatConversation(
-            conversation.id_conversation, reponse_question, interaction, id_interaction
+            conversation.id_conversation,
+            reponse_question,
+            interaction,
+            str(interaction.id),
         )
     except Exception as e:
         return ResultatConversationEnErreur(e)
+
+
+def __consigne_la_violation(
+    adaptateur_journal, id_interaction_hachee: str, reponse_question: ReponseQuestion
+):
+    adaptateur_journal.consigne_evenement(
+        type=TypeEvenement.VIOLATION_DETECTEE,
+        donnees=DonneesViolationDetectee(
+            id_interaction=id_interaction_hachee,
+            type_violation=reponse_question.violation.__class__.__name__,
+        ),
+    )
+
+
+def __consigne_l_evenement(
+    type_evenement: TypeEvenement,
+    class_donnees: Type[DonneesConversationCreee | DonneesInteractionAjoutee],
+    adaptateur_journal: AdaptateurJournal,
+    id_conversation_hachee: str,
+    id_interaction_hachee: str,
+    reponse_question: ReponseQuestion,
+    type_utilisateur: TypeUtilisateur,
+) -> None:
+    adaptateur_journal.consigne_evenement(
+        type=type_evenement,
+        donnees=class_donnees(
+            id_conversation=id_conversation_hachee,
+            id_interaction=id_interaction_hachee,
+            longueur_question=len(reponse_question.question.strip()),
+            longueur_reponse=len(reponse_question.reponse.strip()),
+            longueur_paragraphes=sum(
+                (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
+            ),
+            type_utilisateur=type_utilisateur,
+        ),
+    )
 
 
 def __cree_interaction(
