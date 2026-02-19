@@ -107,6 +107,7 @@ def un_service_albert_avec_un_client_memoire() -> Callable[
                 reclassement_active=False,
                 modele_reclassement="Aucun",
                 taille_fenetre_historique=10,
+                reformulateur_active=False,
             ),
             client=client_albert_memoire,
             utilise_recherche_hybride=False,

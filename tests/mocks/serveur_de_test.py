@@ -43,6 +43,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
                 reclassement_active=False,
                 modele_reclassement="",
                 taille_fenetre_historique=2,
+                reformulateur_active=False,
             ),
             ClientAlbertMemoire(),
             False,
