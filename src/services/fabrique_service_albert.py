@@ -14,11 +14,13 @@ def fabrique_service_albert() -> ServiceAlbert:
     prompt_reclassement = lis_fichier_prompt("prompt_reclassement.txt")
     prompt_reformulation = lis_fichier_prompt("prompt_reformulation.txt")
 
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_api,
-        prompt_de_reformulation=prompt_reformulation,
-        modele_reformulation=configuration.albert.client.modele_reformulation,
-    )
+    reformulateur = None
+    if configuration.albert.service.reformulateur_active:
+        reformulateur = ReformulateurDeQuestion(
+            client_albert=client_albert_api,
+            prompt_de_reformulation=prompt_reformulation,
+            modele_reformulation=configuration.albert.client.modele_reformulation,
+        )
 
     return ServiceAlbert(
         configuration_service_albert=configuration.albert.service,

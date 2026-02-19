@@ -24,6 +24,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
     reclassement_active=False,
     modele_reclassement="modele-reranking-de-test",
     taille_fenetre_historique=2,
+    reformulateur_active=True,
 )
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
@@ -32,6 +33,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
     reclassement_active=True,
     modele_reclassement="rerank-small",
     taille_fenetre_historique=2,
+    reformulateur_active=True,
 )
 
 PROMPT_SYSTEME_ALTERNATIF = (
@@ -509,6 +511,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         reclassement_active=False,
         modele_reclassement="modele-reranking-de-test",
         taille_fenetre_historique=2,
+        reformulateur_active=True,
     )
 
     ServiceAlbert(

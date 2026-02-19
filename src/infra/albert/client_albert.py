@@ -134,6 +134,7 @@ class ClientAlbertApi(ClientAlbert):
         self, messages: list[ChatCompletionMessageParam], modele: str | None = None
     ) -> list[Choice]:
         modele_a_utiliser = modele if modele else self.modele_reponse
+        print(f"modele_a_utiliser => {modele_a_utiliser}")
         try:
             propositions_albert = self.client_openai.chat.completions.create(
                 messages=messages,

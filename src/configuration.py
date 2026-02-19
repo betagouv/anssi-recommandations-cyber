@@ -28,6 +28,7 @@ class Albert(NamedTuple):
         reclassement_active: bool
         modele_reclassement: str
         taille_fenetre_historique: int
+        reformulateur_active: bool
 
     client: Client
     service: Service
@@ -134,9 +135,10 @@ def recupere_configuration() -> Configuration:
             taille_fenetre_historique=int(
                 os.getenv("ALBERT_TAILLE_FENETRE_HISTORIQUE", "10")
             ),
+            reformulateur_active=os.getenv("REFORMULATEUR_ACTIVE", "true").lower()
+            == "true",
         ),
     )
-
     configuration_base_de_donnees = recupere_configuration_postgres(
         os.getenv("DB_NAME", "anssi_retours")
     )
