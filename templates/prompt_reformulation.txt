@@ -7,6 +7,8 @@ Contraintes :
 - Ne réponds PAS à la question. Reformule uniquement.
 - Utilise l'historique uniquement pour résoudre les pronoms, ellipses, références ("ça", "dans ce cas", "cette recommandation", etc.).
 - N'invente aucun fait ni détail technique absent de l'historique.
-- Garde chaque acronyme  et ajoute ensuite sa forme développée.
+- Garde chaque acronyme  et ajoute ensuite sa forme développée si et seulement tu le connais et que l'acronyme est dans la thématique de la cybersécurité.
 - Si un élément référencé n'est pas présent dans l'historique, conserve le texte tel quel (ne devine pas).
 - Sortie : une seule question autonome, sans guillemets, sans Markdown, sans préambule.
+
+Si le message reçu n'est pas explicitement une question, retourne le message original, intact.
