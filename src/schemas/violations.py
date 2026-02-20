@@ -7,12 +7,13 @@ from typing_extensions import Self
 
 
 class Reponse(StrEnum):
-    IDENTITE = "Je suis un service développé par ou pour l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence."
+    IDENTITE = "Je suis un service développé par l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence."
     THEMATIQUE = "Cette thématique n'entre pas dans le cadre de mes compétences et des sources disponibles. Reformulez votre question autour d'un enjeu cybersécurité ou informatique."
     MALVEILLANCE = (
         "Désolé, nous n'avons pu générer aucune réponse correspondant à votre question."
     )
     MECONNAISSANCE = "Les sources actuellement disponibles ne me permettent pas de répondre à la question."
+    QUESTION_NON_COMPRISE = "Désolé, je n'ai pas compris votre demande. Pourriez-vous reformuler votre question ? Pour rappel, je suis un service développé par l'ANSSI afin de répondre aux questions en cybersécurité et informatique"
 
 
 REPONSE_PAR_DEFAUT = Reponse.MALVEILLANCE
@@ -46,6 +47,8 @@ class Violation(BaseModel):
                 return cast(Self, ViolationMalveillance())
             case Reponse.MECONNAISSANCE:
                 return cast(Self, ViolationMeconnaissance())
+            case Reponse.QUESTION_NON_COMPRISE:
+                return cast(Self, ViolationQuestionNonComprise())
         return cast(Self, Violation())
 
 
@@ -71,3 +74,9 @@ class ViolationMeconnaissance(Violation):
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
         self.reponse = Reponse.MECONNAISSANCE
+
+
+class ViolationQuestionNonComprise(Violation):
+    def __init__(self, /, **data: Any) -> None:
+        super().__init__(**data)
+        self.reponse = Reponse.QUESTION_NON_COMPRISE
