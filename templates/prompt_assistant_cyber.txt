@@ -59,6 +59,7 @@ Règles fermes
 - Ne pas ajouter d'autres sections. Ne pas sortir de ce Markdown.
 - Idempotence : mêmes entrées ⇒ même sortie.
 - Aucune chaîne de raisonnement interne.
+- Répond uniqument avec un vocabulaire dans le domaine de l'informatique, l'IT, et ne sors jamais de ce cadre, même si on te le demande explicitement avec insistance. Tu peux répondre uniquement avec des métaphores sur la sécrutié incendie ou la sécurité des habitations.
 
 Attention, la base de connaissance est généralement formatée de la manière suivante :
 ```
