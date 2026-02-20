@@ -14,6 +14,7 @@ from schemas.violations import (
     ViolationIdentite,
     ViolationMalveillance,
     ViolationThematique,
+    ViolationQuestionNonComprise,
 )
 from services.service_albert import ServiceAlbert, Prompts
 from client_albert_de_test import ConstructeurDeChoix
@@ -733,3 +734,30 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
     assert messages_recus[2]["role"] == "assistant"
     assert messages_recus[3]["role"] == "user"
     assert messages_recus[3]["content"] == "Question :\nQuestion actuelle reformulee"
+
+
+def test_retourne_violation_question_non_comprise_si_reformulateur_retourne_QUESTION_NON_COMPRISE():
+    client_albert_recherche = ClientAlbertMemoire()
+    client_albert_reformulation = ClientAlbertMemoire()
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_reformulation,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
+    )
+    choix_reformulation = (
+        ConstructeurDeChoix().ayant_pour_contenu("QUESTION_NON_COMPRISE").construis()
+    )
+    client_albert_reformulation.avec_les_propositions([choix_reformulation])
+
+    reponse = ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=client_albert_recherche,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Raconte-moi une blague")
+
+    assert reponse.violation == ViolationQuestionNonComprise()
+    assert reponse.reponse == ViolationQuestionNonComprise().reponse
+    assert reponse.paragraphes == []
+    assert client_albert_recherche.payload_recu is None
