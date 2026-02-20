@@ -4,6 +4,7 @@ from schemas.violations import (
     ViolationMalveillance,
     ViolationIdentite,
     ViolationMeconnaissance,
+    ViolationQuestionNonComprise,
     Violation,
 )
 
@@ -21,11 +22,15 @@ from schemas.violations import (
         ),
         (
             ViolationIdentite(),
-            "Je suis un service développé par ou pour l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence.",
+            "Je suis un service développé par l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence.",
         ),
         (
             ViolationMeconnaissance(),
             "Les sources actuellement disponibles ne me permettent pas de répondre à la question.",
+        ),
+        (
+            ViolationQuestionNonComprise(),
+            "Désolé, je n'ai pas compris votre demande. Pourriez-vous reformuler votre question ? Pour rappel, je suis un service développé par l'ANSSI afin de répondre aux questions en cybersécurité et informatique",
         ),
     ],
 )
@@ -47,12 +52,16 @@ def test_serialise_la_violation(violation, reponse_attendue):
             ViolationMalveillance(),
         ),
         (
-            "Je suis un service développé par ou pour l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence.",
+            "Je suis un service développé par l'ANSSI afin de répondre aux questions en cybersécurité et informatique, en m'appuyant sur les guides officiels disponibles sur le site de l'agence.",
             ViolationIdentite(),
         ),
         (
             "Les sources actuellement disponibles ne me permettent pas de répondre à la question.",
             ViolationMeconnaissance(),
+        ),
+        (
+            "Désolé, je n'ai pas compris votre demande. Pourriez-vous reformuler votre question ? Pour rappel, je suis un service développé par l'ANSSI afin de répondre aux questions en cybersécurité et informatique",
+            ViolationQuestionNonComprise(),
         ),
     ],
 )

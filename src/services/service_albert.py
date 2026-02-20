@@ -21,6 +21,7 @@ from schemas.violations import (
     ViolationThematique,
     ViolationMalveillance,
     ViolationMeconnaissance,
+    ViolationQuestionNonComprise,
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
@@ -87,6 +88,15 @@ class ServiceAlbert:
             question_reformulee = self.reformulateur.reformule(
                 question, conversation=conversation
             )
+            if question_reformulee == "QUESTION_NON_COMPRISE":
+                violation = ViolationQuestionNonComprise()
+                return ReponseQuestion(
+                    reponse=violation.reponse,
+                    paragraphes=[],
+                    question=question,
+                    question_reformulee=question_reformulee,
+                    violation=violation,
+                )
         question_pour_recherche = (
             question_reformulee if question_reformulee else question
         )
@@ -98,7 +108,7 @@ class ServiceAlbert:
             paragraphes, prompt, question_pour_recherche, conversation
         )
 
-        (reponse, paragraphes, violation) = (
+        (reponse, paragraphes, violation_resultat) = (
             self._recupere_reponse_paragraphes_et_violation(
                 propositions_albert, paragraphes
             )
@@ -109,7 +119,7 @@ class ServiceAlbert:
             paragraphes=paragraphes,
             question=question,
             question_reformulee=question_reformulee,
-            violation=violation,
+            violation=violation_resultat,
         )
 
     def reclasse(self, payload: ReclassePayload):
