@@ -3,7 +3,7 @@ import psycopg2
 from abc import ABC, abstractmethod
 from enum import StrEnum
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, Optional
 
 from configuration import BaseDeDonnees, recupere_configuration
 from schemas.retour_utilisatrice import TagPositif, TagNegatif
@@ -14,6 +14,11 @@ class Donnees(BaseModel):
     pass
 
 
+class ParagrapheRetourne(BaseModel):
+    nom_document: str
+    numero_page: int
+
+
 class DonneesConversationCreee(Donnees):
     id_conversation: str
     id_interaction: str
@@ -21,6 +26,8 @@ class DonneesConversationCreee(Donnees):
     longueur_reponse: int
     longueur_paragraphes: int
     type_utilisateur: TypeUtilisateur
+    question: Optional[str] = None
+    sources: Optional[list[ParagrapheRetourne]] = None
 
 
 class DonneesInteractionAjoutee(DonneesConversationCreee):

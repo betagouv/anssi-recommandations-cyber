@@ -133,7 +133,12 @@ def test_route_initie_conversation_rejette_question_trop_longue(
 
 @pytest.mark.parametrize(
     "type_utilisateur",
-    [TypeUtilisateur.ANSSI, TypeUtilisateur.LAMBDA, TypeUtilisateur.EXPERT_SSI, TypeUtilisateur.EVALUATION],
+    [
+        TypeUtilisateur.ANSSI,
+        TypeUtilisateur.LAMBDA,
+        TypeUtilisateur.EXPERT_SSI,
+        TypeUtilisateur.EVALUATION,
+    ],
 )
 def test_route_initie_conversation_identifie_le_type_d_utilisateur(
     type_utilisateur, un_serveur_de_test, un_adaptateur_de_chiffrement
