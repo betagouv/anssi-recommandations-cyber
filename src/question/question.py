@@ -11,7 +11,9 @@ from adaptateurs.journal import (
     DonneesViolationDetectee,
     AdaptateurJournal,
     DonneesConversationCreee,
+    ParagrapheRetourne,
 )
+from configuration import recupere_configuration
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import (
     Interaction,
@@ -184,6 +186,7 @@ def __consigne_l_evenement(
     reponse_question: ReponseQuestion,
     type_utilisateur: TypeUtilisateur,
 ) -> None:
+    est_alpha_test = recupere_configuration().est_alpha_test
     adaptateur_journal.consigne_evenement(
         type=type_evenement,
         donnees=class_donnees(
@@ -195,6 +198,17 @@ def __consigne_l_evenement(
                 (list(map(lambda r: len(r.contenu), reponse_question.paragraphes)))
             ),
             type_utilisateur=type_utilisateur,
+            question=reponse_question.question if est_alpha_test else None,
+            sources=list(
+                map(
+                    lambda r: ParagrapheRetourne(
+                        nom_document=r.nom_document, numero_page=r.numero_page
+                    ),
+                    reponse_question.paragraphes,
+                )
+            )
+            if est_alpha_test
+            else None,
         ),
     )
 

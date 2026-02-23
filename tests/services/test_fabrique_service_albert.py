@@ -8,10 +8,7 @@ def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() ->
     service_albert = fabrique_service_albert()
 
     assert isinstance(service_albert.client, ClientAlbertApi)
-    assert (
-        "Tu es un service développé par l'ANSSI"
-        in service_albert.prompt_systeme
-    )
+    assert "Tu es un service développé par l'ANSSI" in service_albert.prompt_systeme
 
 
 def test_la_configuration_contient_la_taille_de_la_fenetre_historique() -> None:

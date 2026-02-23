@@ -1,15 +1,17 @@
 import datetime as dt
-from typing import cast
 
 import pytest
-from client_albert_de_test import ClientAlbertMemoire
+from typing import cast
 
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import TypeEvenement
+from client_albert_de_test import ClientAlbertMemoire
 from question.question import (
     ajoute_interaction,
     DemandeInteractionUtilisateur,
     ResultatConversation,
+    cree_conversation,
+    DemandeConversationUtilisateur,
 )
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
@@ -273,7 +275,7 @@ def test_ajoute_interaction_emet_un_evenement_donnant_la_longueur_totale_des_par
         ViolationMeconnaissance(),
     ],
 )
-def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
+def test_ajoute_interaction_emet_un_evenement_journal_indiquant_la_detection_d_une_question_illegale(
     violation,
     une_configuration_complete,
     un_constructeur_de_conversation,
@@ -282,7 +284,6 @@ def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_un
     configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
         une_configuration_complete()
     )
-
     service_albert.ajoute_reponse(
         (
             un_constructeur_de_reponse_question()
@@ -311,3 +312,106 @@ def test_cree_conversation_emet_un_evenement_journal_indiquant_la_detection_d_un
     assert len(evenements) == 2
     assert evenements[1]["type"] == TypeEvenement.VIOLATION_DETECTEE
     assert evenements[1]["donnees"].type_violation == violation.__class__.__name__
+
+
+def test_ajoute_interaction_emet_un_evenement_journal_avec_la_question_et_les_sources_en_mode_alpha_test(
+    une_configuration_complete,
+    un_constructeur_de_conversation,
+    un_constructeur_de_reponse_question,
+    un_constructeur_de_paragraphe,
+    monkeypatch,
+) -> None:
+    configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
+        une_configuration_complete()
+    )
+    service_albert.ajoute_reponse(
+        (
+            un_constructeur_de_reponse_question()
+            .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+            .avec_une_question("Une seconde question")
+            .avec_les_paragraphes(
+                [
+                    un_constructeur_de_paragraphe()
+                    .a_la_page(12)
+                    .dans_le_document("document_1.pdf")
+                    .construis(),
+                    un_constructeur_de_paragraphe()
+                    .a_la_page(42)
+                    .dans_le_document("document_2.pdf")
+                    .construis(),
+                ]
+            )
+            .construis()
+        )
+    )
+    conversation = un_constructeur_de_conversation(
+        un_constructeur_de_reponse_question()
+        .donnant_en_reponse("La réponse à la première question")
+        .avec_une_question("La première question")
+    ).construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+    monkeypatch.setenv("ALPHA_TEST", "True")
+
+    ajoute_interaction(
+        configuration,
+        question_utilisateur=DemandeInteractionUtilisateur(
+            question="Une seconde question", conversation=conversation.id_conversation
+        ),
+        type_utilisateur=TypeUtilisateur.EXPERT_SSI,
+    )
+
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].question == "Une seconde question"
+    assert len(evenements[0]["donnees"].sources) == 2
+    assert evenements[0]["donnees"].sources[0].nom_document == "document_1.pdf"
+    assert evenements[0]["donnees"].sources[0].numero_page == 12
+    assert evenements[0]["donnees"].sources[1].nom_document == "document_2.pdf"
+    assert evenements[0]["donnees"].sources[1].numero_page == 42
+
+
+def test_cree_conversation_emet_un_evenement_journal_avec_la_question_et_les_sources_en_mode_alpha_test(
+    une_configuration_complete,
+    un_constructeur_de_reponse_question,
+    un_constructeur_de_paragraphe,
+    monkeypatch,
+) -> None:
+    configuration, service_albert, adaptateur_base_de_donnees, adaptateur_journal, _ = (
+        une_configuration_complete()
+    )
+    service_albert.ajoute_reponse(
+        (
+            un_constructeur_de_reponse_question()
+            .donnant_en_reponse(" Je suis Albert, pour vous servir ")
+            .avec_une_question("Une seconde question")
+            .avec_les_paragraphes(
+                [
+                    un_constructeur_de_paragraphe()
+                    .a_la_page(12)
+                    .dans_le_document("document_1.pdf")
+                    .construis(),
+                    un_constructeur_de_paragraphe()
+                    .a_la_page(42)
+                    .dans_le_document("document_2.pdf")
+                    .construis(),
+                ]
+            )
+            .construis()
+        )
+    )
+    monkeypatch.setenv("ALPHA_TEST", "True")
+
+    cree_conversation(
+        configuration,
+        question_utilisateur=DemandeConversationUtilisateur(
+            question="Une seconde question"
+        ),
+        type_utilisateur=TypeUtilisateur.EXPERT_SSI,
+    )
+
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["donnees"].question == "Une seconde question"
+    assert len(evenements[0]["donnees"].sources) == 2
+    assert evenements[0]["donnees"].sources[0].nom_document == "document_1.pdf"
+    assert evenements[0]["donnees"].sources[0].numero_page == 12
+    assert evenements[0]["donnees"].sources[1].nom_document == "document_2.pdf"
+    assert evenements[0]["donnees"].sources[1].numero_page == 42
