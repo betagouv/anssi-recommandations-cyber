@@ -120,3 +120,39 @@ def test_reformulateur_utilise_le_modele_de_reformulation_de_la_configuration():
     client_openai.chat.completions.create.assert_called_once()
     call_kwargs = client_openai.chat.completions.create.call_args[1]
     assert call_kwargs["model"] == "modele-reformulation"
+
+
+def test_reformule_la_question_avec_l_historique_dans_l_ordre_inverse(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    interaction1 = (
+        un_constructeur_d_interaction().avec_question("Question 1 ?").construis()
+    )
+    interaction2 = (
+        un_constructeur_d_interaction().avec_question("Question 2 ?").construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation()
+        .avec_interaction(interaction1)
+        .ajoute_interaction(interaction2)
+        .construis()
+    )
+
+    mon_choix = (
+        ConstructeurDeChoix().ayant_pour_contenu("Question reformulee").construis()
+    )
+    client_albert = ClientAlbertMemoire()
+    client_albert.avec_les_propositions([mon_choix])
+
+    ReformulateurDeQuestion(
+        client_albert=client_albert,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
+    ).reformule(question="Question 3 ?", conversation=conversation)
+
+    assert len(client_albert.messages_recus) == 6
+    assert client_albert.messages_recus[0]["role"] == "system"
+    assert client_albert.messages_recus[1]["content"] == "Question 1 ?"
+    assert client_albert.messages_recus[2]["role"] == "assistant"
+    assert client_albert.messages_recus[3]["content"] == "Question 2 ?"
+    assert client_albert.messages_recus[4]["role"] == "assistant"

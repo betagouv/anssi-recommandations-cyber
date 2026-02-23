@@ -23,7 +23,7 @@ class ReformulateurDeQuestion:
             {"role": "system", "content": self.prompt_de_reformulation},
         ]
         if conversation is not None:
-            for interaction in conversation.interactions:
+            for interaction in reversed(conversation.interactions):
                 messages.extend(
                     [
                         {
