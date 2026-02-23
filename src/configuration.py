@@ -119,7 +119,10 @@ def recupere_configuration() -> Configuration:
             temps_reponse_maximum_recherche_paragraphes=float(
                 os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_RECHERCHE_PARAGRAPHES", 3.0)
             ),
-            utilise_recherche_hybride=os.getenv("ALBERT_UTILISE_RECHERCHE_HYBRIDE", "false").lower() == "true",
+            utilise_recherche_hybride=os.getenv(
+                "ALBERT_UTILISE_RECHERCHE_HYBRIDE", "false"
+            ).lower()
+            == "true",
             decalage_index_Albert_et_numero_de_page_lecteur=int(
                 os.getenv("DECALAGE_INDEX_ALBERT_ET_NUMERO_DE_PAGE_LECTEUR", 0)
             ),
@@ -129,7 +132,8 @@ def recupere_configuration() -> Configuration:
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
             collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
-            reclassement_active=os.getenv("RECLASSEMENT_ACTIVE", "false").lower() == "true",
+            reclassement_active=os.getenv("RECLASSEMENT_ACTIVE", "false").lower()
+            == "true",
             modele_reclassement=os.getenv("MODELE_RECLASSEMENT", "openweight-rerank"),
             taille_fenetre_historique=int(
                 os.getenv("ALBERT_TAILLE_FENETRE_HISTORIQUE", "10")

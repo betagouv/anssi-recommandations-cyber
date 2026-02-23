@@ -20,6 +20,7 @@ from services.service_albert import ServiceAlbert, Prompts
 class ConstructeurDeConversation:
     def __init__(self, reponse_question: ReponseQuestion):
         super().__init__()
+        self.interactions: list[Interaction] = []
         self.interaction = Interaction(
             reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
         )
@@ -28,8 +29,15 @@ class ConstructeurDeConversation:
         self.interaction = interaction
         return self
 
+    def ajoute_interaction(self, interaction: Interaction):
+        self.interactions.append(interaction)
+        return self
+
     def construis(self) -> Conversation:
-        return Conversation(self.interaction)
+        conversation = Conversation(self.interaction)
+        for interaction in self.interactions:
+            conversation.ajoute_interaction(interaction)
+        return conversation
 
 
 @pytest.fixture()
