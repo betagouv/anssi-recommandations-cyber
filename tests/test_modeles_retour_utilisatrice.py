@@ -11,6 +11,7 @@ from schemas.retour_utilisatrice import (
     TagPositif,
     Interaction,
 )
+from schemas.violations import ViolationIdentite
 
 
 class TestRetourUtilisatrice:
@@ -132,3 +133,29 @@ def test_creation_interaction_sans_retour_utilisatrice(
         interaction.reponse_question.question == "Comment sécuriser mes mots de passe ?"
     )
     assert interaction.retour_utilisatrice is None
+
+
+def test_conversation_retourne_interactions_sans_violation(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    interaction_sans_violation = (
+        un_constructeur_d_interaction().avec_question("Question valide ?").construis()
+    )
+    interaction_avec_violation = (
+        un_constructeur_d_interaction()
+        .avec_question("Qui es-tu ?")
+        .avec_une_violation(ViolationIdentite())
+        .construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation()
+        .avec_interaction(interaction_sans_violation)
+        .ajoute_interaction(interaction_avec_violation)
+        .construis()
+    )
+
+    interactions_filtrees = conversation.interactions_sans_violation
+
+    assert len(interactions_filtrees) == 1
+    assert interactions_filtrees[0].reponse_question.question == "Question valide ?"
+    assert interactions_filtrees[0].reponse_question.violation is None

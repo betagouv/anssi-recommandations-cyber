@@ -5,6 +5,8 @@ from client_albert_de_test import (
     un_choix_de_proposition,
     un_constructeur_de_reponse_de_reclassement,
 )
+from client_albert_de_test import ConstructeurDeChoix
+
 from configuration import Albert
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import ReclasseReponse, ResultatReclasse, ReclassePayload
@@ -17,7 +19,6 @@ from schemas.violations import (
     ViolationQuestionNonComprise,
 )
 from services.service_albert import ServiceAlbert, Prompts
-from client_albert_de_test import ConstructeurDeChoix
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="",
@@ -734,6 +735,98 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
     assert messages_recus[2]["role"] == "assistant"
     assert messages_recus[3]["role"] == "user"
     assert messages_recus[3]["content"] == "Question :\nQuestion actuelle reformulee"
+
+
+def test_pose_question_reformule_la_question_sans_les_violations_precedentes(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    interaction_sans_violation = (
+        un_constructeur_d_interaction().avec_question("Question valide ?").construis()
+    )
+    interaction_avec_violation = (
+        un_constructeur_d_interaction()
+        .avec_question("Qui es-tu ?")
+        .avec_une_violation(ViolationIdentite())
+        .construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation()
+        .avec_interaction(interaction_sans_violation)
+        .ajoute_interaction(interaction_avec_violation)
+        .construis()
+    )
+
+    client_albert_reformulation = ClientAlbertMemoire()
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_reformulation,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
+    )
+    choix_reformulation = (
+        ConstructeurDeChoix().ayant_pour_contenu("Question reformulee").construis()
+    )
+    client_albert_reformulation.avec_les_propositions([choix_reformulation])
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=ClientAlbertMemoire(),
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Nouvelle question ?", conversation=conversation)
+
+    messages_reformulation = client_albert_reformulation.messages_recus
+    assert len(messages_reformulation) == 4
+    assert messages_reformulation[1]["content"] == "Question valide ?"
+    assert "Qui es-tu ?" not in str(messages_reformulation)
+
+
+def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes(
+    un_constructeur_de_conversation, un_constructeur_d_interaction
+):
+    interaction_sans_violation = (
+        un_constructeur_d_interaction().avec_question("Question valide ?").construis()
+    )
+    interaction_avec_violation = (
+        un_constructeur_d_interaction()
+        .avec_question("Qui es-tu ?")
+        .avec_une_violation(ViolationIdentite())
+        .construis()
+    )
+    conversation = (
+        un_constructeur_de_conversation()
+        .avec_interaction(interaction_sans_violation)
+        .ajoute_interaction(interaction_avec_violation)
+        .construis()
+    )
+
+    client_albert_recherche = ClientAlbertMemoire()
+    client_albert_reformulation = ClientAlbertMemoire()
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert_reformulation,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
+    )
+    choix_reformulation = (
+        ConstructeurDeChoix().ayant_pour_contenu("Question reformulee").construis()
+    )
+    client_albert_reformulation.avec_les_propositions([choix_reformulation])
+    client_albert_recherche.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
+    )
+
+    ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client=client_albert_recherche,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=reformulateur,
+    ).pose_question(question="Nouvelle question ?", conversation=conversation)
+
+    messages_recherche = client_albert_recherche.messages_recus
+    assert len(messages_recherche) == 4
+    assert messages_recherche[1]["content"] == "Question :\nQuestion valide ?"
+    assert "Qui es-tu ?" not in str(messages_recherche)
 
 
 def test_retourne_violation_question_non_comprise_si_reformulateur_retourne_QUESTION_NON_COMPRISE():

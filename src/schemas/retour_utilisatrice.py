@@ -78,6 +78,10 @@ class Conversation:
         self._interactions.sort(key=lambda i: i.date_creation, reverse=True)
         return self._interactions
 
+    @property
+    def interactions_sans_violation(self) -> list[Interaction]:
+        return [i for i in self.interactions if i.reponse_question.violation is None]
+
     def ajoute_interaction(self, interaction):
         self._interactions.append(interaction)
 
