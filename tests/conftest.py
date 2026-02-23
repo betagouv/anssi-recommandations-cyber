@@ -300,6 +300,16 @@ class ConstructeurDInteraction:
         )
         return self
 
+    def avec_une_violation(self, violation: Violation):
+        self.reponse_question = ReponseQuestion(
+            reponse=violation.reponse,
+            paragraphes=[],
+            question=self.reponse_question.question,
+            question_reformulee=self.reponse_question.question_reformulee,
+            violation=violation,
+        )
+        return self
+
 
 @pytest.fixture()
 def un_constructeur_d_interaction() -> Callable[[], ConstructeurDInteraction]:
