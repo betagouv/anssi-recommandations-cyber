@@ -4,6 +4,7 @@ from typing import cast
 
 import pytest
 from serveur_de_test import ServiceAlbertMemoire
+from client_albert_de_test import ClientAlbertMemoire
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.horloge import Horloge
@@ -23,6 +24,7 @@ from schemas.violations import (
     ViolationThematique,
     ViolationMeconnaissance,
 )
+from services.service_albert import Prompts
 
 
 def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
@@ -37,8 +39,36 @@ def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
     )
 
     assert isinstance(resultat_conversation, ResultatConversationEnErreur)
-    assert resultat_conversation.message_mqc == "Erreur lors de l’appel à Albert"
+    assert (
+        resultat_conversation.message_mqc
+        == "Notre modèle d'IA, Albert, n'a pu nous répondre de manière satisfaisante."
+    )
     assert resultat_conversation.erreur == "Erreur sur pose_question"
+
+
+def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur_si_recherche_paragraphes_echoue(
+    une_configuration_complete,
+    un_service_albert_avec_un_client_memoire,
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.qui_leve_une_erreur_sur_recherche()
+    service_albert = un_service_albert_avec_un_client_memoire(
+        client_albert_memoire,
+        Prompts(prompt_systeme="", prompt_reclassement=""),
+    )
+    la_configuration, _, _, _, _ = une_configuration_complete(service_albert)
+
+    resultat_conversation = cree_conversation(
+        la_configuration,
+        DemandeConversationUtilisateur(question="une question"),
+        TypeUtilisateur.EXPERT_SSI,
+    )
+
+    assert isinstance(resultat_conversation, ResultatConversationEnErreur)
+    assert (
+        resultat_conversation.message_mqc
+        == "Une erreur est survenue lors de la recherche des guides de l'ANSSI."
+    )
 
 
 def test_cree_conversation_retourne_une_conversation(
