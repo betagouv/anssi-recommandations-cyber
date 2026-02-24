@@ -25,6 +25,7 @@ from schemas.violations import (
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
+from services.exceptions import ErreurRechercheGuidesAnssi, ErreurAppelAlbertApi
 
 
 class Prompts(NamedTuple):
@@ -63,7 +64,10 @@ class ServiceAlbert:
             method=methode_recherche,
         )
 
-        donnees = self.client.recherche(payload)
+        try:
+            donnees = self.client.recherche(payload)
+        except Exception as erreur:
+            raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
 
         def _transforme_en_paragraphe(donnee):
             return Paragraphe(
@@ -84,19 +88,23 @@ class ServiceAlbert:
         conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
         question_reformulee = None
-        if self.reformulateur is not None:
-            question_reformulee = self.reformulateur.reformule(
-                question, conversation=conversation
-            )
-            if question_reformulee == "QUESTION_NON_COMPRISE":
-                violation = ViolationQuestionNonComprise()
-                return ReponseQuestion(
-                    reponse=violation.reponse,
-                    paragraphes=[],
-                    question=question,
-                    question_reformulee=question_reformulee,
-                    violation=violation,
+        try:
+            if self.reformulateur is not None:
+                question_reformulee = self.reformulateur.reformule(
+                    question, conversation=conversation
                 )
+
+                if question_reformulee == "QUESTION_NON_COMPRISE":
+                    violation = ViolationQuestionNonComprise()
+                    return ReponseQuestion(
+                        reponse=violation.reponse,
+                        paragraphes=[],
+                        question=question,
+                        question_reformulee=question_reformulee,
+                        violation=violation,
+                    )
+        except Exception as erreur:
+            raise ErreurAppelAlbertApi(str(erreur)) from erreur
         question_pour_recherche = (
             question_reformulee if question_reformulee else question
         )
@@ -146,8 +154,13 @@ class ServiceAlbert:
         messages = self.__genere_les_messages_de_completion(
             conversation, paragraphes_concatenes, prompt_systeme, question
         )
-        propositions_albert = self.client.recupere_propositions(messages)
-        return propositions_albert
+        try:
+            propositions_albert = self.client.recupere_propositions(messages)
+            return propositions_albert
+        except ErreurAppelAlbertApi:
+            raise
+        except Exception as erreur:
+            raise ErreurAppelAlbertApi(str(erreur)) from erreur
 
     def __genere_les_messages_de_completion(
         self,

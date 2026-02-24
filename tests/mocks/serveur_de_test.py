@@ -24,6 +24,7 @@ from schemas.violations import Violation
 from serveur import fabrique_serveur
 from services.fabrique_service_albert import fabrique_service_albert
 from services.service_albert import ServiceAlbert, Prompts
+from services.exceptions import ErreurAppelAlbertApi
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
@@ -63,7 +64,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
     ) -> ReponseQuestion:
         self.question_recue = question
         if self.leve_une_erreur_sur_pose_question:
-            raise Exception("Erreur sur pose_question")
+            raise ErreurAppelAlbertApi("Erreur sur pose_question")
         if self.reponse is not None:
             return self.reponse
         return ReponseQuestion(

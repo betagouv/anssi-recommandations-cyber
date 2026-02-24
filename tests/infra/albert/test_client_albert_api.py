@@ -6,6 +6,7 @@ from client_albert_de_test import (
 )
 
 from infra.albert.client_albert import ClientAlbertApi
+from services.exceptions import ErreurAppelAlbertApi
 from schemas.albert import RecherchePayload, RechercheChunk, RechercheMetadonnees
 
 REPONSE = "Patates et reblochon"
@@ -35,7 +36,7 @@ def test_recupere_propositions(une_configuration_albert_client):
     assert propositions[0].message.content == REPONSE
 
 
-def test_recupere_propositions_si_timeout_retourne_un_resultat_vide(
+def test_recupere_propositions_si_timeout_leve_une_exception(
     une_configuration_albert_client,
 ):
     mock_client_http = (
@@ -51,9 +52,8 @@ def test_recupere_propositions_si_timeout_retourne_un_resultat_vide(
         une_configuration_albert_client,
     )
 
-    retour = mock_service_avec_reponse.recupere_propositions([])
-
-    assert len(retour) == 0
+    with pytest.raises(ErreurAppelAlbertApi):
+        mock_service_avec_reponse.recupere_propositions([])
 
 
 def test_recherche_si_timeout_retourne_un_resultat_vide(

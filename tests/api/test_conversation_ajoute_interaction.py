@@ -145,7 +145,11 @@ def test_route_conversation_ajoute_interaction_retourne_une_reponse_en_erreur(
     )
 
     assert reponse.status_code == 422
-    assert reponse.json() == {"detail": {"message": "Erreur lors de l’appel à Albert"}}
+    assert reponse.json() == {
+        "detail": {
+            "message": "Notre modèle d'IA, Albert, n'a pu nous répondre de manière satisfaisante."
+        }
+    }
 
 
 def test_retourne_une_404_si_la_conversation_n_existe_pas(

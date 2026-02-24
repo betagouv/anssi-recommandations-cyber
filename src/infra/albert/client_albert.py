@@ -1,6 +1,6 @@
 import requests
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam, ChatCompletion
+from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
 from schemas.albert import (
     RecherchePayload,
@@ -12,10 +12,9 @@ from schemas.albert import (
     RechercheMetadonnees,
 )
 from configuration import logging, Albert
-from openai.types import CompletionUsage
-import time
 from openai import APITimeoutError, APIConnectionError
 from services.client_albert import ClientAlbert
+from services.exceptions import ErreurAppelAlbertApi
 
 
 class ClientAlbertHttp(requests.Session):
@@ -142,21 +141,8 @@ class ClientAlbertApi(ClientAlbert):
             ).choices
             return propositions_albert
 
-        except (APITimeoutError, APIConnectionError):
-            aucune_proposition = ChatCompletion(
-                id="tmp-empty",
-                created=int(time.time()),
-                model=modele_a_utiliser,
-                object="chat.completion",
-                choices=[],
-                usage=CompletionUsage(
-                    prompt_tokens=0,
-                    completion_tokens=0,
-                    total_tokens=0,
-                ),
-                system_fingerprint=None,
-            ).choices
-            return aucune_proposition
+        except (APITimeoutError, APIConnectionError) as erreur:
+            raise ErreurAppelAlbertApi(str(erreur)) from erreur
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]

@@ -111,6 +111,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self.reclassement = ReclasseReponse(id="1", object="list", data=[])
         self.propositions_vides = False
         self.resultats_vides = False
+        self.leve_une_erreur_sur_recherche = False
         self.messages_recus = []
         self.payload_recu = None
         self.resultats = []
@@ -118,6 +119,8 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         self.payload_recu = payload
+        if self.leve_une_erreur_sur_recherche:
+            raise Exception("Erreur sur recherche")
         return self.resultats if self.resultats_vides is False else []
 
     def recupere_propositions(
@@ -135,6 +138,9 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_propositions(self, choix: list[Choice]):
         self.choix.extend(choix)
+
+    def qui_leve_une_erreur_sur_recherche(self):
+        self.leve_une_erreur_sur_recherche = True
 
     def sans_resultats(self):
         self.resultats_vides = True
