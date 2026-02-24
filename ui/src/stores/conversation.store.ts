@@ -83,7 +83,7 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   update((conversation) => {
     storeAffichage.estEnAttenteDeReponse(false);
     if (!estReponseConversation(reponseAPI)) {
-      storeAffichage.erreurAlbert(true);
+      storeAffichage.erreurAlbert(true, reponseAPI.erreur);
       return {
         ...sauvegarde,
         messages: [...conversation.messages, questionUtilisateur],

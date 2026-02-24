@@ -1,7 +1,18 @@
 <script lang="ts">
   import { clic } from '../actions.svelte';
 
-  let { onclick }: { onclick: () => Promise<void> | undefined } = $props();
+  let {
+    onclick,
+    message,
+  }: { onclick: () => Promise<void> | undefined; message?: string } = $props();
+
+  const messageParDefaut =
+    'Nos équipes font le maximum pour rétablir le service au plus vite ! Vous pouvez réessayer de charger la réponse ou revenir plus tard si le problème persiste.';
+  const messageNettoye = message?.trim();
+  const texteErreur =
+    messageNettoye && messageNettoye !== ''
+      ? `${messageNettoye} ${messageParDefaut}`
+      : messageParDefaut;
 </script>
 
 <div class="conteneur-erreur">
@@ -10,7 +21,7 @@
     has-title={true}
     title="Oups, un problème est survenu."
     has-description={true}
-    text="Nos équipes font le maximum pour rétablir le service au plus vite ! Vous pouvez réessayer de charger la réponse ou revenir plus tard si le problème persiste."
+    text={texteErreur}
     type="error"
     size="md"
     dismissible={false}

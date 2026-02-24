@@ -114,6 +114,7 @@
   {/if}
   {#if $storeAffichage.aUneErreurAlbert && !$storeAffichage.enAttenteDeReponse}
     <EcranErreur
+      message={$storeAffichage.messageErreurAlbert}
       onclick={() =>
         inputUtilisateur?.soumetLaQuestion($storeConversation.derniereQuestion)}
     />
