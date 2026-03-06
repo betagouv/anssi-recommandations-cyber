@@ -40,7 +40,7 @@
     "prettier": "3.6.2",
     "prettier-plugin-svelte": "^3.4.1",
     "sass-embedded": "^1.93.2",
-    "svelte": "^5.39.13",
+    "svelte": "^5.53.5",
     "svelte-check": "^4.3.1",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.49.0",
@@ -55,7 +55,8 @@
   },
   "pnpm": {
     "overrides": {
-      "rollup": "^4.59.0"
+      "rollup": "^4.59.0",
+      "svelte": "^5.53.5"
     }
   }
 }
