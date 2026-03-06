@@ -5,3 +5,4 @@ preferFrozenLockfile: true
 
 minimumReleaseAgeExclude:
   - svelte@5.53.5
+  - immutable@5.1.5
