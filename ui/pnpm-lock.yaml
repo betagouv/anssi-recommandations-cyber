@@ -5,51 +5,51 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  rollup: ~4.59.0
+  rollup: ^4.59.0
 
 importers:
 
   .:
     dependencies:
       '@lab-anssi/ui-kit':
-        specifier: ~1.42.0
+        specifier: ^1.42.0
         version: 1.42.0(svelte@5.39.13)
       dompurify:
-        specifier: ~3.3.1
+        specifier: ^3.3.1
         version: 3.3.1
       marked:
-        specifier: ~16.4.0
+        specifier: ^16.4.0
         version: 16.4.2
       zod:
-        specifier: ~4.1.13
+        specifier: ^4.1.13
         version: 4.1.13
     devDependencies:
       '@eslint/compat':
-        specifier: ~1.2.5
+        specifier: ^1.2.5
         version: 1.2.9(eslint@9.29.0)
       '@eslint/js':
-        specifier: ~9.22.0
-        version: 9.22.0
+        specifier: ^9.22.0
+        version: 9.29.0
       '@sveltejs/vite-plugin-svelte':
-        specifier: ~6.2.0
+        specifier: ^6.2.0
         version: 6.2.1(svelte@5.39.13)(vite@7.2.7(@types/node@22.19.2)(sass-embedded@1.93.3)(sass@1.93.3)(yaml@2.8.2))
       '@tsconfig/svelte':
-        specifier: ~5.0.5
+        specifier: ^5.0.5
         version: 5.0.6
       '@types/node':
-        specifier: ~22
+        specifier: ^22
         version: 22.19.2
       eslint:
-        specifier: ~9.29.0
+        specifier: ^9.29.0
         version: 9.29.0
       eslint-config-prettier:
         specifier: ^10.1.8
         version: 10.1.8(eslint@9.29.0)
       eslint-plugin-svelte:
-        specifier: ~3.0.0
+        specifier: ^3.0.0
         version: 3.0.3(eslint@9.29.0)(svelte@5.39.13)
       globals:
-        specifier: ~16.0.0
+        specifier: ^16.0.0
         version: 16.0.0
       lint-staged:
         specifier: ^16.2.7
@@ -61,25 +61,25 @@ importers:
         specifier: ^3.4.1
         version: 3.4.1(prettier@3.6.2)(svelte@5.39.13)
       sass-embedded:
-        specifier: ~1.93.2
+        specifier: ^1.93.2
         version: 1.93.3
       svelte:
-        specifier: ~5.39.13
+        specifier: ^5.39.13
         version: 5.39.13
       svelte-check:
-        specifier: ~4.3.1
+        specifier: ^4.3.1
         version: 4.3.4(picomatch@4.0.3)(svelte@5.39.13)(typescript@5.8.3)
       typescript:
-        specifier: ~5.8.3
+        specifier: ^5.8.3
         version: 5.8.3
       typescript-eslint:
-        specifier: ~8.49.0
+        specifier: ^8.49.0
         version: 8.49.0(eslint@9.29.0)(typescript@5.8.3)
       vite:
-        specifier: ~7.2.7
+        specifier: ^7.2.7
         version: 7.2.7(@types/node@22.19.2)(sass-embedded@1.93.3)(sass@1.93.3)(yaml@2.8.2)
       vitest:
-        specifier: ~3.2.4
+        specifier: ^3.2.4
         version: 3.2.4(@types/node@22.19.2)(sass-embedded@1.93.3)(sass@1.93.3)(yaml@2.8.2)
 
 packages:
@@ -280,10 +280,6 @@ packages:
 
   '@eslint/eslintrc@3.3.3':
     resolution: {integrity: sha512-Kr+LPIUVKz2qkx1HAMH8q1q6azbqBAsXJUxBl/ODDuVPX45Z9DfwB8tPjTi6nNZ8BuM3nbJxC5zCAg5elnBUTQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/js@9.22.0':
-    resolution: {integrity: sha512-vLFajx9o8d1/oL2ZkpMYbkLv8nDB6yaIwFNt7nI4+I80U/z03SxmfOMsLbvWr3p7C+Wnoh//aOu2pQW8cS0HCQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.29.0':
@@ -1796,8 +1792,6 @@ snapshots:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
-
-  '@eslint/js@9.22.0': {}
 
   '@eslint/js@9.29.0': {}
 
