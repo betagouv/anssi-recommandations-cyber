@@ -56,7 +56,8 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.59.0",
-      "svelte": "^5.53.5"
+      "svelte": "^5.53.5",
+      "immutable": "^5.1.5"
     }
   }
 }
