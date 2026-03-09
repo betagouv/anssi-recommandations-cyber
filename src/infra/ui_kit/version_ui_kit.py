@@ -9,6 +9,6 @@ def version_ui_kit() -> str:
 
     data = json.loads(package_json.read_text(encoding="utf-8"))
     deps = data.get("dependencies", {})
-    version = deps.get("@lab-anssi/ui-kit").replace("~", "")
+    version = deps.get("@lab-anssi/ui-kit").replace("~", "").replace("^", "")
 
     return str(version)
