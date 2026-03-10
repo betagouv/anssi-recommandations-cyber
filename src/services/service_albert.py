@@ -58,8 +58,8 @@ class ServiceAlbert:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
         nombre_paragraphes_a_retourner = 20 if self.reclassement_active else 5
         payload = RecherchePayload(
-            collections=[self.id_collection],
-            k=nombre_paragraphes_a_retourner,
+            collection_ids=[self.id_collection],
+            limit=nombre_paragraphes_a_retourner,
             prompt=question,
             method=methode_recherche,
         )

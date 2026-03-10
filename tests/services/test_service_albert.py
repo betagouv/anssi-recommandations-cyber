@@ -307,7 +307,7 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
         prompts=PROMPTS,
     ).pose_question(question="Une question de test ?")
 
-    assert client_albert_memoire.payload_recu.k == 20
+    assert client_albert_memoire.payload_recu.limit == 20
 
 
 def test_appelle_le_reclassement_uniquement_quand_active():

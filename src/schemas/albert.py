@@ -20,8 +20,8 @@ class ReponseQuestion(BaseModel):
 
 
 class RecherchePayload(NamedTuple):
-    collections: list[int]
-    k: int
+    collection_ids: list[int]
+    limit: int
     prompt: str
     method: str
 
