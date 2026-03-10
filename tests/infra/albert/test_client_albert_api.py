@@ -60,8 +60,8 @@ def test_recherche_si_timeout_retourne_un_resultat_vide(
     une_configuration_albert_client,
 ):
     payload = RecherchePayload(
-        collections=[1],
-        k=5,
+        collection_ids=[1],
+        limit=5,
         prompt="Question ?",
         method="methode",
     )
