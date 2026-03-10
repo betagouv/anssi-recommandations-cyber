@@ -27,8 +27,8 @@ class RecherchePayload(NamedTuple):
 
 
 class ReclassePayload(NamedTuple):
-    prompt: str
-    input: list[str]
+    query: str
+    documents: list[str]
     model: str
 
 

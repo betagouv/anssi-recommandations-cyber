@@ -194,8 +194,6 @@ def test_reclasse_les_paragraphes():
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_le_reclassement(
         ReclasseReponse(
-            id="test",
-            object="list",
             data=[
                 ResultatReclasse(object="rerank", score=0.5, index=1),
                 ResultatReclasse(object="rerank", score=0.4, index=0),
@@ -204,7 +202,7 @@ def test_reclasse_les_paragraphes():
     )
 
     payload = ReclassePayload(
-        prompt="un prompt", input=["texte1", "texte2"], model="albert_rerank"
+        query="un prompt", documents=["texte1", "texte2"], model="albert_rerank"
     )
     reclassement = ServiceAlbert(
         configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
@@ -346,7 +344,7 @@ def test_l_injection_du_prompt_de_reclassement():
     ).pose_question(question="Une question de test ?")
 
     assert (
-        client_albert_memoire.payload_reclassement_recu.prompt
+        client_albert_memoire.payload_reclassement_recu.query
         == "Prompt de reclassement :\n\nUne question de test ?\n\n, fin prompt"
     )
 
@@ -637,7 +635,7 @@ def test_reclassement_utilise_la_question_reformulee():
 
     assert (
         "Question reformulee pour reclassement"
-        in client_albert_recherche.payload_reclassement_recu.prompt
+        in client_albert_recherche.payload_reclassement_recu.query
     )
 
 

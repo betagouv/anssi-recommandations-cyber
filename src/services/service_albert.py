@@ -136,7 +136,7 @@ class ServiceAlbert:
         resultats_reclassement_donnees = resultat_du_reclassement.data
         resultats_reclassement_donnees.sort(key=lambda data: data.score, reverse=True)
         index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
-        toutes_les_entrees = payload.input
+        toutes_les_entrees = payload.documents
 
         return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}
 
@@ -208,8 +208,8 @@ class ServiceAlbert:
                 QUESTION=question
             )
             reclasse_payload = ReclassePayload(
-                prompt=prompt_reclassement_avec_question,
-                input=list(map(lambda p: p.contenu, paragraphes)),
+                query=prompt_reclassement_avec_question,
+                documents=list(map(lambda p: p.contenu, paragraphes)),
                 model=self.modele_reclassement,
             )
             reclassement = self.reclasse(reclasse_payload)
