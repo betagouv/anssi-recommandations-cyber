@@ -188,8 +188,9 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
     adaptateur_journal = AdaptateurJournalMemoire()
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage="haché")
     serveur = un_serveur_de_test(
-        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_chiffrement=adaptateur_chiffrement,
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
         adaptateur_journal=adaptateur_journal,
     )
@@ -208,7 +209,7 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
     evenements = adaptateur_journal.les_evenements()
     assert len(evenements) == 1
     assert evenements[0]["type"] == TypeEvenement.AVIS_UTILISATEUR_SOUMIS
-    assert evenements[0]["donnees"].id_interaction == str(une_interaction.id)
+    assert evenements[0]["donnees"].id_interaction == "haché"
     assert evenements[0]["donnees"].type_retour == "positif"
     assert evenements[0]["donnees"].tags == [TagPositif.Complete]
     assert evenements[0]["donnees"].model_dump_json()

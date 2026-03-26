@@ -57,7 +57,7 @@ def ajoute_retour(
     adaptateur_journal.consigne_evenement(
         type=TypeEvenement.AVIS_UTILISATEUR_SOUMIS,
         donnees=DonneesAvisUtilisateurSoumis(
-            id_interaction=body.id_interaction,
+            id_interaction=adaptateur_chiffrement.hache(body.id_interaction),
             type_retour=body.retour.type,
             tags=list(body.retour.tags),
             type_utilisateur=extrais_type_utilisateur(
