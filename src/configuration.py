@@ -151,7 +151,7 @@ def recupere_configuration() -> Configuration:
     configuration_base_de_donnees_journal = recupere_configuration_journal(mode)
 
     configuration_chiffrement = Chiffrement(
-        sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HASHAGE", ""),
+        sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HACHAGE", ""),
         clef_chiffrement=os.getenv("CHIFFREMENT_CLEF_DE_CHIFFREMENT", None),
     )
 
