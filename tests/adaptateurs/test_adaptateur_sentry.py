@@ -18,14 +18,6 @@ def test_configuration_sentry_avec_variables_environnement():
         assert configuration.sentry.environnement == "test"
 
 
-def test_configuration_sentry_avec_valeurs_par_defaut():
-    with patch.dict(os.environ, {}, clear=True):
-        configuration = recupere_configuration()
-
-        assert configuration.sentry.dsn is None
-        assert configuration.sentry.environnement == "developpement"
-
-
 def test_capture_exception_stocke_l_exception():
     adaptateur_sentry = AdaptateurSentryMemoire()
     exception = Exception("Erreur de test")

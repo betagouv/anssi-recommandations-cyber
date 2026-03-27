@@ -1,3 +1,5 @@
+import logging
+
 import uvicorn
 
 from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
@@ -5,7 +7,12 @@ from configuration import recupere_configuration
 from infra.logger import log
 from serveur import fabrique_serveur
 
-configuration = recupere_configuration()
+try:
+    configuration = recupere_configuration()
+except Exception as e:
+    logging.error(e)
+    exit(1)
+
 adaptateur_chiffrement = fabrique_adaptateur_chiffrement()
 serveur = fabrique_serveur(configuration.max_requetes_par_minute, configuration.mode)
 

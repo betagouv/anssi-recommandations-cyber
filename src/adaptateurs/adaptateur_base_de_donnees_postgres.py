@@ -6,7 +6,7 @@ import psycopg2
 import psycopg2.extras
 from typing import Optional, Any
 
-from configuration import recupere_configuration_postgres
+from configuration import BaseDeDonnees
 from infra.chiffrement.chiffrement import (
     ServiceDeChiffrement,
 )
@@ -26,15 +26,16 @@ CHEMINS_INTERACTION_A_CONSERVER_EN_CLAIR = [
 
 class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
     def __init__(
-        self, nom_base_donnees: str, service_chiffrement: ServiceDeChiffrement
+        self,
+        configuration_base_de_donnees: BaseDeDonnees,
+        service_chiffrement: ServiceDeChiffrement,
     ) -> None:
-        config_postgres = recupere_configuration_postgres(nom_base_donnees)
         self._connexion = psycopg2.connect(
-            host=config_postgres.hote,
-            database=config_postgres.nom,
-            user=config_postgres.utilisateur,
-            password=config_postgres.mot_de_passe,
-            port=config_postgres.port,
+            host=configuration_base_de_donnees.hote,
+            database=configuration_base_de_donnees.nom,
+            user=configuration_base_de_donnees.utilisateur,
+            password=configuration_base_de_donnees.mot_de_passe,
+            port=configuration_base_de_donnees.port,
         )
         self._connexion.autocommit = True
         self._service_chiffrement = service_chiffrement

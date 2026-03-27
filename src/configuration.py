@@ -1,7 +1,24 @@
 import logging
 import os
-from typing_extensions import NamedTuple, Optional
+from typing_extensions import NamedTuple, Optional, TypedDict
 from enum import StrEnum, auto
+
+
+class VariablesEnvironnementNecessaires(TypedDict):
+    ALBERT_API_KEY: str
+    ALBERT_MODELE: str
+    ALBERT_MODELE_REFORMULATION: str
+    COLLECTION_ID_ANSSI_LAB: int
+    DB_NAME: str
+    DB_HOST: str
+    DB_PORT: int
+    DB_USER: str
+    DB_PASSWORD: str
+    CHIFFREMENT_SEL_DE_HACHAGE: str
+    CHIFFREMENT_CLEF_DE_CHIFFREMENT: str
+    HOST: str
+    PORT: int
+
 
 # `mypy` ne comprend pas les classes imbriquées dans des `NamedTuple` (alors que c'est du `Python` valide...);
 # _c.f._ https://github.com/python/mypy/issues/15775 .
@@ -77,19 +94,19 @@ class Configuration(NamedTuple):
     est_alpha_test: bool
 
 
-def recupere_configuration_postgres(
-    database: str = "postgres",
+def _recupere_configuration_postgres(
+    variables_environnement: VariablesEnvironnementNecessaires,
 ) -> BaseDeDonnees:
     return BaseDeDonnees(
-        hote=os.getenv("DB_HOST", "localhost"),
-        port=int(os.getenv("DB_PORT", "5432")),
-        utilisateur=os.getenv("DB_USER", "postgres"),
-        mot_de_passe=os.getenv("DB_PASSWORD", "postgres"),
-        nom=database,
+        hote=variables_environnement["DB_HOST"],
+        port=variables_environnement["DB_PORT"],
+        utilisateur=variables_environnement["DB_USER"],
+        mot_de_passe=variables_environnement["DB_PASSWORD"],
+        nom=variables_environnement["DB_NAME"],
     )
 
 
-def recupere_configuration_journal(mode: Mode) -> Optional[BaseDeDonnees]:
+def _recupere_configuration_journal(mode: Mode) -> Optional[BaseDeDonnees]:
     return (
         BaseDeDonnees(
             hote=os.getenv("DB_JOURNAL_HOST", "localhost"),
@@ -103,16 +120,58 @@ def recupere_configuration_journal(mode: Mode) -> Optional[BaseDeDonnees]:
     )
 
 
+def _verifie_la_presence_des_variables_d_environnement_necessaires() -> (
+    VariablesEnvironnementNecessaires
+):
+    variables_environnement = _les_variables_d_environnement()
+    variables_manquantes = list(
+        filter(lambda x: x[1] is None, variables_environnement.items())
+    )
+    cles_manquantes = list(map(lambda x: x[0], variables_manquantes))
+    if len(cles_manquantes) > 0:
+        raise Exception(
+            f"Les variables d'environnement suivantes sont manquantes :\n - {'\n - '.join(cles_manquantes)}"
+        )
+    return variables_environnement  # type: ignore
+
+
+def _les_variables_d_environnement() -> VariablesEnvironnementNecessaires:
+    env_db_bort = os.getenv("DB_PORT")
+    env_app_port = os.getenv("PORT")
+    collection_id_anssi_lab = os.getenv("COLLECTION_ID_ANSSI_LAB")
+    variables_environnement: dict[str, str | int | None] = {
+        "ALBERT_API_KEY": os.getenv("ALBERT_API_KEY"),
+        "ALBERT_MODELE": os.getenv("ALBERT_MODELE"),
+        "ALBERT_MODELE_REFORMULATION": os.getenv("ALBERT_MODELE_REFORMULATION"),
+        "COLLECTION_ID_ANSSI_LAB": int(collection_id_anssi_lab)
+        if collection_id_anssi_lab
+        else None,
+        "DB_NAME": os.getenv("DB_NAME"),
+        "DB_HOST": os.getenv("DB_HOST"),
+        "DB_PORT": (int(env_db_bort) if env_db_bort else None),
+        "DB_USER": os.getenv("DB_USER"),
+        "DB_PASSWORD": os.getenv("DB_PASSWORD"),
+        "CHIFFREMENT_SEL_DE_HACHAGE": os.getenv("CHIFFREMENT_SEL_DE_HACHAGE"),
+        "CHIFFREMENT_CLEF_DE_CHIFFREMENT": os.getenv("CHIFFREMENT_CLEF_DE_CHIFFREMENT"),
+        "HOST": os.getenv("HOST"),
+        "PORT": (int(env_app_port) if env_app_port else None),
+    }
+    return variables_environnement  # type: ignore
+
+
 def recupere_configuration() -> Configuration:
+    mode = Mode(os.getenv("MODE", "production"))
+    variables_environnement = (
+        _verifie_la_presence_des_variables_d_environnement_necessaires()
+        if mode != Mode.TEST and mode != Mode.DEVELOPPEMENT
+        else _les_variables_d_environnement()
+    )
     configuration_albert = Albert(
         client=Albert.Client(
             base_url="https://albert.api.etalab.gouv.fr/v1",
-            api_key=os.getenv("ALBERT_API_KEY"),
-            modele_reponse=os.getenv("ALBERT_MODELE", "albert-large"),
-            modele_reformulation=os.getenv(
-                "ALBERT_MODELE_REFORMULATION",
-                "mistral-medium-2508",
-            ),
+            api_key=variables_environnement["ALBERT_API_KEY"],
+            modele_reponse=variables_environnement["ALBERT_MODELE"],
+            modele_reformulation=variables_environnement["ALBERT_MODELE_REFORMULATION"],
             temps_reponse_maximum_pose_question=float(
                 os.getenv("ALBERT_DELAI_REPONSE_MAXIMUM_REPONSE_QUESTION", 15.0)
             ),
@@ -131,7 +190,7 @@ def recupere_configuration() -> Configuration:
             collection_nom_anssi_lab=os.getenv(
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
-            collection_id_anssi_lab=int(os.getenv("COLLECTION_ID_ANSSI_LAB", "4242")),
+            collection_id_anssi_lab=variables_environnement["COLLECTION_ID_ANSSI_LAB"],
             reclassement_active=os.getenv("RECLASSEMENT_ACTIVE", "false").lower()
             == "true",
             modele_reclassement=os.getenv("MODELE_RECLASSEMENT", "openweight-rerank"),
@@ -142,17 +201,15 @@ def recupere_configuration() -> Configuration:
             == "true",
         ),
     )
-    configuration_base_de_donnees = recupere_configuration_postgres(
-        os.getenv("DB_NAME", "anssi_retours")
+    configuration_base_de_donnees = _recupere_configuration_postgres(
+        variables_environnement
     )
 
-    mode = Mode(os.getenv("MODE", "production"))
-
-    configuration_base_de_donnees_journal = recupere_configuration_journal(mode)
+    configuration_base_de_donnees_journal = _recupere_configuration_journal(mode)
 
     configuration_chiffrement = Chiffrement(
-        sel_de_hachage=os.getenv("CHIFFREMENT_SEL_DE_HACHAGE", ""),
-        clef_chiffrement=os.getenv("CHIFFREMENT_CLEF_DE_CHIFFREMENT", None),
+        sel_de_hachage=variables_environnement["CHIFFREMENT_SEL_DE_HACHAGE"],
+        clef_chiffrement=variables_environnement["CHIFFREMENT_CLEF_DE_CHIFFREMENT"],
     )
 
     configuration_sentry = Sentry(
@@ -169,8 +226,8 @@ def recupere_configuration() -> Configuration:
         base_de_donnees_journal=configuration_base_de_donnees_journal,
         chiffrement=configuration_chiffrement,
         sentry=configuration_sentry,
-        hote=os.getenv("HOST", "127.0.0.1"),
-        port=int(os.getenv("PORT", "8000")),
+        hote=variables_environnement["HOST"],
+        port=variables_environnement["PORT"],
         mode=mode,
         max_requetes_par_minute=int(
             os.getenv("SERVEUR_MAX_REQUETES_PAR_MINUTE", "600")

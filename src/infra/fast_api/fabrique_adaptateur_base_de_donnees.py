@@ -14,6 +14,6 @@ def fabrique_adaptateur_base_de_donnees(
     ),
 ) -> AdaptateurBaseDeDonnees:
     return AdaptateurBaseDeDonneesPostgres(
-        recupere_configuration().base_de_donnees.nom,
+        recupere_configuration().base_de_donnees,
         adaptateur_chiffrement.service_de_chiffrement,
     )
