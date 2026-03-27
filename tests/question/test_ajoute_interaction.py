@@ -12,6 +12,7 @@ from question.question import (
     ResultatConversation,
     cree_conversation,
     DemandeConversationUtilisateur,
+    ConfigurationQuestion,
 )
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import (
@@ -353,7 +354,13 @@ def test_ajoute_interaction_emet_un_evenement_journal_avec_la_question_et_les_so
     monkeypatch.setenv("ALPHA_TEST", "True")
 
     ajoute_interaction(
-        configuration,
+        ConfigurationQuestion(
+            service_albert=configuration.service_albert,
+            adaptateur_journal=configuration.adaptateur_journal,
+            adaptateur_chiffrement=configuration.adaptateur_chiffrement,
+            adaptateur_base_de_donnees=configuration.adaptateur_base_de_donnees,
+            est_alpha_test=True,
+        ),
         question_utilisateur=DemandeInteractionUtilisateur(
             question="Une seconde question", conversation=conversation.id_conversation
         ),
@@ -401,7 +408,13 @@ def test_cree_conversation_emet_un_evenement_journal_avec_la_question_et_les_sou
     monkeypatch.setenv("ALPHA_TEST", "True")
 
     cree_conversation(
-        configuration,
+        ConfigurationQuestion(
+            service_albert=configuration.service_albert,
+            adaptateur_journal=configuration.adaptateur_journal,
+            adaptateur_chiffrement=configuration.adaptateur_chiffrement,
+            adaptateur_base_de_donnees=configuration.adaptateur_base_de_donnees,
+            est_alpha_test=True,
+        ),
         question_utilisateur=DemandeConversationUtilisateur(
             question="Une seconde question"
         ),

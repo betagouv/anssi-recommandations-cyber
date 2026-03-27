@@ -1,7 +1,6 @@
 import uuid
-from uuid import UUID
-
 from typing import NamedTuple, Union, Type
+from uuid import UUID
 
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.chiffrement import AdaptateurChiffrement
@@ -13,7 +12,6 @@ from adaptateurs.journal import (
     DonneesConversationCreee,
     ParagrapheRetourne,
 )
-from configuration import recupere_configuration
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import (
     Interaction,
@@ -33,6 +31,7 @@ class ConfigurationQuestion(NamedTuple):
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees
     adaptateur_journal: AdaptateurJournal
     adaptateur_chiffrement: AdaptateurChiffrement
+    est_alpha_test: bool = False
 
 
 class ResultatConversation:
@@ -103,6 +102,7 @@ def cree_conversation(
             id_interaction_hachee,
             reponse_question,
             type_utilisateur,
+            configuration.est_alpha_test,
         )
 
         if reponse_question.violation is not None:
@@ -155,6 +155,7 @@ def ajoute_interaction(
             id_interaction_hachee,
             reponse_question,
             type_utilisateur,
+            configuration.est_alpha_test,
         )
 
         if reponse_question.violation is not None:
@@ -193,8 +194,8 @@ def __consigne_l_evenement(
     id_interaction_hachee: str,
     reponse_question: ReponseQuestion,
     type_utilisateur: TypeUtilisateur,
+    est_alpha_test: bool = False,
 ) -> None:
-    est_alpha_test = recupere_configuration().est_alpha_test
     adaptateur_journal.consigne_evenement(
         type=type_evenement,
         donnees=class_donnees(
