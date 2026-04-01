@@ -38,13 +38,29 @@ class RechercheMetadonnees(NamedTuple):
     nom_document: str
 
 
+class RechercheMetadonneesJeopardy(NamedTuple):
+    source_id_document: str
+    source_id_chunk: int
+    source_numero_page: int
+
+
 class RechercheChunk(NamedTuple):
     content: str
     metadata: RechercheMetadonnees
 
 
+class RechercheChunkJeopardy(NamedTuple):
+    content: str
+    metadata: RechercheMetadonneesJeopardy
+
+
 class ResultatRecherche(NamedTuple):
     chunk: RechercheChunk
+    score: float
+
+
+class ResultatRechercheJeopardy(NamedTuple):
+    chunk: RechercheChunkJeopardy
     score: float
 
 
