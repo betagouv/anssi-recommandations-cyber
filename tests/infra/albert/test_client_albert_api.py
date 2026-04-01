@@ -3,11 +3,18 @@ from client_albert_de_test import (
     ConstructeurClientOpenai,
     ConstructeurClientHttp,
     ConstructeurRetourRouteSearch,
+    ClientAlbertMemoire,
 )
 
 from infra.albert.client_albert import ClientAlbertApi
+from schemas.albert import RechercheChunk, RechercheMetadonnees
+from schemas.albert import (
+    RechercheMetadonneesJeopardy,
+    RechercheChunkJeopardy,
+    ResultatRechercheJeopardy,
+)
+from schemas.albert import RecherchePayload
 from services.exceptions import ErreurAppelAlbertApi
-from schemas.albert import RecherchePayload, RechercheChunk, RechercheMetadonnees
 
 REPONSE = "Patates et reblochon"
 FAUX_RETOURS_ALBERT_API = (
@@ -164,3 +171,42 @@ def test_recherche_retourne_gracieusement_en_cas_de_probleme(
     retour = mock_client_albert_api.recherche(payload)
 
     assert retour == []
+
+
+def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():
+    client_albert_memoire = ClientAlbertMemoire()
+    resultats_jeopardy = [
+        ResultatRechercheJeopardy(
+            chunk=RechercheChunkJeopardy(
+                content="Question générée 1 ?",
+                metadata=RechercheMetadonneesJeopardy(
+                    source_id_document="4065642",
+                    source_id_chunk=73,
+                    source_numero_page=17,
+                ),
+            ),
+            score=0.9,
+        ),
+        ResultatRechercheJeopardy(
+            chunk=RechercheChunkJeopardy(
+                content="Question générée 2 ?",
+                metadata=RechercheMetadonneesJeopardy(
+                    source_id_document="4065642",
+                    source_id_chunk=74,
+                    source_numero_page=18,
+                ),
+            ),
+            score=0.8,
+        ),
+    ]
+    client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
+
+    payload = RecherchePayload(
+        collection_ids=[161155], limit=10, prompt="Ma question ?", method="semantic"
+    )
+    resultats = client_albert_memoire.recherche_jeopardy(payload)
+
+    assert len(resultats) == 2
+    assert resultats[0].chunk.content == "Question générée 1 ?"
+    assert resultats[0].chunk.metadata.source_id_chunk == 73
+    assert resultats[1].chunk.metadata.source_id_chunk == 74

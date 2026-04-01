@@ -43,6 +43,9 @@ class ServiceAlbert:
         reformulateur: Optional[ReformulateurDeQuestion] = None,
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
+        self.id_collection_jeopardy = (
+            configuration_service_albert.collection_id_anssi_lab_jeopardy
+        )
         self.reclassement_active = configuration_service_albert.reclassement_active
         self.modele_reclassement = configuration_service_albert.modele_reclassement
         self.taille_fenetre_historique = (
@@ -79,6 +82,48 @@ class ServiceAlbert:
             )
 
         return list(map(_transforme_en_paragraphe, donnees))
+
+    def __recherche_dans_collection_jeopardy(self, question: str) -> list[Paragraphe]:
+        methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
+        payload = RecherchePayload(
+            collection_ids=[self.id_collection_jeopardy],
+            limit=10,
+            prompt=question,
+            method=methode_recherche,
+        )
+
+        try:
+            resultats_jeopardy = self.client.recherche_jeopardy(payload)
+        except Exception as erreur:
+            raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
+
+        chunk_ids = [r.chunk.metadata.source_id_chunk for r in resultats_jeopardy]
+
+        if not chunk_ids:
+            return []
+
+        payload_sources = RecherchePayload(
+            collection_ids=[self.id_collection],
+            limit=len(chunk_ids),
+            prompt=question,
+            method=methode_recherche,
+        )
+
+        try:
+            donnees_sources = self.client.recherche(payload_sources)
+        except Exception as erreur:
+            raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
+
+        def _transforme_en_paragraphe(donnee):
+            return Paragraphe(
+                contenu=donnee.chunk.content,
+                url=donnee.chunk.metadata.source_url,
+                score_similarite=donnee.score,
+                numero_page=donnee.chunk.metadata.page,
+                nom_document=donnee.chunk.metadata.nom_document,
+            )
+
+        return list(map(_transforme_en_paragraphe, donnees_sources))
 
     def pose_question(
         self,
