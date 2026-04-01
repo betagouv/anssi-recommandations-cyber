@@ -42,6 +42,7 @@ class Albert(NamedTuple):
     class Service(NamedTuple):
         collection_nom_anssi_lab: str
         collection_id_anssi_lab: int
+        collection_id_anssi_lab_jeopardy: int
         reclassement_active: bool
         modele_reclassement: str
         taille_fenetre_historique: int
@@ -191,6 +192,9 @@ def recupere_configuration() -> Configuration:
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
             collection_id_anssi_lab=variables_environnement["COLLECTION_ID_ANSSI_LAB"],
+            collection_id_anssi_lab_jeopardy=int(
+                os.getenv("COLLECTION_ID_ANSSI_LAB_JEOPARDY", "4243")
+            ),
             reclassement_active=os.getenv("RECLASSEMENT_ACTIVE", "false").lower()
             == "true",
             modele_reclassement=os.getenv("MODELE_RECLASSEMENT", "openweight-rerank"),
