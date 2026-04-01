@@ -8,6 +8,7 @@ from openai.types.chat.chat_completion import Choice, ChatCompletionMessage
 from schemas.albert import (
     RecherchePayload,
     ResultatRecherche,
+    ResultatRechercheJeopardy,
     RechercheChunk,
     RechercheMetadonnees,
     ReclasseReponse,
@@ -116,12 +117,20 @@ class ClientAlbertMemoire(ClientAlbert):
         self.payload_recu = None
         self.resultats = []
         self.choix = []
+        self.resultats_jeopardy = []
+        self.payload_jeopardy_recu = None
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         self.payload_recu = payload
         if self.leve_une_erreur_sur_recherche:
             raise Exception("Erreur sur recherche")
         return self.resultats if self.resultats_vides is False else []
+
+    def recherche_jeopardy(
+        self, payload: RecherchePayload
+    ) -> list[ResultatRechercheJeopardy]:
+        self.payload_jeopardy_recu = payload
+        return self.resultats_jeopardy
 
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam], modele: str | None = None
@@ -135,6 +144,9 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_resultats(self, resultats: list[ResultatRecherche]):
         self.resultats.extend(resultats)
+
+    def avec_les_resultats_jeopardy(self, resultats: list[ResultatRechercheJeopardy]):
+        self.resultats_jeopardy.extend(resultats)
 
     def avec_les_propositions(self, choix: list[Choice]):
         self.choix.extend(choix)

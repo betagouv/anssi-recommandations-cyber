@@ -6,6 +6,7 @@ from openai.types.chat.chat_completion import Choice
 from schemas.albert import (
     RecherchePayload,
     ResultatRecherche,
+    ResultatRechercheJeopardy,
     ReclassePayload,
     ReclasseReponse,
 )
@@ -14,6 +15,12 @@ from schemas.albert import (
 class ClientAlbert(ABC):
     @abstractmethod
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
+        pass
+
+    @abstractmethod
+    def recherche_jeopardy(
+        self, payload: RecherchePayload
+    ) -> list[ResultatRechercheJeopardy]:
         pass
 
     @abstractmethod

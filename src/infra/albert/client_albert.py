@@ -8,8 +8,11 @@ from schemas.albert import (
     ReclasseReponse,
     ResultatReclasse,
     ResultatRecherche,
+    ResultatRechercheJeopardy,
     RechercheChunk,
+    RechercheChunkJeopardy,
     RechercheMetadonnees,
+    RechercheMetadonneesJeopardy,
 )
 from configuration import logging, Albert
 from openai import APITimeoutError, APIConnectionError
@@ -95,6 +98,48 @@ class ClientAlbertApi(ClientAlbert):
         except (requests.HTTPError, requests.Timeout) as erreur:
             logging.error(
                 f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
+            )
+            resultats = []
+
+        return resultats
+
+    def recherche_jeopardy(
+        self, payload: RecherchePayload
+    ) -> list[ResultatRechercheJeopardy]:
+        try:
+            reponse: requests.Response = self.client_http.post(
+                "/search",
+                json=payload._asdict(),
+                timeout=self.temps_reponse_maximum_recherche_paragraphes,
+            )
+            reponse.raise_for_status()
+            brut = reponse.json()
+            donnees = brut.get("data", [])
+            resultats: list[ResultatRechercheJeopardy] = []
+
+            for r in donnees:
+                chunk_dict = r.get("chunk", {})
+                meta_dict = chunk_dict.get("metadata", {})
+
+                metadata = RechercheMetadonneesJeopardy(
+                    source_id_document=meta_dict.get("source_id_document", ""),
+                    source_id_chunk=meta_dict.get("source_id_chunk", 0),
+                    source_numero_page=meta_dict.get("source_numero_page", 0),
+                )
+                chunk = RechercheChunkJeopardy(
+                    content=chunk_dict.get("content", ""),
+                    metadata=metadata,
+                )
+                resultats.append(
+                    ResultatRechercheJeopardy(
+                        chunk=chunk,
+                        score=float(r.get("score", "0.0")),
+                    )
+                )
+
+        except (requests.HTTPError, requests.Timeout) as erreur:
+            logging.error(
+                f"Route `/search` (jeopardy) de l'API Albert retourne une erreur: {erreur}"
             )
             resultats = []
 
