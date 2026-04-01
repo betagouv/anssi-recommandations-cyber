@@ -27,3 +27,11 @@ def test_fabrique_un_service_albert_avec_un_reformulateur(monkeypatch) -> None:
         "composant de reformulation"
         in service_albert.reformulateur.prompt_de_reformulation
     )
+
+
+def test_lit_collection_id_jeopardy_depuis_env() -> None:
+    configuration = recupere_configuration()
+
+    assert configuration.albert.service.collection_id_anssi_lab_jeopardy is not None
+    assert configuration.albert.service.collection_id_anssi_lab_jeopardy != configuration.albert.service.collection_id_anssi_lab
+    assert isinstance(configuration.albert.service.collection_id_anssi_lab_jeopardy, int)

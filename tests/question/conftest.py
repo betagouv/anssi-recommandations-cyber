@@ -112,6 +112,7 @@ def un_service_albert_avec_un_client_memoire() -> Callable[
             configuration_service_albert=Albert.Service(  # type:ignore[attr-defined]
                 collection_nom_anssi_lab="",
                 collection_id_anssi_lab=42,
+                collection_id_anssi_lab_jeopardy=43,
                 reclassement_active=False,
                 modele_reclassement="Aucun",
                 taille_fenetre_historique=10,

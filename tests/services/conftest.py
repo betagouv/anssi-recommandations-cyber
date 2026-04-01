@@ -11,6 +11,7 @@ def une_configuration_de_service_albert() -> Callable[[], Albert.Service]:  # ty
         return Albert.Service(  # type:ignore[attr-defined, name-defined]
             collection_nom_anssi_lab="",
             collection_id_anssi_lab=42,
+            collection_id_anssi_lab_jeopardy=43,
             reclassement_active=False,
             modele_reclassement="Aucun",
             taille_fenetre_historique=10,

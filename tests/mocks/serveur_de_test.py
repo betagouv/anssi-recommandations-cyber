@@ -41,6 +41,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
             Albert.Service(  # type: ignore[attr-defined]
                 collection_nom_anssi_lab="",
                 collection_id_anssi_lab=1,
+                collection_id_anssi_lab_jeopardy=2,
                 reclassement_active=False,
                 modele_reclassement="",
                 taille_fenetre_historique=2,
