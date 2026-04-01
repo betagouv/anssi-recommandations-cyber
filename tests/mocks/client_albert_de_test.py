@@ -119,11 +119,23 @@ class ClientAlbertMemoire(ClientAlbert):
         self.choix = []
         self.resultats_jeopardy = []
         self.payload_jeopardy_recu = None
+        self.appels_recherche = 0
+        self.resultats_par_appel = []
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         self.payload_recu = payload
         if self.leve_une_erreur_sur_recherche:
             raise Exception("Erreur sur recherche")
+
+        if self.resultats_par_appel:
+            resultat = (
+                self.resultats_par_appel[self.appels_recherche]
+                if self.appels_recherche < len(self.resultats_par_appel)
+                else []
+            )
+            self.appels_recherche += 1
+            return resultat
+
         return self.resultats if self.resultats_vides is False else []
 
     def recherche_jeopardy(
@@ -144,6 +156,11 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_resultats(self, resultats: list[ResultatRecherche]):
         self.resultats.extend(resultats)
+
+    def avec_les_resultats_par_appel(
+        self, resultats_par_appel: list[list[ResultatRecherche]]
+    ):
+        self.resultats_par_appel = resultats_par_appel
 
     def avec_les_resultats_jeopardy(self, resultats: list[ResultatRechercheJeopardy]):
         self.resultats_jeopardy.extend(resultats)

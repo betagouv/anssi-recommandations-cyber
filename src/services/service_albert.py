@@ -47,6 +47,7 @@ class ServiceAlbert:
             configuration_service_albert.collection_id_anssi_lab_jeopardy
         )
         self.reclassement_active = configuration_service_albert.reclassement_active
+        self.jeopardy_active = configuration_service_albert.jeopardy_active
         self.modele_reclassement = configuration_service_albert.modele_reclassement
         self.taille_fenetre_historique = (
             configuration_service_albert.taille_fenetre_historique
@@ -60,15 +61,16 @@ class ServiceAlbert:
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
         nombre_paragraphes_a_retourner = 20 if self.reclassement_active else 5
-        payload = RecherchePayload(
+
+        payload_classique = RecherchePayload(
             collection_ids=[self.id_collection],
-            limit=nombre_paragraphes_a_retourner,
+            limit=10 if self.jeopardy_active else nombre_paragraphes_a_retourner,
             prompt=question,
             method=methode_recherche,
         )
 
         try:
-            donnees = self.client.recherche(payload)
+            donnees_classiques = self.client.recherche(payload_classique)
         except Exception as erreur:
             raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
 
@@ -81,7 +83,27 @@ class ServiceAlbert:
                 nom_document=donnee.chunk.metadata.nom_document,
             )
 
-        return list(map(_transforme_en_paragraphe, donnees))
+        paragraphes_classiques = list(
+            map(_transforme_en_paragraphe, donnees_classiques)
+        )
+
+        if self.jeopardy_active:
+            paragraphes_jeopardy = self.__recherche_dans_collection_jeopardy(question)
+            paragraphes_fusionnes = paragraphes_classiques + paragraphes_jeopardy
+
+            paragraphes_uniques = []
+            contenus_vus = set()
+            for p in paragraphes_fusionnes:
+                if p.contenu not in contenus_vus:
+                    paragraphes_uniques.append(p)
+                    contenus_vus.add(p.contenu)
+
+            if self.reclassement_active:
+                return paragraphes_uniques[:20]
+            else:
+                return paragraphes_uniques
+        else:
+            return paragraphes_classiques
 
     def __recherche_dans_collection_jeopardy(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
