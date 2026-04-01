@@ -47,6 +47,7 @@ class Albert(NamedTuple):
         modele_reclassement: str
         taille_fenetre_historique: int
         reformulateur_active: bool
+        jeopardy_active: bool
 
     client: Client
     service: Service
@@ -203,6 +204,7 @@ def recupere_configuration() -> Configuration:
             ),
             reformulateur_active=os.getenv("REFORMULATEUR_ACTIVE", "true").lower()
             == "true",
+            jeopardy_active=os.getenv("JEOPARDY_ACTIVE", "false").lower() == "true",
         ),
     )
     configuration_base_de_donnees = _recupere_configuration_postgres(

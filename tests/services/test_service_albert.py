@@ -28,6 +28,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
     modele_reclassement="modele-reranking-de-test",
     taille_fenetre_historique=2,
     reformulateur_active=True,
+    jeopardy_active=False,
 )
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
@@ -38,6 +39,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
     modele_reclassement="rerank-small",
     taille_fenetre_historique=2,
     reformulateur_active=True,
+    jeopardy_active=False,
 )
 
 PROMPT_SYSTEME_ALTERNATIF = (
@@ -307,6 +309,7 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
         prompts=PROMPTS,
     ).pose_question(question="Une question de test ?")
 
+    # Sans jeopardy mais avec reclassement, on demande 20 paragraphes classiques
     assert client_albert_memoire.payload_recu.limit == 20
 
 
@@ -515,6 +518,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         modele_reclassement="modele-reranking-de-test",
         taille_fenetre_historique=2,
         reformulateur_active=True,
+        jeopardy_active=False,
     )
 
     ServiceAlbert(
