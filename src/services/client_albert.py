@@ -24,6 +24,12 @@ class ClientAlbert(ABC):
         pass
 
     @abstractmethod
+    def recherche_chunk_par_id(
+        self, document_id: str, chunk_id: int
+    ) -> ResultatRecherche:
+        pass
+
+    @abstractmethod
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam], modele: str | None = None
     ) -> list[Choice]:

@@ -33,5 +33,10 @@ def test_lit_collection_id_jeopardy_depuis_env() -> None:
     configuration = recupere_configuration()
 
     assert configuration.albert.service.collection_id_anssi_lab_jeopardy is not None
-    assert configuration.albert.service.collection_id_anssi_lab_jeopardy != configuration.albert.service.collection_id_anssi_lab
-    assert isinstance(configuration.albert.service.collection_id_anssi_lab_jeopardy, int)
+    assert (
+        configuration.albert.service.collection_id_anssi_lab_jeopardy
+        != configuration.albert.service.collection_id_anssi_lab
+    )
+    assert isinstance(
+        configuration.albert.service.collection_id_anssi_lab_jeopardy, int
+    )
