@@ -52,7 +52,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources():
         .ayant_pour_contenu("Contenu du chunk 74")
         .construis(),
     ]
-    client_albert_memoire.avec_les_resultats(chunks_sources)
+    client_albert_memoire.avec_chunks_par_id(chunks_sources)
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
@@ -115,9 +115,8 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
         for i in range(5)
     ]
 
-    client_albert_memoire.avec_les_resultats_par_appel(
-        [resultats_classiques, chunks_sources_jeopardy]
-    )
+    client_albert_memoire.avec_les_resultats(resultats_classiques)
+    client_albert_memoire.avec_chunks_par_id(chunks_sources_jeopardy)
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
@@ -170,9 +169,8 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
         un_resultat_de_recherche().ayant_pour_contenu("Chunk commun").construis(),
     ]
 
-    client_albert_memoire.avec_les_resultats_par_appel(
-        [resultats_classiques, chunks_sources_jeopardy]
-    )
+    client_albert_memoire.avec_les_resultats(resultats_classiques)
+    client_albert_memoire.avec_chunks_par_id(chunks_sources_jeopardy)
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",

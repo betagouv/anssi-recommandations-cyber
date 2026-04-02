@@ -119,33 +119,24 @@ class ServiceAlbert:
         except Exception as erreur:
             raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
 
-        chunk_ids = [r.chunk.metadata.source_id_chunk for r in resultats_jeopardy]
-
-        if not chunk_ids:
+        if not resultats_jeopardy:
             return []
 
-        payload_sources = RecherchePayload(
-            collection_ids=[self.id_collection],
-            limit=len(chunk_ids),
-            prompt=question,
-            method=methode_recherche,
-        )
-
-        try:
-            donnees_sources = self.client.recherche(payload_sources)
-        except Exception as erreur:
-            raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
-
-        def _transforme_en_paragraphe(donnee):
-            return Paragraphe(
-                contenu=donnee.chunk.content,
-                url=donnee.chunk.metadata.source_url,
-                score_similarite=donnee.score,
-                numero_page=donnee.chunk.metadata.page,
-                nom_document=donnee.chunk.metadata.nom_document,
+        paragraphes = []
+        for resultat in resultats_jeopardy:
+            document_id = resultat.chunk.metadata.source_id_document
+            chunk_id = resultat.chunk.metadata.source_id_chunk
+            donnee = self.client.recherche_chunk_par_id(document_id, chunk_id)
+            paragraphes.append(
+                Paragraphe(
+                    contenu=donnee.chunk.content,
+                    url=donnee.chunk.metadata.source_url,
+                    score_similarite=resultat.score,
+                    numero_page=donnee.chunk.metadata.page,
+                    nom_document=donnee.chunk.metadata.nom_document,
+                )
             )
-
-        return list(map(_transforme_en_paragraphe, donnees_sources))
+        return paragraphes
 
     def pose_question(
         self,

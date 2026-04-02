@@ -121,6 +121,10 @@ class ClientAlbertMemoire(ClientAlbert):
         self.payload_jeopardy_recu = None
         self.appels_recherche = 0
         self.resultats_par_appel = []
+        self.chunks_par_id = []
+        self.appels_recherche_chunk_par_id = []
+        self.document_id_recu = None
+        self.chunk_id_recu = None
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         self.payload_recu = payload
@@ -144,6 +148,16 @@ class ClientAlbertMemoire(ClientAlbert):
         self.payload_jeopardy_recu = payload
         return self.resultats_jeopardy
 
+    def recherche_chunk_par_id(
+        self, document_id: str, chunk_id: int
+    ) -> ResultatRecherche:
+        self.document_id_recu = document_id
+        self.chunk_id_recu = chunk_id
+        self.appels_recherche_chunk_par_id.append((document_id, chunk_id))
+        if self.chunks_par_id:
+            return self.chunks_par_id.pop(0)
+        return un_resultat_de_recherche().construis()
+
     def recupere_propositions(
         self, messages: list[ChatCompletionMessageParam], modele: str | None = None
     ) -> list[Choice]:
@@ -164,6 +178,12 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_resultats_jeopardy(self, resultats: list[ResultatRechercheJeopardy]):
         self.resultats_jeopardy.extend(resultats)
+
+    def avec_chunk_par_id(self, chunk: ResultatRecherche):
+        self.chunks_par_id.append(chunk)
+
+    def avec_chunks_par_id(self, chunks: list[ResultatRecherche]):
+        self.chunks_par_id.extend(chunks)
 
     def avec_les_propositions(self, choix: list[Choice]):
         self.choix.extend(choix)

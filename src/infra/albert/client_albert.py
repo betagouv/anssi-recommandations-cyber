@@ -145,6 +145,47 @@ class ClientAlbertApi(ClientAlbert):
 
         return resultats
 
+    def recherche_chunk_par_id(
+        self, document_id: str, chunk_id: int
+    ) -> ResultatRecherche:
+        try:
+            reponse: requests.Response = self.client_http.get(
+                f"/documents/{document_id}/chunks/{chunk_id}",
+                timeout=self.temps_reponse_maximum_recherche_paragraphes,
+            )
+            reponse.raise_for_status()
+            brut = reponse.json()
+            meta_dict = brut.get("metadata", {})
+
+            metadata = RechercheMetadonnees(
+                source_url=meta_dict.get("source_url", ""),
+                page=meta_dict.get("page", 0)
+                + self.decalage_index_Albert_et_numero_de_page_lecteur,
+                nom_document=meta_dict.get("nom_document", ""),
+            )
+            chunk = RechercheChunk(
+                content=brut.get("content", ""),
+                metadata=metadata,
+            )
+            return ResultatRecherche(
+                chunk=chunk,
+                score=1.0,
+            )
+
+        except (requests.HTTPError, requests.Timeout) as erreur:
+            logging.error(
+                f"Route `/documents/{document_id}/chunks/{chunk_id}` de l'API Albert retourne une erreur: {erreur}"
+            )
+            return ResultatRecherche(
+                chunk=RechercheChunk(
+                    content="",
+                    metadata=RechercheMetadonnees(
+                        source_url="", page=0, nom_document=""
+                    ),
+                ),
+                score=0.0,
+            )
+
     def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
         try:
             reponse = self.client_http.post(
