@@ -4,5 +4,4 @@ minimumReleaseAge: 10080 # 7 jours (exprimé en minutes)
 preferFrozenLockfile: true
 
 minimumReleaseAgeExclude:
-  - svelte@5.53.5
   - immutable@5.1.5
