@@ -24,6 +24,7 @@ dependencies = [
 dev = [
     "ipython",
     "mypy",
+    "pandas",
     "ruff",
     "types-psycopg2",
     "types-requests",
