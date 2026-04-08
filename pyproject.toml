@@ -22,6 +22,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "ipython",
     "mypy",
     "ruff",
     "types-psycopg2",
