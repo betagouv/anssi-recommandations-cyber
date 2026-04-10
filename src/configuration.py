@@ -16,7 +16,7 @@ class Albert(NamedTuple):
         api_key: str
         base_url: str
         modele_reponse: str
-        modele_reformulation: str
+        modele_reformulation: str  # TODO: À déplacer dans la configuration service
         temps_reponse_maximum_pose_question: float
         temps_reponse_maximum_recherche_paragraphes: float
         utilise_recherche_hybride: bool

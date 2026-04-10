@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
+
 import sentry_sdk
-from configuration import logging, Sentry, recupere_configuration
+
+from configuration import Sentry, recupere_configuration
+from infra.logger import log
 
 
 class AdaptateurSentry(ABC):
@@ -33,8 +36,9 @@ class AdaptateurSentryStandard(AdaptateurSentry):
 
 def fabrique_adaptateur_sentry() -> AdaptateurSentry:
     configuration = recupere_configuration().sentry
-    logging.info(f"Configuration Sentry : {configuration.type_adaptateur_sentry}")
     if configuration.type_adaptateur_sentry == "standard":
+        log(__name__, "ℹ️ Gestion erreur : SENTRY")
         AdaptateurSentryStandard.init(configuration)
         return AdaptateurSentryStandard()
+    log(__name__, "ℹ️ Gestion erreur : MÉMOIRE")
     return AdaptateurSentryMemoire()
