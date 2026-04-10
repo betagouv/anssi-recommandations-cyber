@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from typing import Literal, Optional
 
 from configuration import BaseDeDonnees, recupere_configuration
+from infra.logger import log
 from schemas.retour_utilisatrice import TagPositif, TagNegatif
 from schemas.type_utilisateur import TypeUtilisateur
 
@@ -104,8 +105,8 @@ class AdaptateurJournalPostgres(AdaptateurJournal):
 
 def fabrique_adaptateur_journal() -> AdaptateurJournal:
     configuration = recupere_configuration()
-    return (
-        AdaptateurJournalPostgres(configuration.base_de_donnees_journal)
-        if configuration.base_de_donnees_journal
-        else AdaptateurJournalMemoire()
-    )
+    if configuration.base_de_donnees_journal:
+        log(__name__, "ℹ️ ADAPTEUR JOURNAL : POSTGRES")
+        return AdaptateurJournalPostgres(configuration.base_de_donnees_journal)
+    log(__name__, "ℹ️ ADAPTEUR JOURNAL : MÉMOIRE")
+    return AdaptateurJournalMemoire()

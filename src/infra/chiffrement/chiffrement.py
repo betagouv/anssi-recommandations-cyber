@@ -9,6 +9,7 @@ import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from configuration import Configuration
+from infra.logger import log
 
 
 class ServiceDeChiffrement(metaclass=ABCMeta):
@@ -135,7 +136,8 @@ def fabrique_service_de_chiffrement(
 ) -> ServiceDeChiffrement:
     clef_chiffrement = configuration.chiffrement.clef_chiffrement
     if clef_chiffrement is not None:
+        log(__name__, "ℹ️ CHIFFREMENT : AES")
         return ServiceDeChiffrementAES(clef_chiffrement.encode("utf-8"))
-
     else:
+        log(__name__, "⚠️ CHIFFREMENT : CLAIR")
         return ServiceDeChiffrementEnClair()
