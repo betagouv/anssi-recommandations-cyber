@@ -36,8 +36,9 @@ def fabrique_serveur(
     mode: Mode,
     static_root_directory="ui/dist/",
     la_version_ui_kit=version_ui_kit,
+    adaptateur_sentry=fabrique_adaptateur_sentry,
 ) -> FastAPI:
-    fabrique_adaptateur_sentry()
+    adaptateur_sentry()
     serveur = FastAPI()
 
     limiteur = Limiter(

@@ -1,7 +1,7 @@
 from pathlib import Path
+from typing import Callable, Dict, Optional
 
 from openai.types.chat.chat_completion import Choice
-from typing import Callable, Dict, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees
@@ -13,6 +13,7 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
 )
+from adaptateurs.sentry import AdaptateurSentryMemoire
 from client_albert_de_test import ClientAlbertMemoire
 from configuration import Mode, Albert
 from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
@@ -22,9 +23,9 @@ from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, Reclass
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import Violation
 from serveur import fabrique_serveur
+from services.exceptions import ErreurAppelAlbertApi
 from services.fabrique_service_albert import fabrique_service_albert
 from services.service_albert import ServiceAlbert, Prompts
-from services.exceptions import ErreurAppelAlbertApi
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
@@ -144,6 +145,8 @@ class ConstructeurServeur:
             self._max_requetes_par_minute,
             self._mode,
             f"{self.pages_statiques}/ui/dist/",
+            lambda: "1",
+            AdaptateurSentryMemoire,
         )
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
