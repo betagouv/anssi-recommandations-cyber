@@ -1,7 +1,8 @@
 import os
 from unittest.mock import patch
-from configuration import recupere_configuration
+
 from adaptateurs.sentry import AdaptateurSentryMemoire
+from configuration import recupere_configuration
 
 
 def test_configuration_sentry_avec_variables_environnement():

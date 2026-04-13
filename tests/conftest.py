@@ -1,11 +1,11 @@
 import random
 import uuid
 from pathlib import Path
+from typing import Callable, Optional
 
 import pytest
 from fastapi import FastAPI
 from mypy_extensions import DefaultNamedArg
-from typing import Callable, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesEnMemoire
@@ -17,12 +17,11 @@ from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.api import QuestionRequete
 from schemas.retour_utilisatrice import Interaction, Conversation
 from schemas.type_utilisateur import TypeUtilisateur
+from schemas.violations import Violation
 from serveur_de_test import (
     ConstructeurServeur,
     ServiceAlbertMemoire,
 )
-
-from schemas.violations import Violation
 from services.service_albert import ServiceAlbert
 
 
@@ -208,7 +207,7 @@ def un_serveur_de_test(
         rate_limit: Optional[int] = 600,
         service_albert: Optional[ServiceAlbert] = None,
         adaptateur_base_de_donnees: Optional[AdaptateurBaseDeDonnees] = None,
-        adaptateur_journal: Optional[AdaptateurJournal] = None,
+        adaptateur_journal: Optional[AdaptateurJournal] = AdaptateurJournalMemoire(),
     ):
         serveur = ConstructeurServeur(
             mode=mode,  # type: ignore[arg-type]
@@ -221,8 +220,7 @@ def un_serveur_de_test(
             serveur = serveur.avec_adaptateur_base_de_donnees(
                 adaptateur_base_de_donnees
             )
-        if adaptateur_journal:
-            serveur = serveur.avec_adaptateur_journal(adaptateur_journal)
+        serveur = serveur.avec_adaptateur_journal(adaptateur_journal)
         return serveur.construis()
 
     return _un_serveur_de_test
