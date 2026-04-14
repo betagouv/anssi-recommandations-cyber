@@ -17,7 +17,7 @@
   );
   const titreBlocAvis: string = $derived.by(() =>
     avisUtilisateur?.positif
-      ? 'Dites-nous ce que vous avez appriécié ✨'
+      ? 'Dites-nous ce que vous avez apprécié ✨'
       : 'Expliquez-nous ce qui peut être amélioré 🛠️'
   );
   let commentaire: string = $state('');
