@@ -16,15 +16,14 @@
 
 <div class="introduction">
   <p>
-    MesQuestionsCyber a pour but de vous <b
-      >fournir des réponses précises et sourcées aux questions de cybersécurité</b
-    >
-    à partir de <b>sources sélectionnées par l’ANSSI</b>.
+    MesQuestionsCyber est destiné aux professionnels souhaitant des réponses <b
+      >précises et sourcées à leurs questions de cybersécurité</b
+    >.
   </p>
   <p>
-    Pour cette version bêta, <b
-      >la base de connaissance est uniquement basée sur les guides de l’ANSSI</b
-    >. D'autres sources pourront venir enrichir la base de connaissance.
+    MesQuestionsCyber s’appuie sur <b
+      >les guides et d’autres ressources de l’ANSSI
+    </b> ainsi que d’autres sources de confiance comme des publications de la CNIL.
   </p>
   <p>Posez votre question ou choisissez parmi nos suggestions :</p>
 
