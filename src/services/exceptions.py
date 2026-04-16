@@ -1,6 +1,10 @@
-class ErreurRechercheDocuments(Exception):
+class ErreurAlbert(Exception):
     pass
 
 
-class ErreurCommunicationModele(Exception):
+class ErreurRechercheDocuments(ErreurAlbert):
+    pass
+
+
+class ErreurCommunicationModele(ErreurAlbert):
     pass

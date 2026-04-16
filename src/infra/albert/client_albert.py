@@ -126,7 +126,7 @@ class ClientAlbertApi(ClientAlbert):
                 f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
             )
             raise ErreurRechercheDocuments(
-                "Impossible de récupérer les éléments documentaires relatifs à la question posée"
+                "Impossible de récupérer les éléments documentaires relatifs à la question posée."
             ) from erreur
 
         return resultats
