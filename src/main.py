@@ -20,7 +20,6 @@ log(
     __name__,
     f"ℹ️ Configuration Albert :\n"
     f"  Modèle : {configuration.albert.client.modele_reponse}\n"
-    f"  Reformulateur actif : {'Oui' if configuration.albert.service.reformulateur_active else 'Non'} - Modèle : {configuration.albert.client.modele_reformulation}\n"
     f"  Reclassement actif : {'Oui' if configuration.albert.service.reclassement_active else 'Non'} - Modèle {configuration.albert.service.modele_reclassement}\n"
     f"  Identifiant collection ANSSI : {configuration.albert.service.collection_id_anssi_lab}\n"
     f"  Recherche hybride : {'Oui' if configuration.albert.client.utilise_recherche_hybride else 'Non'}\n",

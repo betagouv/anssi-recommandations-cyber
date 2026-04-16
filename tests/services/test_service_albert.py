@@ -9,6 +9,7 @@ from client_albert_de_test import ConstructeurDeChoix
 
 from configuration import Albert
 from question.reformulateur_de_question import ReformulateurDeQuestion
+from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import ReclasseReponse, ResultatReclasse, ReclassePayload
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
@@ -27,7 +28,6 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
     reclassement_active=False,
     modele_reclassement="modele-reranking-de-test",
     taille_fenetre_historique=2,
-    reformulateur_active=True,
     jeopardy_active=False,
 )
 
@@ -38,7 +38,6 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
     reclassement_active=True,
     modele_reclassement="rerank-small",
     taille_fenetre_historique=2,
-    reformulateur_active=True,
     jeopardy_active=False,
 )
 
@@ -71,6 +70,7 @@ def test_pose_question_retourne_une_reponse():
         client_albert_memoire,
         False,
         PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     )
 
     reponse = service_albert.pose_question(question=QUESTION)
@@ -88,6 +88,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
         client_albert_memoire,
         False,
         PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -120,6 +121,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme():
         client_albert_memoire,
         False,
         PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -139,6 +141,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
         client_albert_memoire,
         False,
         PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     )
 
     retour = service_albert.pose_question(question=QUESTION)
@@ -185,6 +188,7 @@ def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
         client_albert_memoire,
         False,
         PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     )
 
     retour = service_albert.pose_question(question="question illégale ?")
@@ -213,6 +217,7 @@ def test_reclasse_les_paragraphes():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).reclasse(payload)
 
     assert reclassement == {"paragraphes_tries": ["texte2", "texte1"]}
@@ -245,6 +250,7 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).pose_question(question="Une question de test ?")
 
     assert list(map(lambda p: p.contenu, reponse_de_pose_question.paragraphes)) == [
@@ -279,6 +285,7 @@ def test_les_paragraphes_reclasses_sont_envoyes_a_albert():
         client_albert_memoire,
         False,
         PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -307,6 +314,7 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).pose_question(question="Une question de test ?")
 
     # Sans jeopardy mais avec reclassement, on demande 20 paragraphes classiques
@@ -326,6 +334,7 @@ def test_appelle_le_reclassement_uniquement_quand_active():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
@@ -346,6 +355,7 @@ def test_l_injection_du_prompt_de_reclassement():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     ).pose_question(question="Une question de test ?")
 
     assert (
@@ -369,6 +379,7 @@ def test_lis_le_nom_du_modele_de_reclassement():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu.model == "rerank-small"
@@ -383,6 +394,7 @@ def test_ne_reclasse_pas_si_la_recherche_de_paragraphes_retourne_un_resultat_vid
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
@@ -408,6 +420,7 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).pose_question(question="Une question de test ?")
 
     assert reponse.reponse == "Un contenu"
@@ -436,6 +449,7 @@ def test_retourne_au_maximum_5_paragraphes_meme_si_le_reclassement_echoue():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).pose_question(question="Une question de test ?")
 
     assert len(reponse.paragraphes) == 5
@@ -466,6 +480,7 @@ def test_initie_une_conversation(
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     ).pose_question(
         question="Une troisieme question de test ?", conversation=conversation
     )
@@ -517,7 +532,6 @@ def test_limite_l_historique_a_2_interactions_passees(
         reclassement_active=False,
         modele_reclassement="modele-reranking-de-test",
         taille_fenetre_historique=2,
-        reformulateur_active=True,
         jeopardy_active=False,
     )
 
@@ -526,6 +540,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     ).pose_question(question="Question actuelle ?", conversation=conversation)
 
     messages_recus = client_albert_memoire.messages_recus

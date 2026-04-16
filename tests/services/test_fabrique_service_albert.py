@@ -18,7 +18,6 @@ def test_la_configuration_contient_la_taille_de_la_fenetre_historique() -> None:
 
 
 def test_fabrique_un_service_albert_avec_un_reformulateur(monkeypatch) -> None:
-    monkeypatch.setenv("REFORMULATEUR_ACTIVE", "true")
     service_albert = fabrique_service_albert()
 
     assert service_albert.reformulateur is not None

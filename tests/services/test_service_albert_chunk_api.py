@@ -2,12 +2,13 @@ from client_albert_de_test import (
     ClientAlbertMemoire,
     un_resultat_de_recherche,
 )
+from configuration import Albert
+from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import (
     RechercheMetadonneesJeopardy,
     RechercheChunkJeopardy,
     ResultatRechercheJeopardy,
 )
-from configuration import Albert
 from services.service_albert import ServiceAlbert, Prompts
 
 
@@ -75,7 +76,6 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
         reclassement_active=False,
         modele_reclassement="",
         taille_fenetre_historique=2,
-        reformulateur_active=False,
         jeopardy_active=False,
     )
     service_albert = ServiceAlbert(
@@ -83,6 +83,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
     )
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
         "Ma question ?"
