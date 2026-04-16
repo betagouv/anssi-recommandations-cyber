@@ -20,6 +20,7 @@ from question.question import (
     ajoute_interaction,
     DemandeInteractionUtilisateur,
     ResultatConversationInconnue,
+    TypeErreur,
 )
 from schemas.api import (
     QuestionRequete,
@@ -71,7 +72,9 @@ def route_initie_conversation(
             )
         case ResultatConversationEnErreur():
             raise HTTPException(
-                status_code=422,
+                status_code=500
+                if resultat_interaction.type_erreur is TypeErreur.COMMUNICATION_ALBERT
+                else 422,
                 detail={
                     "message": resultat_interaction.message_mqc,
                 },
@@ -116,7 +119,9 @@ def route_conversation_ajoute_interaction(
             )
         case ResultatConversationEnErreur():
             raise HTTPException(
-                status_code=422,
+                status_code=500
+                if resultat_interaction.type_erreur is TypeErreur.COMMUNICATION_ALBERT
+                else 422,
                 detail={
                     "message": resultat_interaction.message_mqc,
                 },

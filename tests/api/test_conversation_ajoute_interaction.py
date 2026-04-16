@@ -126,7 +126,7 @@ def test_route_conversation_ajoute_interaction_emets_un_evenement_dans_le_journa
     assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
 
 
-def test_route_conversation_ajoute_interaction_retourne_une_reponse_en_erreur(
+def test_route_conversation_ajoute_interaction_retourne_une_erreur_HTTP_500_si_echec_appel_albert(
     un_serveur_de_test_complet,
     un_constructeur_de_conversation,
     un_constructeur_d_interaction,
@@ -134,7 +134,31 @@ def test_route_conversation_ajoute_interaction_retourne_une_reponse_en_erreur(
     serveur, _, adaptateur_base_de_donnees, _, service_albert = (
         un_serveur_de_test_complet()
     )
-    service_albert.qui_leve_une_erreur_sur_pose_question()
+    service_albert.qui_leve_une_erreur_de_communication_vers_albert()
+    conversation = un_constructeur_de_conversation().construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+
+    client = TestClient(serveur)
+    reponse = client.post(
+        f"/api/conversation/{conversation.id_conversation}?type_utilisateur=ABCD",
+        json={"question": "Une question"},
+    )
+
+    assert reponse.status_code == 500
+    assert reponse.json() == {
+        "detail": {"message": "Erreur message sur pose_question."}
+    }
+
+
+def test_route_conversation_ajoute_interaction_retourne_une_erreur_HTTP_422_si_erreur_autre_que_albert(
+    un_serveur_de_test_complet,
+    un_constructeur_de_conversation,
+    un_constructeur_d_interaction,
+):
+    serveur, _, adaptateur_base_de_donnees, _, service_albert = (
+        un_serveur_de_test_complet()
+    )
+    service_albert.qui_leve_une_erreur_quelconque()
     conversation = un_constructeur_de_conversation().construis()
     adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
 

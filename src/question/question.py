@@ -1,4 +1,5 @@
 import uuid
+from enum import StrEnum
 from typing import NamedTuple, Union, Type
 from uuid import UUID
 
@@ -50,13 +51,19 @@ class ResultatConversation:
         self.id_conversation = id_conversation
 
 
+class TypeErreur(StrEnum):
+    INCONNU = "INCONNU"
+    COMMUNICATION_ALBERT = "COMMUNICATION_ALBERT"
+
+
 class ResultatConversationEnErreur:
     def __init__(self, e: Exception):
         if isinstance(e, ErreurAlbert):
             self.message_mqc = str(e)
+            self.type_erreur = TypeErreur.COMMUNICATION_ALBERT
         else:
-            self.message_mqc = "Erreur lors de l’appel à Albert"
-        self.erreur = str(e)
+            self.message_mqc = str(e)
+            self.type_erreur = TypeErreur.INCONNU
 
 
 class ResultatConversationInconnue:
