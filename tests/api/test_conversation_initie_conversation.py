@@ -209,3 +209,60 @@ def test_route_initie_conversation_identifie_comme_inconnu_le_type_d_utilisateur
 
     evenements = adaptateur_journal.les_evenements()
     assert evenements[0]["donnees"].type_utilisateur == TypeUtilisateur.INCONNU
+
+
+def test_route_conversation_initie_conversation_retourne_une_erreur_HTTP_500_si_echec_appel_albert(
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+):
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(
+        dechiffre="une chaine inconnue"
+    )
+    adaptateur_journal = AdaptateurJournalMemoire()
+    service_albert = ServiceAlbertMemoire()
+    service_albert.qui_leve_une_erreur_de_communication_vers_albert()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+    )
+
+    client = TestClient(serveur)
+    reponse = client.post(
+        "/api/conversation?type_utilisateur=ABCD", json={"question": "Une question"}
+    )
+
+    assert reponse.status_code == 500
+    assert reponse.json() == {
+        "detail": {"message": "Erreur message sur pose_question."}
+    }
+
+
+def test_route_conversation_initie_conversation_retourne_une_erreur_HTTP_422_si_erreur_autre_que_albert(
+    un_serveur_de_test, un_adaptateur_de_chiffrement
+):
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_chiffrement = un_adaptateur_de_chiffrement(
+        dechiffre="une chaine inconnue"
+    )
+    adaptateur_journal = AdaptateurJournalMemoire()
+    service_albert = ServiceAlbertMemoire()
+    service_albert.qui_leve_une_erreur_quelconque()
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=adaptateur_chiffrement,
+        adaptateur_journal=adaptateur_journal,
+        service_albert=service_albert,
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+    )
+
+    client = TestClient(serveur)
+    reponse = client.post(
+        "/api/conversation?type_utilisateur=ABCD", json={"question": "Une question"}
+    )
+
+    assert reponse.status_code == 422
+    assert reponse.json() == {
+        "detail": {"message": "Erreur message sur pose_question."}
+    }

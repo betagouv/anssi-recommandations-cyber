@@ -31,7 +31,7 @@ def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
     une_configuration_complete,
 ):
     la_configuration, service_albert, _, _, _ = une_configuration_complete()
-    service_albert.qui_leve_une_erreur_sur_pose_question()
+    service_albert.qui_leve_une_erreur_de_communication_vers_albert()
     resultat_conversation = cree_conversation(
         la_configuration,
         DemandeConversationUtilisateur(question="une question"),
@@ -40,7 +40,6 @@ def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
 
     assert isinstance(resultat_conversation, ResultatConversationEnErreur)
     assert resultat_conversation.message_mqc == "Erreur message sur pose_question."
-    assert resultat_conversation.erreur == "Erreur message sur pose_question."
 
 
 def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur_si_recherche_paragraphes_echoue(

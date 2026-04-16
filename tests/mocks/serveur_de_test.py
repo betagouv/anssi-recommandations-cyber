@@ -36,7 +36,8 @@ class ServiceAlbertMemoire(ServiceAlbert):
         self.paragraphes: list[Paragraphe] = []
         self.reponse = None
         self.recherche_paragraphes_a_ete_appele = False
-        self.leve_une_erreur_sur_pose_question = False
+        self.leve_une_erreur_de_communication_vers_albert = False
+        self.leve_une_erreur_quelconque = False
         self.question_recue: str | None = None
         super().__init__(
             Albert.Service(  # type: ignore[attr-defined]
@@ -66,8 +67,10 @@ class ServiceAlbertMemoire(ServiceAlbert):
         conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
         self.question_recue = question
-        if self.leve_une_erreur_sur_pose_question:
+        if self.leve_une_erreur_de_communication_vers_albert:
             raise ErreurCommunicationModele("Erreur message sur pose_question.")
+        if self.leve_une_erreur_quelconque:
+            raise Exception("Erreur message sur pose_question.")
         if self.reponse is not None:
             return self.reponse
         return ReponseQuestion(
@@ -86,8 +89,11 @@ class ServiceAlbertMemoire(ServiceAlbert):
     ) -> tuple[str, list[Paragraphe], Violation | None]:
         return "", paragraphes, None
 
-    def qui_leve_une_erreur_sur_pose_question(self):
-        self.leve_une_erreur_sur_pose_question = True
+    def qui_leve_une_erreur_de_communication_vers_albert(self):
+        self.leve_une_erreur_de_communication_vers_albert = True
+
+    def qui_leve_une_erreur_quelconque(self):
+        self.leve_une_erreur_quelconque = True
 
     def ajoute_reponse(self, reponse):
         self.reponse = reponse
