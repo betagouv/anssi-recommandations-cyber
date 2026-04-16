@@ -214,7 +214,10 @@ class ClientAlbertApi(ClientAlbert):
             return propositions_albert
 
         except (APITimeoutError, APIConnectionError) as erreur:
-            raise ErreurCommunicationModele(str(erreur)) from erreur
+            logging.error(
+                f"le chat completion d’Albert retourne une erreur: {erreur}"
+            )
+            raise ErreurCommunicationModele("Impossible de récupérer une réponse pour la question posée.")
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]
