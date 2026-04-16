@@ -15,7 +15,6 @@ def une_configuration_de_service_albert() -> Callable[[], Albert.Service]:  # ty
             reclassement_active=False,
             modele_reclassement="Aucun",
             taille_fenetre_historique=10,
-            reformulateur_active=True,
             jeopardy_active=False,
         )
 

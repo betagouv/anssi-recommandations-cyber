@@ -39,7 +39,7 @@ class ServiceAlbert:
         client: ClientAlbert,
         utilise_recherche_hybride: bool,
         prompts: Prompts,
-        reformulateur: Optional[ReformulateurDeQuestion] = None,
+        reformulateur: ReformulateurDeQuestion,
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.id_collection_jeopardy = (
@@ -137,21 +137,19 @@ class ServiceAlbert:
         prompt: Optional[str] = None,
         conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
-        question_reformulee = None
-        if self.reformulateur is not None:
-            question_reformulee = self.reformulateur.reformule(
-                question, conversation=conversation
-            )
+        question_reformulee = self.reformulateur.reformule(
+            question, conversation=conversation
+        )
 
-            if question_reformulee == "QUESTION_NON_COMPRISE":
-                violation = ViolationQuestionNonComprise()
-                return ReponseQuestion(
-                    reponse=violation.reponse,
-                    paragraphes=[],
-                    question=question,
-                    question_reformulee=question_reformulee,
-                    violation=violation,
-                )
+        if question_reformulee == "QUESTION_NON_COMPRISE":
+            violation = ViolationQuestionNonComprise()
+            return ReponseQuestion(
+                reponse=violation.reponse,
+                paragraphes=[],
+                question=question,
+                question_reformulee=question_reformulee,
+                violation=violation,
+            )
         question_pour_recherche = (
             question_reformulee if question_reformulee else question
         )

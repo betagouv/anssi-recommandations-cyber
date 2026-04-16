@@ -19,6 +19,7 @@ from configuration import Mode, Albert
 from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
+from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, ReclasseReponse
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import Violation
@@ -39,6 +40,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
         self.leve_une_erreur_de_communication_vers_albert = False
         self.leve_une_erreur_quelconque = False
         self.question_recue: str | None = None
+        client_albert = ClientAlbertMemoire()
         super().__init__(
             Albert.Service(  # type: ignore[attr-defined]
                 collection_nom_anssi_lab="",
@@ -47,12 +49,12 @@ class ServiceAlbertMemoire(ServiceAlbert):
                 reclassement_active=False,
                 modele_reclassement="",
                 taille_fenetre_historique=2,
-                reformulateur_active=False,
                 jeopardy_active=False,
             ),
-            ClientAlbertMemoire(),
+            client_albert,
             False,
             Prompts(prompt_systeme="", prompt_reclassement=""),
+            ReformulateurDeQuestion(client_albert, "", ""),
         )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
