@@ -25,7 +25,7 @@ from schemas.violations import (
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurRechercheGuidesAnssi, ErreurAppelAlbertApi
+from services.exceptions import ErreurRechercheDocuments, ErreurAppelAlbertApi
 
 
 class Prompts(NamedTuple):
@@ -74,7 +74,7 @@ class ServiceAlbert:
         except ErreurAppelAlbertApi as erreur:
             raise erreur
         except Exception as erreur:
-            raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
+            raise ErreurRechercheDocuments(str(erreur)) from erreur
 
         def _transforme_en_paragraphe(donnee):
             return Paragraphe(
@@ -119,7 +119,7 @@ class ServiceAlbert:
         try:
             resultats_jeopardy = self.client.recherche_jeopardy(payload)
         except Exception as erreur:
-            raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
+            raise ErreurRechercheDocuments(str(erreur)) from erreur
 
         if not resultats_jeopardy:
             return []
