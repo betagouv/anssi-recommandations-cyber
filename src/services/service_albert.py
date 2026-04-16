@@ -25,7 +25,6 @@ from schemas.violations import (
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurRechercheDocuments
 
 
 class Prompts(NamedTuple):
@@ -110,10 +109,7 @@ class ServiceAlbert:
             method=methode_recherche,
         )
 
-        try:
-            resultats_jeopardy = self.client.recherche_jeopardy(payload)
-        except Exception as erreur:
-            raise ErreurRechercheDocuments(str(erreur)) from erreur
+        resultats_jeopardy = self.client.recherche_jeopardy(payload)
 
         if not resultats_jeopardy:
             return []
