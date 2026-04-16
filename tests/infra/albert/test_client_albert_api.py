@@ -14,7 +14,7 @@ from schemas.albert import (
     ResultatRechercheJeopardy,
 )
 from schemas.albert import RecherchePayload
-from services.exceptions import ErreurAppelAlbertApi, ErreurRechercheDocuments
+from services.exceptions import ErreurCommunicationModele, ErreurRechercheDocuments
 
 REPONSE = "Patates et reblochon"
 FAUX_RETOURS_ALBERT_API = (
@@ -43,7 +43,7 @@ def test_recupere_propositions(une_configuration_albert_client):
     assert propositions[0].message.content == REPONSE
 
 
-def test_recupere_propositions_si_timeout_leve_une_exception(
+def test_leve_une_erreur_de_communication_avec_le_modele_si_timeout_lorsque_l_on_recupere_les_propositions(
     une_configuration_albert_client,
 ):
     mock_client_http = (
@@ -59,7 +59,7 @@ def test_recupere_propositions_si_timeout_leve_une_exception(
         une_configuration_albert_client,
     )
 
-    with pytest.raises(ErreurAppelAlbertApi):
+    with pytest.raises(ErreurCommunicationModele):
         mock_service_avec_reponse.recupere_propositions([])
 
 

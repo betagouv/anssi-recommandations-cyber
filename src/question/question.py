@@ -22,7 +22,7 @@ from schemas.retour_utilisatrice import (
     TagNegatif,
 )
 from schemas.type_utilisateur import TypeUtilisateur
-from services.exceptions import ErreurRechercheDocuments, ErreurAppelAlbertApi
+from services.exceptions import ErreurRechercheDocuments, ErreurCommunicationModele
 from services.service_albert import ServiceAlbert
 
 
@@ -54,7 +54,7 @@ class ResultatConversationEnErreur:
             self.message_mqc = (
                 "Une erreur est survenue lors de la recherche des guides de l'ANSSI."
             )
-        elif isinstance(e, ErreurAppelAlbertApi):
+        elif isinstance(e, ErreurCommunicationModele):
             self.message_mqc = str(e)
         else:
             self.message_mqc = "Erreur lors de l’appel à Albert"

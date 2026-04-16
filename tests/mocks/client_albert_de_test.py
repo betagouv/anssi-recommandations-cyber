@@ -16,6 +16,7 @@ from schemas.albert import (
     ResultatReclasse,
 )
 from services.client_albert import ClientAlbert
+from services.exceptions import ErreurRechercheDocuments
 
 
 class RetourRouteSearch:
@@ -129,7 +130,9 @@ class ClientAlbertMemoire(ClientAlbert):
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         self.payload_recu = payload
         if self.leve_une_erreur_sur_recherche:
-            raise Exception("Erreur sur recherche")
+            raise ErreurRechercheDocuments(
+                "Une erreur est survenue lors de la recherche des guides de l'ANSSI."
+            )
 
         if self.resultats_par_appel:
             resultat = (

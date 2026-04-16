@@ -25,7 +25,7 @@ from schemas.violations import (
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurRechercheDocuments, ErreurAppelAlbertApi
+from services.exceptions import ErreurRechercheDocuments
 
 
 class Prompts(NamedTuple):
@@ -69,13 +69,6 @@ class ServiceAlbert:
             method=methode_recherche,
         )
 
-        try:
-            donnees_classiques = self.client.recherche(payload_classique)
-        except ErreurAppelAlbertApi as erreur:
-            raise erreur
-        except Exception as erreur:
-            raise ErreurRechercheDocuments(str(erreur)) from erreur
-
         def _transforme_en_paragraphe(donnee):
             return Paragraphe(
                 contenu=donnee.chunk.content,
@@ -85,6 +78,7 @@ class ServiceAlbert:
                 nom_document=donnee.chunk.metadata.nom_document,
             )
 
+        donnees_classiques = self.client.recherche(payload_classique)
         paragraphes_classiques = list(
             map(_transforme_en_paragraphe, donnees_classiques)
         )
@@ -148,23 +142,20 @@ class ServiceAlbert:
         conversation: Optional[Conversation] = None,
     ) -> ReponseQuestion:
         question_reformulee = None
-        try:
-            if self.reformulateur is not None:
-                question_reformulee = self.reformulateur.reformule(
-                    question, conversation=conversation
-                )
+        if self.reformulateur is not None:
+            question_reformulee = self.reformulateur.reformule(
+                question, conversation=conversation
+            )
 
-                if question_reformulee == "QUESTION_NON_COMPRISE":
-                    violation = ViolationQuestionNonComprise()
-                    return ReponseQuestion(
-                        reponse=violation.reponse,
-                        paragraphes=[],
-                        question=question,
-                        question_reformulee=question_reformulee,
-                        violation=violation,
-                    )
-        except Exception as erreur:
-            raise ErreurAppelAlbertApi(str(erreur)) from erreur
+            if question_reformulee == "QUESTION_NON_COMPRISE":
+                violation = ViolationQuestionNonComprise()
+                return ReponseQuestion(
+                    reponse=violation.reponse,
+                    paragraphes=[],
+                    question=question,
+                    question_reformulee=question_reformulee,
+                    violation=violation,
+                )
         question_pour_recherche = (
             question_reformulee if question_reformulee else question
         )
@@ -214,13 +205,8 @@ class ServiceAlbert:
         messages = self.__genere_les_messages_de_completion(
             conversation, paragraphes_concatenes, prompt_systeme, question
         )
-        try:
-            propositions_albert = self.client.recupere_propositions(messages)
-            return propositions_albert
-        except ErreurAppelAlbertApi:
-            raise
-        except Exception as erreur:
-            raise ErreurAppelAlbertApi(str(erreur)) from erreur
+        propositions_albert = self.client.recupere_propositions(messages)
+        return propositions_albert
 
     def __genere_les_messages_de_completion(
         self,
