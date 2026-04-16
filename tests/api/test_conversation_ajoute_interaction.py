@@ -146,9 +146,7 @@ def test_route_conversation_ajoute_interaction_retourne_une_reponse_en_erreur(
 
     assert reponse.status_code == 422
     assert reponse.json() == {
-        "detail": {
-            "message": "Notre modèle d'IA, Albert, n'a pu nous répondre de manière satisfaisante."
-        }
+        "detail": {"message": "Erreur message sur pose_question."}
     }
 
 
