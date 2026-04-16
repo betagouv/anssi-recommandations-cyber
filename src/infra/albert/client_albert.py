@@ -1,7 +1,10 @@
 import requests
+from openai import APITimeoutError, APIConnectionError
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
+
+from configuration import logging, Albert
 from schemas.albert import (
     RecherchePayload,
     ReclassePayload,
@@ -14,10 +17,8 @@ from schemas.albert import (
     RechercheMetadonnees,
     RechercheMetadonneesJeopardy,
 )
-from configuration import logging, Albert
-from openai import APITimeoutError, APIConnectionError
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurAppelAlbertApi
+from services.exceptions import ErreurAppelAlbertApi, ErreurRechercheDocuments
 
 
 class ClientAlbertHttp(requests.Session):
@@ -99,7 +100,7 @@ class ClientAlbertApi(ClientAlbert):
             logging.error(
                 f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
             )
-            raise ErreurAppelAlbertApi(
+            raise ErreurRechercheDocuments(
                 "Impossible de récupérer les éléments documentaires relatifs à la question posée"
             ) from erreur
 

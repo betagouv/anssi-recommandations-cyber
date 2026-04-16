@@ -14,7 +14,7 @@ from schemas.albert import (
     ResultatRechercheJeopardy,
 )
 from schemas.albert import RecherchePayload
-from services.exceptions import ErreurAppelAlbertApi
+from services.exceptions import ErreurAppelAlbertApi, ErreurRechercheDocuments
 
 REPONSE = "Patates et reblochon"
 FAUX_RETOURS_ALBERT_API = (
@@ -63,7 +63,7 @@ def test_recupere_propositions_si_timeout_leve_une_exception(
         mock_service_avec_reponse.recupere_propositions([])
 
 
-def test_recherche_si_timeout_leve_une_exception_albert(
+def test_leve_une_erreur_recherche_documents_si_timeout(
     une_configuration_albert_client,
 ):
     payload = RecherchePayload(
@@ -80,7 +80,7 @@ def test_recherche_si_timeout_leve_une_exception_albert(
         mock_client_http,
         une_configuration_albert_client,
     )
-    with pytest.raises(ErreurAppelAlbertApi):
+    with pytest.raises(ErreurRechercheDocuments):
         mock_service_avec_reponse.recherche(payload)
 
 
@@ -149,7 +149,7 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
         ),
     ],
 )
-def test_recherche_en_cas_de_probleme_leve_une_exception_albert(
+def test_leve_une_erreur_recherche_document_en_cas_de_probleme(
     erreur, une_configuration_albert_client
 ):
     mock_client_http = (
@@ -165,7 +165,7 @@ def test_recherche_en_cas_de_probleme_leve_une_exception_albert(
         une_configuration_albert_client,
     )
 
-    with pytest.raises(ErreurAppelAlbertApi):
+    with pytest.raises(ErreurRechercheDocuments):
         payload = RecherchePayload([], 0, "un prompt", "semantic")
         mock_client_albert_api.recherche(payload)
 
