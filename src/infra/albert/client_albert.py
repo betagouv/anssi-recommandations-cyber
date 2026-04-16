@@ -1,3 +1,5 @@
+from typing import Callable
+
 import requests
 from openai import APITimeoutError, APIConnectionError
 from openai import OpenAI
@@ -62,6 +64,49 @@ class ClientAlbertApi(ClientAlbert):
         )
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
+        def _mappeur(chunk_dict: dict, score: str) -> ResultatRecherche:
+            meta_dict = chunk_dict.get("metadata", {})
+            metadata = RechercheMetadonnees(
+                source_url=meta_dict.get("source_url", ""),
+                page=meta_dict.get("page", 0)
+                + self.decalage_index_Albert_et_numero_de_page_lecteur,
+                nom_document=meta_dict.get("nom_document", ""),
+            )
+            chunk = RechercheChunk(
+                content=chunk_dict.get("content", ""),
+                metadata=metadata,
+            )
+            return ResultatRecherche(
+                chunk=chunk,
+                score=float(score),
+            )
+
+        return self._execute_la_recherche(payload, _mappeur)
+
+    def recherche_jeopardy(
+        self, payload: RecherchePayload
+    ) -> list[ResultatRechercheJeopardy]:
+        def _mappeur(chunk_dict: dict, score: str) -> ResultatRechercheJeopardy:
+            meta_dict = chunk_dict.get("metadata", {})
+            metadata = RechercheMetadonneesJeopardy(
+                source_id_document=meta_dict.get("source_id_document", ""),
+                source_id_chunk=meta_dict.get("source_id_chunk", 0),
+                source_numero_page=meta_dict.get("source_numero_page", 0),
+            )
+            chunk = RechercheChunkJeopardy(
+                content=chunk_dict.get("content", ""),
+                metadata=metadata,
+            )
+            return ResultatRechercheJeopardy(
+                chunk=chunk,
+                score=float(score),
+            )
+
+        return self._execute_la_recherche(payload, _mappeur)
+
+    def _execute_la_recherche[R](
+        self, payload: RecherchePayload, mappeur: Callable[[dict, str], R]
+    ) -> list[R]:
         try:
             reponse: requests.Response = self.client_http.post(
                 "/search",
@@ -71,31 +116,11 @@ class ClientAlbertApi(ClientAlbert):
             reponse.raise_for_status()
             brut = reponse.json()
             donnees = brut.get("data", [])
-            resultats: list[ResultatRecherche] = []
+            resultats: list[R] = []
 
-            # Albert retourne un index 0-based utilisé par la librairie `pymupdf`.
-            # Pour obtenir le numéro de page réel, il faut donc ajouter +1.
             for r in donnees:
                 chunk_dict = r.get("chunk", {})
-                meta_dict = chunk_dict.get("metadata", {})
-
-                metadata = RechercheMetadonnees(
-                    source_url=meta_dict.get("source_url", ""),
-                    page=meta_dict.get("page", 0)
-                    + self.decalage_index_Albert_et_numero_de_page_lecteur,
-                    nom_document=meta_dict.get("nom_document", ""),
-                )
-                chunk = RechercheChunk(
-                    content=chunk_dict.get("content", ""),
-                    metadata=metadata,
-                )
-                resultats.append(
-                    ResultatRecherche(
-                        chunk=chunk,
-                        score=float(r.get("score", "0.0")),
-                    )
-                )
-
+                resultats.append(mappeur(chunk_dict, r.get("score", "0.0")))
         except (requests.HTTPError, requests.Timeout) as erreur:
             logging.error(
                 f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
@@ -103,48 +128,6 @@ class ClientAlbertApi(ClientAlbert):
             raise ErreurRechercheDocuments(
                 "Impossible de récupérer les éléments documentaires relatifs à la question posée"
             ) from erreur
-
-        return resultats
-
-    def recherche_jeopardy(
-        self, payload: RecherchePayload
-    ) -> list[ResultatRechercheJeopardy]:
-        try:
-            reponse: requests.Response = self.client_http.post(
-                "/search",
-                json=payload._asdict(),
-                timeout=self.temps_reponse_maximum_recherche_paragraphes,
-            )
-            reponse.raise_for_status()
-            brut = reponse.json()
-            donnees = brut.get("data", [])
-            resultats: list[ResultatRechercheJeopardy] = []
-
-            for r in donnees:
-                chunk_dict = r.get("chunk", {})
-                meta_dict = chunk_dict.get("metadata", {})
-
-                metadata = RechercheMetadonneesJeopardy(
-                    source_id_document=meta_dict.get("source_id_document", ""),
-                    source_id_chunk=meta_dict.get("source_id_chunk", 0),
-                    source_numero_page=meta_dict.get("source_numero_page", 0),
-                )
-                chunk = RechercheChunkJeopardy(
-                    content=chunk_dict.get("content", ""),
-                    metadata=metadata,
-                )
-                resultats.append(
-                    ResultatRechercheJeopardy(
-                        chunk=chunk,
-                        score=float(r.get("score", "0.0")),
-                    )
-                )
-
-        except (requests.HTTPError, requests.Timeout) as erreur:
-            logging.error(
-                f"Route `/search` (jeopardy) de l'API Albert retourne une erreur: {erreur}"
-            )
-            resultats = []
 
         return resultats
 
