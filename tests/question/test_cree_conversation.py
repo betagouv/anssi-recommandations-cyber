@@ -39,11 +39,8 @@ def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
     )
 
     assert isinstance(resultat_conversation, ResultatConversationEnErreur)
-    assert (
-        resultat_conversation.message_mqc
-        == "Notre modèle d'IA, Albert, n'a pu nous répondre de manière satisfaisante."
-    )
-    assert resultat_conversation.erreur == "Erreur sur pose_question"
+    assert resultat_conversation.message_mqc == "Erreur message sur pose_question."
+    assert resultat_conversation.erreur == "Erreur message sur pose_question."
 
 
 def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur_si_recherche_paragraphes_echoue(

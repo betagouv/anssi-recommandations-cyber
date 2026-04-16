@@ -71,6 +71,8 @@ class ServiceAlbert:
 
         try:
             donnees_classiques = self.client.recherche(payload_classique)
+        except ErreurAppelAlbertApi as erreur:
+            raise erreur
         except Exception as erreur:
             raise ErreurRechercheGuidesAnssi(str(erreur)) from erreur
 

@@ -67,7 +67,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
     ) -> ReponseQuestion:
         self.question_recue = question
         if self.leve_une_erreur_sur_pose_question:
-            raise ErreurAppelAlbertApi("Erreur sur pose_question")
+            raise ErreurAppelAlbertApi("Erreur message sur pose_question.")
         if self.reponse is not None:
             return self.reponse
         return ReponseQuestion(

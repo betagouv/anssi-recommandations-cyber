@@ -55,7 +55,7 @@ class ResultatConversationEnErreur:
                 "Une erreur est survenue lors de la recherche des guides de l'ANSSI."
             )
         elif isinstance(e, ErreurAppelAlbertApi):
-            self.message_mqc = "Notre modèle d'IA, Albert, n'a pu nous répondre de manière satisfaisante."
+            self.message_mqc = str(e)
         else:
             self.message_mqc = "Erreur lors de l’appel à Albert"
         self.erreur = str(e)
