@@ -63,7 +63,7 @@ def test_recupere_propositions_si_timeout_leve_une_exception(
         mock_service_avec_reponse.recupere_propositions([])
 
 
-def test_recherche_si_timeout_retourne_un_resultat_vide(
+def test_recherche_si_timeout_leve_une_exception_albert(
     une_configuration_albert_client,
 ):
     payload = RecherchePayload(
@@ -80,10 +80,8 @@ def test_recherche_si_timeout_retourne_un_resultat_vide(
         mock_client_http,
         une_configuration_albert_client,
     )
-
-    retour = mock_service_avec_reponse.recherche(payload)
-
-    assert retour == []
+    with pytest.raises(ErreurAppelAlbertApi):
+        mock_service_avec_reponse.recherche(payload)
 
 
 def test_recherche_appelle_la_route_search_d_albert(une_configuration_albert_client):
@@ -151,7 +149,7 @@ def test_recherche_retourne_une_liste_de_chunks_et_de_scores_associes(
         ),
     ],
 )
-def test_recherche_retourne_gracieusement_en_cas_de_probleme(
+def test_recherche_en_cas_de_probleme_leve_une_exception_albert(
     erreur, une_configuration_albert_client
 ):
     mock_client_http = (
@@ -167,10 +165,9 @@ def test_recherche_retourne_gracieusement_en_cas_de_probleme(
         une_configuration_albert_client,
     )
 
-    payload = RecherchePayload([], 0, "un prompt", "semantic")
-    retour = mock_client_albert_api.recherche(payload)
-
-    assert retour == []
+    with pytest.raises(ErreurAppelAlbertApi):
+        payload = RecherchePayload([], 0, "un prompt", "semantic")
+        mock_client_albert_api.recherche(payload)
 
 
 def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():

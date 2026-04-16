@@ -99,7 +99,9 @@ class ClientAlbertApi(ClientAlbert):
             logging.error(
                 f"Route `/search` de l'API Albert retourne une erreur: {erreur}"
             )
-            resultats = []
+            raise ErreurAppelAlbertApi(
+                "Impossible de récupérer les éléments documentaires relatifs à la question posée"
+            ) from erreur
 
         return resultats
 
