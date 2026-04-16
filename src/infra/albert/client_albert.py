@@ -18,7 +18,7 @@ from schemas.albert import (
     RechercheMetadonneesJeopardy,
 )
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurAppelAlbertApi, ErreurRechercheDocuments
+from services.exceptions import ErreurCommunicationModele, ErreurRechercheDocuments
 
 
 class ClientAlbertHttp(requests.Session):
@@ -231,7 +231,7 @@ class ClientAlbertApi(ClientAlbert):
             return propositions_albert
 
         except (APITimeoutError, APIConnectionError) as erreur:
-            raise ErreurAppelAlbertApi(str(erreur)) from erreur
+            raise ErreurCommunicationModele(str(erreur)) from erreur
 
 
 def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]

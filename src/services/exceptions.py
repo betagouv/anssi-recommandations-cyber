@@ -2,5 +2,5 @@ class ErreurRechercheDocuments(Exception):
     pass
 
 
-class ErreurAppelAlbertApi(Exception):
+class ErreurCommunicationModele(Exception):
     pass

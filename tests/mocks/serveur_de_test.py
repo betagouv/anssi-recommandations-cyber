@@ -23,9 +23,9 @@ from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, Reclass
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import Violation
 from serveur import fabrique_serveur
-from services.exceptions import ErreurAppelAlbertApi
 from services.fabrique_service_albert import fabrique_service_albert
 from services.service_albert import ServiceAlbert, Prompts
+from services.exceptions import ErreurCommunicationModele
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
@@ -67,7 +67,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
     ) -> ReponseQuestion:
         self.question_recue = question
         if self.leve_une_erreur_sur_pose_question:
-            raise ErreurAppelAlbertApi("Erreur message sur pose_question.")
+            raise ErreurCommunicationModele("Erreur message sur pose_question.")
         if self.reponse is not None:
             return self.reponse
         return ReponseQuestion(
