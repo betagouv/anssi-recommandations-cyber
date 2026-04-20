@@ -2,6 +2,13 @@
   import Entete from './composants/Entete.svelte';
   import Bandeau from './composants/Bandeau.svelte';
   import PiedDePage from './composants/PiedDePage.svelte';
+
+  let optOutMatomo = $state(localStorage.getItem('optOutMatomo') === 'true');
+
+  const consentementMatomo = () => {
+    localStorage.setItem('optOutMatomo', `${!optOutMatomo}`);
+    optOutMatomo = !optOutMatomo;
+  };
 </script>
 
 <Entete />
@@ -71,16 +78,42 @@
           </li>
         </ul>
       </div>
-      <p>
+      <div>
         MesQuestionsCyber ne dépose que des cookies et traceurs strictement
         nécessaires au fonctionnement du service et la solution de mesure d'audience
         "Matomo", configurée en mode "exempté" et ne nécessitant pas de recueil du
         consentement, conformément aux recommandations de la CNIL.
-      </p>
-      <p>
-        (case cochée) Vous êtes suivi(e) de manière anonyme. Décochez cette case pour
-        vous exclure du suivi.
-      </p>
+      </div>
+      <div>
+        {#snippet matomoConsenti()}
+          <dsfr-checkbox
+            id="consentement-matomo"
+            onvaluechanged={consentementMatomo}
+            size="sm"
+            label="Vous êtes suivi(e) de manière anonyme. Décochez cette case pour vous exclure du suivi."
+            name="checkbox"
+            status="default"
+            value={!optOutMatomo}
+            checked
+          >
+          </dsfr-checkbox>
+        {/snippet}
+        {#snippet matomoNonConsenti()}
+          <dsfr-checkbox
+            id="consentement-matomo"
+            onvaluechanged={consentementMatomo}
+            size="sm"
+            label="Vous n’êtes actuellement pas suivi(e). Cochez cette case pour ne plus être exclu(e)."
+            name="checkbox"
+            status="default"
+          ></dsfr-checkbox>
+        {/snippet}
+        {#if optOutMatomo}
+          {@render matomoNonConsenti()}
+        {:else}
+          {@render matomoConsenti()}
+        {/if}
+      </div>
       <div>
         Pour en savoir plus sur les cookies :
         <ul>
@@ -110,5 +143,9 @@
 <style>
   .conteneur {
     padding: 2rem 0 3.5rem;
+
+    div {
+      margin-bottom: 1rem;
+    }
   }
 </style>

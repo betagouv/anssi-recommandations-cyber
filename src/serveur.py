@@ -109,7 +109,7 @@ def fabrique_serveur(
         )
         response = HTMLResponse(content=page_html)
         headers = HEADERS_SECURITE | {
-            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; style-src 'self' 'nonce-{nonce}' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; script-src 'self' 'nonce-{nonce}'; img-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com",
+            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; connect-src 'self' https://stats.beta.gouv.fr; style-src 'self' 'nonce-{nonce}' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; script-src 'self' 'nonce-{nonce}' https://stats.beta.gouv.fr; img-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com",
             "Cross-Origin-Embedder-Policy": "credentialless",
         }
         for header_name, header_value in headers.items():
