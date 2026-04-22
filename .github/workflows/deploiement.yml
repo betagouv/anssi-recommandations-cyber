@@ -33,6 +33,7 @@ jobs:
           clever deploy --force --same-commit-policy=rebuild
 
   deploiement-prod:
+    needs: [deploiement-demo]
     name: Déploiement en PROD
     environment: PROD
     runs-on: ubuntu-latest
