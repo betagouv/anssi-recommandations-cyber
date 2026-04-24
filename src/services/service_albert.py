@@ -27,6 +27,17 @@ from schemas.violations import (
 from services.client_albert import ClientAlbert
 
 
+def filtre_reponses_maitrisees(
+    paragraphes: list[Paragraphe], seuil: float
+) -> list[Paragraphe]:
+    maitrisees = [
+        p
+        for p in paragraphes
+        if p.reponse and p.score_similarite * p.score_reclassement >= seuil
+    ]
+    return maitrisees if maitrisees else paragraphes
+
+
 class Prompts(NamedTuple):
     prompt_systeme: str
     prompt_reclassement: str
@@ -75,6 +86,7 @@ class ServiceAlbert:
                 score_similarite=donnee.score,
                 numero_page=donnee.chunk.metadata.page,
                 nom_document=donnee.chunk.metadata.nom_document,
+                reponse=donnee.chunk.metadata.reponse,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
