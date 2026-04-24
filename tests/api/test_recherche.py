@@ -74,7 +74,9 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet(
             "contenu": "Contenu du paragraphe 1",
             "url": "https://cyber.gouv.fr/sites/default/files/2021/10/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
             "score_similarite": 0.75,
+            "score_reclassement": 1.0,
             "numero_page": 29,
             "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+            "reponse": "",
         }
     ]
