@@ -3,6 +3,7 @@ from typing import Callable
 import pytest
 
 from configuration import Albert
+from schemas.albert import Paragraphe, RechercheMetadonnees
 
 
 @pytest.fixture()
@@ -19,3 +20,30 @@ def une_configuration_de_service_albert() -> Callable[[], Albert.Service]:  # ty
         )
 
     return _une_configuration_de_service_albert
+
+
+@pytest.fixture()
+def un_paragraphe_depuis_metadata() -> Callable[..., Paragraphe]:
+    def _un_paragraphe_depuis_metadata(
+        contenu: str,
+        reponse_metadata: str = "",
+        score_similarite: float = 0.5,
+        score_reclassement: float = 0.5,
+    ) -> Paragraphe:
+        metadata = RechercheMetadonnees(
+            source_url="https://example.com",
+            page=0,
+            nom_document="faq_reponses_maitrisees",
+            reponse=reponse_metadata,
+        )
+        return Paragraphe(
+            contenu=contenu,
+            reponse=metadata.reponse,
+            score_similarite=score_similarite,
+            score_reclassement=score_reclassement,
+            numero_page=metadata.page,
+            url=metadata.source_url,
+            nom_document=metadata.nom_document,
+        )
+
+    return _un_paragraphe_depuis_metadata

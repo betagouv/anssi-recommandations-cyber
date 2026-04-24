@@ -71,6 +71,7 @@ class ClientAlbertApi(ClientAlbert):
                 page=meta_dict.get("page", 0)
                 + self.decalage_index_Albert_et_numero_de_page_lecteur,
                 nom_document=meta_dict.get("nom_document", ""),
+                reponse=meta_dict.get("reponse", ""),
             )
             chunk = RechercheChunk(
                 content=chunk_dict.get("content", ""),
