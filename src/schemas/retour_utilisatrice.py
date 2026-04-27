@@ -11,7 +11,6 @@ from schemas.albert import ReponseQuestion
 
 
 class TagPositif(StrEnum):
-    Conversation = auto()
     FacileAComprendre = auto()
     Complete = auto()
     BienStructuree = auto()
@@ -19,7 +18,6 @@ class TagPositif(StrEnum):
 
 
 class TagNegatif(StrEnum):
-    Conversation = auto()
     PasAssezDetaillee = auto()
     TropComplexe = auto()
     SourcesPeuUtiles = auto()
