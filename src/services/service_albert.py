@@ -27,13 +27,13 @@ from schemas.violations import (
 from services.client_albert import ClientAlbert
 
 
-def filtre_reponses_maitrisees(
+def _filtre_reponses_maitrisees(
     paragraphes: list[Paragraphe], seuil: float
 ) -> list[Paragraphe]:
     maitrisees = [
         p
         for p in paragraphes
-        if p.reponse and p.score_similarite * p.score_reclassement >= seuil
+        if p.est_maitrisee and p.score_reclassement >= seuil
     ]
     return maitrisees if maitrisees else paragraphes
 
@@ -59,6 +59,7 @@ class ServiceAlbert:
         self.reclassement_active = configuration_service_albert.reclassement_active
         self.jeopardy_active = configuration_service_albert.jeopardy_active
         self.modele_reclassement = configuration_service_albert.modele_reclassement
+        self.seuil_reponse_maitrisee = configuration_service_albert.seuil_reponse_maitrisee
         self.taille_fenetre_historique = (
             configuration_service_albert.taille_fenetre_historique
         )
@@ -80,13 +81,15 @@ class ServiceAlbert:
         )
 
         def _transforme_en_paragraphe(donnee):
+            reponse_metadata = donnee.chunk.metadata.reponse
             return Paragraphe(
                 contenu=donnee.chunk.content,
                 url=donnee.chunk.metadata.source_url,
                 score_similarite=donnee.score,
                 numero_page=donnee.chunk.metadata.page,
                 nom_document=donnee.chunk.metadata.nom_document,
-                reponse=donnee.chunk.metadata.reponse,
+                reponse=reponse_metadata or "",
+                est_maitrisee=reponse_metadata is not None,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
@@ -193,9 +196,13 @@ class ServiceAlbert:
         resultats_reclassement_donnees = resultat_du_reclassement.data
         resultats_reclassement_donnees.sort(key=lambda data: data.score, reverse=True)
         index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
+        scores_tries = list(map(lambda d: d.score, resultats_reclassement_donnees))
         toutes_les_entrees = payload.documents
 
-        return {"paragraphes_tries": [toutes_les_entrees[i] for i in index_tries]}
+        return {
+            "paragraphes_tries": [toutes_les_entrees[i] for i in index_tries],
+            "scores_tries": scores_tries,
+        }
 
     def __effectue_recuperation_propositions(
         self,
@@ -204,7 +211,14 @@ class ServiceAlbert:
         question: str,
         conversation: Conversation | None,
     ) -> list[Choice]:
-        paragraphes_concatenes = "\n\n\n".join([p.contenu for p in paragraphes])
+        def _contenu_pour_llm(p: Paragraphe) -> str:
+            if p.est_maitrisee:
+                return f"{p.contenu}\n{p.reponse}"
+            return p.contenu
+
+        paragraphes_concatenes = "\n\n\n".join(
+            [_contenu_pour_llm(p) for p in paragraphes]
+        )
 
         prompt_systeme = prompt if prompt else self.prompt_systeme
 
@@ -267,14 +281,20 @@ class ServiceAlbert:
             reclassement = self.reclasse(reclasse_payload)
 
             contenus_tries = reclassement["paragraphes_tries"]
+            scores_tries = reclassement["scores_tries"]
             reclassement_non_vide = len(contenus_tries) > 0
             if reclassement_non_vide:
-                return [
-                    next(p for p in paragraphes if p.contenu == contenu)
-                    for contenu in contenus_tries
+                paragraphes_a_filtrer = [
+                    next(p for p in paragraphes if p.contenu == contenu).model_copy(
+                        update={"score_reclassement": score}
+                    )
+                    for contenu, score in zip(contenus_tries, scores_tries)
                 ][:5]
             else:
-                return paragraphes[:5]
+                paragraphes_a_filtrer = paragraphes[:5]
+            return _filtre_reponses_maitrisees(
+                paragraphes_a_filtrer, self.seuil_reponse_maitrisee
+            )
         return paragraphes
 
     def _recupere_reponse_paragraphes_et_violation(

@@ -29,6 +29,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
     modele_reclassement="modele-reranking-de-test",
     taille_fenetre_historique=2,
     jeopardy_active=False,
+    seuil_reponse_maitrisee=0.5,
 )
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
@@ -39,6 +40,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
     modele_reclassement="rerank-small",
     taille_fenetre_historique=2,
     jeopardy_active=False,
+    seuil_reponse_maitrisee=0.5,
 )
 
 PROMPT_SYSTEME_ALTERNATIF = (
@@ -102,6 +104,64 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
     )
     assert messages[1]["role"] == "user"
     assert messages[1]["content"] == f"Question :\n{QUESTION}"
+
+
+def test_un_chunk_avec_reponse_metadata_est_marque_maitrisee():
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu("Qui est le directeur ?")
+            .ayant_pour_reponse("Vincent Strubel.")
+            .construis(),
+        ]
+    )
+    client_albert_memoire.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu("Réponse").construis()]
+    )
+    service_albert = ServiceAlbert(
+        FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client_albert_memoire,
+        False,
+        PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+    )
+
+    reponse = service_albert.pose_question(question=QUESTION)
+
+    assert reponse.paragraphes[0].est_maitrisee is True
+
+
+def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise():
+    client_albert_memoire = ClientAlbertMemoire()
+    contenu_question = "Qui est le directeur de l'ANSSI ?"
+    reponse_maitrisee = "Vincent Strubel."
+    client_albert_memoire.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu(contenu_question)
+            .ayant_pour_reponse(reponse_maitrisee)
+            .construis(),
+        ]
+    )
+    client_albert_memoire.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu("Réponse").construis()]
+    )
+    service_albert = ServiceAlbert(
+        FAUSSE_CONFIGURATION_ALBERT_SERVICE,
+        client_albert_memoire,
+        False,
+        PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+    )
+
+    service_albert.pose_question(question=QUESTION)
+
+    messages = client_albert_memoire.messages_recus
+    messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
+    assert len(messages_systeme) == 1
+    assert contenu_question in messages_systeme[0]["content"]
+    assert reponse_maitrisee in messages_systeme[0]["content"]
 
 
 def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme():
@@ -220,7 +280,37 @@ def test_reclasse_les_paragraphes():
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
     ).reclasse(payload)
 
-    assert reclassement == {"paragraphes_tries": ["texte2", "texte1"]}
+    assert reclassement == {
+        "paragraphes_tries": ["texte2", "texte1"],
+        "scores_tries": [0.5, 0.4],
+    }
+
+
+def test_le_score_reclassement_est_propage_sur_le_paragraphe():
+    reponse = (
+        un_constructeur_de_reponse_de_reclassement()
+        .avec_les_paragraphes_les_mieux_classes(
+            [
+                {"titre": "paragraphe 1", "indice": 1, "score": 0.92},
+            ]
+        )
+        .construis()
+    )
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_le_reclassement(reponse)
+    client_albert_memoire.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
+    )
+
+    reponse_de_pose_question = ServiceAlbert(
+        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+    ).pose_question(question="Une question ?")
+
+    assert reponse_de_pose_question.paragraphes[0].score_reclassement == 0.92
 
 
 def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes_les_mieux_classes_parmi_les_20_retournes():
@@ -533,6 +623,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         modele_reclassement="modele-reranking-de-test",
         taille_fenetre_historique=2,
         jeopardy_active=False,
+        seuil_reponse_maitrisee=0.5,
     )
 
     ServiceAlbert(
