@@ -3,6 +3,7 @@ from client_albert_de_test import (
     ConstructeurClientOpenai,
     ConstructeurClientHttp,
     ConstructeurRetourRouteSearch,
+    RetourRouteRerank,
     ClientAlbertMemoire,
 )
 
@@ -13,7 +14,7 @@ from schemas.albert import (
     RechercheChunkJeopardy,
     ResultatRechercheJeopardy,
 )
-from schemas.albert import RecherchePayload
+from schemas.albert import RecherchePayload, ReclassePayload
 from services.exceptions import ErreurCommunicationModele, ErreurRechercheDocuments
 
 REPONSE = "Patates et reblochon"
@@ -168,6 +169,29 @@ def test_leve_une_erreur_recherche_document_en_cas_de_probleme(
     with pytest.raises(ErreurRechercheDocuments):
         payload = RecherchePayload([], 0, "un prompt", "semantic")
         mock_client_albert_api.recherche(payload)
+
+
+def test_reclasse_conserve_le_score(une_configuration_albert_client):
+    reponse_rerank = RetourRouteRerank(
+        resultats=[
+            {"relevance_score": 0.99, "index": 0},
+            {"relevance_score": 0.42, "index": 1},
+        ]
+    )
+    mock_client_http = ConstructeurClientHttp().qui_retourne(reponse_rerank).construis()
+    mock_client_albert_api = ClientAlbertApi(
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis(),
+        mock_client_http,
+        une_configuration_albert_client,
+    )
+
+    payload = ReclassePayload(query="question ?", documents=["doc0", "doc1"], model="rerank")
+    resultat = mock_client_albert_api.reclasse(payload)
+
+    assert len(resultat.data) == 2
+    assert resultat.data[0].score == 0.99
+    assert resultat.data[0].index == 0
+    assert resultat.data[1].score == 0.42
 
 
 def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():

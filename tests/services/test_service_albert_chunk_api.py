@@ -77,6 +77,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
         modele_reclassement="",
         taille_fenetre_historique=2,
         jeopardy_active=False,
+        seuil_reponse_maitrisee=0.5,
     )
     service_albert = ServiceAlbert(
         configuration_service_albert=configuration,

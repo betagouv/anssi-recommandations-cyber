@@ -11,6 +11,7 @@ class Paragraphe(BaseModel):
     nom_document: str
     contenu: str
     reponse: str = ""
+    est_maitrisee: bool = False
 
 
 class ReponseQuestion(BaseModel):
@@ -38,7 +39,7 @@ class RechercheMetadonnees(NamedTuple):
     source_url: str
     page: int
     nom_document: str
-    reponse: str = ""
+    reponse: Optional[str] = None
 
 
 class RechercheMetadonneesJeopardy(NamedTuple):
