@@ -9,7 +9,7 @@
     supprimeAvisUtilisateurAPI,
   } from '../client.api';
   import { SvelteSet } from 'svelte/reactivity';
-  import { storeTags } from '../stores/tags.store';
+  import { TAGS_NEGATIFS, TAGS_POSITIFS } from './tags';
 
   let { idInteraction }: { idInteraction: string } = $props();
   const avisUtilisateur: AvisUtilisateur | undefined = $derived.by(
@@ -99,9 +99,7 @@
           type="pressable"
           groupMarkup="ul"
           hasIcon={true}
-          tags={avisUtilisateur.positif
-            ? $storeTags.positifs()
-            : $storeTags.negatifs()}
+          tags={avisUtilisateur.positif ? TAGS_POSITIFS : TAGS_NEGATIFS}
           {onselected}
           {onunselected}
         ></dsfr-tags-group>

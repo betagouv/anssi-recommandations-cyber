@@ -19,8 +19,6 @@ from schemas.retour_utilisatrice import (
     RetourUtilisatrice,
     DonneesCreationRetourUtilisateur,
     Conversation,
-    TagPositif,
-    TagNegatif,
 )
 from schemas.type_utilisateur import TypeUtilisateur
 from services.exceptions import (
@@ -263,12 +261,6 @@ def ajoute_retour_utilisatrice(
             )
         )[0]
         retour = donnees_ajout_retour.retour
-        if len(conversation.interactions) < 2:
-            retour.tags = [
-                t
-                for t in retour.tags
-                if t != TagNegatif.Conversation and t != TagPositif.Conversation
-            ]  # type: ignore[assignment]
     else:
         interaction = adaptateur_base_de_donnees.recupere_interaction(
             uuid.UUID(donnees_ajout_retour.id_interaction)
