@@ -1,5 +1,5 @@
 import random
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 from unittest.mock import Mock
 import requests
 from openai import APITimeoutError, OpenAI
@@ -46,6 +46,17 @@ class ConstructeurRetourRouteSearch:
 
     def construis(self) -> RetourRouteSearch:
         return RetourRouteSearch(self._retours)
+
+
+class RetourRouteRerank:
+    def __init__(self, resultats: list[dict]):
+        self._resultats = resultats
+
+    def json(self):
+        return {"results": self._resultats}
+
+    def raise_for_status(self):
+        pass
 
 
 class ConstructeurClientHttp:
@@ -219,16 +230,23 @@ class ClientAlbertMemoire(ClientAlbert):
 class ConstructeurResultatDeRecherche:
     def __init__(self):
         self.contenu = "Un contenu"
+        self.reponse: Optional[str] = None
 
     def ayant_pour_contenu(self, contenu: str):
         self.contenu = contenu
+        return self
+
+    def ayant_pour_reponse(self, reponse: str):
+        self.reponse = reponse
         return self
 
     def construis(self) -> ResultatRecherche:
         return ResultatRecherche(
             RechercheChunk(
                 content=self.contenu,
-                metadata=RechercheMetadonnees(source_url="", page=1, nom_document=""),
+                metadata=RechercheMetadonnees(
+                    source_url="", page=1, nom_document="", reponse=self.reponse
+                ),
             ),
             0.5,
         )
