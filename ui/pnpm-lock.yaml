@@ -14,7 +14,7 @@ importers:
     dependencies:
       '@lab-anssi/ui-kit':
         specifier: ^1.43.0
-        version: 1.43.0(svelte@5.55.4(@typescript-eslint/types@8.56.1))
+        version: 1.48.1(svelte@5.55.4(@typescript-eslint/types@8.56.1))
       dompurify:
         specifier: ^3.4.0
         version: 3.4.0
@@ -327,8 +327,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lab-anssi/ui-kit@1.43.0':
-    resolution: {integrity: sha512-GRqkNgIuXy5Ii2JnYPI70IxNKS8klLvEDxoSUWMYHyju+GvtS3Z4t3qL4TIdoqNu3VbeKN9oKmnh0Fy+wmjZSw==}
+  '@lab-anssi/ui-kit@1.48.1':
+    resolution: {integrity: sha512-9r4zlXxb/fg5HHa917CjCiYB0m4mG/EUbdJFXNKOImVi2FjhQ6S1flb9FbnYj1uH3R61N/GFmKBhdIRE1jDB4g==}
     peerDependencies:
       svelte: ~5.38.8
 
@@ -1860,7 +1860,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lab-anssi/ui-kit@1.43.0(svelte@5.55.4(@typescript-eslint/types@8.56.1))':
+  '@lab-anssi/ui-kit@1.48.1(svelte@5.55.4(@typescript-eslint/types@8.56.1))':
     dependencies:
       svelte: 5.55.4(@typescript-eslint/types@8.56.1)
 
