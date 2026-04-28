@@ -70,6 +70,7 @@
           markup="button"
           type="button"
           onclick={() => copieLaReponse(contenuMarkdown)}
+          data-copie-reponse="copie-reponse"
         ></dsfr-button>
       </div>
     {/if}
