@@ -85,6 +85,16 @@ def fabrique_serveur(
             adaptateur_chiffrement, f"{static_root_directory}/cgu.html"
         )
 
+    @serveur.get("/faq")
+    def faq(
+            adaptateur_chiffrement: AdaptateurChiffrement = Depends(
+                fabrique_adaptateur_chiffrement
+            ),
+    ):
+        return sert_la_page_statique(
+            adaptateur_chiffrement, f"{static_root_directory}/faq.html"
+        )
+
     @serveur.get("/politique-confidentialite")
     def politique_confidentialite(
         adaptateur_chiffrement: AdaptateurChiffrement = Depends(

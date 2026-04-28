@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         cgu: resolve(__dirname, 'cgu.html'),
+        faq: resolve(__dirname, 'faq.html'),
         'politique-confidentialite': resolve(
           __dirname,
           'politique-confidentialite.html'
