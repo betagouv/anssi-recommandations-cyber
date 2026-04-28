@@ -230,14 +230,14 @@ class ClientAlbertMemoire(ClientAlbert):
 class ConstructeurResultatDeRecherche:
     def __init__(self):
         self.contenu = "Un contenu"
-        self.reponse: Optional[str] = None
+        self.id_reponse: Optional[str] = None
 
     def ayant_pour_contenu(self, contenu: str):
         self.contenu = contenu
         return self
 
-    def ayant_pour_reponse(self, reponse: str):
-        self.reponse = reponse
+    def ayant_pour_id_reponse(self, id_reponse: str):
+        self.id_reponse = id_reponse
         return self
 
     def construis(self) -> ResultatRecherche:
@@ -245,7 +245,7 @@ class ConstructeurResultatDeRecherche:
             RechercheChunk(
                 content=self.contenu,
                 metadata=RechercheMetadonnees(
-                    source_url="", page=1, nom_document="", reponse=self.reponse
+                    source_url="", page=1, nom_document="", id_reponse=self.id_reponse
                 ),
             ),
             0.5,

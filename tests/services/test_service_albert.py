@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from client_albert_de_test import (
     ClientAlbertMemoire,
@@ -8,6 +10,7 @@ from client_albert_de_test import (
 from client_albert_de_test import ConstructeurDeChoix
 
 from configuration import Albert
+from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import ReclasseReponse, ResultatReclasse, ReclassePayload
@@ -106,13 +109,17 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
     assert messages[1]["content"] == f"Question :\n{QUESTION}"
 
 
-def test_un_chunk_avec_reponse_metadata_est_marque_maitrisee():
+def test_un_chunk_avec_id_reponse_est_marque_maitrisee(tmp_path):
+    mapping_path = tmp_path / "faq.mapping.json"
+    mapping_path.write_text(
+        json.dumps({"qui-est-le-directeur": "Vincent Strubel."}), encoding="utf-8"
+    )
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
         [
             un_resultat_de_recherche()
             .ayant_pour_contenu("Qui est le directeur ?")
-            .ayant_pour_reponse("Vincent Strubel.")
+            .ayant_pour_id_reponse("qui-est-le-directeur")
             .construis(),
         ]
     )
@@ -125,6 +132,7 @@ def test_un_chunk_avec_reponse_metadata_est_marque_maitrisee():
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees(mapping_path),
     )
 
     reponse = service_albert.pose_question(question=QUESTION)
@@ -132,15 +140,20 @@ def test_un_chunk_avec_reponse_metadata_est_marque_maitrisee():
     assert reponse.paragraphes[0].est_maitrisee is True
 
 
-def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise():
-    client_albert_memoire = ClientAlbertMemoire()
+def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise(tmp_path):
+    mapping_path = tmp_path / "faq.mapping.json"
     contenu_question = "Qui est le directeur de l'ANSSI ?"
     reponse_maitrisee = "Vincent Strubel."
+    mapping_path.write_text(
+        json.dumps({"qui-est-le-directeur-de-lanssi": reponse_maitrisee}),
+        encoding="utf-8",
+    )
+    client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
         [
             un_resultat_de_recherche()
             .ayant_pour_contenu(contenu_question)
-            .ayant_pour_reponse(reponse_maitrisee)
+            .ayant_pour_id_reponse("qui-est-le-directeur-de-lanssi")
             .construis(),
         ]
     )
@@ -153,6 +166,7 @@ def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise():
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees(mapping_path),
     )
 
     service_albert.pose_question(question=QUESTION)

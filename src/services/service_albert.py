@@ -24,6 +24,7 @@ from schemas.violations import (
     ViolationQuestionNonComprise,
     REPONSE_PAR_DEFAUT,
 )
+from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from services.client_albert import ClientAlbert
 
 
@@ -31,9 +32,7 @@ def _filtre_reponses_maitrisees(
     paragraphes: list[Paragraphe], seuil: float
 ) -> list[Paragraphe]:
     maitrisees = [
-        p
-        for p in paragraphes
-        if p.est_maitrisee and p.score_reclassement >= seuil
+        p for p in paragraphes if p.est_maitrisee and p.score_reclassement >= seuil
     ]
     return maitrisees if maitrisees else paragraphes
 
@@ -51,6 +50,7 @@ class ServiceAlbert:
         utilise_recherche_hybride: bool,
         prompts: Prompts,
         reformulateur: ReformulateurDeQuestion,
+        mapping_reponses: Optional[MappingReponsesMaitrisees] = None,
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.id_collection_jeopardy = (
@@ -59,7 +59,9 @@ class ServiceAlbert:
         self.reclassement_active = configuration_service_albert.reclassement_active
         self.jeopardy_active = configuration_service_albert.jeopardy_active
         self.modele_reclassement = configuration_service_albert.modele_reclassement
-        self.seuil_reponse_maitrisee = configuration_service_albert.seuil_reponse_maitrisee
+        self.seuil_reponse_maitrisee = (
+            configuration_service_albert.seuil_reponse_maitrisee
+        )
         self.taille_fenetre_historique = (
             configuration_service_albert.taille_fenetre_historique
         )
@@ -68,6 +70,7 @@ class ServiceAlbert:
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
         self.reformulateur = reformulateur
+        self.mapping_reponses = mapping_reponses
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
@@ -81,15 +84,20 @@ class ServiceAlbert:
         )
 
         def _transforme_en_paragraphe(donnee):
-            reponse_metadata = donnee.chunk.metadata.reponse
+            id_reponse = donnee.chunk.metadata.id_reponse
+            reponse_texte = (
+                self.mapping_reponses.resoudre(id_reponse)
+                if id_reponse and self.mapping_reponses
+                else None
+            )
             return Paragraphe(
                 contenu=donnee.chunk.content,
                 url=donnee.chunk.metadata.source_url,
                 score_similarite=donnee.score,
                 numero_page=donnee.chunk.metadata.page,
                 nom_document=donnee.chunk.metadata.nom_document,
-                reponse=reponse_metadata or "",
-                est_maitrisee=reponse_metadata is not None,
+                reponse=reponse_texte or "",
+                est_maitrisee=reponse_texte is not None,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)

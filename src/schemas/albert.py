@@ -39,7 +39,7 @@ class RechercheMetadonnees(NamedTuple):
     source_url: str
     page: int
     nom_document: str
-    reponse: Optional[str] = None
+    id_reponse: Optional[str] = None
 
 
 class RechercheMetadonneesJeopardy(NamedTuple):
