@@ -142,10 +142,12 @@ def pages_statiques(tmp_path) -> Path:
     (root / "ui" / "dist" / "fonts").mkdir(parents=True, exist_ok=True)
     (root / "ui" / "dist" / "icons").mkdir(parents=True, exist_ok=True)
     (root / "ui" / "dist" / "images").mkdir(parents=True, exist_ok=True)
+    (root / "ui" / "dist" / "pages").mkdir(parents=True, exist_ok=True)
 
     crees_la_page_statique(root / "ui" / "dist" / "index.html")
-    crees_la_page_statique(root / "ui" / "dist" / "politique-confidentialite.html")
-    crees_la_page_statique(root / "ui" / "dist" / "cgu.html")
+    crees_la_page_statique(root / "ui" / "dist" / "pages" / "politique-confidentialite.html")
+    crees_la_page_statique(root / "ui" / "dist" / "pages" / "cgu.html")
+    crees_la_page_statique(root / "ui" / "dist" / "pages" / "faq.html")
     return root
 
 
