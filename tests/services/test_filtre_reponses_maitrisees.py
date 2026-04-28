@@ -47,13 +47,23 @@ def test_retourne_uniquement_le_paragraphe_maitrise(
     assert resultat == [paragraphe_maitrise]
 
 
-def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au_seuil():
+def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au_seuil(
+    tmp_path,
+):
+    import json
+    from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
+
+    mapping_path = tmp_path / "faq.mapping.json"
+    mapping_path.write_text(
+        json.dumps({"qui-est-le-directeur-de-lanssi": "Vincent Strubel."}),
+        encoding="utf-8",
+    )
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
         [
             un_resultat_de_recherche()
             .ayant_pour_contenu("Qui est le directeur de l'ANSSI ?")
-            .ayant_pour_reponse("Vincent Strubel.")
+            .ayant_pour_id_reponse("qui-est-le-directeur-de-lanssi")
             .construis(),
             un_resultat_de_recherche()
             .ayant_pour_contenu("Autre contenu sans réponse")
@@ -76,6 +86,7 @@ def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees(mapping_path),
     ).pose_question(question="Qui est le directeur de l'ANSSI ?")
 
     assert len(reponse.paragraphes) == 1

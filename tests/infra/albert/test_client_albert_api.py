@@ -185,7 +185,9 @@ def test_reclasse_conserve_le_score(une_configuration_albert_client):
         une_configuration_albert_client,
     )
 
-    payload = ReclassePayload(query="question ?", documents=["doc0", "doc1"], model="rerank")
+    payload = ReclassePayload(
+        query="question ?", documents=["doc0", "doc1"], model="rerank"
+    )
     resultat = mock_client_albert_api.reclasse(payload)
 
     assert len(resultat.data) == 2
