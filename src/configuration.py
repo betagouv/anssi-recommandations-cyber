@@ -203,9 +203,7 @@ def recupere_configuration() -> Configuration:
                 os.getenv("ALBERT_TAILLE_FENETRE_HISTORIQUE", "10")
             ),
             jeopardy_active=os.getenv("JEOPARDY_ACTIVE", "false").lower() == "true",
-            seuil_reponse_maitrisee=float(
-                os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")
-            ),
+            seuil_reponse_maitrisee=float(os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")),
         ),
     )
     configuration_base_de_donnees = _recupere_configuration_postgres(
