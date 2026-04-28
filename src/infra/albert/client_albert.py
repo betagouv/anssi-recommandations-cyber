@@ -71,6 +71,7 @@ class ClientAlbertApi(ClientAlbert):
                 page=meta_dict.get("page", 0)
                 + self.decalage_index_Albert_et_numero_de_page_lecteur,
                 nom_document=meta_dict.get("nom_document", ""),
+                id_reponse=meta_dict.get("id_reponse"),
             )
             chunk = RechercheChunk(
                 content=chunk_dict.get("content", ""),
@@ -181,11 +182,15 @@ class ClientAlbertApi(ClientAlbert):
             reponse.raise_for_status()
             brut = reponse.json()
 
-            donnees = brut.get("data", [])
+            donnees = brut.get("results", [])
+            if not donnees:
+                logging.warning(
+                    "[RERANK] l'API a retourné results=[] — reclassement ignoré"
+                )
             resultats = [
                 ResultatReclasse(
                     object=r.get("object", "rerank"),
-                    score=float(r.get("score", 0.0)),
+                    score=float(r.get("relevance_score", 0.0)),
                     index=r.get("index", 0),
                 )
                 for r in donnees

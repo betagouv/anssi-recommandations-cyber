@@ -84,17 +84,23 @@ def test_route_initie_conversation_retourne_donnees_correctes(
         "paragraphes": [
             {
                 "score_similarite": 0.75,
+                "score_reclassement": 1.0,
                 "numero_page": 29,
                 "url": "http://mondocument.local/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
                 "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
                 "contenu": "Contenu du paragraphe 1",
+                "reponse": "",
+                "est_maitrisee": False,
             },
             {
                 "score_similarite": 0.72,
+                "score_reclassement": 1.0,
                 "numero_page": 15,
                 "url": "http://mondocument.local/guide_hygiene_informatique_anssi.pdf",
                 "nom_document": "guide_hygiene_informatique_anssi.pdf",
                 "contenu": "Contenu du paragraphe 2",
+                "reponse": "",
+                "est_maitrisee": False,
             },
         ],
         "id_conversation": response_data["id_conversation"],

@@ -5,10 +5,13 @@ from schemas.violations import Violation
 
 class Paragraphe(BaseModel):
     score_similarite: float
+    score_reclassement: float = 1.0
     numero_page: int
     url: str
     nom_document: str
     contenu: str
+    reponse: str = ""
+    est_maitrisee: bool = False
 
 
 class ReponseQuestion(BaseModel):
@@ -36,6 +39,7 @@ class RechercheMetadonnees(NamedTuple):
     source_url: str
     page: int
     nom_document: str
+    id_reponse: Optional[str] = None
 
 
 class RechercheMetadonneesJeopardy(NamedTuple):
