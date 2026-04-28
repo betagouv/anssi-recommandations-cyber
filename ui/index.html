@@ -21,6 +21,20 @@
       src="https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com/%%VERSION_UI_KIT%%/lab-anssi-ui-kit.iife.js"
       nonce="%%NONCE_A_INJECTER%%"
     ></script>
+    <!-- Matomo Tag Manager -->
+    <script nonce="%%NONCE_A_INJECTER%%">
+      var _mtm = (window._mtm = window._mtm || []);
+      _mtm.push({ 'mtm.startTime': new Date().getTime(), event: 'mtm.Start' });
+      (function () {
+        var d = document,
+          g = d.createElement('script'),
+          s = d.getElementsByTagName('script')[0];
+        g.async = true;
+        g.src = 'https://stats.beta.gouv.fr/js/container_Dvij6GD5.js';
+        s.parentNode.insertBefore(g, s);
+      })();
+    </script>
+    <!-- End Matomo Tag Manager -->
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
