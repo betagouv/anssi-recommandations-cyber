@@ -13,7 +13,7 @@ importers:
   .:
     dependencies:
       '@lab-anssi/ui-kit':
-        specifier: ^1.43.0
+        specifier: ^1.48.1
         version: 1.48.1(svelte@5.55.4(@typescript-eslint/types@8.56.1))
       dompurify:
         specifier: ^3.4.0
