@@ -64,7 +64,7 @@ jobs:
           python-version-file: "pyproject.toml"
 
       - name: Installer uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8.1.0
 
       - name: Installer les dépendances
         run: uv sync
