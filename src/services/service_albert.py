@@ -1,4 +1,4 @@
-from typing import Optional, cast, NamedTuple
+from typing import Optional, cast, NamedTuple, Union
 
 from openai.types.chat import (
     ChatCompletionMessageParam,
@@ -13,6 +13,7 @@ from schemas.albert import (
     RecherchePayload,
     ReponseQuestion,
     ReclassePayload,
+    ParagrapheReponseMaitrisee,
 )
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import (
@@ -29,10 +30,12 @@ from services.client_albert import ClientAlbert
 
 
 def _filtre_reponses_maitrisees(
-    paragraphes: list[Paragraphe], seuil: float
-) -> list[Paragraphe]:
-    maitrisees = [
-        p for p in paragraphes if p.est_maitrisee and p.score_reclassement >= seuil
+    paragraphes: list[Union[Paragraphe | ParagrapheReponseMaitrisee]], seuil: float
+) -> list[Union[Paragraphe | ParagrapheReponseMaitrisee]]:
+    maitrisees: list[Union[Paragraphe | ParagrapheReponseMaitrisee]] = [
+        p
+        for p in paragraphes
+        if isinstance(p, ParagrapheReponseMaitrisee) and p.score_reclassement >= seuil
     ]
     return maitrisees if maitrisees else paragraphes
 
@@ -50,7 +53,7 @@ class ServiceAlbert:
         utilise_recherche_hybride: bool,
         prompts: Prompts,
         reformulateur: ReformulateurDeQuestion,
-        mapping_reponses: Optional[MappingReponsesMaitrisees] = None,
+        mapping_reponses: MappingReponsesMaitrisees,
     ) -> None:
         self.id_collection = configuration_service_albert.collection_id_anssi_lab
         self.id_collection_jeopardy = (
@@ -85,19 +88,24 @@ class ServiceAlbert:
 
         def _transforme_en_paragraphe(donnee):
             id_reponse = donnee.chunk.metadata.id_reponse
-            reponse_texte = (
-                self.mapping_reponses.resoudre(id_reponse)
-                if id_reponse and self.mapping_reponses
-                else None
-            )
+
+            if id_reponse:
+                reponse_texte = self.mapping_reponses.resoudre(id_reponse)
+                return ParagrapheReponseMaitrisee(
+                    contenu=donnee.chunk.content,
+                    url=donnee.chunk.metadata.source_url,
+                    score_similarite=donnee.score,
+                    numero_page=donnee.chunk.metadata.page,
+                    nom_document=donnee.chunk.metadata.nom_document,
+                    reponse=reponse_texte,
+                )
+
             return Paragraphe(
                 contenu=donnee.chunk.content,
                 url=donnee.chunk.metadata.source_url,
                 score_similarite=donnee.score,
                 numero_page=donnee.chunk.metadata.page,
                 nom_document=donnee.chunk.metadata.nom_document,
-                reponse=reponse_texte or "",
-                est_maitrisee=reponse_texte is not None,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
@@ -220,9 +228,7 @@ class ServiceAlbert:
         conversation: Conversation | None,
     ) -> list[Choice]:
         def _contenu_pour_llm(p: Paragraphe) -> str:
-            if p.est_maitrisee:
-                return f"{p.contenu}\n{p.reponse}"
-            return p.contenu
+            return p.contexte_dans_le_document
 
         paragraphes_concatenes = "\n\n\n".join(
             [_contenu_pour_llm(p) for p in paragraphes]

@@ -10,8 +10,18 @@ class Paragraphe(BaseModel):
     url: str
     nom_document: str
     contenu: str
+
+    @property
+    def contexte_dans_le_document(self):
+        return self.contenu
+
+
+class ParagrapheReponseMaitrisee(Paragraphe):
     reponse: str = ""
-    est_maitrisee: bool = False
+
+    @property
+    def contexte_dans_le_document(self):
+        return f"{self.contenu}\n{self.reponse}"
 
 
 class ReponseQuestion(BaseModel):

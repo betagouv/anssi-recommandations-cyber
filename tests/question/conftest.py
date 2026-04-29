@@ -12,7 +12,7 @@ from question.question import ConfigurationQuestion
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import Conversation, Interaction
-from serveur_de_test import ServiceAlbertMemoire
+from serveur_de_test import ServiceAlbertMemoire, MappingReponsesMaitriseesDeTest
 from services.service_albert import ServiceAlbert, Prompts
 from tests.conftest import ConstructeurDeReponseQuestion
 
@@ -133,6 +133,7 @@ def un_service_albert_avec_un_client_memoire() -> Callable[
             utilise_recherche_hybride=False,
             prompts=prompts,
             reformulateur=ReformulateurDeQuestionDeTest(),
+            mapping_reponses=MappingReponsesMaitriseesDeTest(),
         )
 
     return _un_service_albert_avec_un_client_memoire

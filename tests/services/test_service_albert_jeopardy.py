@@ -1,5 +1,6 @@
 from client_albert_de_test import ClientAlbertMemoire, un_resultat_de_recherche
 from configuration import Albert
+from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
     RechercheMetadonneesJeopardy,
@@ -72,6 +73,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
@@ -137,6 +139,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -192,6 +195,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -255,6 +259,7 @@ def test_recherche_paragraphes_limite_a_20_candidats():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")

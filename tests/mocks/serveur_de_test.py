@@ -19,6 +19,7 @@ from configuration import Mode, Albert
 from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )
+from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, ReclasseReponse
 from schemas.retour_utilisatrice import Conversation
@@ -30,6 +31,11 @@ from services.exceptions import ErreurCommunicationModele
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
+
+
+class MappingReponsesMaitriseesDeTest(MappingReponsesMaitrisees):
+    def __init__(self) -> None:
+        super().__init__({})
 
 
 class ServiceAlbertMemoire(ServiceAlbert):
@@ -56,6 +62,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
             False,
             Prompts(prompt_systeme="", prompt_reclassement=""),
             ReformulateurDeQuestion(client_albert, "", ""),
+            MappingReponsesMaitriseesDeTest(),
         )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
