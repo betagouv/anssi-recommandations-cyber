@@ -1,9 +1,8 @@
-from typing import Callable, Optional
+from typing import Callable
 
 import pytest
 
 from configuration import Albert
-from schemas.albert import Paragraphe
 
 
 @pytest.fixture()
@@ -21,25 +20,3 @@ def une_configuration_de_service_albert() -> Callable[[], Albert.Service]:  # ty
         )
 
     return _une_configuration_de_service_albert
-
-
-@pytest.fixture()
-def un_paragraphe_depuis_metadata() -> Callable[..., Paragraphe]:
-    def _un_paragraphe_depuis_metadata(
-        contenu: str,
-        reponse_metadata: Optional[str] = None,
-        score_similarite: float = 0.5,
-        score_reclassement: float = 0.5,
-    ) -> Paragraphe:
-        return Paragraphe(
-            contenu=contenu,
-            reponse=reponse_metadata or "",
-            est_maitrisee=reponse_metadata is not None,
-            score_similarite=score_similarite,
-            score_reclassement=score_reclassement,
-            numero_page=0,
-            url="https://example.com",
-            nom_document="faq_reponses_maitrisees",
-        )
-
-    return _un_paragraphe_depuis_metadata

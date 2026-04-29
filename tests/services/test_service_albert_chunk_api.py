@@ -9,6 +9,7 @@ from schemas.albert import (
     RechercheChunkJeopardy,
     ResultatRechercheJeopardy,
 )
+from serveur_de_test import MappingReponsesMaitriseesDeTest
 from services.service_albert import ServiceAlbert, Prompts
 
 
@@ -85,6 +86,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitriseesDeTest(),
     )
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
         "Ma question ?"

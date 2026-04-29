@@ -2,6 +2,7 @@ from pathlib import Path
 
 from configuration import recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
+from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from services.service_albert import ServiceAlbert, Prompts
 
@@ -28,6 +29,7 @@ def fabrique_service_albert() -> ServiceAlbert:
             prompt_systeme=prompt_systeme, prompt_reclassement=prompt_reclassement
         ),
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
 

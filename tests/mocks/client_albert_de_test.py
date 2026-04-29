@@ -236,7 +236,7 @@ class ConstructeurResultatDeRecherche:
         self.contenu = contenu
         return self
 
-    def ayant_pour_id_reponse(self, id_reponse: str):
+    def ayant_reponse_maitrisee(self, id_reponse: str):
         self.id_reponse = id_reponse
         return self
 

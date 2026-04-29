@@ -13,7 +13,12 @@ from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
-from schemas.albert import ReclasseReponse, ResultatReclasse, ReclassePayload
+from schemas.albert import (
+    ReclasseReponse,
+    ResultatReclasse,
+    ReclassePayload,
+    ParagrapheReponseMaitrisee,
+)
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
     Violation,
@@ -76,6 +81,7 @@ def test_pose_question_retourne_une_reponse():
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     reponse = service_albert.pose_question(question=QUESTION)
@@ -94,6 +100,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -109,37 +116,6 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
     assert messages[1]["content"] == f"Question :\n{QUESTION}"
 
 
-def test_un_chunk_avec_id_reponse_est_marque_maitrisee(tmp_path):
-    mapping_path = tmp_path / "faq.mapping.json"
-    mapping_path.write_text(
-        json.dumps({"qui-est-le-directeur": "Vincent Strubel."}), encoding="utf-8"
-    )
-    client_albert_memoire = ClientAlbertMemoire()
-    client_albert_memoire.avec_les_resultats(
-        [
-            un_resultat_de_recherche()
-            .ayant_pour_contenu("Qui est le directeur ?")
-            .ayant_pour_id_reponse("qui-est-le-directeur")
-            .construis(),
-        ]
-    )
-    client_albert_memoire.avec_les_propositions(
-        [un_choix_de_proposition().ayant_pour_contenu("Réponse").construis()]
-    )
-    service_albert = ServiceAlbert(
-        FAUSSE_CONFIGURATION_ALBERT_SERVICE,
-        client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
-        mapping_reponses=MappingReponsesMaitrisees(mapping_path),
-    )
-
-    reponse = service_albert.pose_question(question=QUESTION)
-
-    assert reponse.paragraphes[0].est_maitrisee is True
-
-
 def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise(tmp_path):
     mapping_path = tmp_path / "faq.mapping.json"
     contenu_question = "Qui est le directeur de l'ANSSI ?"
@@ -153,7 +129,7 @@ def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise(tmp
         [
             un_resultat_de_recherche()
             .ayant_pour_contenu(contenu_question)
-            .ayant_pour_id_reponse("qui-est-le-directeur-de-lanssi")
+            .ayant_reponse_maitrisee("qui-est-le-directeur-de-lanssi")
             .construis(),
         ]
     )
@@ -166,7 +142,7 @@ def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise(tmp
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
-        mapping_reponses=MappingReponsesMaitrisees(mapping_path),
+        mapping_reponses=MappingReponsesMaitrisees.depuis_chemin(mapping_path),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -196,6 +172,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme():
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -216,6 +193,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     retour = service_albert.pose_question(question=QUESTION)
@@ -263,6 +241,7 @@ def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     retour = service_albert.pose_question(question="question illégale ?")
@@ -292,6 +271,7 @@ def test_reclasse_les_paragraphes():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).reclasse(payload)
 
     assert reclassement == {
@@ -322,6 +302,7 @@ def test_le_score_reclassement_est_propage_sur_le_paragraphe():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question ?")
 
     assert reponse_de_pose_question.paragraphes[0].score_reclassement == 0.92
@@ -355,6 +336,7 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert list(map(lambda p: p.contenu, reponse_de_pose_question.paragraphes)) == [
@@ -390,6 +372,7 @@ def test_les_paragraphes_reclasses_sont_envoyes_a_albert():
         False,
         PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     )
 
     service_albert.pose_question(question=QUESTION)
@@ -419,6 +402,7 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     # Sans jeopardy mais avec reclassement, on demande 20 paragraphes classiques
@@ -439,6 +423,7 @@ def test_appelle_le_reclassement_uniquement_quand_active():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
@@ -460,6 +445,7 @@ def test_l_injection_du_prompt_de_reclassement():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert (
@@ -484,6 +470,7 @@ def test_lis_le_nom_du_modele_de_reclassement():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu.model == "rerank-small"
@@ -499,6 +486,7 @@ def test_ne_reclasse_pas_si_la_recherche_de_paragraphes_retourne_un_resultat_vid
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
@@ -525,6 +513,7 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert reponse.reponse == "Un contenu"
@@ -554,6 +543,7 @@ def test_retourne_au_maximum_5_paragraphes_meme_si_le_reclassement_echoue():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Une question de test ?")
 
     assert len(reponse.paragraphes) == 5
@@ -585,6 +575,7 @@ def test_initie_une_conversation(
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(
         question="Une troisieme question de test ?", conversation=conversation
     )
@@ -646,6 +637,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Question actuelle ?", conversation=conversation)
 
     messages_recus = client_albert_memoire.messages_recus
@@ -696,6 +688,7 @@ def test_peut_reformuler_une_question(une_configuration_de_service_albert):
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Question actuelle ?", conversation=None)
 
     assert reponse_question.question_reformulee == "Ma question reformulee"
@@ -724,6 +717,7 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Ma question brute ?")
 
     assert (
@@ -758,6 +752,7 @@ def test_reclassement_utilise_la_question_reformulee():
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Ma question brute ?")
 
     assert (
@@ -798,6 +793,7 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Comment s'en protéger ?", conversation=conversation)
 
     assert len(client_albert_reformulation.messages_recus) == 4
@@ -850,6 +846,7 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Question actuelle brute", conversation=conversation)
 
     messages_recus = client_albert_recherche.messages_recus
@@ -898,6 +895,7 @@ def test_pose_question_reformule_la_question_sans_les_violations_precedentes(
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Nouvelle question ?", conversation=conversation)
 
     messages_reformulation = client_albert_reformulation.messages_recus
@@ -946,6 +944,7 @@ def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Nouvelle question ?", conversation=conversation)
 
     messages_recherche = client_albert_recherche.messages_recus
@@ -973,9 +972,58 @@ def test_retourne_violation_question_non_comprise_si_reformulateur_retourne_QUES
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
         reformulateur=reformulateur,
+        mapping_reponses=MappingReponsesMaitrisees({}),
     ).pose_question(question="Raconte-moi une blague")
 
     assert reponse.violation == ViolationQuestionNonComprise()
     assert reponse.reponse == ViolationQuestionNonComprise().reponse
     assert reponse.paragraphes == []
     assert client_albert_recherche.payload_recu is None
+
+
+def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee():
+    client_albert_memoire = ClientAlbertMemoire()
+    resultats_classiques = [
+        un_resultat_de_recherche()
+        .ayant_reponse_maitrisee("quel-est-le-directeur-de-anssi")
+        .ayant_pour_contenu("Quel est le directeur de l'ANSSI ?")
+        .construis()
+    ]
+    client_albert_memoire.avec_les_resultats_par_appel([resultats_classiques])
+    configuration = Albert.Service(
+        collection_nom_anssi_lab="",
+        collection_id_anssi_lab=157814,
+        collection_id_anssi_lab_jeopardy=161155,
+        reclassement_active=True,
+        modele_reclassement="",
+        taille_fenetre_historique=2,
+        jeopardy_active=False,
+        seuil_reponse_maitrisee=0.5,
+    )
+
+    service_albert = ServiceAlbert(
+        configuration_service_albert=configuration,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees(
+            {"quel-est-le-directeur-de-anssi": "Vincent Strubel"}
+        ),
+    )
+
+    paragraphes = service_albert.recherche_paragraphes("Ma question ?")
+
+    paragraphe_attendu = ParagrapheReponseMaitrisee(
+        contenu="Quel est le directeur de l'ANSSI ?",
+        url="",
+        score_similarite=0.5,
+        numero_page=1,
+        nom_document="",
+        reponse="Vincent Strubel",
+    )
+    assert paragraphes[0] == paragraphe_attendu
+    assert (
+        paragraphe_attendu.contexte_dans_le_document
+        == "Quel est le directeur de l'ANSSI ?\nVincent Strubel"
+    )
