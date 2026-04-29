@@ -3,9 +3,7 @@ import { type Validateur } from './validateur';
 
 type QuestionUtilisateur = string;
 
-export class ValidateurQuestionUtilisateur
-  implements Validateur<QuestionUtilisateur>
-{
+export class ValidateurQuestionUtilisateur implements Validateur<QuestionUtilisateur> {
   schema: z.ZodString;
 
   constructor() {
