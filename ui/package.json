@@ -50,7 +50,7 @@
   "dependencies": {
     "@lab-anssi/ui-kit": "^1.48.1",
     "dompurify": "^3.4.0",
-    "marked": "^16.4.2",
+    "marked": "^18.0.0",
     "zod": "^4.3.6"
   },
   "pnpm": {
