@@ -29,7 +29,7 @@ services:
       - mqc-frontend
 
   mqc-db:
-    image: docker.io/postgres:15
+    image: docker.io/postgres:18
     env_file:
       - .env
     environment:
