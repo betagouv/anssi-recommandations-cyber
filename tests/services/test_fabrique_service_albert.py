@@ -1,7 +1,12 @@
+from client_albert_de_test import SessionDeTestQuiCompte
+
 from configuration import recupere_configuration
 from infra.albert.client_albert import ClientAlbertApi
 from question.reformulateur_de_question import ReformulateurDeQuestion
-from services.fabrique_service_albert import fabrique_service_albert
+from services.fabrique_service_albert import (
+    DepotMappingReponses,
+    fabrique_service_albert,
+)
 
 
 def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:
@@ -26,6 +31,17 @@ def test_fabrique_un_service_albert_avec_un_reformulateur(monkeypatch) -> None:
         "composant de reformulation"
         in service_albert.reformulateur.prompt_de_reformulation
     )
+
+
+def test_mapping_reponses_est_charge_une_seule_fois():
+    DepotMappingReponses._reinitialiser()
+    session = SessionDeTestQuiCompte({"id": "réponse"})
+    url = "https://example.com/mapping.json"
+
+    DepotMappingReponses.charger(url, session)
+    DepotMappingReponses.charger(url, session)
+
+    assert session.nombre_appels == 1
 
 
 def test_lit_collection_id_jeopardy_depuis_env() -> None:
