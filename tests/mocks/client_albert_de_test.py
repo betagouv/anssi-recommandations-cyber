@@ -59,12 +59,40 @@ class RetourRouteRerank:
         pass
 
 
+class RetourHttpJson:
+    def __init__(self, data: dict):
+        self._data = data
+
+    def json(self):
+        return self._data
+
+    def raise_for_status(self):
+        pass
+
+
+class SessionDeTestQuiCompte:
+    def __init__(self, data: dict):
+        self.nombre_appels = 0
+        self._data = data
+
+    def get(self, url):
+        self.nombre_appels += 1
+        return RetourHttpJson(self._data)
+
+    def raise_for_status(self):
+        pass
+
+
 class ConstructeurClientHttp:
     def __init__(self):
         self._mock = Mock(requests.Session)
 
     def qui_retourne(self, retour):
         self._mock.post.return_value = retour
+        return self
+
+    def qui_retourne_sur_get(self, retour):
+        self._mock.get.return_value = retour
         return self
 
     def qui_retourne_une_erreur(self, erreur):
