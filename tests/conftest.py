@@ -145,7 +145,9 @@ def pages_statiques(tmp_path) -> Path:
     (root / "ui" / "dist" / "pages").mkdir(parents=True, exist_ok=True)
 
     crees_la_page_statique(root / "ui" / "dist" / "index.html")
-    crees_la_page_statique(root / "ui" / "dist" / "pages" / "politique-confidentialite.html")
+    crees_la_page_statique(
+        root / "ui" / "dist" / "pages" / "politique-confidentialite.html"
+    )
     crees_la_page_statique(root / "ui" / "dist" / "pages" / "cgu.html")
     crees_la_page_statique(root / "ui" / "dist" / "pages" / "faq.html")
     return root
@@ -307,6 +309,16 @@ class ConstructeurDInteraction:
             question=self.reponse_question.question,
             question_reformulee=self.reponse_question.question_reformulee,
             violation=violation,
+        )
+        return self
+
+    def avec_une_reponse_contenant_les_paragraphes(self, paragraphes: list[Paragraphe]):
+        self.reponse_question = ReponseQuestion(
+            reponse="réponse",
+            paragraphes=paragraphes,
+            question="question",
+            question_reformulee="Question reformulée",
+            violation=None,
         )
         return self
 

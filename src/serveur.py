@@ -15,6 +15,7 @@ from adaptateurs.chiffrement import (
 )
 from adaptateurs.sentry import fabrique_adaptateur_sentry
 from api.api import api, api_developpement
+from api.route_document_source import document_source
 from configuration import Mode
 from infra.ui_kit.version_ui_kit import version_ui_kit
 
@@ -56,6 +57,7 @@ def fabrique_serveur(
     serveur.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])  # type: ignore [arg-type]
 
     serveur.include_router(api)
+    serveur.include_router(document_source)
 
     if mode == Mode.DEVELOPPEMENT:
         serveur.include_router(api_developpement)
@@ -75,10 +77,18 @@ def fabrique_serveur(
             adaptateur_chiffrement, f"{static_root_directory}/index.html"
         )
 
-
-    pages_statiques = {"cgu": "cgu.html", "faq": "faq.html", "politique-confidentialite": "politique-confidentialite.html"}
+    pages_statiques = {
+        "cgu": "cgu.html",
+        "faq": "faq.html",
+        "politique-confidentialite": "politique-confidentialite.html",
+    }
     for clef, page in pages_statiques.items():
-        serveur.get(f"/{clef}")(lambda page=page: sert_la_page_statique(fabrique_adaptateur_chiffrement(), f"{static_root_directory}/pages/{page}"))
+        serveur.get(f"/{clef}")(
+            lambda page=page: sert_la_page_statique(
+                fabrique_adaptateur_chiffrement(),
+                f"{static_root_directory}/pages/{page}",
+            )
+        )
 
     def sert_la_page_statique(
         adaptateur_chiffrement: AdaptateurChiffrement, page_statique: str

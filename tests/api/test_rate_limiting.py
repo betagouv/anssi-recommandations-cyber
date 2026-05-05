@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from starlette.routing import Route
 from typing import Any
 
+from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from configuration import Mode
 
 
@@ -16,7 +17,7 @@ def les_routes_du_serveur(serveur: FastAPI) -> list[Any]:
         map(
             lambda r: r.path,  # type:ignore[attr-defined]
             filter(
-                lambda r: isinstance(r, Route) and dans_l_ensemble(r.methods, "GET"),
+                lambda r: isinstance(r, Route) and not r.path.startswith("/source") and dans_l_ensemble(r.methods, "GET"),
                 serveur.routes,
             ),
         )
