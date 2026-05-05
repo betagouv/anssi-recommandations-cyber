@@ -77,10 +77,18 @@ def fabrique_serveur(
             adaptateur_chiffrement, f"{static_root_directory}/index.html"
         )
 
-
-    pages_statiques = {"cgu": "cgu.html", "faq": "faq.html", "politique-confidentialite": "politique-confidentialite.html"}
+    pages_statiques = {
+        "cgu": "cgu.html",
+        "faq": "faq.html",
+        "politique-confidentialite": "politique-confidentialite.html",
+    }
     for clef, page in pages_statiques.items():
-        serveur.get(f"/{clef}")(lambda page=page: sert_la_page_statique(fabrique_adaptateur_chiffrement(), f"{static_root_directory}/pages/{page}"))
+        serveur.get(f"/{clef}")(
+            lambda page=page: sert_la_page_statique(
+                fabrique_adaptateur_chiffrement(),
+                f"{static_root_directory}/pages/{page}",
+            )
+        )
 
     def sert_la_page_statique(
         adaptateur_chiffrement: AdaptateurChiffrement, page_statique: str
