@@ -16,7 +16,7 @@ importers:
         specifier: ^1.48.1
         version: 1.48.1(svelte@5.55.5(@typescript-eslint/types@8.59.1))
       dompurify:
-        specifier: ^3.4.0
+        specifier: ^3.4.1
         version: 3.4.1
       marked:
         specifier: ^18.0.0
