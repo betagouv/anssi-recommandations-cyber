@@ -28,5 +28,7 @@ def route_document_source(
             interaction_recuperee.reponse_question.paragraphes,
         )
     )
+    if len(documents_trouves) == 0:
+        return Response(status_code=404)
     document_cible = documents_trouves[0]
     return RedirectResponse(f"{document_cible.url}#page={page}", 301)
