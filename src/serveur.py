@@ -15,6 +15,7 @@ from adaptateurs.chiffrement import (
 )
 from adaptateurs.sentry import fabrique_adaptateur_sentry
 from api.api import api, api_developpement
+from api.route_document_source import document_source
 from configuration import Mode
 from infra.ui_kit.version_ui_kit import version_ui_kit
 
@@ -56,6 +57,7 @@ def fabrique_serveur(
     serveur.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])  # type: ignore [arg-type]
 
     serveur.include_router(api)
+    serveur.include_router(document_source)
 
     if mode == Mode.DEVELOPPEMENT:
         serveur.include_router(api_developpement)

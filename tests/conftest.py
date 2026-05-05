@@ -310,6 +310,16 @@ class ConstructeurDInteraction:
         )
         return self
 
+    def avec_une_reponse_contenant_les_paragraphes(self, paragraphes: list[Paragraphe]):
+        self.reponse_question = ReponseQuestion(
+            reponse="réponse",
+            paragraphes=paragraphes,
+            question="question",
+            question_reformulee="Question reformulée",
+            violation=None,
+        )
+        return self
+
 
 @pytest.fixture()
 def un_constructeur_d_interaction() -> Callable[[], ConstructeurDInteraction]:
