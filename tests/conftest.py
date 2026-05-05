@@ -145,7 +145,9 @@ def pages_statiques(tmp_path) -> Path:
     (root / "ui" / "dist" / "pages").mkdir(parents=True, exist_ok=True)
 
     crees_la_page_statique(root / "ui" / "dist" / "index.html")
-    crees_la_page_statique(root / "ui" / "dist" / "pages" / "politique-confidentialite.html")
+    crees_la_page_statique(
+        root / "ui" / "dist" / "pages" / "politique-confidentialite.html"
+    )
     crees_la_page_statique(root / "ui" / "dist" / "pages" / "cgu.html")
     crees_la_page_statique(root / "ui" / "dist" / "pages" / "faq.html")
     return root
