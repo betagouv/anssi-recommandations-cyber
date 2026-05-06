@@ -112,6 +112,9 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             les_interactions.append(Interaction.model_validate(interaction_dechiffree))
         return Conversation.hydrate(id_conversation, les_interactions)
 
+    def recupere_conversation_par_id_interaction(self, interaction):
+        pass
+
     def sauvegarde_conversation(self, conversation: Conversation):
         conversation_recuperee = self.recupere_conversation(
             conversation.id_conversation
