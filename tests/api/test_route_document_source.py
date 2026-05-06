@@ -1,12 +1,15 @@
 import uuid
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
-from adaptateurs.journal import AdaptateurJournalMemoire
+from adaptateurs.journal import AdaptateurJournalMemoire, TypeEvenement
 from fastapi.testclient import TestClient
 
 
 def test_redirige_vers_le_document_source(
-    un_serveur_de_test, un_constructeur_d_interaction, un_constructeur_de_paragraphe
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
 ):
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     serveur = un_serveur_de_test(
@@ -24,7 +27,12 @@ def test_redirige_vers_le_document_source(
         .avec_une_reponse_contenant_les_paragraphes([paragraphe])
         .construis()
     )
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    une_conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(une_conversation)
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
@@ -39,7 +47,10 @@ def test_redirige_vers_le_document_source(
 
 
 def test_redirige_vers_le_bon_document_source(
-    un_serveur_de_test, un_constructeur_d_interaction, un_constructeur_de_paragraphe
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
 ):
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     serveur = un_serveur_de_test(
@@ -65,7 +76,12 @@ def test_redirige_vers_le_bon_document_source(
         )
         .construis()
     )
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    une_conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(une_conversation)
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
@@ -152,3 +168,53 @@ def test_retourne_erreur_404_si_le_numero_de_page_ne_correspond_pas(
     )
 
     assert reponse.status_code == 404
+
+
+def test_journalise_le_document_source_demande(
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
+):
+    adaptateur_journal = AdaptateurJournalMemoire()
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    serveur = un_serveur_de_test(
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=adaptateur_journal,
+    )
+    paragraphe = (
+        un_constructeur_de_paragraphe()
+        .a_la_page(25)
+        .dans_le_document("anssi-guide-gestion_crise_cyber.pdf")
+        .construis()
+    )
+    une_interaction = (
+        un_constructeur_d_interaction()
+        .avec_une_reponse_contenant_les_paragraphes([paragraphe])
+        .construis()
+    )
+    une_conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(une_conversation)
+    client_http = TestClient(serveur, follow_redirects=False)
+
+    client_http.get(
+        f"/source/?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(une_interaction.id)}"
+    )
+
+    evenements = adaptateur_journal.les_evenements()
+    assert len(evenements) == 1
+    assert evenements[0]["type"] == TypeEvenement.DOCUMENT_SOURCE_VISIONNE
+    assert evenements[0]["donnees"].id_interaction == une_interaction.id
+    assert evenements[0]["donnees"].id_conversation == une_conversation.id_conversation
+    assert (
+        evenements[0]["donnees"].nom_document == "anssi-guide-gestion_crise_cyber.pdf"
+    )
+    assert evenements[0]["donnees"].numero_page == 25
+    assert (
+        evenements[0]["donnees"].url_document
+        == "http://mondocument.local/anssi-guide-gestion_crise_cyber.pdf"
+    )

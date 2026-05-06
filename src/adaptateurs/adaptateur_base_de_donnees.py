@@ -29,3 +29,7 @@ class AdaptateurBaseDeDonnees(ABC):
     @abstractmethod
     def sauvegarde_conversation(self, conversation: Conversation):
         pass
+
+    @abstractmethod
+    def recupere_conversation_par_id_interaction(self, interaction):
+        pass

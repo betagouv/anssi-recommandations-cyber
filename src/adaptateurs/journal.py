@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from enum import StrEnum
 from pydantic import BaseModel
 from typing import Literal, Optional
+from uuid import UUID
 
 from configuration import BaseDeDonnees, recupere_configuration
 from infra.logger import log
@@ -52,12 +53,21 @@ class DonneesAvisUtilisateurSupprime(Donnees):
     type_utilisateur: TypeUtilisateur
 
 
+class DonneesDocumentSourceVisionne(Donnees):
+    id_interaction: UUID
+    id_conversation: UUID
+    nom_document: str
+    numero_page: int
+    url_document: str
+
+
 class TypeEvenement(StrEnum):
     CONVERSATION_CREEE = "CONVERSATION_CREEE"
     INTERACTION_AJOUTEE = "INTERACTION_AJOUTEE"
     VIOLATION_DETECTEE = "VIOLATION_DETECTEE"
     AVIS_UTILISATEUR_SOUMIS = "AVIS_UTILISATEUR_SOUMIS"
     AVIS_UTILISATEUR_SUPPRIME = "AVIS_UTILISATEUR_SUPPRIME"
+    DOCUMENT_SOURCE_VISIONNE = "DOCUMENT_SOURCE_VISIONNE"
 
 
 class AdaptateurJournal(ABC):
