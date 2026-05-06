@@ -351,3 +351,35 @@ def test_mets_a_jour_une_interaction_d_une_conversation(
     assert conversation_recuperee.interactions[0].retour_utilisatrice == RetourPositif(
         commentaires="Un commentaire"
     )
+
+
+def test_recupere_une_conversation_avec_un_id_interaction(
+    adaptateur_test, un_constructeur_de_reponse_question
+):
+    Horloge.frise(dt.datetime(2026, 2, 15, 3, 4, 5))
+    interaction = Interaction(
+        id=uuid.uuid4(),
+        reponse_question=un_constructeur_de_reponse_question()
+        .donnant_en_reponse("réponse 1")
+        .avec_une_question("question 1")
+        .construis(),
+    )
+    conversation = Conversation(interaction)
+    conversation.interactions.append(
+        Interaction(
+            id=uuid.uuid4(),
+            reponse_question=un_constructeur_de_reponse_question()
+            .donnant_en_reponse("réponse 2")
+            .avec_une_question("question 2")
+            .construis(),
+        )
+    )
+    adaptateur_test.sauvegarde_conversation(conversation)
+
+    conversation_recuperee = adaptateur_test.recupere_conversation_par_id_interaction(
+        interaction.id
+    )
+    assert conversation_recuperee is not None
+    interaction_recuperee: Interaction = conversation_recuperee.interactions[0]
+    assert interaction_recuperee.id == interaction.id
+    assert interaction_recuperee.reponse_question == interaction.reponse_question

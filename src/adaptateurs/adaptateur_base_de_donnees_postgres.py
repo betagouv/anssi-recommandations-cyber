@@ -1,5 +1,6 @@
 import json
 import uuid
+from psycopg2.extras import RealDictRow
 from uuid import UUID
 
 import psycopg2
@@ -102,6 +103,25 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         if len(lignes) == 0:
             return None
 
+        les_interactions = self.__recupere_les_interactions(lignes)
+        return Conversation.hydrate(id_conversation, les_interactions)
+
+    def recupere_conversation_par_id_interaction(self, interaction_id: uuid.UUID):
+        curseur = self._get_curseur()
+        curseur.execute(
+            "SELECT conversations.id AS id_conversation, interactions.id_interaction AS id_interaction, interactions.contenu AS contenu "
+            "FROM conversations, interactions WHERE conversations.id = interactions.id_conversation AND id_interaction = %s "
+            "ORDER BY contenu ->> 'date_creation' DESC",
+            (str(interaction_id),),
+        )
+        lignes = curseur.fetchall()
+        if len(lignes) == 0:
+            return None
+
+        les_interactions = self.__recupere_les_interactions(lignes)
+        return Conversation.hydrate(lignes[0]["id_conversation"], les_interactions)
+
+    def __recupere_les_interactions(self, lignes: list[RealDictRow]) -> list[Any]:
         les_interactions = []
         for ligne in lignes:
             interaction_dechiffree = self._service_chiffrement.dechiffre_dict(
@@ -110,10 +130,7 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
             )
 
             les_interactions.append(Interaction.model_validate(interaction_dechiffree))
-        return Conversation.hydrate(id_conversation, les_interactions)
-
-    def recupere_conversation_par_id_interaction(self, interaction):
-        pass
+        return les_interactions
 
     def sauvegarde_conversation(self, conversation: Conversation):
         conversation_recuperee = self.recupere_conversation(
