@@ -113,7 +113,10 @@ def test_retourne_une_erreur_404_si_l_interaction_n_est_pas_trouvee(
 
 
 def test_genere_une_erreur_404_si_le_document_n_est_pas_trouve(
-    un_serveur_de_test, un_constructeur_d_interaction, un_constructeur_de_paragraphe
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
 ):
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     serveur = un_serveur_de_test(
@@ -131,7 +134,12 @@ def test_genere_une_erreur_404_si_le_document_n_est_pas_trouve(
         .avec_une_reponse_contenant_les_paragraphes([paragraphe])
         .construis()
     )
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
@@ -142,7 +150,10 @@ def test_genere_une_erreur_404_si_le_document_n_est_pas_trouve(
 
 
 def test_retourne_erreur_404_si_le_numero_de_page_ne_correspond_pas(
-    un_serveur_de_test, un_constructeur_d_interaction, un_constructeur_de_paragraphe
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
 ):
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
     serveur = un_serveur_de_test(
@@ -160,7 +171,12 @@ def test_retourne_erreur_404_si_le_numero_de_page_ne_correspond_pas(
         .avec_une_reponse_contenant_les_paragraphes([premier_paragraphe])
         .construis()
     )
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
