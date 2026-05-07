@@ -275,13 +275,17 @@ def ajoute_retour_utilisatrice(
 def supprime_retour_utilisatrice(
     identifiant_interaction: UUID, adaptateur_base_de_donnees: AdaptateurBaseDeDonnees
 ) -> None:
-    interaction = adaptateur_base_de_donnees.recupere_interaction(
+    conversation = adaptateur_base_de_donnees.recupere_conversation_par_id_interaction(
         identifiant_interaction
     )
 
-    if not interaction:
+    if not conversation:
         return None
 
+    interaction = list(
+        filter(lambda i: i.id == identifiant_interaction, conversation.interactions)
+    )[0]
+
     interaction.retour_utilisatrice = None
-    adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     return None

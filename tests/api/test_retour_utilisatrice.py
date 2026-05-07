@@ -169,10 +169,12 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
     un_adaptateur_de_chiffrement,
     une_interaction,
     un_retour_positif,
+        un_constructeur_de_conversation
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     une_interaction.retour_utilisatrice = un_retour_positif
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,

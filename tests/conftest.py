@@ -15,7 +15,7 @@ from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
 from configuration import Mode
 from schemas.albert import Paragraphe, ReponseQuestion
 from schemas.api import QuestionRequete
-from schemas.retour_utilisatrice import Interaction, Conversation
+from schemas.retour_utilisatrice import Interaction, Conversation, RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
 from schemas.violations import Violation
 from serveur_de_test import (
@@ -320,6 +320,10 @@ class ConstructeurDInteraction:
             question_reformulee="Question reformulée",
             violation=None,
         )
+        return self
+
+    def avec_un_retour_utilisatrice(self, retour_utilisatrice: RetourUtilisatrice):
+        self.retour_utilisatrice = retour_utilisatrice
         return self
 
 
