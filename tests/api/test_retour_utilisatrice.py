@@ -137,10 +137,16 @@ def test_route_retour_avec_interaction_inexistante_retourne_404(
 
 
 def test_route_retour_avec_payload_invalide_rejette_la_requete(
-    un_serveur_de_test, un_adaptateur_de_chiffrement, une_interaction
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    une_interaction,
+    un_constructeur_de_conversation,
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -169,11 +175,13 @@ def test_route_suppression_retour_avec_ID_supprime_le_retour_correspondant(
     un_adaptateur_de_chiffrement,
     une_interaction,
     un_retour_positif,
-        un_constructeur_de_conversation
+    un_constructeur_de_conversation,
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
     une_interaction.retour_utilisatrice = un_retour_positif
-    conversation = un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
     adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -197,11 +205,15 @@ def test_route_suppression_retour_avec_un_ID_de_retour_inexistant_retourne_une_e
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
     une_interaction,
+    un_constructeur_de_conversation,
     un_retour_positif,
 ) -> None:
     une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -268,11 +280,15 @@ def test_route_suppression_retour_emet_evenement_avis_utilisateur_supprime(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
     une_interaction,
+    un_constructeur_de_conversation,
     un_retour_positif,
 ) -> None:
     une_interaction.retour_utilisatrice = un_retour_positif
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
@@ -331,11 +347,15 @@ def test_route_route_suppression_retour_identifie_le_type_d_utilisateur(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
     une_interaction,
+    un_constructeur_de_conversation,
     un_retour_positif,
 ):
     une_interaction.retour_utilisatrice = un_retour_positif
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )

@@ -13,10 +13,6 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
         self._interactions: Dict[UUID, Interaction] = {}
         self._conversations: Dict[UUID, Conversation] = {}
 
-    def sauvegarde_interaction(self, interaction: Interaction) -> None:
-        self._interactions[interaction.id] = interaction
-        return None
-
     def recupere_interaction(
         self, identifiant_interaction: UUID
     ) -> Optional[Interaction]:
