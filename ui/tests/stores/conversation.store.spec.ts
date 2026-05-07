@@ -16,7 +16,7 @@ describe('le store de conversation', () => {
     storeConversation.initialise({
       messages: [],
       derniereQuestion: '',
-      idConversation: null,
+      idConversation: '',
     });
   });
 
@@ -26,7 +26,7 @@ describe('le store de conversation', () => {
     expect(conversation).toStrictEqual({
       messages: [],
       derniereQuestion: '',
-      idConversation: null,
+      idConversation: '',
     });
   });
 
@@ -85,14 +85,14 @@ describe('le store de conversation', () => {
     storeConversation.initialise({
       messages: [],
       derniereQuestion: '',
-      idConversation: null,
+      idConversation: '',
     });
 
     await storeConversation.ajouteMessageUtilisateur({ question: 'une question ?' });
 
     expect(messageRecu).toStrictEqual({
       question: 'une question ?',
-      id_conversation: null,
+      id_conversation: '',
     });
   });
 

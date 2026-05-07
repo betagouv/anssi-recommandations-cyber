@@ -11,7 +11,10 @@
   import { SvelteSet } from 'svelte/reactivity';
   import { TAGS_NEGATIFS, TAGS_POSITIFS } from './tags';
 
-  let { idInteraction }: { idInteraction: string } = $props();
+  let {
+    idInteraction,
+    idConversation,
+  }: { idInteraction: string; idConversation: string } = $props();
   const avisUtilisateur: AvisUtilisateur | undefined = $derived.by(
     () => $storeAvisUtilisateur[idInteraction]
   );
@@ -35,7 +38,7 @@
       (avisUtilisateur && avisUtilisateur.positif !== positif)
     ) {
       storeAvisUtilisateur.ajouteAvis(idInteraction, { positif, soumis: false });
-      await soumetsAvisUtilisateurAPI(idInteraction, positif);
+      await soumetsAvisUtilisateurAPI(idInteraction, idConversation, positif);
     } else {
       await supprimeAvisUtilisateurAPI(idInteraction);
       storeAvisUtilisateur.supprimeAvis(idInteraction);
@@ -46,6 +49,7 @@
     storeAvisUtilisateur.soumetsAvis(idInteraction);
     await soumetsAvisUtilisateurAPI(
       idInteraction,
+      idConversation,
       avisUtilisateur.positif,
       avecCommentaire ? commentaire : undefined,
       tagsSelectionnes.size > 0 ? [...tagsSelectionnes] : undefined

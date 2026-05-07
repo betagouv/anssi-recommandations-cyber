@@ -17,6 +17,7 @@ const forgeURLAvecTypeUtilisateur = (chemin: string): string => {
 
 export const soumetsAvisUtilisateurAPI = async (
   idInteraction: string,
+  idConversation: string,
   positif: boolean,
   commentaire?: string,
   tags?: string[]
@@ -28,6 +29,7 @@ export const soumetsAvisUtilisateurAPI = async (
     },
     body: JSON.stringify({
       id_interaction: idInteraction,
+      id_conversation: idConversation,
       retour: {
         type: positif ? 'positif' : 'negatif',
         ...(commentaire ? { commentaire } : {}),
