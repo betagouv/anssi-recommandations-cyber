@@ -106,11 +106,12 @@ def test_ajout_retour_utilisatrice(
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
-    adaptateur_test.sauvegarde_interaction(interaction)
+    conversation = Conversation(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
     retour = RetourPositif(commentaire="Très utile")
     interaction.retour_utilisatrice = retour
 
-    adaptateur_test.sauvegarde_interaction(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
 
     resultat = adaptateur_test.recupere_interaction(interaction.id)
     assert resultat.retour_utilisatrice == retour
@@ -128,7 +129,8 @@ def test_recupere_interaction_existante(
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
-    adaptateur_test.sauvegarde_interaction(interaction)
+    conversation = Conversation(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
 
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
 
@@ -151,12 +153,13 @@ def test_recupere_interaction_avec_retour_utilisatrice(
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=None, id=uuid.uuid4()
     )
-    adaptateur_test.sauvegarde_interaction(interaction)
+    conversation = Conversation(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
     id_interaction = interaction.id
 
     retour = RetourPositif(commentaire="Excellent", tags=[TagPositif.Complete])
     interaction.retour_utilisatrice = retour
-    adaptateur_test.sauvegarde_interaction(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
 
     interaction = adaptateur_test.recupere_interaction(id_interaction)
     assert interaction is not None
@@ -187,10 +190,11 @@ def test_supprime_retour_existant(
     interaction = Interaction(
         reponse_question=reponse_question, retour_utilisatrice=retour, id=uuid.uuid4()
     )
-    adaptateur_test.sauvegarde_interaction(interaction)
+    conversation = Conversation(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
 
     interaction.retour_utilisatrice = None
-    adaptateur_test.sauvegarde_interaction(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
 
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
     assert interaction_recuperee.retour_utilisatrice is None
@@ -208,8 +212,9 @@ def test_la_date_d_une_interaction_est_persistee(
     )
     Horloge.frise(date_creation)
     interaction = Interaction(id=uuid.uuid4(), reponse_question=reponse_question)
+    conversation = Conversation(interaction)
 
-    adaptateur_test.sauvegarde_interaction(interaction)
+    adaptateur_test.sauvegarde_conversation(conversation)
     Horloge.frise(dt.datetime(2026, 6, 7, 3, 4, 6))
 
     interaction_recuperee = adaptateur_test.recupere_interaction(interaction.id)
