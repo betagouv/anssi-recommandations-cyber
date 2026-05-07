@@ -39,13 +39,13 @@ export type MessageSysteme = Message & {
 export type Conversation = {
   messages: Message[];
   derniereQuestion: string;
-  idConversation: string | null;
+  idConversation: string;
 };
 
 const { subscribe, update, set } = writable<Conversation>({
   messages: [],
   derniereQuestion: '',
-  idConversation: null,
+  idConversation: '',
 });
 export const nettoyeurDOM = {
   nettoie: async (contenu: string): Promise<string> =>
@@ -67,7 +67,7 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
     | ReponseCreationConversation
     | ReponseAjoutInteraction
     | ReponseEnErreur;
-  if (sauvegarde.idConversation === null) {
+  if (sauvegarde.idConversation === null || sauvegarde.idConversation === '') {
     reponseAPI = await clientAPI.creeUneConversation({
       question: question.question,
       id_conversation: sauvegarde.idConversation,

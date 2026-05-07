@@ -77,7 +77,8 @@
     <SourcesConversation {message} />
     {#if message.emetteur === 'systeme'}
       {@const idInteraction = message.idInteraction || ''}
-      <BandeauAvisUtilisateur {idInteraction} />
+      {@const idConversation = $storeConversation.idConversation}
+      <BandeauAvisUtilisateur {idInteraction} {idConversation} />
     {/if}
   {/each}
   <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
