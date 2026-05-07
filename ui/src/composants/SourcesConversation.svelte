@@ -25,7 +25,7 @@
           <span class="nom-document">{reference.nom_document}</span>
           <dsfr-link
             label={titreDuLien}
-            href="{reference.url}#page={reference.numero_page}"
+            href={reference.url}
             blank
             title={reference.nom_document}
           ></dsfr-link>

@@ -65,10 +65,10 @@ def route_initie_conversation(
 
     match resultat_interaction:
         case ResultatConversation():
-            return ReponseDemandeConversationAPI(
-                **resultat_interaction.reponse_question.model_dump(),
-                id_interaction=resultat_interaction.id_interaction,
-                id_conversation=str(resultat_interaction.id_conversation),
+            return ReponseDemandeConversationAPI.depuis_reponse_albert(
+                resultat_interaction.id_interaction,
+                str(resultat_interaction.id_conversation),
+                resultat_interaction.reponse_question,
             )
         case ResultatConversationEnErreur():
             raise HTTPException(
@@ -113,9 +113,9 @@ def route_conversation_ajoute_interaction(
     )
     match resultat_interaction:
         case ResultatConversation():
-            return ReponseConversationAjouteInteractionAPI(
-                **resultat_interaction.reponse_question.model_dump(),
-                id_interaction=str(resultat_interaction.id_interaction),
+            return ReponseConversationAjouteInteractionAPI.depuis_reponse_albert(
+                resultat_interaction.id_interaction,
+                resultat_interaction.reponse_question,
             )
         case ResultatConversationEnErreur():
             raise HTTPException(
