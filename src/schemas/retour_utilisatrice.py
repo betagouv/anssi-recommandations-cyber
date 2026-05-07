@@ -92,6 +92,6 @@ class Conversation:
 
 
 class DonneesCreationRetourUtilisateur(BaseModel):
+    id_conversation: str
     id_interaction: str
     retour: RetourUtilisatrice
-    id_conversation: Optional[str] = None

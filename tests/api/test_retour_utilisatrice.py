@@ -14,9 +14,13 @@ def test_route_retour_avec_retourne_succes_200(
     un_adaptateur_de_chiffrement,
     une_interaction,
     un_retour_positif,
+    un_constructeur_de_conversation,
 ) -> None:
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -25,6 +29,7 @@ def test_route_retour_avec_retourne_succes_200(
     client = TestClient(serveur)
     payload = {
         "id_interaction": str(une_interaction.id),
+        "id_conversation": str(conversation.id_conversation),
         "retour": {
             "type": "positif",
             "commentaire": "Très utile",
@@ -43,10 +48,16 @@ def test_route_retour_avec_retourne_succes_200(
 
 
 def test_route_retour_retourne_donnees_attendues(
-    un_serveur_de_test, un_adaptateur_de_chiffrement, une_interaction
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    une_interaction,
+    un_constructeur_de_conversation,
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     serveur = un_serveur_de_test(
         adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
         adaptateur_base_de_donnees=adaptateur_base_de_donnees,
@@ -55,6 +66,7 @@ def test_route_retour_retourne_donnees_attendues(
     client = TestClient(serveur)
     payload = {
         "id_interaction": str(une_interaction.id),
+        "id_conversation": str(conversation.id_conversation),
         "retour": {
             "type": "positif",
             "commentaire": "Très utile",
@@ -69,7 +81,7 @@ def test_route_retour_retourne_donnees_attendues(
     assert data["tags"] == [TagPositif.Complete, TagPositif.FacileAComprendre]
 
 
-def test_route_retour_avec_interaction_inexistante_retourne_404(
+def test_route_retour_avec_conversation_inexistante_retourne_404(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
 ) -> None:
@@ -82,6 +94,36 @@ def test_route_retour_avec_interaction_inexistante_retourne_404(
     client = TestClient(serveur)
     payload = {
         "id_interaction": str(uuid.uuid4()),
+        "id_conversation": str(uuid.uuid4()),
+        "retour": {
+            "type": "positif",
+            "commentaire": "Très utile",
+        },
+    }
+
+    reponse = client.post("/api/retour", json=payload)
+
+    assert reponse.status_code == 404
+    assert reponse.json() == {"detail": "Interaction non trouvée"}
+
+
+def test_route_retour_avec_interaction_inexistante_retourne_404(
+    un_serveur_de_test,
+    un_adaptateur_de_chiffrement,
+    un_constructeur_de_conversation,
+) -> None:
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
+    conversation = un_constructeur_de_conversation().construis()
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
+    serveur = un_serveur_de_test(
+        adaptateur_chiffrement=un_adaptateur_de_chiffrement(),
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+    )
+
+    client = TestClient(serveur)
+    payload = {
+        "id_interaction": str(uuid.uuid4()),
+        "id_conversation": str(conversation.id_conversation),
         "retour": {
             "type": "positif",
             "commentaire": "Très utile",
@@ -184,9 +226,13 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
     une_interaction,
+    un_constructeur_de_conversation,
 ) -> None:
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     adaptateur_journal = AdaptateurJournalMemoire()
     adaptateur_chiffrement = un_adaptateur_de_chiffrement(hachage="haché")
     serveur = un_serveur_de_test(
@@ -198,6 +244,7 @@ def test_route_retour_emet_evenement_avis_utilisateur_soumis_avec_tags(
     client = TestClient(serveur)
     payload = {
         "id_interaction": str(une_interaction.id),
+        "id_conversation": str(conversation.id_conversation),
         "retour": {
             "type": "positif",
             "commentaire": "Excellent !",
@@ -243,11 +290,15 @@ def test_route_route_retour_identifie_le_type_d_utilisateur(
     un_serveur_de_test,
     un_adaptateur_de_chiffrement,
     une_interaction,
+    un_constructeur_de_conversation,
     un_retour_positif,
 ):
     une_interaction.retour_utilisatrice = un_retour_positif
     adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire()
-    adaptateur_base_de_donnees.sauvegarde_interaction(une_interaction)
+    conversation = (
+        un_constructeur_de_conversation().avec_interaction(une_interaction).construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_dechiffre(
         TypeUtilisateur.ANSSI
     )
@@ -261,6 +312,7 @@ def test_route_route_retour_identifie_le_type_d_utilisateur(
     client = TestClient(serveur)
     payload = {
         "id_interaction": str(une_interaction.id),
+        "id_conversation": str(conversation.id_conversation),
         "retour": {
             "type": "positif",
             "commentaire": "Excellent !",

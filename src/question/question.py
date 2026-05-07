@@ -247,31 +247,28 @@ def ajoute_retour_utilisatrice(
     donnees_ajout_retour: DonneesCreationRetourUtilisateur,
     adaptateur_base_de_donnees: AdaptateurBaseDeDonnees,
 ) -> RetourUtilisatrice | None:
-    if donnees_ajout_retour.id_conversation is not None:
-        id_conversation = donnees_ajout_retour.id_conversation
+    id_conversation = donnees_ajout_retour.id_conversation
 
-        conversation = adaptateur_base_de_donnees.recupere_conversation(
-            id_conversation=uuid.UUID(id_conversation)
-        )
+    conversation = adaptateur_base_de_donnees.recupere_conversation(
+        id_conversation=uuid.UUID(id_conversation)
+    )
 
-        interaction = list(
-            filter(
-                lambda i: str(i.id) == donnees_ajout_retour.id_interaction,
-                conversation.interactions,
-            )
-        )[0]
-        retour = donnees_ajout_retour.retour
-    else:
-        interaction = adaptateur_base_de_donnees.recupere_interaction(
-            uuid.UUID(donnees_ajout_retour.id_interaction)
-        )
-        retour = donnees_ajout_retour.retour
-
-    if not interaction:
+    if not conversation:
         return None
 
+    interactions = list(
+        filter(
+            lambda i: str(i.id) == donnees_ajout_retour.id_interaction,
+            conversation.interactions,
+        )
+    )
+    if not interactions:
+        return None
+    interaction = interactions[0]
+    retour = donnees_ajout_retour.retour
+
     interaction.retour_utilisatrice = retour
-    adaptateur_base_de_donnees.sauvegarde_interaction(interaction)
+    adaptateur_base_de_donnees.sauvegarde_conversation(conversation)
     return interaction.retour_utilisatrice
 
 
