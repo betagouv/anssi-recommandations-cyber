@@ -75,35 +75,29 @@ def test_route_initie_conversation_retourne_donnees_correctes(
     client_http = TestClient(serveur)
     r = client_http.post("/api/conversation", json=requete_question.__dict__)
 
-    response_data = r.json()
-    assert response_data["id_interaction"]
-    assert response_data == {
-        "id_interaction": response_data["id_interaction"],
+    donnees_reponse = r.json()
+    assert donnees_reponse["id_interaction"]
+    assert donnees_reponse == {
+        "id_interaction": donnees_reponse["id_interaction"],
         "question": "Qui es-tu",
         "reponse": "Réponse de test d'Albert",
         "paragraphes": [
             {
-                "score_similarite": 0.75,
-                "score_reclassement": 1.0,
                 "numero_page": 29,
-                "url": "http://mondocument.local/anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+                "url": f"/source/?document=anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf&page=29&interaction={donnees_reponse['id_interaction']}",
                 "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
-                "contenu": "Contenu du paragraphe 1",
             },
             {
-                "score_similarite": 0.72,
-                "score_reclassement": 1.0,
                 "numero_page": 15,
-                "url": "http://mondocument.local/guide_hygiene_informatique_anssi.pdf",
+                "url": f"/source/?document=guide_hygiene_informatique_anssi.pdf&page=15&interaction={donnees_reponse['id_interaction']}",
                 "nom_document": "guide_hygiene_informatique_anssi.pdf",
-                "contenu": "Contenu du paragraphe 2",
             },
         ],
-        "id_conversation": response_data["id_conversation"],
+        "id_conversation": donnees_reponse["id_conversation"],
     }
     assert (
         adaptateur_base_de_donnees.recupere_conversation(
-            uuid.UUID(response_data["id_conversation"])
+            uuid.UUID(donnees_reponse["id_conversation"])
         )
         is not None
     )
