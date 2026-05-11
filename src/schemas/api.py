@@ -8,7 +8,6 @@ class QuestionRequete(BaseModel):
         max_length=5000,
         description="Votre question d'une longueur maximale de 5000 caractères.",
     )
-    id_conversation: str | None = None
 
 
 class ReponseParagraphe(BaseModel):

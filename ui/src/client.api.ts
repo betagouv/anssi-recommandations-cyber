@@ -45,7 +45,6 @@ export const supprimeAvisUtilisateurAPI = async (idInteraction: string) =>
 
 export type MessageUtilisateurAPI = {
   question: string;
-  id_conversation?: string | null;
 };
 
 export type ReponseCreationConversation = {

@@ -92,7 +92,6 @@ describe('le store de conversation', () => {
 
     expect(messageRecu).toStrictEqual({
       question: 'une question ?',
-      id_conversation: '',
     });
   });
 
