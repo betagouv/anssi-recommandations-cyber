@@ -43,6 +43,7 @@ def test_transforme_une_reponse_albert_en_reponse_conversation():
             url=f"/source/?document=guide-anssi.pdf&page=20&interaction={id_interaction}",
             nom_document="guide-anssi.pdf",
             numero_page=20,
+            contenu="Contenu du paragraphe",
         )
     ]
 
@@ -80,5 +81,6 @@ def test_transforme_une_reponse_albert_en_reponse_conversation_ajoute_interactio
             url=f"/source/?document=guide-anssi.pdf&page=20&interaction={id_interaction}",
             nom_document="guide-anssi.pdf",
             numero_page=20,
+            contenu="Contenu du paragraphe",
         )
     ]
