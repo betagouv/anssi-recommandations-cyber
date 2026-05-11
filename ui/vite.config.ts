@@ -6,6 +6,7 @@ const pages = {
   cgu: 'cgu.html',
   faq: 'faq.html',
   'politique-confidentialite': 'politique-confidentialite.html',
+  'mode-maintenance': 'mode-maintenance.html',
 };
 
 const input = Object.fromEntries(

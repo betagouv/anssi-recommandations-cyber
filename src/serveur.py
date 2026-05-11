@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Depends, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -57,14 +57,23 @@ def fabrique_serveur(
     # _c.f._ https://github.com/Kludex/starlette/discussions/2451#discussioncomment-14855204 .
     serveur.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])  # type: ignore [arg-type]
 
+    ressources_statiques = ["assets", "fonts", "icons", "images"]
     if mode_maintenance:
 
         @serveur.middleware("http")
         async def interruption_maintenance(request: Request, call_next):
-            return JSONResponse(
-                status_code=503,
-                content={"detail": "Service en maintenance"},
+            if any(
+                request.url.path.startswith(f"/{static}")
+                for static in ressources_statiques
+            ):
+                return await call_next(request)
+
+            reponse = sert_la_page_statique(
+                fabrique_adaptateur_chiffrement(),
+                f"{static_root_directory}/pages/mode-maintenance.html",
             )
+            reponse.status_code = 503
+            return reponse
 
     serveur.include_router(api)
     serveur.include_router(document_source)
@@ -72,7 +81,7 @@ def fabrique_serveur(
     if mode == Mode.DEVELOPPEMENT:
         serveur.include_router(api_developpement)
 
-    for static in ["assets", "fonts", "icons", "images"]:
+    for static in ressources_statiques:
         serveur.mount(
             f"/{static}", StaticFiles(directory=f"{static_root_directory}{static}")
         )
