@@ -118,12 +118,14 @@ class ConstructeurServeur:
         adaptateur_chiffrement: AdaptateurChiffrement,
         max_requetes_par_minute: int = 600,
         mode: Mode = Mode.PRODUCTION,
+        mode_maintenance: bool = False,
     ):
         self._adaptateur_chiffrement = (
             adaptateur_chiffrement or fabrique_adaptateur_chiffrement()
         )
         self._max_requetes_par_minute = max_requetes_par_minute
         self._mode = mode
+        self._mode_maintenance = mode_maintenance
         self._dependances: Dict[Callable, Callable] = {}
         self._dependances[fabrique_adaptateur_chiffrement] = (
             lambda: adaptateur_chiffrement
@@ -165,6 +167,7 @@ class ConstructeurServeur:
             f"{self.pages_statiques}/ui/dist/",
             lambda: "1",
             AdaptateurSentryMemoire,
+            self._mode_maintenance,
         )
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
