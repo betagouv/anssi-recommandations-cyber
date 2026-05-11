@@ -14,7 +14,11 @@ except Exception as e:
     exit(1)
 
 adaptateur_chiffrement = fabrique_adaptateur_chiffrement()
-serveur = fabrique_serveur(configuration.max_requetes_par_minute, configuration.mode)
+serveur = fabrique_serveur(
+    configuration.max_requetes_par_minute,
+    configuration.mode,
+    mode_maintenance=configuration.mode_maintenance,
+)
 
 log(
     __name__,

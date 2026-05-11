@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Depends
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -38,6 +38,7 @@ def fabrique_serveur(
     static_root_directory="ui/dist/",
     la_version_ui_kit=version_ui_kit,
     adaptateur_sentry=fabrique_adaptateur_sentry,
+    mode_maintenance: bool = False,
 ) -> FastAPI:
     adaptateur_sentry()
     serveur = FastAPI()
@@ -55,6 +56,15 @@ def fabrique_serveur(
     # Les problèmes de types apparaissants ici sont résolus côté `Starlette`, mais ne semblent pas encore avoir atteint `FastAPI` ;
     # _c.f._ https://github.com/Kludex/starlette/discussions/2451#discussioncomment-14855204 .
     serveur.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])  # type: ignore [arg-type]
+
+    if mode_maintenance:
+
+        @serveur.middleware("http")
+        async def interruption_maintenance(request: Request, call_next):
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Service en maintenance"},
+            )
 
     serveur.include_router(api)
     serveur.include_router(document_source)

@@ -194,6 +194,7 @@ def un_serveur_de_test(
             type=Optional[AdaptateurChiffrement], name="adaptateur_chiffrement"
         ),
         DefaultNamedArg(type=Optional[int], name="rate_limit"),
+        DefaultNamedArg(type=Optional[bool], name="mode_maintenance"),
         DefaultNamedArg(type=Optional[ServiceAlbert], name="service_albert"),
         DefaultNamedArg(
             type=Optional[AdaptateurBaseDeDonnees], name="adaptateur_base_de_donnees"
@@ -209,6 +210,7 @@ def un_serveur_de_test(
             AdaptateurChiffrement
         ] = un_adaptateur_de_chiffrement(nonce="un-nonce"),
         rate_limit: Optional[int] = 600,
+        mode_maintenance: Optional[bool] = False,
         service_albert: Optional[ServiceAlbert] = None,
         adaptateur_base_de_donnees: Optional[AdaptateurBaseDeDonnees] = None,
         adaptateur_journal: Optional[AdaptateurJournal] = AdaptateurJournalMemoire(),
@@ -217,6 +219,7 @@ def un_serveur_de_test(
             mode=mode,  # type: ignore[arg-type]
             adaptateur_chiffrement=adaptateur_chiffrement,  # type: ignore[arg-type]
             max_requetes_par_minute=rate_limit,  # type: ignore[arg-type]
+            mode_maintenance=mode_maintenance,  # type: ignore[arg-type]
         ).avec_pages_statiques(pages_statiques)
         if service_albert:
             serveur = serveur.avec_service_albert(service_albert)

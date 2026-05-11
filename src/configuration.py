@@ -94,6 +94,7 @@ class Configuration(NamedTuple):
     mode: Mode
     max_requetes_par_minute: int
     est_alpha_test: bool
+    mode_maintenance: bool
 
 
 def _recupere_configuration_postgres(
@@ -238,4 +239,5 @@ def recupere_configuration() -> Configuration:
             os.getenv("SERVEUR_MAX_REQUETES_PAR_MINUTE", "600")
         ),
         est_alpha_test=os.getenv("ALPHA_TEST", "false").lower() == "true",
+        mode_maintenance=os.getenv("MODE_MAINTENANCE", "false").lower() == "true",
     )
