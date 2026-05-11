@@ -2,19 +2,22 @@
   import Entete from './composants/Entete.svelte';
   import PiedDePage from './composants/PiedDePage.svelte';
   import Bandeau from './composants/Bandeau.svelte';
+
+  const maintenance: { titre: string; contenu: string } = JSON.parse(
+    import.meta.env.VITE_MAINTENANCE_MQC
+  );
 </script>
 
 <Entete />
 
 <main>
   <Bandeau>
-    <h2>MesQuestionsCyber est en maintenance</h2>
+    <h2>MesQuestionsCyber - {maintenance.titre}</h2>
   </Bandeau>
   <dsfr-container>
     <div class="conteneur">
       <p>
-        Le site est actuellement en maintenance pour des raisons techniques. Nous
-        vous remercions de votre compréhension et de votre patience.
+        {maintenance.contenu}
       </p>
     </div>
   </dsfr-container>
