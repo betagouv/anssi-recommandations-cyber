@@ -68,7 +68,6 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   if (sauvegarde.idConversation === null || sauvegarde.idConversation === '') {
     reponseAPI = await clientAPI.creeUneConversation({
       question: question.question,
-      id_conversation: sauvegarde.idConversation,
     });
   } else {
     reponseAPI = await clientAPI.ajouteInteraction(sauvegarde.idConversation, {
