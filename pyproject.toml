@@ -8,6 +8,7 @@ dependencies = [
     "dpath",
     "fastapi",
     "httpx",
+    "fastmcp>=3.0.0",
     "openai",
     "psycopg2-binary",
     "requests>=2.33.0",
@@ -28,6 +29,7 @@ dev = [
     "ruff",
     "types-psycopg2",
     "types-requests",
+    "pytest-asyncio",
     "pytest-dotenv",
     "python-dotenv==1.2.2",
     "pipdeptree"
