@@ -73,7 +73,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
         id_collection_anssi_lab=157814,
-        collection_id_anssi_lab_jeopardy=161155,
+        id_collection_anssi_lab_jeopardy=161155,
         reclassement_active=False,
         modele_reclassement="",
         taille_fenetre_historique=2,
