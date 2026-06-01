@@ -1,12 +1,10 @@
 import base64
 import copy
-import logging
+import dpath
 import secrets
 from abc import abstractmethod, ABCMeta
-from typing import Optional
-
-import dpath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from typing import Optional
 
 from configuration import Configuration
 from infra.logger import log
@@ -104,8 +102,7 @@ class ServiceDeChiffrementAES(ServiceDeChiffrement):
     def dechiffre(self, contenu_chiffre: str, clef: Optional[str] = None) -> str:
         try:
             return self.__dechiffre_la_chaine(contenu_chiffre)
-        except DechiffrementException as e:
-            logging.warn(f"Exception : {e} - contenu : {str(contenu_chiffre)}")  # type: ignore
+        except DechiffrementException:
             return contenu_chiffre
 
     def __dechiffre_la_chaine(self, contenu_chiffre: str) -> str:
