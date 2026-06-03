@@ -27,5 +27,5 @@ class AdaptateurBaseDeDonnees(ABC):
         pass
 
     @abstractmethod
-    def recupere_conversation_par_id_interaction(self, interaction):
+    def recupere_conversation_par_id_interaction(self, id_interaction: uuid.UUID):
         pass

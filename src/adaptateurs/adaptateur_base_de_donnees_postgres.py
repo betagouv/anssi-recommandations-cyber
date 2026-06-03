@@ -90,13 +90,13 @@ class AdaptateurBaseDeDonneesPostgres(AdaptateurBaseDeDonnees):
         les_interactions = self.__recupere_les_interactions(lignes)
         return Conversation.hydrate(id_conversation, les_interactions)
 
-    def recupere_conversation_par_id_interaction(self, interaction_id: uuid.UUID):
+    def recupere_conversation_par_id_interaction(self, id_interaction: uuid.UUID):
         curseur = self._get_curseur()
         curseur.execute(
             "SELECT conversations.id AS id_conversation, interactions.id_interaction AS id_interaction, interactions.contenu AS contenu "
             "FROM conversations, interactions WHERE conversations.id = interactions.id_conversation AND id_interaction = %s "
             "ORDER BY contenu ->> 'date_creation' DESC",
-            (str(interaction_id),),
+            (str(id_interaction),),
         )
         lignes = curseur.fetchall()
         if len(lignes) == 0:
