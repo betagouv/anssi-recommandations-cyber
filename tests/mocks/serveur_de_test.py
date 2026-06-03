@@ -50,7 +50,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
         super().__init__(
             Albert.Service(  # type: ignore[attr-defined]
                 collection_nom_anssi_lab="",
-                collection_id_anssi_lab=1,
+                id_collection_anssi_lab=1,
                 collection_id_anssi_lab_jeopardy=2,
                 reclassement_active=False,
                 modele_reclassement="",

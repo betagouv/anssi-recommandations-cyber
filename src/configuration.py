@@ -41,7 +41,7 @@ class Albert(NamedTuple):
 
     class Service(NamedTuple):
         collection_nom_anssi_lab: str
-        collection_id_anssi_lab: int
+        id_collection_anssi_lab: int
         collection_id_anssi_lab_jeopardy: int
         reclassement_active: bool
         modele_reclassement: str
@@ -193,7 +193,7 @@ def recupere_configuration() -> Configuration:
             collection_nom_anssi_lab=os.getenv(
                 "COLLECTION_NOM_ANSSI_LAB", "ANSSI_test"
             ),
-            collection_id_anssi_lab=variables_environnement["COLLECTION_ID_ANSSI_LAB"],
+            id_collection_anssi_lab=variables_environnement["COLLECTION_ID_ANSSI_LAB"],
             collection_id_anssi_lab_jeopardy=int(
                 os.getenv("COLLECTION_ID_ANSSI_LAB_JEOPARDY", "4243")
             ),

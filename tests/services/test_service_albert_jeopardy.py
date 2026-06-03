@@ -58,7 +58,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources():
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
-        collection_id_anssi_lab=157814,
+        id_collection_anssi_lab=157814,
         collection_id_anssi_lab_jeopardy=161155,
         reclassement_active=False,
         modele_reclassement="",
@@ -124,7 +124,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
-        collection_id_anssi_lab=157814,
+        id_collection_anssi_lab=157814,
         collection_id_anssi_lab_jeopardy=161155,
         reclassement_active=False,
         modele_reclassement="",
@@ -180,7 +180,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
-        collection_id_anssi_lab=157814,
+        id_collection_anssi_lab=157814,
         collection_id_anssi_lab_jeopardy=161155,
         reclassement_active=False,
         modele_reclassement="",
@@ -244,7 +244,7 @@ def test_recherche_paragraphes_limite_a_20_candidats():
 
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
-        collection_id_anssi_lab=157814,
+        id_collection_anssi_lab=157814,
         collection_id_anssi_lab_jeopardy=161155,
         reclassement_active=True,
         modele_reclassement="",
