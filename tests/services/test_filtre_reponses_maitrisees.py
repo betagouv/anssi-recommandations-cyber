@@ -17,7 +17,7 @@ PROMPTS = Prompts(
 
 FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL = Albert.Service(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="",
-    collection_id_anssi_lab=42,
+    id_collection_anssi_lab=42,
     collection_id_anssi_lab_jeopardy=43,
     reclassement_active=True,
     modele_reclassement="rerank-small",

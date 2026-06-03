@@ -55,7 +55,7 @@ class ServiceAlbert:
         reformulateur: ReformulateurDeQuestion,
         mapping_reponses: MappingReponsesMaitrisees,
     ) -> None:
-        self.id_collection = configuration_service_albert.collection_id_anssi_lab
+        self.id_collection = configuration_service_albert.id_collection_anssi_lab
         self.id_collection_jeopardy = (
             configuration_service_albert.collection_id_anssi_lab_jeopardy
         )

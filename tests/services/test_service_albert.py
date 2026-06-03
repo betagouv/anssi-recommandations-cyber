@@ -31,7 +31,7 @@ from services.service_albert import ServiceAlbert, Prompts
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="",
-    collection_id_anssi_lab=42,
+    id_collection_anssi_lab=42,
     collection_id_anssi_lab_jeopardy=43,
     reclassement_active=False,
     modele_reclassement="modele-reranking-de-test",
@@ -42,7 +42,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
     collection_nom_anssi_lab="",
-    collection_id_anssi_lab=42,
+    id_collection_anssi_lab=42,
     collection_id_anssi_lab_jeopardy=43,
     reclassement_active=True,
     modele_reclassement="rerank-small",
@@ -622,7 +622,7 @@ def test_limite_l_historique_a_2_interactions_passees(
 
     configuration_avec_fenetre_limitee = Albert.Service(
         collection_nom_anssi_lab="",
-        collection_id_anssi_lab=42,
+        id_collection_anssi_lab=42,
         collection_id_anssi_lab_jeopardy=43,
         reclassement_active=False,
         modele_reclassement="modele-reranking-de-test",
@@ -992,7 +992,7 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee():
     client_albert_memoire.avec_les_resultats_par_appel([resultats_classiques])
     configuration = Albert.Service(
         collection_nom_anssi_lab="",
-        collection_id_anssi_lab=157814,
+        id_collection_anssi_lab=157814,
         collection_id_anssi_lab_jeopardy=161155,
         reclassement_active=True,
         modele_reclassement="",

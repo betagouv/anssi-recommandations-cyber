@@ -50,7 +50,7 @@ def test_lit_collection_id_jeopardy_depuis_env() -> None:
     assert configuration.albert.service.collection_id_anssi_lab_jeopardy is not None
     assert (
         configuration.albert.service.collection_id_anssi_lab_jeopardy
-        != configuration.albert.service.collection_id_anssi_lab
+        != configuration.albert.service.id_collection_anssi_lab
     )
     assert isinstance(
         configuration.albert.service.collection_id_anssi_lab_jeopardy, int
