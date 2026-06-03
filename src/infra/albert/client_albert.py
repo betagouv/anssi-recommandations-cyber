@@ -133,11 +133,11 @@ class ClientAlbertApi(ClientAlbert):
         return resultats
 
     def recherche_chunk_par_id(
-        self, document_id: str, chunk_id: int
+        self, id_document: str, id_chunk: int
     ) -> ResultatRecherche:
         try:
             reponse: requests.Response = self.client_http.get(
-                f"/documents/{document_id}/chunks/{chunk_id}",
+                f"/documents/{id_document}/chunks/{id_chunk}",
                 timeout=self.temps_reponse_maximum_recherche_paragraphes,
             )
             reponse.raise_for_status()
@@ -161,7 +161,7 @@ class ClientAlbertApi(ClientAlbert):
 
         except (requests.HTTPError, requests.Timeout) as erreur:
             logging.error(
-                f"Route `/documents/{document_id}/chunks/{chunk_id}` de l'API Albert retourne une erreur: {erreur}"
+                f"Route `/documents/{id_document}/chunks/{id_chunk}` de l'API Albert retourne une erreur: {erreur}"
             )
             return ResultatRecherche(
                 chunk=RechercheChunk(

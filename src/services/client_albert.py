@@ -25,7 +25,7 @@ class ClientAlbert(ABC):
 
     @abstractmethod
     def recherche_chunk_par_id(
-        self, document_id: str, chunk_id: int
+        self, id_document: str, id_chunk: int
     ) -> ResultatRecherche:
         pass
 

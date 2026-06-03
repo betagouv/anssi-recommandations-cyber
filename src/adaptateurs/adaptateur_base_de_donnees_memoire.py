@@ -27,7 +27,7 @@ class AdaptateurBaseDeDonneesEnMemoire(AdaptateurBaseDeDonnees):
     def recupere_conversation_par_id_interaction(self, id_interaction: uuid.UUID):
         for conversation in self._conversations.values():
             if any(
-                    interaction.id == id_interaction
+                interaction.id == id_interaction
                 for interaction in conversation.interactions
             ):
                 return conversation

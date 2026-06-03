@@ -22,12 +22,12 @@ def test_recherche_chunk_par_id_utilise_api_documents():
     client_albert_memoire.avec_chunk_par_id(chunk_source)
 
     resultat = client_albert_memoire.recherche_chunk_par_id(
-        document_id="4065642", chunk_id=73
+        id_document="4065642", id_chunk=73
     )
 
     assert resultat.chunk.content == "Contenu du chunk 73"
-    assert client_albert_memoire.document_id_recu == "4065642"
-    assert client_albert_memoire.chunk_id_recu == 73
+    assert client_albert_memoire.id_document_recu == "4065642"
+    assert client_albert_memoire.id_chunk_recu == 73
 
 
 def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
