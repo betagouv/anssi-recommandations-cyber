@@ -163,8 +163,8 @@ class ClientAlbertMemoire(ClientAlbert):
         self.resultats_par_appel = []
         self.chunks_par_id = []
         self.appels_recherche_chunk_par_id = []
-        self.document_id_recu = None
-        self.chunk_id_recu = None
+        self.id_document_recu = None
+        self.id_chunk_recu = None
 
     def recherche(self, payload: RecherchePayload) -> list[ResultatRecherche]:
         self.payload_recu = payload
@@ -191,11 +191,11 @@ class ClientAlbertMemoire(ClientAlbert):
         return self.resultats_jeopardy
 
     def recherche_chunk_par_id(
-        self, document_id: str, chunk_id: int
+        self, id_document: str, id_chunk: int
     ) -> ResultatRecherche:
-        self.document_id_recu = document_id
-        self.chunk_id_recu = chunk_id
-        self.appels_recherche_chunk_par_id.append((document_id, chunk_id))
+        self.id_document_recu = id_document
+        self.id_chunk_recu = id_chunk
+        self.appels_recherche_chunk_par_id.append((id_document, id_chunk))
         if self.chunks_par_id:
             return self.chunks_par_id.pop(0)
         return un_resultat_de_recherche().construis()

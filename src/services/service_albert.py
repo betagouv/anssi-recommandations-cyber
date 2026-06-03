@@ -147,9 +147,9 @@ class ServiceAlbert:
 
         paragraphes = []
         for resultat in resultats_jeopardy:
-            document_id = resultat.chunk.metadata.source_id_document
-            chunk_id = resultat.chunk.metadata.source_id_chunk
-            donnee = self.client.recherche_chunk_par_id(document_id, chunk_id)
+            id_document = resultat.chunk.metadata.source_id_document
+            id_chunk = resultat.chunk.metadata.source_id_chunk
+            donnee = self.client.recherche_chunk_par_id(id_document, id_chunk)
             paragraphes.append(
                 Paragraphe(
                     contenu=donnee.chunk.content,
