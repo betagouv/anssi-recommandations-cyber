@@ -10,7 +10,7 @@ from serveur_mcp import (
 )
 
 
-async def un_appel_api_conversation(question: str, _api_base_url: str) -> ReponseMQC:
+async def un_appel_api_conversation(_api_base_url: str, question: str) -> ReponseMQC:
     return ReponseMQC(
         reponse="Reponse de test",
         question=question,

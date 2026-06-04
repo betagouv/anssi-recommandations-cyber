@@ -57,7 +57,7 @@ def fabrique_serveur_mcp(
         description="Pose une question cyber à l'API Recommandations Cyber.",
     )
     async def pose_question(question: str) -> ReponseMCPMQC:
-        reponse_mqc = await appelle_api_conversation(question, api_base_url_mcp)
+        reponse_mqc = await appelle_api_conversation(api_base_url_mcp, question)
         return ReponseMCPMQC(
             reponse=reponse_mqc.reponse, id_conversation=reponse_mqc.id_conversation
         )
@@ -65,7 +65,7 @@ def fabrique_serveur_mcp(
     return serveur_mcp
 
 
-async def appel_mqc(question: str, api_base_url: str) -> ReponseMQC:
+async def appel_mqc(api_base_url: str, question: str) -> ReponseMQC:
     session = requests.Session()
     reponse = session.post(
         f"{api_base_url}/api/conversation", json={"question": question}
