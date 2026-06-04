@@ -7,7 +7,7 @@ from fastmcp import FastMCP
 from fastmcp.server.auth import TokenVerifier
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from pydantic import AnyHttpUrl, TypeAdapter, BaseModel
-from typing import Any, Coroutine, TypedDict
+from typing import Any, Coroutine, TypedDict, Optional
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -18,7 +18,7 @@ ADAPTATEUR_URL_HTTP = TypeAdapter(AnyHttpUrl)
 
 class ReponseMCPMQC(BaseModel):
     reponse: str
-    id_conversation: uuid.UUID
+    id_conversation: Optional[uuid.UUID] = None
 
 
 class Paragraphe(BaseModel):
@@ -29,14 +29,16 @@ class Paragraphe(BaseModel):
 
 
 class ReponseMQC(BaseModel):
-    id_conversation: uuid.UUID
+    id_conversation: Optional[uuid.UUID] = None
     id_interaction: uuid.UUID
     paragraphes: list[Paragraphe]
     question: str
     reponse: str
 
 
-AppelleAPIConversation = Callable[[str, str], Coroutine[Any, Any, ReponseMQC]]
+AppelleAPIConversation = Callable[
+    [str, str, Optional[uuid.UUID]], Coroutine[Any, Any, ReponseMQC]
+]
 
 
 def fabrique_serveur_mcp(
@@ -56,8 +58,12 @@ def fabrique_serveur_mcp(
         name="pose_question",
         description="Pose une question cyber à l'API Recommandations Cyber.",
     )
-    async def pose_question(question: str) -> ReponseMCPMQC:
-        reponse_mqc = await appelle_api_conversation(api_base_url_mcp, question)
+    async def pose_question(
+        question: str, id_conversation: uuid.UUID | None = None
+    ) -> ReponseMCPMQC:
+        reponse_mqc = await appelle_api_conversation(
+            api_base_url_mcp, question, id_conversation
+        )
         return ReponseMCPMQC(
             reponse=reponse_mqc.reponse, id_conversation=reponse_mqc.id_conversation
         )
@@ -65,11 +71,16 @@ def fabrique_serveur_mcp(
     return serveur_mcp
 
 
-async def appel_mqc(api_base_url: str, question: str) -> ReponseMQC:
+async def appel_mqc(
+    api_base_url: str, question: str, id_conversation: uuid.UUID | None = None
+) -> ReponseMQC:
     session = requests.Session()
-    reponse = session.post(
-        f"{api_base_url}/api/conversation", json={"question": question}
+    url_mqc = (
+        f"{api_base_url}/api/conversation"
+        if id_conversation is None
+        else f"{api_base_url}/api/conversation/{str(id_conversation)}"
     )
+    reponse = session.post(url_mqc, json={"question": question})
     reponse.raise_for_status()
     return ReponseMQC.model_validate(reponse.json())
 
