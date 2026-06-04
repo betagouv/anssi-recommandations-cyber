@@ -1,11 +1,13 @@
 import logging
 import os
-import requests
 from collections.abc import Callable
-from fastmcp import FastMCP
-from fastmcp.server.auth import TokenVerifier, StaticTokenVerifier
-from pydantic import AnyHttpUrl, TypeAdapter
 from typing import Any, Coroutine
+
+import requests
+from fastmcp import FastMCP
+from fastmcp.server.auth import TokenVerifier
+from fastmcp.server.auth.providers.jwt import JWTVerifier
+from pydantic import AnyHttpUrl, TypeAdapter
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -56,20 +58,16 @@ if __name__ == "__main__":
     hote = "127.0.0.1"
     port = 8001
     api_base_url = "http://127.0.0.1:3001"
-    api_timeout = 30
-    token = "un-token"
 
-    logger.info("Starting MCP…")
+    logger.info("Démarrage du serveur MCP…")
 
     fabrique_serveur_mcp(
         api_base_url=api_base_url,
         appelle_api_conversation=appel_mqc,
-        token_verifier=StaticTokenVerifier(
-            tokens={
-                "un-token": {
-                    "client_id": "mqc@company.com",
-                    "scopes": ["read:data", "write:data", "admin:users"],
-                }
-            }
+        token_verifier=JWTVerifier(
+            public_key=os.getenv("MCP_CLEF_JWT"),
+            issuer="internal-auth-service",
+            audience="mcp-internal-api",
+            algorithm="HS256",
         ),
     ).run(transport="http", host=hote, port=port)
