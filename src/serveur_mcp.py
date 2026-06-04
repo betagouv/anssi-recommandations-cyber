@@ -20,15 +20,11 @@ AppelleAPIConversation = Callable[[str, str], Coroutine[Any, Any, dict[str, Any]
 
 def fabrique_serveur_mcp(
     *,
-    api_base_url: str | None = None,
+    api_base_url: str,
     appelle_api_conversation: AppelleAPIConversation,
     token_verifier: TokenVerifier,
 ) -> FastMCP:
-    api_base_url_mcp = (
-        api_base_url
-        if api_base_url is not None
-        else os.getenv("MCP_API_BASE_URL", "http://127.0.0.1:3001")
-    ).rstrip("/")
+    api_base_url_mcp = api_base_url.rstrip("/")
 
     serveur_mcp = FastMCP(
         name="Recommandations Cyber",
@@ -55,9 +51,11 @@ async def appel_mqc(question: str, api_base_url: str) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    hote = "127.0.0.1"
-    port = 8001
-    api_base_url = "http://127.0.0.1:3001"
+    url_mqc = os.getenv("URL_MQC")
+    port_mqc = os.getenv("PORT_MQC")
+    hote_mcp = os.getenv("MCP_HOST")
+    port_mcp = int(os.getenv("MCP_PORT"))
+    api_base_url = f"{url_mqc}:{port_mqc}"
 
     logger.info("Démarrage du serveur MCP…")
 
@@ -70,4 +68,4 @@ if __name__ == "__main__":
             audience="mcp-internal-api",
             algorithm="HS256",
         ),
-    ).run(transport="http", host=hote, port=port)
+    ).run(transport="http", host=hote_mcp, port=port_mcp)
