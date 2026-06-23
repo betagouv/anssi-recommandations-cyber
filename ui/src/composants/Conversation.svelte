@@ -7,7 +7,7 @@
     type MessageUtilisateur,
     storeConversation,
   } from '../stores/conversation.store';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { storeAffichage } from '../stores/affichage.store';
   import { infobulle } from '../directives/infobulle';
   import EcranErreur from './EcranErreur.svelte';
@@ -17,6 +17,7 @@
   let afficheBoutonScroll: boolean = $state(false);
   let { inputUtilisateur }: { inputUtilisateur: InputUtilisateur | undefined } =
     $props();
+  let container: HTMLDivElement | undefined = $state(undefined);
 
   const SEUIL_AFFICHAGE_BOUTON_SCROLL = 100;
   const gereScrollConversation = () => {
@@ -31,6 +32,20 @@
     return () => window.removeEventListener('scroll', gereScrollConversation);
   });
 
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $storeConversation.messages.length;
+    tick().then(() => {
+      if (!container) {
+        return;
+      }
+      const leDernierMessage = [...container.querySelectorAll('.message')]
+        .filter((element) => !(element as HTMLElement).inert)
+        .at(-1);
+      leDernierMessage?.scrollIntoView({ block: 'start' });
+    });
+  });
+
   const copieLaReponse = (contenu: string) => {
     navigator.clipboard.writeText(contenu);
   };
@@ -40,7 +55,7 @@
   ): message is MessageSysteme => message.emetteur === 'systeme';
 </script>
 
-<div class="conversation">
+<div class="conversation" bind:this={container}>
   {#each $storeConversation.messages as message, index (index)}
     {@const contenu = message.contenu}
     {@const contenuMarkdown = estMessageSysteme(message)
