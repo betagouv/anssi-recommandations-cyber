@@ -29,6 +29,9 @@
             blank
             title={reference.nom_document}
           ></dsfr-link>
+          <div class="contenu-reference">
+            {reference.contenu}
+          </div>
           {#if index !== message.references.length - 1}
             <hr />
           {/if}
@@ -39,6 +42,10 @@
 {/if}
 
 <style lang="scss">
+  .contenu-reference {
+    white-space: pre-line;
+  }
+
   .conteneur-sources {
     margin: 24px 0;
     padding: 16px;

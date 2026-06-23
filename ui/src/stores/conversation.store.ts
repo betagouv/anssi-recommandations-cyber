@@ -15,6 +15,7 @@ export type Paragraphe = {
   numero_page: number;
   url: string;
   nom_document: string;
+  contenu: string;
 };
 
 export type Message = {
