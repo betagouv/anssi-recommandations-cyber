@@ -9,9 +9,7 @@
     const suggestion: string = e.currentTarget.label;
     storeAffichage.estEnAttenteDeReponse(true);
     storeConversation.questionEnAttenteDeReponse(suggestion);
-    await storeAffichage.scrollVersDernierMessage();
     await storeConversation.ajouteMessageUtilisateur({ question: suggestion });
-    await storeAffichage.scrollVersDernierMessage();
   };
 </script>
 

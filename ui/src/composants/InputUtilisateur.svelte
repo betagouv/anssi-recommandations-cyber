@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { storeAffichage } from '../stores/affichage.store';
   import { storeConversation } from '../stores/conversation.store';
   import { onMount, tick } from 'svelte';
   import { ValidateurQuestionUtilisateur } from './ValidateurQuestionUtilisateur';
@@ -15,7 +14,6 @@
 
   export const soumetLaQuestion = async (questionASoumettre: string = question) => {
     storeConversation.questionEnAttenteDeReponse(questionASoumettre);
-    await storeAffichage.scrollVersDernierMessage();
 
     question = '';
     await tick();
@@ -24,7 +22,6 @@
     await storeConversation.ajouteMessageUtilisateur({
       question: questionASoumettre,
     });
-    await storeAffichage.scrollVersDernierMessage();
   };
 
   const soumetQuestion = async (e: Event) => {
