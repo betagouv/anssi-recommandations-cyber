@@ -24,6 +24,7 @@ FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL = Albert.Service(  # type: ignor
     taille_fenetre_historique=2,
     jeopardy_active=False,
     seuil_reponse_maitrisee=0.8,
+    nombre_paragraphes=5,
 )
 
 

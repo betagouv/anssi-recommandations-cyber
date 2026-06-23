@@ -38,6 +38,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE = Albert.Service(  # type: ignore [attr-defi
     taille_fenetre_historique=2,
     jeopardy_active=False,
     seuil_reponse_maitrisee=0.5,
+    nombre_paragraphes=5,
 )
 
 FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type: ignore [attr-defined]
@@ -49,6 +50,7 @@ FAUSSE_CONFIGURATION_ALBERT_SERVICE_AVEC_RECLASSEMENT = Albert.Service(  # type:
     taille_fenetre_historique=2,
     jeopardy_active=False,
     seuil_reponse_maitrisee=0.5,
+    nombre_paragraphes=5,
 )
 
 PROMPT_SYSTEME_ALTERNATIF = (
@@ -629,6 +631,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         taille_fenetre_historique=2,
         jeopardy_active=False,
         seuil_reponse_maitrisee=0.5,
+        nombre_paragraphes=5,
     )
 
     ServiceAlbert(
@@ -999,6 +1002,7 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee():
         taille_fenetre_historique=2,
         jeopardy_active=False,
         seuil_reponse_maitrisee=0.5,
+        nombre_paragraphes=5,
     )
 
     service_albert = ServiceAlbert(

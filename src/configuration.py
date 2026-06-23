@@ -48,6 +48,7 @@ class Albert(NamedTuple):
         taille_fenetre_historique: int
         jeopardy_active: bool
         seuil_reponse_maitrisee: float
+        nombre_paragraphes: int
 
     client: Client
     service: Service
@@ -205,6 +206,7 @@ def recupere_configuration() -> Configuration:
             ),
             jeopardy_active=os.getenv("JEOPARDY_ACTIVE", "false").lower() == "true",
             seuil_reponse_maitrisee=float(os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")),
+            nombre_paragraphes=int(os.getenv("NOMBRE_PARAGRAPHES", 0)),
         ),
     )
     configuration_base_de_donnees = _recupere_configuration_postgres(

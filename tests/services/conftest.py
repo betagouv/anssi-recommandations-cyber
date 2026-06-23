@@ -17,6 +17,7 @@ def une_configuration_de_service_albert() -> Callable[[], Albert.Service]:  # ty
             taille_fenetre_historique=10,
             jeopardy_active=False,
             seuil_reponse_maitrisee=0.5,
+            nombre_paragraphes=5,
         )
 
     return _une_configuration_de_service_albert
