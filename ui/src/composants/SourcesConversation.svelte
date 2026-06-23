@@ -9,7 +9,7 @@
 </script>
 
 {#if message.references && message.references.length > 0}
-  <details class="conteneur-sources">
+  <details class="conteneur-sources" open>
     <summary>
       Sources
       <img src="./icons/fleche-extension.svg" alt="" />
