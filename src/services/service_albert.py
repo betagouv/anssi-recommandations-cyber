@@ -68,6 +68,7 @@ class ServiceAlbert:
         self.taille_fenetre_historique = (
             configuration_service_albert.taille_fenetre_historique
         )
+        self.nombre_paragraphes = configuration_service_albert.nombre_paragraphes
         self.prompt_systeme = prompts.prompt_systeme
         self.prompt_reclassement = prompts.prompt_reclassement
         self.client = client
@@ -77,7 +78,9 @@ class ServiceAlbert:
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
-        nombre_paragraphes_a_retourner = 20 if self.reclassement_active else 5
+        nombre_paragraphes_a_retourner = (
+            20 if self.reclassement_active else self.nombre_paragraphes
+        )
 
         payload_classique = RecherchePayload(
             collection_ids=[self.id_collection],
@@ -303,9 +306,9 @@ class ServiceAlbert:
                         update={"score_reclassement": score}
                     )
                     for contenu, score in zip(contenus_tries, scores_tries)
-                ][:5]
+                ][: self.nombre_paragraphes]
             else:
-                paragraphes_a_filtrer = paragraphes[:5]
+                paragraphes_a_filtrer = paragraphes[: self.nombre_paragraphes]
             return _filtre_reponses_maitrisees(
                 paragraphes_a_filtrer, self.seuil_reponse_maitrisee
             )

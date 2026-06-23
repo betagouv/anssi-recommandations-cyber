@@ -65,6 +65,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources():
         taille_fenetre_historique=2,
         jeopardy_active=False,
         seuil_reponse_maitrisee=0.5,
+        nombre_paragraphes=5,
     )
 
     service_albert = ServiceAlbert(
@@ -131,6 +132,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
         taille_fenetre_historique=2,
         jeopardy_active=True,
         seuil_reponse_maitrisee=0.5,
+        nombre_paragraphes=5,
     )
 
     service_albert = ServiceAlbert(
@@ -187,6 +189,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
         taille_fenetre_historique=2,
         jeopardy_active=True,
         seuil_reponse_maitrisee=0.5,
+        nombre_paragraphes=5,
     )
 
     service_albert = ServiceAlbert(
@@ -251,6 +254,7 @@ def test_recherche_paragraphes_limite_a_20_candidats():
         taille_fenetre_historique=2,
         jeopardy_active=True,
         seuil_reponse_maitrisee=0.5,
+        nombre_paragraphes=5,
     )
 
     service_albert = ServiceAlbert(

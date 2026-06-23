@@ -128,6 +128,7 @@ def un_service_albert_avec_un_client_memoire() -> Callable[
                 taille_fenetre_historique=10,
                 jeopardy_active=False,
                 seuil_reponse_maitrisee=0.5,
+                nombre_paragraphes=5,
             ),
             client=client_albert_memoire,
             utilise_recherche_hybride=False,

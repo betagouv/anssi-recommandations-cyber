@@ -57,6 +57,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
                 taille_fenetre_historique=2,
                 jeopardy_active=False,
                 seuil_reponse_maitrisee=0.5,
+                nombre_paragraphes=5,
             ),
             client_albert,
             False,
