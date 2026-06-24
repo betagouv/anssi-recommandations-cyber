@@ -1,6 +1,8 @@
 import pytest
 from starlette.testclient import TestClient
 
+from adaptateurs.journal import AdaptateurJournalMemoire, TypeEvenement
+
 
 @pytest.mark.parametrize(
     "valeur_exactitude",
@@ -130,3 +132,40 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
     assert reponse.json().get("detail")[0].get("msg") == valeur_completude.get(
         "message_attendu"
     )
+
+
+def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
+    adaptateur_journal = AdaptateurJournalMemoire()
+    serveur = un_serveur_de_test(adaptateur_journal=adaptateur_journal)
+    client = TestClient(serveur)
+    payload = {
+        "id_interaction": "123",
+        "id_conversation": "456",
+        "avis": {
+            "completude": {
+                "valeur": "fausse",
+                "informations_erronees": "informations érronées",
+                "sources_adaptees": "sources adaptées",
+            },
+            "exactitude": {"valeur": "bonne"},
+        },
+    }
+
+    client.post("/api/avis", json=payload)
+
+    evenements = adaptateur_journal.les_evenements()
+    assert evenements[0]["type"] == TypeEvenement.AVIS_AVANCE_SOUMIS
+    assert evenements[0]["donnees"].id_interaction == "123"
+    assert evenements[0]["donnees"].id_conversation == "456"
+    assert evenements[0]["donnees"].avis.completude.valeur == "fausse"
+    assert (
+        evenements[0]["donnees"].avis.completude.informations_erronees
+        == "informations érronées"
+    )
+    assert (
+        evenements[0]["donnees"].avis.completude.sources_adaptees == "sources adaptées"
+    )
+    assert evenements[0]["donnees"].avis.exactitude.valeur == "bonne"
+    assert evenements[0]["donnees"].avis.exactitude.informations_erronees is None
+    assert evenements[0]["donnees"].avis.exactitude.sources_adaptees is None
+    assert evenements[0]["donnees"].avis.exactitude.commentaire is None
