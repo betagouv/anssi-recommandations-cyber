@@ -7,3 +7,5 @@ minimumReleaseAgeExclude:
   - immutable@5.1.5
   # Renovate security update: vite@8.0.16
   - vite@8.0.16
+  # Renovate security update: svelte@5.55.7
+  - svelte@5.55.7
