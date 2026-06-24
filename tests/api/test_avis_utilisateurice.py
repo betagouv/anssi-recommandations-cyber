@@ -48,7 +48,23 @@ def test_peut_ajouter_un_avis_sur_la_completude(
     assert reponse.status_code == 200
 
 
+@pytest.mark.parametrize(
+    "valeur_exactitude",
+    [
+        {
+            "informations_erronees": "",
+            "sources_adaptees": "ma source",
+            "message_attendu": "Value error, Le champ 'informations_erronees' est obligatoire lorsque l'exactitude est fausse.",
+        },
+        {
+            "informations_erronees": "valeur",
+            "sources_adaptees": "",
+            "message_attendu": "Value error, Le champ 'sources_adaptees' est obligatoire lorsque l'exactitude est fausse.",
+        },
+    ],
+)
 def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_l_exactitude(
+    valeur_exactitude,
     un_serveur_de_test,
 ):
     serveur = un_serveur_de_test()
@@ -59,8 +75,8 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_l_e
         "avis": {
             "exactitude": {
                 "valeur": "fausse",
-                "informations_erronees": "",
-                "sources_adaptees": "ma source",
+                "informations_erronees": valeur_exactitude.get("informations_erronees"),
+                "sources_adaptees": valeur_exactitude.get("sources_adaptees"),
             },
             "completude": {"valeur": "bonne"},
         },
@@ -69,13 +85,28 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_l_e
     reponse = client.post("/api/avis", json=payload)
     print(reponse.json())
     assert reponse.status_code == 422
-    assert (
-        reponse.json().get("detail")[0].get("msg")
-        == "Value error, Le champ 'informations_erronees' est obligatoire lorsque l'exactitude est fausse."
+    assert reponse.json().get("detail")[0].get("msg") == valeur_exactitude.get(
+        "message_attendu"
     )
 
 
+@pytest.mark.parametrize(
+    "valeur_completude",
+    [
+        {
+            "informations_erronees": "",
+            "sources_adaptees": "ma source",
+            "message_attendu": "Value error, Le champ 'informations_erronees' est obligatoire lorsque la complétude est fausse.",
+        },
+        {
+            "informations_erronees": "valeur",
+            "sources_adaptees": "",
+            "message_attendu": "Value error, Le champ 'sources_adaptees' est obligatoire lorsque la complétude est fausse.",
+        },
+    ],
+)
 def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_completude(
+    valeur_completude,
     un_serveur_de_test,
 ):
     serveur = un_serveur_de_test()
@@ -86,8 +117,8 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
         "avis": {
             "completude": {
                 "valeur": "fausse",
-                "informations_erronees": "",
-                "sources_adaptees": "ma source",
+                "informations_erronees": valeur_completude.get("informations_erronees"),
+                "sources_adaptees": valeur_completude.get("sources_adaptees"),
             },
             "exactitude": {"valeur": "bonne"},
         },
@@ -96,7 +127,6 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
     reponse = client.post("/api/avis", json=payload)
     print(reponse.json())
     assert reponse.status_code == 422
-    assert (
-        reponse.json().get("detail")[0].get("msg")
-        == "Value error, Le champ 'informations_erronees' est obligatoire lorsque la complétude est fausse."
+    assert reponse.json().get("detail")[0].get("msg") == valeur_completude.get(
+        "message_attendu"
     )

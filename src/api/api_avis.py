@@ -12,10 +12,11 @@ class AvisExactitude(BaseModel):
     valeur: Literal["très bonne", "bonne", "correcte", "fausse"]
     commentaire: Optional[str] = None
     informations_erronees: Optional[str] = Field(default=None, validate_default=True)
+    sources_adaptees: Optional[str] = Field(default=None, validate_default=True)
 
     @field_validator("informations_erronees")
     @classmethod
-    def commentaire_obligatoire_si_exactitude_fausse(
+    def informations_erronees_obligatoire_si_exactitude_fausse(
         cls,
         commentaire: Optional[str],
         informations: ValidationInfo,
@@ -24,21 +25,45 @@ class AvisExactitude(BaseModel):
             informations, commentaire, "l'exactitude", "informations_erronees"
         )
 
+    @field_validator("sources_adaptees")
+    @classmethod
+    def sources_adaptees_obligatoire_si_exactitude_fausse(
+        cls,
+        commentaire: Optional[str],
+        informations: ValidationInfo,
+    ) -> Optional[str]:
+        return valide_commentaire_avis(
+            informations, commentaire, "l'exactitude", "sources_adaptees"
+        )
+
 
 class AvisCompletude(BaseModel):
     valeur: Literal["très bonne", "bonne", "correcte", "fausse"]
     commentaire: Optional[str] = None
     informations_erronees: Optional[str] = Field(default=None, validate_default=True)
 
+    sources_adaptees: Optional[str] = Field(default=None, validate_default=True)
+
     @field_validator("informations_erronees")
     @classmethod
-    def commentaire_obligatoire_si_exactitude_fausse(
+    def informations_erronees_obligatoire_si_exactitude_fausse(
         cls,
         commentaire: Optional[str],
         informations: ValidationInfo,
     ) -> Optional[str]:
         return valide_commentaire_avis(
             informations, commentaire, "la complétude", "informations_erronees"
+        )
+
+    @field_validator("sources_adaptees")
+    @classmethod
+    def sources_adaptees_obligatoire_si_exactitude_fausse(
+        cls,
+        commentaire: Optional[str],
+        informations: ValidationInfo,
+    ) -> Optional[str]:
+        return valide_commentaire_avis(
+            informations, commentaire, "la complétude", "sources_adaptees"
         )
 
 
