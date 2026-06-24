@@ -68,6 +68,7 @@ class TypeEvenement(StrEnum):
     AVIS_UTILISATEUR_SOUMIS = "AVIS_UTILISATEUR_SOUMIS"
     AVIS_UTILISATEUR_SUPPRIME = "AVIS_UTILISATEUR_SUPPRIME"
     DOCUMENT_SOURCE_VISIONNE = "DOCUMENT_SOURCE_VISIONNE"
+    AVIS_AVANCE_SOUMIS = "AVIS_AVANCE_SOUMIS"
 
 
 class AdaptateurJournal(ABC):
@@ -120,3 +121,28 @@ def fabrique_adaptateur_journal() -> AdaptateurJournal:
         return AdaptateurJournalPostgres(configuration.base_de_donnees_journal)
     log(__name__, "ℹ️ ADAPTEUR JOURNAL : MÉMOIRE")
     return AdaptateurJournalMemoire()
+
+
+class AvisCompletudeSoumis(BaseModel):
+    valeur: str
+    commentaire: Optional[str] = None
+    informations_erronees: Optional[str] = None
+    sources_adaptees: Optional[str] = None
+
+
+class AvisExactitudeSoumis(BaseModel):
+    valeur: str
+    commentaire: Optional[str] = None
+    informations_erronees: Optional[str] = None
+    sources_adaptees: Optional[str] = None
+
+
+class AvisSoumis(BaseModel):
+    exactitude: AvisExactitudeSoumis
+    completude: AvisCompletudeSoumis
+
+
+class DonneesAvisSoumis(Donnees):
+    id_conversation: str
+    id_interaction: str
+    avis: AvisSoumis

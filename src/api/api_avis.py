@@ -1,9 +1,15 @@
 from typing import Optional
 
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from typing_extensions import Literal
 
-from fastapi import APIRouter
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from adaptateurs.journal import (
+    AdaptateurJournal,
+    fabrique_adaptateur_journal,
+    TypeEvenement,
+    AvisCompletudeSoumis, AvisExactitudeSoumis, AvisSoumis, DonneesAvisSoumis,
+)
 
 api_avis = APIRouter(prefix="/avis")
 
@@ -92,5 +98,29 @@ class DonneesAvis(BaseModel):
 
 
 @api_avis.post("/")
-def ajoute_avis(requete: DonneesAvis):
-    pass
+def ajoute_avis(
+    requete: DonneesAvis,
+    adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
+):
+    avis_soumis = AvisSoumis(
+        exactitude=AvisExactitudeSoumis(
+            valeur=requete.avis.exactitude.valeur,
+            commentaire=requete.avis.exactitude.commentaire,
+            informations_erronees=requete.avis.exactitude.informations_erronees,
+            sources_adaptees=requete.avis.exactitude.sources_adaptees,
+        ),
+        completude=AvisCompletudeSoumis(
+            valeur=requete.avis.completude.valeur,
+            commentaire=requete.avis.completude.commentaire,
+            informations_erronees=requete.avis.completude.informations_erronees,
+            sources_adaptees=requete.avis.completude.sources_adaptees,
+        ),
+    )
+    adaptateur_journal.consigne_evenement(
+        type=TypeEvenement.AVIS_AVANCE_SOUMIS,
+        donnees=DonneesAvisSoumis(
+            id_interaction=requete.id_interaction,
+            id_conversation=requete.id_conversation,
+            avis=avis_soumis,
+        ),
+    )
