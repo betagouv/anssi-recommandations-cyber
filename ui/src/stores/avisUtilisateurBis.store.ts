@@ -1,11 +1,21 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
-type ValeurExactitude = 'Très bonne' | 'Bonne' | 'Correcte' | 'Fausse';
-type ValeurCompletude = Omit<ValeurExactitude, 'Fausse'> | 'Mauvaise';
+export type ValeurExactitude = 'Très bonne' | 'Bonne' | 'Correcte' | 'Fausse';
+export type ValeurCompletude = Omit<ValeurExactitude, 'Fausse'> | 'Mauvaise';
 
 type AvisUtilisateurBis = {
-  exactitude: { valeur: ValeurExactitude; commentaire?: string };
-  completude: { valeur: ValeurCompletude; commentaire?: string };
+  exactitude: {
+    valeur: ValeurExactitude;
+    commentaire?: string;
+    precisionsInformationsErronees?: string;
+    sourcesAdaptees?: string;
+  };
+  completude: {
+    valeur: ValeurCompletude;
+    commentaire?: string;
+    informationsManquantes?: string;
+    sourcesAdaptees?: string;
+  };
   idConversation: string;
   idInteraction: string;
 };
@@ -34,6 +44,32 @@ const commenteLExactitude = (commentaire: string) => {
   });
 };
 
+const preciseLesInformationsErronees = (precisions: string) => {
+  update((avisActuel: AvisUtilisateurBis) => {
+    if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
+    return {
+      ...avisActuel,
+      exactitude: {
+        ...avisActuel.exactitude,
+        precisionsInformationsErronees: precisions,
+      },
+    };
+  });
+};
+
+const indiqueLesSourcesAdapteesPourLExactitude = (sourcesAdaptees: string) => {
+  update((avisActuel: AvisUtilisateurBis) => {
+    if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
+    return {
+      ...avisActuel,
+      exactitude: {
+        ...avisActuel.exactitude,
+        sourcesAdaptees: sourcesAdaptees,
+      },
+    };
+  });
+};
+
 const modifieLaValeurDeLaCompletude = (valeur: ValeurCompletude) => {
   update((avisActuel: AvisUtilisateurBis) => ({
     ...avisActuel,
@@ -51,11 +87,50 @@ const commenteLaCompletude = (commentaire: string) => {
   });
 };
 
+const preciseLesInformationsManquantes = (informationsManquantes: string) => {
+  update((avisActuel: AvisUtilisateurBis) => {
+    if (avisActuel.completude.valeur !== 'Mauvaise') return avisActuel;
+    return {
+      ...avisActuel,
+      completude: {
+        ...avisActuel.completude,
+        informationsManquantes: informationsManquantes,
+      },
+    };
+  });
+};
+
+const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
+  update((avisActuel: AvisUtilisateurBis) => {
+    if (avisActuel.completude.valeur !== 'Mauvaise') return avisActuel;
+    return {
+      ...avisActuel,
+      completude: {
+        ...avisActuel.completude,
+        sourcesAdaptees: sourcesAdaptees,
+      },
+    };
+  });
+};
+
+const estValide = (): boolean => {
+  const avisUtilisateurBis = get(storeAvisUtilisateurBis);
+  return (
+    avisUtilisateurBis.exactitude.valeur !== 'Fausse' &&
+    avisUtilisateurBis.completude.valeur !== 'Mauvaise'
+  );
+};
+
 export const storeAvisUtilisateurBis = {
   subscribe,
   initialise: set,
   modifieLaValeurDeLExactitude,
-  commenteLExactitude,
   modifieLaValeurDeLaCompletude,
+  commenteLExactitude,
   commenteLaCompletude,
+  preciseLesInformationsErronees,
+  indiqueLesSourcesAdapteesPourLExactitude,
+  preciseLesInformationsManquantes,
+  indiqueLesSourcesAdapteesPourLaCompletude,
+  estValide,
 };
