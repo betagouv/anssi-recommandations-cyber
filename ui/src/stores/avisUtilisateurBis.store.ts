@@ -3,19 +3,21 @@ import { get, writable } from 'svelte/store';
 export type ValeurExactitude = 'Très bonne' | 'Bonne' | 'Correcte' | 'Fausse';
 export type ValeurCompletude = Omit<ValeurExactitude, 'Fausse'> | 'Mauvaise';
 
+export type Exactitude = {
+  valeur: ValeurExactitude;
+  commentaire?: string;
+  precisionsInformationsErronees?: string;
+  sourcesAdaptees?: string;
+};
+export type Completude = {
+  valeur: ValeurCompletude;
+  commentaire?: string;
+  informationsManquantes?: string;
+  sourcesAdaptees?: string;
+};
 type AvisUtilisateurBis = {
-  exactitude: {
-    valeur: ValeurExactitude;
-    commentaire?: string;
-    precisionsInformationsErronees?: string;
-    sourcesAdaptees?: string;
-  };
-  completude: {
-    valeur: ValeurCompletude;
-    commentaire?: string;
-    informationsManquantes?: string;
-    sourcesAdaptees?: string;
-  };
+  exactitude: Exactitude;
+  completude: Completude;
   idConversation: string;
   idInteraction: string;
 };
@@ -115,9 +117,25 @@ const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
 
 const estValide = (): boolean => {
   const avisUtilisateurBis = get(storeAvisUtilisateurBis);
-  return (
+  const exactitudeEtCompletudeAvecOuSansCommentaire =
     avisUtilisateurBis.exactitude.valeur !== 'Fausse' &&
-    avisUtilisateurBis.completude.valeur !== 'Mauvaise'
+    avisUtilisateurBis.completude.valeur !== 'Mauvaise';
+  const exactitudeAvecInformationsErroneesEtSourcesAdaptees =
+    avisUtilisateurBis.exactitude.valeur === 'Fausse' &&
+    avisUtilisateurBis.exactitude.precisionsInformationsErronees !== undefined &&
+    avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim() !== '' &&
+    avisUtilisateurBis.exactitude.sourcesAdaptees !== undefined &&
+    avisUtilisateurBis.exactitude.sourcesAdaptees.trim() !== '';
+  const completudeAvecInformationsManquantesEtSourcesAdaptees =
+    avisUtilisateurBis.completude.valeur === 'Mauvaise' &&
+    avisUtilisateurBis.completude.informationsManquantes !== undefined &&
+    avisUtilisateurBis.completude.informationsManquantes.trim() !== '' &&
+    avisUtilisateurBis.completude.sourcesAdaptees !== undefined &&
+    avisUtilisateurBis.completude.sourcesAdaptees?.trim() !== '';
+  return (
+    exactitudeEtCompletudeAvecOuSansCommentaire ||
+    exactitudeAvecInformationsErroneesEtSourcesAdaptees ||
+    completudeAvecInformationsManquantesEtSourcesAdaptees
   );
 };
 

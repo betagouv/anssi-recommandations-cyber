@@ -1,7 +1,7 @@
 import {
+  Completude,
+  Exactitude,
   storeAvisUtilisateurBis,
-  ValeurCompletude,
-  ValeurExactitude,
 } from '../../src/stores/avisUtilisateurBis.store';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -270,8 +270,8 @@ describe('le store de conversation', () => {
     });
 
     type TestAvis = {
-      exactitude: { valeur: ValeurExactitude; commentaire?: string };
-      completude: { valeur: ValeurCompletude; commentaire?: string };
+      exactitude: Exactitude;
+      completude: Completude;
       estValide: boolean;
     };
 
@@ -305,6 +305,67 @@ describe('le store de conversation', () => {
         exactitude: { valeur: 'Correcte', commentaire: 'OK' },
         completude: { valeur: 'Correcte', commentaire: 'OK' },
         estValide: true,
+      },
+      {
+        exactitude: {
+          valeur: 'Fausse',
+          precisionsInformationsErronees: 'Informations erronées',
+          sourcesAdaptees: 'Sources Adaptées',
+        },
+        completude: { valeur: 'Très bonne' },
+        estValide: true,
+      },
+      {
+        exactitude: {
+          valeur: 'Bonne',
+        },
+        completude: {
+          valeur: 'Mauvaise',
+          sourcesAdaptees: 'Sources Adaptées',
+          informationsManquantes: 'Informations manquantes',
+        },
+        estValide: true,
+      },
+      {
+        exactitude: {
+          valeur: 'Fausse',
+          precisionsInformationsErronees: '  ',
+          sourcesAdaptees: 'Sources Adaptées',
+        },
+        completude: { valeur: 'Très bonne' },
+        estValide: false,
+      },
+      {
+        exactitude: {
+          valeur: 'Fausse',
+          precisionsInformationsErronees: 'Informations erronées',
+          sourcesAdaptees: '  ',
+        },
+        completude: { valeur: 'Très bonne' },
+        estValide: false,
+      },
+      {
+        exactitude: {
+          valeur: 'Bonne',
+        },
+        completude: {
+          valeur: 'Mauvaise',
+          sourcesAdaptees: '   ',
+          informationsManquantes: 'Informations manquantes',
+        },
+        estValide: false,
+      },
+
+      {
+        exactitude: {
+          valeur: 'Bonne',
+        },
+        completude: {
+          valeur: 'Mauvaise',
+          sourcesAdaptees: 'Sources Adaptées',
+          informationsManquantes: '  ',
+        },
+        estValide: false,
       },
       {
         exactitude: { valeur: 'Fausse' },
