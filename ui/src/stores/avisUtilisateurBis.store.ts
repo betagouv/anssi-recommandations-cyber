@@ -15,7 +15,7 @@ export type Completude = {
   informationsManquantes?: string;
   sourcesAdaptees?: string;
 };
-type AvisUtilisateurBis = {
+export type AvisUtilisateurBis = {
   exactitude: Exactitude;
   completude: Completude;
   idConversation: string;
