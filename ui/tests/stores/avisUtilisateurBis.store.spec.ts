@@ -7,59 +7,68 @@ import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('le store de conversation', () => {
-  beforeEach(() => {
-    storeAvisUtilisateurBis.initialise({
-      exactitude: { valeur: 'Bonne' },
-      completude: { valeur: 'Bonne' },
-      idConversation: '123',
-      idInteraction: '456',
-    });
-  });
-
   describe('dans le cas de l’exactitude', () => {
+    beforeEach(() => {
+      storeAvisUtilisateurBis.initialise({
+        exactitude: {} as Exactitude,
+        completude: {} as Completude,
+        idConversation: '123',
+        idInteraction: '456',
+        estValide: false,
+      });
+    });
+
     it('modifie la valeur', () => {
       storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Très bonne');
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
         exactitude: { valeur: 'Très bonne' },
-        completude: { valeur: 'Bonne' },
+        completude: {},
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('peut ajouter un commentaire lorsque la valeur est différente de fausse', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Bonne');
+
       storeAvisUtilisateurBis.commenteLExactitude('La réponse est exacte');
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
         exactitude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
-        completude: { valeur: 'Bonne' },
+        completude: {},
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('ne peut pas ajouter de commentaire lorsque la valeur est fausse', () => {
       storeAvisUtilisateurBis.initialise({
         exactitude: { valeur: 'Fausse' },
-        completude: { valeur: 'Bonne' },
+        completude: {} as Completude,
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
       storeAvisUtilisateurBis.commenteLExactitude('La réponse est fausse');
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
         exactitude: { valeur: 'Fausse' },
-        completude: { valeur: 'Bonne' },
+        completude: {},
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('ne peut pas préciser les informations erronées lorsque la valeur n’est pas fausse', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Bonne');
+
       storeAvisUtilisateurBis.preciseLesInformationsErronees(
         'Informations erronées'
       );
@@ -69,13 +78,16 @@ describe('le store de conversation', () => {
         exactitude: {
           valeur: 'Bonne',
         },
-        completude: { valeur: 'Bonne' },
+        completude: {},
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('ne peut pas indiquer les sources adaptées lorsque la valeur n’est pas fausse', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Bonne');
+
       storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(
         'Sources adaptées'
       );
@@ -85,19 +97,119 @@ describe('le store de conversation', () => {
         exactitude: {
           valeur: 'Bonne',
         },
-        completude: { valeur: 'Bonne' },
+        completude: {},
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
-    describe('dans le cas où la valeur est fausse', () => {
+    describe('dans le cas ou la completude n’est pas mauvaise', () => {
       beforeEach(() => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: {} as Exactitude,
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('modifie la valeur', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Très bonne');
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: { valeur: 'Très bonne' },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('peut ajouter un commentaire lorsque la valeur est différente de fausse', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Bonne');
+
+        storeAvisUtilisateurBis.commenteLExactitude('La réponse est exacte');
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('ne peut pas ajouter de commentaire lorsque la valeur est fausse', () => {
         storeAvisUtilisateurBis.initialise({
           exactitude: { valeur: 'Fausse' },
           completude: { valeur: 'Bonne' },
           idConversation: '123',
           idInteraction: '456',
+          estValide: false,
+        });
+        storeAvisUtilisateurBis.commenteLExactitude('La réponse est fausse');
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: { valeur: 'Fausse' },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+      });
+
+      it('ne peut pas préciser les informations erronées lorsque la valeur n’est pas fausse', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Bonne');
+
+        storeAvisUtilisateurBis.preciseLesInformationsErronees(
+          'Informations erronées'
+        );
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('ne peut pas indiquer les sources adaptées lorsque la valeur n’est pas fausse', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Bonne');
+
+        storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(
+          'Sources adaptées'
+        );
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+    });
+
+    describe('où la valeur est fausse', () => {
+      beforeEach(() => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: { valeur: 'Fausse' },
+          completude: {} as Completude,
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
         });
       });
 
@@ -112,9 +224,10 @@ describe('le store de conversation', () => {
             valeur: 'Fausse',
             precisionsInformationsErronees: 'Informations erronées',
           },
-          completude: { valeur: 'Bonne' },
+          completude: {},
           idConversation: '123',
           idInteraction: '456',
+          estValide: false,
         });
       });
 
@@ -129,36 +242,79 @@ describe('le store de conversation', () => {
             valeur: 'Fausse',
             sourcesAdaptees: 'Sources adaptées',
           },
+          completude: {},
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+      });
+
+      it('valide l’exactitude', () => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: { valeur: 'Fausse' },
           completude: { valeur: 'Bonne' },
           idConversation: '123',
           idInteraction: '456',
+          estValide: false,
+        });
+        storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(
+          'Sources adaptées'
+        );
+        storeAvisUtilisateurBis.preciseLesInformationsErronees(
+          'Informations erronées'
+        );
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: {
+            valeur: 'Fausse',
+            sourcesAdaptees: 'Sources adaptées',
+            precisionsInformationsErronees: 'Informations erronées',
+          },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
         });
       });
     });
   });
 
   describe('dans le cas de la complétude', () => {
+    beforeEach(() => {
+      storeAvisUtilisateurBis.initialise({
+        exactitude: {} as Exactitude,
+        completude: {} as Completude,
+        idConversation: '123',
+        idInteraction: '456',
+        estValide: false,
+      });
+    });
+
     it('modifie la valeur', () => {
       storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Très bonne');
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
-        exactitude: { valeur: 'Bonne' },
+        exactitude: {},
         completude: { valeur: 'Très bonne' },
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('peut ajouter un commentaire lorsque la valeur est différente de mauvaise', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
       storeAvisUtilisateurBis.commenteLaCompletude('La réponse est exacte');
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
-        exactitude: { valeur: 'Bonne' },
+        exactitude: {},
         completude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
@@ -168,6 +324,7 @@ describe('le store de conversation', () => {
         completude: { valeur: 'Mauvaise' },
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
       storeAvisUtilisateurBis.commenteLaCompletude('La réponse est fausse');
 
@@ -177,48 +334,150 @@ describe('le store de conversation', () => {
         completude: { valeur: 'Mauvaise' },
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('ne peut pas préciser les informations manquantes lorsque la valeur n’est pas mauvaise', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
+
       storeAvisUtilisateurBis.preciseLesInformationsManquantes(
         'Informations manquantes'
       );
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
-        exactitude: {
-          valeur: 'Bonne',
-        },
+        exactitude: {},
         completude: { valeur: 'Bonne' },
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
     it('ne peut pas indiquer les sources adaptées lorsque la valeur n’est pas mauvaise', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
+
       storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(
         'Sources adaptées'
       );
 
       const conversation = get(storeAvisUtilisateurBis);
       expect(conversation).toStrictEqual({
-        exactitude: {
-          valeur: 'Bonne',
-        },
+        exactitude: {},
         completude: { valeur: 'Bonne' },
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
-    describe('dans le cas où la valeur est mauvaise', () => {
+    describe('dans le cas ou l’exactitude n’est pas mauvaise', () => {
       beforeEach(() => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: { valeur: 'Bonne' },
+          completude: {} as Completude,
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('modifie la valeur', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Très bonne');
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: { valeur: 'Bonne' },
+          completude: { valeur: 'Très bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('peut ajouter un commentaire lorsque la valeur est différente de fausse', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
+
+        storeAvisUtilisateurBis.commenteLaCompletude('La réponse est exacte');
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: { valeur: 'Bonne' },
+          completude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('ne peut pas ajouter de commentaire lorsque la valeur est mauvaise', () => {
         storeAvisUtilisateurBis.initialise({
           exactitude: { valeur: 'Bonne' },
           completude: { valeur: 'Mauvaise' },
           idConversation: '123',
           idInteraction: '456',
+          estValide: false,
+        });
+        storeAvisUtilisateurBis.commenteLaCompletude('La réponse est fausse');
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: { valeur: 'Bonne' },
+          completude: { valeur: 'Mauvaise' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+      });
+
+      it('ne peut pas préciser les informations erronées lorsque la valeur n’est pas fausse', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
+
+        storeAvisUtilisateurBis.preciseLesInformationsManquantes(
+          'Informations manquantes'
+        );
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+
+      it('ne peut pas indiquer les sources adaptées lorsque la valeur n’est pas fausse', () => {
+        storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
+
+        storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(
+          'Sources adaptées'
+        );
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: { valeur: 'Bonne' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
+        });
+      });
+    });
+
+    describe('où la valeur est mauvaise', () => {
+      beforeEach(() => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: {} as Exactitude,
+          completude: { valeur: 'Mauvaise' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
         });
       });
 
@@ -229,15 +488,14 @@ describe('le store de conversation', () => {
 
         const conversation = get(storeAvisUtilisateurBis);
         expect(conversation).toStrictEqual({
-          exactitude: {
-            valeur: 'Bonne',
-          },
+          exactitude: {},
           completude: {
             valeur: 'Mauvaise',
             informationsManquantes: 'Informations manquantes',
           },
           idConversation: '123',
           idInteraction: '456',
+          estValide: false,
         });
       });
 
@@ -248,152 +506,84 @@ describe('le store de conversation', () => {
 
         const conversation = get(storeAvisUtilisateurBis);
         expect(conversation).toStrictEqual({
-          exactitude: {
-            valeur: 'Bonne',
-          },
+          exactitude: {},
           completude: { valeur: 'Mauvaise', sourcesAdaptees: 'Sources adaptées' },
           idConversation: '123',
           idInteraction: '456',
+          estValide: false,
+        });
+      });
+
+      it('valide la complétude', () => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: { valeur: 'Bonne' },
+          completude: { valeur: 'Mauvaise' },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+        storeAvisUtilisateurBis.preciseLesInformationsManquantes(
+          'Informations manquantes'
+        );
+        storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(
+          'Sources adaptées'
+        );
+
+        const conversation = get(storeAvisUtilisateurBis);
+        expect(conversation).toStrictEqual({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: {
+            valeur: 'Mauvaise',
+            sourcesAdaptees: 'Sources adaptées',
+            informationsManquantes: 'Informations manquantes',
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: true,
         });
       });
     });
   });
 
-  describe('dans le cas de la validation', () => {
+  describe('dans le cas où les informations et sources sont à fournir', () => {
     beforeEach(() => {
       storeAvisUtilisateurBis.initialise({
-        exactitude: { valeur: 'Bonne' },
-        completude: { valeur: 'Bonne' },
+        exactitude: {} as Exactitude,
+        completude: {} as Completude,
         idConversation: '123',
         idInteraction: '456',
+        estValide: false,
       });
     });
 
-    type TestAvis = {
-      exactitude: Exactitude;
-      completude: Completude;
-      estValide: boolean;
-    };
+    it('ne valide pas l’avis si seule la complétude est saisie', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Mauvaise');
+      storeAvisUtilisateurBis.commenteLaCompletude('La complétude est mauvaise');
+      storeAvisUtilisateurBis.preciseLesInformationsManquantes(
+        'Informations manquantes'
+      );
+      storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(
+        'Sources adaptées'
+      );
 
-    it.each<TestAvis>([
-      {
-        exactitude: { valeur: 'Bonne' },
-        completude: { valeur: 'Bonne' },
-        estValide: true,
-      },
-      {
-        exactitude: { valeur: 'Bonne', commentaire: 'OK' },
-        completude: { valeur: 'Bonne', commentaire: 'OK' },
-        estValide: true,
-      },
-      {
-        exactitude: { valeur: 'Très bonne' },
-        completude: { valeur: 'Très bonne' },
-        estValide: true,
-      },
-      {
-        exactitude: { valeur: 'Très bonne', commentaire: 'OK' },
-        completude: { valeur: 'Très bonne', commentaire: 'OK' },
-        estValide: true,
-      },
-      {
-        exactitude: { valeur: 'Correcte' },
-        completude: { valeur: 'Correcte' },
-        estValide: true,
-      },
-      {
-        exactitude: { valeur: 'Correcte', commentaire: 'OK' },
-        completude: { valeur: 'Correcte', commentaire: 'OK' },
-        estValide: true,
-      },
-      {
-        exactitude: {
-          valeur: 'Fausse',
-          precisionsInformationsErronees: 'Informations erronées',
-          sourcesAdaptees: 'Sources Adaptées',
-        },
-        completude: { valeur: 'Très bonne' },
-        estValide: true,
-      },
-      {
-        exactitude: {
-          valeur: 'Bonne',
-        },
-        completude: {
-          valeur: 'Mauvaise',
-          sourcesAdaptees: 'Sources Adaptées',
-          informationsManquantes: 'Informations manquantes',
-        },
-        estValide: true,
-      },
-      {
-        exactitude: {
-          valeur: 'Fausse',
-          precisionsInformationsErronees: '  ',
-          sourcesAdaptees: 'Sources Adaptées',
-        },
-        completude: { valeur: 'Très bonne' },
-        estValide: false,
-      },
-      {
-        exactitude: {
-          valeur: 'Fausse',
-          precisionsInformationsErronees: 'Informations erronées',
-          sourcesAdaptees: '  ',
-        },
-        completude: { valeur: 'Très bonne' },
-        estValide: false,
-      },
-      {
-        exactitude: {
-          valeur: 'Bonne',
-        },
-        completude: {
-          valeur: 'Mauvaise',
-          sourcesAdaptees: '   ',
-          informationsManquantes: 'Informations manquantes',
-        },
-        estValide: false,
-      },
+      const avis = get(storeAvisUtilisateurBis);
+      expect(avis.estValide).toBe(false);
+    });
 
-      {
-        exactitude: {
-          valeur: 'Bonne',
-        },
-        completude: {
-          valeur: 'Mauvaise',
-          sourcesAdaptees: 'Sources Adaptées',
-          informationsManquantes: '  ',
-        },
-        estValide: false,
-      },
-      {
-        exactitude: { valeur: 'Fausse' },
-        completude: { valeur: 'Très bonne' },
-        estValide: false,
-      },
-      {
-        exactitude: { valeur: 'Très bonne' },
-        completude: { valeur: 'Mauvaise' },
-        estValide: false,
-      },
-      {
-        exactitude: { valeur: 'Fausse' },
-        completude: { valeur: 'Mauvaise' },
-        estValide: false,
-      },
-    ])(
-      'Valide Exactitude : $exactitude.valeur - Complétude : $completude.valeur - Commentaire : $exactitude.commentaire - $completude.commentaire',
-      (avis: TestAvis) => {
-        storeAvisUtilisateurBis.initialise({
-          idConversation: '123',
-          idInteraction: '456',
-          exactitude: avis.exactitude,
-          completude: avis.completude,
-        });
+    it('ne valide pas l’avis si seule l’exactitude est saisie', () => {
+      storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Fausse');
+      storeAvisUtilisateurBis.commenteLExactitude('L’exactitude est mauvaise');
+      storeAvisUtilisateurBis.preciseLesInformationsErronees(
+        'Informations erronées'
+      );
+      storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(
+        'Sources adaptées'
+      );
 
-        expect(storeAvisUtilisateurBis.estValide()).toBe(avis.estValide);
-      }
-    );
+      const avis = get(storeAvisUtilisateurBis);
+      expect(avis.estValide).toBe(false);
+    });
   });
 });
