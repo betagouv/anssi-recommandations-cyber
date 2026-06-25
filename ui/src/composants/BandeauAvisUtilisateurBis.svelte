@@ -6,6 +6,7 @@
     type ValeurCompletude,
     type ValeurExactitude,
   } from '../stores/avisUtilisateurBis.store';
+  import { clientAPI } from '../client.api';
 
   let afficheCommentaireExactitude = $state(false);
   let afficheCommentaireCompletude = $state(false);
@@ -94,7 +95,9 @@
     storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(e.detail);
   };
 
-  const soumetsAvisUtilisateur = async () => {};
+  const soumetsAvisUtilisateur = async () => {
+    await clientAPI.soumetsAvisUtilisateurBisAPI($storeAvisUtilisateurBis);
+  };
 </script>
 
 <div class="avis-utilisateur-bis">

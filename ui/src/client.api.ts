@@ -1,4 +1,9 @@
 import type { Paragraphe } from './stores/conversation.store';
+import type {
+  AvisUtilisateurBis,
+  ValeurCompletude,
+  ValeurExactitude,
+} from './stores/avisUtilisateurBis.store';
 
 const urlAPI = import.meta.env.VITE_URL_API;
 
@@ -126,6 +131,63 @@ export const estReponseCreationConversation = (
   );
 };
 
+const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
+  const mappeValeurExactitude: Map<ValeurExactitude, string> = new Map([
+    ['Très bonne', 'très bonne'],
+    ['Bonne', 'bonne'],
+    ['Correcte', 'correcte'],
+    ['Fausse', 'fausse'],
+  ]);
+
+  const mappeValeurCompletude: Map<ValeurCompletude, string> = new Map([
+    ['Très bonne', 'très bonne'],
+    ['Bonne', 'bonne'],
+    ['Correcte', 'correcte'],
+    ['Mauvaise', 'fausse'],
+  ]);
+
+  const payload = {
+    id_interaction: avis.idInteraction,
+    id_conversation: avis.idConversation,
+    avis: {
+      exactitude: {
+        valeur: mappeValeurExactitude.get(avis.exactitude.valeur),
+        ...(avis.exactitude.commentaire && {
+          commentaire: avis.exactitude.commentaire,
+        }),
+        ...(avis.exactitude.valeur === 'Fausse' && {
+          informations_erronees: avis.exactitude.precisionsInformationsErronees,
+          sources_adaptees: avis.exactitude.sourcesAdaptees,
+        }),
+      },
+      completude: {
+        valeur: mappeValeurCompletude.get(avis.completude.valeur),
+        ...(avis.completude.commentaire && {
+          commentaire: avis.completude.commentaire,
+        }),
+        ...(avis.completude.valeur === 'Mauvaise' && {
+          informations_erronees: avis.completude.informationsManquantes,
+          sources_adaptees: avis.completude.sourcesAdaptees,
+        }),
+      },
+    },
+  };
+  const reponse = await fetch('/api/avis', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  const reponseJson = await reponse.json();
+  if (!reponse.ok) {
+    return {
+      erreur: reponseJson.detail.message,
+    };
+  }
+  return reponseJson;
+};
+
 type ClientAPI = {
   creeUneConversation: (
     message: MessageUtilisateurAPI
@@ -134,9 +196,13 @@ type ClientAPI = {
     idConversation: string,
     message: MessageUtilisateurAPI
   ) => Promise<ReponseAjoutInteraction | ReponseEnErreur>;
+  soumetsAvisUtilisateurBisAPI: (
+    avis: AvisUtilisateurBis
+  ) => Promise<Response | ReponseEnErreur>;
 };
 
 export const clientAPI: ClientAPI = {
   creeUneConversation,
   ajouteInteraction,
+  soumetsAvisUtilisateurBisAPI,
 };
