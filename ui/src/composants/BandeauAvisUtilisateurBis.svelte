@@ -3,7 +3,7 @@
   let afficheCommentaireCompletude = $state(false);
   let affichePrecisionEtSourcesExactitude = $state(false);
   let affichePrecisionEtSourcesCompletude = $state(false);
-  let disabled = $state(true);
+  let envoiDesactive = $state(true);
 
   interface Props {
     idInteraction: string;
@@ -230,7 +230,7 @@
       type="button"
       label="Envoyer vos commentaires"
       kind="tertiary"
-      {disabled}
+      {envoiDesactive}
       onclick={soumetsAvisUtilisateur}
     ></dsfr-button>
   </div>
