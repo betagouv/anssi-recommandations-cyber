@@ -13,6 +13,7 @@
   import EcranErreur from './EcranErreur.svelte';
   import InputUtilisateur from './InputUtilisateur.svelte';
   import SourcesConversation from './SourcesConversation.svelte';
+  import BandeauAvisUtilisateurBis from './BandeauAvisUtilisateurBis.svelte';
 
   let afficheBoutonScroll: boolean = $state(false);
   let { inputUtilisateur }: { inputUtilisateur: InputUtilisateur | undefined } =
@@ -94,6 +95,7 @@
       {@const idInteraction = message.idInteraction || ''}
       {@const idConversation = $storeConversation.idConversation}
       <BandeauAvisUtilisateur {idInteraction} {idConversation} />
+      <BandeauAvisUtilisateurBis {idInteraction} {idConversation} />
     {/if}
   {/each}
   <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
