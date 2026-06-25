@@ -1,9 +1,16 @@
 <script lang="ts">
+  import {
+    type Completude,
+    type Exactitude,
+    storeAvisUtilisateurBis,
+    type ValeurCompletude,
+    type ValeurExactitude,
+  } from '../stores/avisUtilisateurBis.store';
+
   let afficheCommentaireExactitude = $state(false);
   let afficheCommentaireCompletude = $state(false);
   let affichePrecisionEtSourcesExactitude = $state(false);
   let affichePrecisionEtSourcesCompletude = $state(false);
-  let envoiDesactive = $state(true);
 
   interface Props {
     idInteraction: string;
@@ -12,48 +19,79 @@
 
   const { idInteraction, idConversation }: Props = $props();
 
+  $effect(() => {
+    storeAvisUtilisateurBis.initialise({
+      idConversation,
+      idInteraction,
+      exactitude: {} as Exactitude,
+      completude: {} as Completude,
+      estValide: false,
+    });
+  });
+
   type ValeurOptionExactitude = 'tres-bonne' | 'bonne' | 'correcte' | 'fausse';
   type ValeurOptionCompletude = 'tres-bonne' | 'bonne' | 'correcte' | 'mauvaise';
+  const mappeOptionsExactitudeValeurExactitude: Map<
+    ValeurOptionExactitude,
+    ValeurExactitude
+  > = new Map([
+    ['tres-bonne', 'Très bonne'],
+    ['bonne', 'Bonne'],
+    ['correcte', 'Correcte'],
+    ['fausse', 'Fausse'],
+  ]);
+  const mappeOptionsCempletudeValeurCompletude: Map<
+    ValeurOptionCompletude,
+    ValeurCompletude
+  > = new Map([
+    ['tres-bonne', 'Très bonne'],
+    ['bonne', 'Bonne'],
+    ['correcte', 'Correcte'],
+    ['mauvaise', 'Mauvaise'],
+  ]);
 
   const surClickExactitude = (e: { detail: ValeurOptionExactitude }) => {
-    console.log('Exactitude', e.detail);
-    console.log('IDs', { idInteraction, idConversation });
     afficheCommentaireExactitude = e.detail !== 'fausse';
     affichePrecisionEtSourcesExactitude = e.detail === 'fausse';
+    storeAvisUtilisateurBis.modifieLaValeurDeLExactitude(
+      mappeOptionsExactitudeValeurExactitude.get(e.detail)!
+    );
   };
 
   const surClickCompletude = (e: { detail: ValeurOptionCompletude }) => {
-    console.log('Complétude', e.detail);
     afficheCommentaireCompletude = e.detail !== 'mauvaise';
     affichePrecisionEtSourcesCompletude = e.detail === 'mauvaise';
+    storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude(
+      mappeOptionsCempletudeValeurCompletude.get(e.detail)!
+    );
   };
 
   const ajouteCommentaireExactitude = (e: CustomEvent<string>) => {
-    console.log('Commentaire exactitude', e.detail);
+    storeAvisUtilisateurBis.commenteLExactitude(e.detail);
   };
 
   const ajouteCommentaireCompletude = (e: CustomEvent<string>) => {
-    console.log('Commentaire complétude', e.detail);
+    storeAvisUtilisateurBis.commenteLaCompletude(e.detail);
   };
 
   const ajoutePrecisionsInformationsErroneesExactitude = (
     e: CustomEvent<string>
   ) => {
-    console.log('Precisions erronées exactitude', e.detail);
+    storeAvisUtilisateurBis.preciseLesInformationsErronees(e.detail);
   };
 
   const ajoutePrecisionsInformationsManquantesCompletude = (
     e: CustomEvent<string>
   ) => {
-    console.log('Precisions manquantes complétude', e.detail);
+    storeAvisUtilisateurBis.preciseLesInformationsManquantes(e.detail);
   };
 
   const ajouteSourcesAdapteesExactitude = (e: CustomEvent<string>) => {
-    console.log('Sources exactitude', e.detail);
+    storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(e.detail);
   };
 
   const ajouteSourcesAdapteesCompletude = (e: CustomEvent<string>) => {
-    console.log('Sources complétude', e.detail);
+    storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(e.detail);
   };
 
   const soumetsAvisUtilisateur = async () => {};
@@ -230,7 +268,7 @@
       type="button"
       label="Envoyer vos commentaires"
       kind="tertiary"
-      {envoiDesactive}
+      disabled={!$storeAvisUtilisateurBis.estValide}
       onclick={soumetsAvisUtilisateur}
     ></dsfr-button>
   </div>
