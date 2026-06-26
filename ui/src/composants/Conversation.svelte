@@ -27,6 +27,9 @@
     afficheBoutonScroll = distanceFromBottom > SEUIL_AFFICHAGE_BOUTON_SCROLL;
   };
 
+  const afficheAvisUtilisateurBis = () =>
+    import.meta.env.VITE_AFFICHE_AVIS_UTILISATEUR_BIS === 'true';
+
   onMount(() => {
     window.addEventListener('scroll', gereScrollConversation, { passive: true });
     gereScrollConversation();
@@ -94,8 +97,11 @@
     {#if message.emetteur === 'systeme'}
       {@const idInteraction = message.idInteraction || ''}
       {@const idConversation = $storeConversation.idConversation}
-      <BandeauAvisUtilisateur {idInteraction} {idConversation} />
-      <BandeauAvisUtilisateurBis {idInteraction} {idConversation} />
+      {#if afficheAvisUtilisateurBis()}
+        <BandeauAvisUtilisateurBis {idInteraction} {idConversation} />
+      {:else}
+        <BandeauAvisUtilisateur {idInteraction} {idConversation} />
+      {/if}
     {/if}
   {/each}
   <div class="fondu-bas" class:visible={afficheBoutonScroll}></div>
@@ -145,6 +151,7 @@
       display: flex;
       flex-direction: row;
       gap: 8px;
+
       img {
         animation: rotation 1s linear infinite;
         width: 24px;
@@ -187,6 +194,7 @@
     .fondu-bas.visible {
       opacity: 1;
     }
+
     .copie-reponse {
       display: flex;
       justify-content: flex-end;
