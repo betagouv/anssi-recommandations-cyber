@@ -234,64 +234,83 @@
             inline
             onvaluechanged={surClickCompletude}
           ></dsfr-radios-group>
+          {#if afficheCommentaireCompletude}
+            <div class="conteneur-commentaire">
+              <dsfr-textarea
+                label="Ajouter un commentaire"
+                type="text"
+                name="commentaire-completude"
+                id="commentaire-completude"
+                rows="3"
+                maxlength="1000"
+                onvaluechanged={ajouteCommentaireCompletude}
+              ></dsfr-textarea>
+            </div>
+          {/if}
+          {#if affichePrecisionEtSourcesCompletude}
+            <div class="conteneur-commentaire">
+              <dsfr-textarea
+                label="Précisez les informations manquantes"
+                type="text"
+                name="precisions-completude"
+                id="precisions-completude"
+                rows="3"
+                maxlength="1000"
+                onvaluechanged={ajoutePrecisionsInformationsManquantesCompletude}
+              ></dsfr-textarea>
+            </div>
+            <div class="conteneur-commentaire">
+              <dsfr-textarea
+                label="Indiquez les sources adaptées (guide, page, paragraphes)"
+                type="text"
+                name="sources-adaptees-completude"
+                id="sources-adaptees-completude"
+                rows="3"
+                maxlength="1000"
+                onvaluechanged={ajouteSourcesAdapteesCompletude}
+              ></dsfr-textarea>
+            </div>
+          {/if}
+
+          <div>
+            <dsfr-button
+              type="button"
+              label="Envoyer vos commentaires"
+              kind="tertiary"
+              disabled={!$storeAvisUtilisateurBis.estValide}
+              onclick={soumetsAvisUtilisateur}
+            ></dsfr-button>
+          </div>
         </div>
-        {#if afficheCommentaireCompletude}
-          <div class="conteneur-commentaire">
-            <dsfr-textarea
-              label="Ajouter un commentaire"
-              type="text"
-              name="commentaire-completude"
-              id="commentaire-completude"
-              rows="3"
-              maxlength="1000"
-              onvaluechanged={ajouteCommentaireCompletude}
-            ></dsfr-textarea>
-          </div>
-        {/if}
-        {#if affichePrecisionEtSourcesCompletude}
-          <div class="conteneur-commentaire">
-            <dsfr-textarea
-              label="Précisez les informations manquantes"
-              type="text"
-              name="precisions-completude"
-              id="precisions-completude"
-              rows="3"
-              maxlength="1000"
-              onvaluechanged={ajoutePrecisionsInformationsManquantesCompletude}
-            ></dsfr-textarea>
-          </div>
-          <div class="conteneur-commentaire">
-            <dsfr-textarea
-              label="Indiquez les sources adaptées (guide, page, paragraphes)"
-              type="text"
-              name="sources-adaptees-completude"
-              id="sources-adaptees-completude"
-              rows="3"
-              maxlength="1000"
-              onvaluechanged={ajouteSourcesAdapteesCompletude}
-            ></dsfr-textarea>
-          </div>
-        {/if}
       </div>
-    </div>
-    <div>
-      <dsfr-button
-        type="button"
-        label="Envoyer vos commentaires"
-        kind="tertiary"
-        disabled={!$storeAvisUtilisateurBis.estValide}
-        onclick={soumetsAvisUtilisateur}
-      ></dsfr-button>
     </div>
   {/if}
   {#if afficheMessageSucces}
-    <dsfr-alert
-      has-title={false}
-      text="Merci ! Vos retours sont précieux. ✨"
-      type="success"
-      size="sm"
-      dismissible
-    ></dsfr-alert>
+    <div class="conteneur-message-retour-mqc">
+      <dsfr-alert
+        has-title={false}
+        text="Merci ! Vos retours sont précieux. ✨"
+        type="success"
+        size="sm"
+      ></dsfr-alert>
+    </div>
+  {/if}
+  {#if afficheMessageErreur !== undefined && afficheMessageErreur !== '' && !afficheMessageSucces}
+    <div class="conteneur-message-retour-mqc">
+      <dsfr-alert
+        has-title={false}
+        text={afficheMessageErreur}
+        type="warning"
+        size="md"
+      ></dsfr-alert>
+
+      <dsfr-button
+        type="button"
+        label="Réessayer"
+        kind="tertiary"
+        onclick={soumetsAvisUtilisateur}
+      ></dsfr-button>
+    </div>
   {/if}
 </div>
 
@@ -302,6 +321,18 @@
     justify-content: flex-end;
     align-items: flex-start;
     gap: 24px;
+
+    .conteneur-message-retour-mqc {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      align-self: stretch;
+      gap: 16px;
+
+      :first-child {
+        min-width: stretch;
+      }
+    }
   }
 
   .information-avis-utilisateur-bis {
@@ -317,8 +348,8 @@
     }
 
     .texte-avis {
-      font-size: 14px;
-      line-height: 20px;
+      font-size: 16px;
+      line-height: 24px;
     }
   }
 
@@ -330,6 +361,7 @@
     align-items: flex-start;
     gap: 16px;
     align-self: stretch;
+    background: #f9f6f2;
 
     .avis-exactitude,
     .avis-completude {
