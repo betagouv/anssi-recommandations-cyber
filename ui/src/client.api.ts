@@ -181,9 +181,7 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
   });
   const reponseJson = await reponse.json();
   if (!reponse.ok) {
-    return {
-      erreur: reponseJson.detail.message,
-    };
+    throw new Error(reponseJson.detail.message);
   }
   return reponseJson;
 };
