@@ -8,7 +8,10 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
     TypeEvenement,
-    AvisCompletudeSoumis, AvisExactitudeSoumis, AvisSoumis, DonneesAvisSoumis,
+    AvisCompletudeSoumis,
+    AvisExactitudeSoumis,
+    AvisSoumis,
+    DonneesAvisSoumis,
 )
 
 api_avis = APIRouter(prefix="/avis")

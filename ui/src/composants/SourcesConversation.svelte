@@ -21,6 +21,7 @@
           reference.numero_page > 0
             ? `Page ${reference.numero_page}`
             : 'En savoir plus'}
+        {@const imageUrl = URL.createObjectURL(reference.image ?? new Blob())}
         <div class="source">
           <span class="nom-document">{reference.nom_document}</span>
           <dsfr-link
@@ -30,7 +31,7 @@
             title={reference.nom_document}
           ></dsfr-link>
           <div class="contenu-reference">
-            {reference.contenu}
+            <img src={imageUrl} alt="" />
           </div>
           {#if index !== message.references.length - 1}
             <hr />
@@ -44,6 +45,12 @@
 <style lang="scss">
   .contenu-reference {
     white-space: pre-line;
+
+    img {
+      max-width: 75%;
+      width: 75%;
+      height: auto;
+    }
   }
 
   .conteneur-sources {
