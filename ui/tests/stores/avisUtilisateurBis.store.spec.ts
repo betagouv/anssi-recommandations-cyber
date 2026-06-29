@@ -6,7 +6,7 @@ import {
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-describe('le store de conversation', () => {
+describe('le store des avis', () => {
   describe('dans le cas de l’exactitude', () => {
     beforeEach(() => {
       storeAvisUtilisateurBis.initialise({
@@ -21,8 +21,8 @@ describe('le store de conversation', () => {
     it('modifie la valeur', () => {
       storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Très bonne');
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: { valeur: 'Très bonne' },
         completude: {},
         idConversation: '123',
@@ -36,8 +36,8 @@ describe('le store de conversation', () => {
 
       storeAvisUtilisateurBis.commenteLExactitude('La réponse est exacte');
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
         completude: {},
         idConversation: '123',
@@ -56,8 +56,8 @@ describe('le store de conversation', () => {
       });
       storeAvisUtilisateurBis.commenteLExactitude('La réponse est fausse');
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: { valeur: 'Fausse' },
         completude: {},
         idConversation: '123',
@@ -73,8 +73,8 @@ describe('le store de conversation', () => {
         'Informations erronées'
       );
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: {
           valeur: 'Bonne',
         },
@@ -92,8 +92,8 @@ describe('le store de conversation', () => {
         'Sources adaptées'
       );
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: {
           valeur: 'Bonne',
         },
@@ -118,8 +118,8 @@ describe('le store de conversation', () => {
       it('modifie la valeur', () => {
         storeAvisUtilisateurBis.modifieLaValeurDeLExactitude('Très bonne');
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: { valeur: 'Très bonne' },
           completude: { valeur: 'Bonne' },
           idConversation: '123',
@@ -133,8 +133,8 @@ describe('le store de conversation', () => {
 
         storeAvisUtilisateurBis.commenteLExactitude('La réponse est exacte');
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
           completude: { valeur: 'Bonne' },
           idConversation: '123',
@@ -153,8 +153,8 @@ describe('le store de conversation', () => {
         });
         storeAvisUtilisateurBis.commenteLExactitude('La réponse est fausse');
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: { valeur: 'Fausse' },
           completude: { valeur: 'Bonne' },
           idConversation: '123',
@@ -170,8 +170,8 @@ describe('le store de conversation', () => {
           'Informations erronées'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Bonne',
           },
@@ -189,8 +189,8 @@ describe('le store de conversation', () => {
           'Sources adaptées'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Bonne',
           },
@@ -218,8 +218,8 @@ describe('le store de conversation', () => {
           'Les informations erronées sont les suivantes : informations'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Fausse',
             precisionsInformationsErronees:
@@ -237,8 +237,8 @@ describe('le store de conversation', () => {
           'Les sources adaptées sont les suivantes : les sources adaptées'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Fausse',
             sourcesAdaptees:
@@ -466,8 +466,8 @@ describe('le store de conversation', () => {
           'Les informations erronées sont les suivantes : informations'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Fausse',
             sourcesAdaptees:
@@ -498,8 +498,8 @@ describe('le store de conversation', () => {
     it('modifie la valeur', () => {
       storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Très bonne');
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: {},
         completude: { valeur: 'Très bonne' },
         idConversation: '123',
@@ -512,8 +512,8 @@ describe('le store de conversation', () => {
       storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Bonne');
       storeAvisUtilisateurBis.commenteLaCompletude('La réponse est exacte');
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: {},
         completude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
         idConversation: '123',
@@ -532,8 +532,8 @@ describe('le store de conversation', () => {
       });
       storeAvisUtilisateurBis.commenteLaCompletude('La réponse est fausse');
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: { valeur: 'Bonne' },
         completude: { valeur: 'Mauvaise' },
         idConversation: '123',
@@ -549,8 +549,8 @@ describe('le store de conversation', () => {
         'Informations manquantes'
       );
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: {},
         completude: { valeur: 'Bonne' },
         idConversation: '123',
@@ -566,8 +566,8 @@ describe('le store de conversation', () => {
         'Sources adaptées'
       );
 
-      const conversation = get(storeAvisUtilisateurBis);
-      expect(conversation).toStrictEqual({
+      const avisRetourne = get(storeAvisUtilisateurBis);
+      expect(avisRetourne).toStrictEqual({
         exactitude: {},
         completude: { valeur: 'Bonne' },
         idConversation: '123',
@@ -590,8 +590,8 @@ describe('le store de conversation', () => {
       it('modifie la valeur', () => {
         storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude('Très bonne');
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: { valeur: 'Bonne' },
           completude: { valeur: 'Très bonne' },
           idConversation: '123',
@@ -605,8 +605,8 @@ describe('le store de conversation', () => {
 
         storeAvisUtilisateurBis.commenteLaCompletude('La réponse est exacte');
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: { valeur: 'Bonne' },
           completude: { valeur: 'Bonne', commentaire: 'La réponse est exacte' },
           idConversation: '123',
@@ -625,8 +625,8 @@ describe('le store de conversation', () => {
         });
         storeAvisUtilisateurBis.commenteLaCompletude('La réponse est fausse');
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: { valeur: 'Bonne' },
           completude: { valeur: 'Mauvaise' },
           idConversation: '123',
@@ -642,8 +642,8 @@ describe('le store de conversation', () => {
           'Informations manquantes'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Bonne',
           },
@@ -661,8 +661,8 @@ describe('le store de conversation', () => {
           'Sources adaptées'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Bonne',
           },
@@ -690,8 +690,8 @@ describe('le store de conversation', () => {
           'Les Informations manquantes sont les suivantes : infos'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {},
           completude: {
             valeur: 'Mauvaise',
@@ -709,8 +709,8 @@ describe('le store de conversation', () => {
           'Les sources adaptées sont les suivantes : les sources adaptées'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {},
           completude: {
             valeur: 'Mauvaise',
@@ -738,8 +738,8 @@ describe('le store de conversation', () => {
           'Les sources adaptées sont les suivantes : les sources adaptées'
         );
 
-        const conversation = get(storeAvisUtilisateurBis);
-        expect(conversation).toStrictEqual({
+        const avisRetourne = get(storeAvisUtilisateurBis);
+        expect(avisRetourne).toStrictEqual({
           exactitude: {
             valeur: 'Bonne',
           },
