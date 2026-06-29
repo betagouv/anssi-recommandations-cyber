@@ -276,7 +276,7 @@
             <dsfr-button
               type="button"
               label="Envoyer vos commentaires"
-              kind="tertiary"
+              kind="primary"
               disabled={!$storeAvisUtilisateurBis.estValide}
               onclick={soumetsAvisUtilisateur}
             ></dsfr-button>
@@ -307,7 +307,7 @@
       <dsfr-button
         type="button"
         label="Réessayer"
-        kind="tertiary"
+        kind="primary"
         onclick={soumetsAvisUtilisateur}
       ></dsfr-button>
     </div>
