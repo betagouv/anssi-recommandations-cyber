@@ -171,6 +171,7 @@
           </div>
         {/if}
         {#if affichePrecisionEtSourcesExactitude}
+          <div class="info-champ-obligatoire">Tous les champs sont obligatoires</div>
           <div class="conteneur-commentaire">
             <dsfr-textarea
               label="Précisez les informations erronées"
@@ -248,6 +249,9 @@
             </div>
           {/if}
           {#if affichePrecisionEtSourcesCompletude}
+            <div class="info-champ-obligatoire">
+              Tous les Champs sont obligatoires
+            </div>
             <div class="conteneur-commentaire">
               <dsfr-textarea
                 label="Précisez les informations manquantes"
@@ -371,6 +375,13 @@
 
       .conteneur-commentaire {
         min-width: stretch;
+      }
+
+      .info-champ-obligatoire {
+        color: #666;
+        font-size: 14px;
+        line-height: 24px;
+        padding-bottom: 16px;
       }
     }
   }
