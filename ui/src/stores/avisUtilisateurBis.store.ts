@@ -8,12 +8,14 @@ export type Exactitude = {
   commentaire?: string;
   precisionsInformationsErronees?: string;
   sourcesAdaptees?: string;
+  erreurs?: Partial<Record<'informations-erronees' | 'sources-adaptees', string>>;
 };
 export type Completude = {
   valeur: ValeurCompletude;
   commentaire?: string;
   informationsManquantes?: string;
   sourcesAdaptees?: string;
+  erreurs?: Partial<Record<'informations-manquantes' | 'sources-adaptees', string>>;
 };
 export type AvisUtilisateurBis = {
   exactitude: Exactitude;
@@ -55,11 +57,27 @@ const commenteLExactitude = (commentaire: string) => {
 const preciseLesInformationsErronees = (precisions: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
     if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
+    let erreurSourcesErronees = undefined;
+    if (precisions.trim().length > 5000) {
+      erreurSourcesErronees =
+        'Le champ `informations erronées` ne peut contenir que 5000 caractères maximum';
+    }
+    if (precisions.trim().length < 50) {
+      erreurSourcesErronees =
+        'Le champ `informations erronées` doit contenir au moins 50 caractères minimum';
+    }
+
     const nouvelEtat = {
       ...avisActuel,
       exactitude: {
         ...avisActuel.exactitude,
         precisionsInformationsErronees: precisions,
+        ...(erreurSourcesErronees && {
+          erreurs: {
+            ...avisActuel.exactitude.erreurs,
+            'informations-erronees': erreurSourcesErronees,
+          },
+        }),
       },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
@@ -69,11 +87,26 @@ const preciseLesInformationsErronees = (precisions: string) => {
 const indiqueLesSourcesAdapteesPourLExactitude = (sourcesAdaptees: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
     if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
+    let erreurSourcesAdaptees = undefined;
+    if (sourcesAdaptees.trim().length > 5000) {
+      erreurSourcesAdaptees =
+        'Le champ `sources adaptées` ne peut contenir que 5000 caractères maximum';
+    }
+    if (sourcesAdaptees.trim().length < 50) {
+      erreurSourcesAdaptees =
+        'Le champ `sources adaptées` doit contenir au moins 50 caractères minimum';
+    }
     const nouvelEtat = {
       ...avisActuel,
       exactitude: {
         ...avisActuel.exactitude,
         sourcesAdaptees: sourcesAdaptees,
+        ...(erreurSourcesAdaptees && {
+          erreurs: {
+            ...avisActuel.exactitude.erreurs,
+            'sources-adaptees': erreurSourcesAdaptees,
+          },
+        }),
       },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
@@ -104,11 +137,24 @@ const commenteLaCompletude = (commentaire: string) => {
 const preciseLesInformationsManquantes = (informationsManquantes: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
     if (avisActuel.completude.valeur !== 'Mauvaise') return avisActuel;
+    let erreurInformationsManquantes = undefined;
+    if (informationsManquantes.trim().length > 5000)
+      erreurInformationsManquantes =
+        'Le champ `informations manquantes` ne peut contenir que 5000 caractères maximum';
+    if (informationsManquantes.trim().length < 50)
+      erreurInformationsManquantes =
+        'Le champ `informations manquantes` doit contenir au moins 50 caractères minimum';
     const nouvelEtat = {
       ...avisActuel,
       completude: {
         ...avisActuel.completude,
         informationsManquantes: informationsManquantes,
+        ...(erreurInformationsManquantes && {
+          erreurs: {
+            ...avisActuel.completude.erreurs,
+            'informations-manquantes': erreurInformationsManquantes,
+          },
+        }),
       },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
@@ -118,11 +164,26 @@ const preciseLesInformationsManquantes = (informationsManquantes: string) => {
 const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
     if (avisActuel.completude.valeur !== 'Mauvaise') return avisActuel;
+    let erreurSourcesAdaptees = undefined;
+    if (sourcesAdaptees.trim().length > 5000) {
+      erreurSourcesAdaptees =
+        'Le champ `sources adaptées` ne peut contenir que 5000 caractères maximum';
+    }
+    if (sourcesAdaptees.trim().length < 50) {
+      erreurSourcesAdaptees =
+        'Le champ `sources adaptées` doit contenir au moins 50 caractères minimum';
+    }
     const nouvelEtat = {
       ...avisActuel,
       completude: {
         ...avisActuel.completude,
         sourcesAdaptees: sourcesAdaptees,
+        ...(erreurSourcesAdaptees && {
+          erreurs: {
+            ...avisActuel.completude.erreurs,
+            'sources-adaptees': erreurSourcesAdaptees,
+          },
+        }),
       },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
@@ -142,14 +203,24 @@ const estValide = (avisUtilisateurBis: AvisUtilisateurBis): boolean => {
     avisUtilisateurBis.exactitude.valeur === 'Fausse' &&
     avisUtilisateurBis.exactitude.precisionsInformationsErronees !== undefined &&
     avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim() !== '' &&
+    avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim().length <=
+      5000 &&
+    avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim().length >
+      50 &&
     avisUtilisateurBis.exactitude.sourcesAdaptees !== undefined &&
-    avisUtilisateurBis.exactitude.sourcesAdaptees.trim() !== '';
+    avisUtilisateurBis.exactitude.sourcesAdaptees.trim() !== '' &&
+    avisUtilisateurBis.exactitude.sourcesAdaptees.trim().length <= 5000 &&
+    avisUtilisateurBis.exactitude.sourcesAdaptees.trim().length > 50;
   const completudeAvecInformationsManquantesEtSourcesAdaptees =
     avisUtilisateurBis.completude.valeur === 'Mauvaise' &&
     avisUtilisateurBis.completude.informationsManquantes !== undefined &&
     avisUtilisateurBis.completude.informationsManquantes.trim() !== '' &&
+    avisUtilisateurBis.completude.informationsManquantes.trim().length <= 5000 &&
+    avisUtilisateurBis.completude.informationsManquantes.trim().length > 50 &&
     avisUtilisateurBis.completude.sourcesAdaptees !== undefined &&
-    avisUtilisateurBis.completude.sourcesAdaptees?.trim() !== '';
+    avisUtilisateurBis.completude.sourcesAdaptees?.trim() !== '' &&
+    avisUtilisateurBis.completude.sourcesAdaptees.trim().length <= 5000 &&
+    avisUtilisateurBis.completude.sourcesAdaptees.trim().length > 50;
   return (
     exactitudeEtCompletudeAvecOuSansCommentaire ||
     (exactitudeAvecInformationsErroneesEtSourcesAdaptees &&
