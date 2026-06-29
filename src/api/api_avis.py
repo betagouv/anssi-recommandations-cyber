@@ -8,7 +8,10 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
     TypeEvenement,
-    AvisCompletudeSoumis, AvisExactitudeSoumis, AvisSoumis, DonneesAvisSoumis,
+    AvisCompletudeSoumis,
+    AvisExactitudeSoumis,
+    AvisSoumis,
+    DonneesAvisSoumis,
 )
 
 api_avis = APIRouter(prefix="/avis")
@@ -78,10 +81,19 @@ def valide_commentaire_avis(
 ):
     valeur = informations.data.get("valeur")
 
-    if valeur == "fausse" and (commentaire is None or commentaire.strip() == ""):
-        raise ValueError(
-            f"Le champ '{champ}' est obligatoire lorsque {type_avis} est fausse."
-        )
+    if valeur == "fausse":
+        if commentaire is None or commentaire.strip() == "":
+            raise ValueError(
+                f"Le champ '{champ}' est obligatoire lorsque {type_avis} est fausse."
+            )
+        if len(commentaire.strip()) < 50:
+            raise ValueError(
+                f"Le champ '{champ}' doit contenir au moins 50 caractères."
+            )
+        if len(commentaire.strip()) > 5_000:
+            raise ValueError(
+                f"Le champ '{champ}' ne peut contenir que 5000 caractères maximum."
+            )
 
     return commentaire
 
