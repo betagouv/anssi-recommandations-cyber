@@ -57,13 +57,13 @@ const commenteLExactitude = (commentaire: string) => {
 const preciseLesInformationsErronees = (precisions: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
     if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
-    let erreurSourcesErronees = undefined;
+    let erreurInformationsErronees = undefined;
     if (precisions.trim().length > 5000) {
-      erreurSourcesErronees =
+      erreurInformationsErronees =
         'Le champ `informations erronées` ne peut contenir que 5000 caractères maximum';
     }
     if (precisions.trim().length < 50) {
-      erreurSourcesErronees =
+      erreurInformationsErronees =
         'Le champ `informations erronées` doit contenir au moins 50 caractères minimum';
     }
 
@@ -72,14 +72,18 @@ const preciseLesInformationsErronees = (precisions: string) => {
       exactitude: {
         ...avisActuel.exactitude,
         precisionsInformationsErronees: precisions,
-        ...(erreurSourcesErronees && {
+        ...(erreurInformationsErronees && {
           erreurs: {
             ...avisActuel.exactitude.erreurs,
-            'informations-erronees': erreurSourcesErronees,
+            'informations-erronees': erreurInformationsErronees,
           },
         }),
       },
     };
+
+    if (!erreurInformationsErronees) {
+      delete nouvelEtat.exactitude.erreurs?.['informations-erronees'];
+    }
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };
@@ -109,6 +113,10 @@ const indiqueLesSourcesAdapteesPourLExactitude = (sourcesAdaptees: string) => {
         }),
       },
     };
+
+    if (!erreurSourcesAdaptees) {
+      delete nouvelEtat.exactitude.erreurs?.['sources-adaptees'];
+    }
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };
@@ -157,6 +165,10 @@ const preciseLesInformationsManquantes = (informationsManquantes: string) => {
         }),
       },
     };
+
+    if (!erreurInformationsManquantes) {
+      delete nouvelEtat.completude.erreurs?.['informations-manquantes'];
+    }
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };
@@ -186,6 +198,10 @@ const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
         }),
       },
     };
+
+    if (!erreurSourcesAdaptees) {
+      delete nouvelEtat.completude.erreurs?.['sources-adaptees'];
+    }
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };

@@ -165,7 +165,7 @@
               name="commentaire-exactitude"
               id="commentaire-exactitude"
               rows="3"
-              maxlength="1000"
+              maxlength="5000"
               onvaluechanged={ajouteCommentaireExactitude}
             ></dsfr-textarea>
           </div>
@@ -179,7 +179,15 @@
               name="precisions-exactitude"
               id="precisions-exactitude"
               rows="3"
-              maxlength="1000"
+              maxlength="5000"
+              status={$storeAvisUtilisateurBis.exactitude.erreurs?.[
+                'informations-erronees'
+              ]
+                ? 'error'
+                : 'default'}
+              error-message={$storeAvisUtilisateurBis.exactitude.erreurs?.[
+                'informations-erronees'
+              ] ?? ''}
               onvaluechanged={ajoutePrecisionsInformationsErroneesExactitude}
             ></dsfr-textarea>
           </div>
@@ -190,7 +198,15 @@
               name="sources-adaptees-exactitude"
               id="sources-adaptees-exactitude"
               rows="3"
-              maxlength="1000"
+              maxlength="5000"
+              status={$storeAvisUtilisateurBis.exactitude.erreurs?.[
+                'sources-adaptees'
+              ]
+                ? 'error'
+                : 'default'}
+              error-message={$storeAvisUtilisateurBis.exactitude.erreurs?.[
+                'sources-adaptees'
+              ] ?? ''}
               onvaluechanged={ajouteSourcesAdapteesExactitude}
             ></dsfr-textarea>
           </div>
@@ -243,7 +259,7 @@
                 name="commentaire-completude"
                 id="commentaire-completude"
                 rows="3"
-                maxlength="1000"
+                maxlength="5000"
                 onvaluechanged={ajouteCommentaireCompletude}
               ></dsfr-textarea>
             </div>
@@ -259,7 +275,15 @@
                 name="precisions-completude"
                 id="precisions-completude"
                 rows="3"
-                maxlength="1000"
+                maxlength="5000"
+                status={$storeAvisUtilisateurBis.completude.erreurs?.[
+                  'informations-manquantes'
+                ]
+                  ? 'error'
+                  : 'default'}
+                error-message={$storeAvisUtilisateurBis.completude.erreurs?.[
+                  'informations-manquantes'
+                ] ?? ''}
                 onvaluechanged={ajoutePrecisionsInformationsManquantesCompletude}
               ></dsfr-textarea>
             </div>
@@ -270,7 +294,15 @@
                 name="sources-adaptees-completude"
                 id="sources-adaptees-completude"
                 rows="3"
-                maxlength="1000"
+                maxlength="5000"
+                status={$storeAvisUtilisateurBis.completude.erreurs?.[
+                  'sources-adaptees'
+                ]
+                  ? 'error'
+                  : 'default'}
+                error-message={$storeAvisUtilisateurBis.completude.erreurs?.[
+                  'sources-adaptees'
+                ] ?? ''}
                 onvaluechanged={ajouteSourcesAdapteesCompletude}
               ></dsfr-textarea>
             </div>

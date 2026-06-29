@@ -391,6 +391,66 @@ describe('le store de conversation', () => {
         });
       });
 
+      it('supprime l’erreur des informations erronées si elle est corrigée', () => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: {
+            valeur: 'Fausse',
+            erreurs: {
+              'informations-erronees': 'Erreur infos',
+              'sources-adaptees': 'Erreur sources',
+            },
+          },
+          completude: {
+            valeur: 'Bonne',
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.preciseLesInformationsErronees(
+          'Les infromations erronées sont les suivantes : les informations erronées'
+        );
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(
+          storeMisAJour.exactitude.erreurs?.['informations-erronees']
+        ).toBeUndefined();
+        expect(storeMisAJour.exactitude.erreurs?.['sources-adaptees']).toBeDefined();
+      });
+
+      it('supprime l’erreur des sources adaptées si elle est corrigée', () => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: {
+            valeur: 'Fausse',
+            erreurs: {
+              'sources-adaptees': 'Erreur sources',
+              'informations-erronees': 'Erreur infos',
+            },
+          },
+          completude: {
+            valeur: 'Bonne',
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(
+          'Les sources adaptées sont les suivantes : sources adaptées'
+        );
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(
+          storeMisAJour.exactitude.erreurs?.['informations-erronees']
+        ).toBeDefined();
+        expect(
+          storeMisAJour.exactitude.erreurs?.['sources-adaptees']
+        ).toBeUndefined();
+      });
+
       it('valide l’exactitude', () => {
         storeAvisUtilisateurBis.initialise({
           exactitude: { valeur: 'Fausse' },
@@ -838,6 +898,66 @@ describe('le store de conversation', () => {
           'informations-manquantes':
             'Le champ `informations manquantes` doit contenir au moins 50 caractères minimum',
         });
+      });
+
+      it('supprime l’erreur des informations manquantes si elle est corrigée', () => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: {
+            valeur: 'Mauvaise',
+            erreurs: {
+              'informations-manquantes': 'Erreur infos',
+              'sources-adaptees': 'Erreur sources',
+            },
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.preciseLesInformationsManquantes(
+          'Les informations manquantes sont les suivantes : les informations manquantes'
+        );
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(
+          storeMisAJour.completude.erreurs?.['informations-manquantes']
+        ).toBeUndefined();
+        expect(storeMisAJour.completude.erreurs?.['sources-adaptees']).toBeDefined();
+      });
+
+      it('supprime l’erreur des sources adaptées si elle est corrigée', () => {
+        storeAvisUtilisateurBis.initialise({
+          exactitude: {
+            valeur: 'Bonne',
+          },
+          completude: {
+            valeur: 'Mauvaise',
+            erreurs: {
+              'sources-adaptees': 'Erreur sources',
+              'informations-manquantes': 'Erreur infos',
+            },
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(
+          'Les informations manquantes sont les suivantes : infos'
+        );
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(
+          storeMisAJour.completude.erreurs?.['informations-manquantes']
+        ).toBeDefined();
+        expect(
+          storeMisAJour.completude.erreurs?.['sources-adaptees']
+        ).toBeUndefined();
       });
     });
   });
