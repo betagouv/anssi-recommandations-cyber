@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   nettoyeurDOM,
   storeConversation,
@@ -6,6 +6,12 @@ import {
 import { clientAPI, estReponseConversation } from '../../src/client.api';
 import { get } from 'svelte/store';
 import { storeAffichage } from '../../src/stores/affichage.store';
+
+vi.mock('../../src/pdf/adaptateurPDF', () => ({
+  pagePDFenPNG: vi
+    .fn()
+    .mockResolvedValue(new Blob(['image content'], { type: 'image/png' })),
+}));
 
 describe('le store de conversation', () => {
   beforeEach(() => {

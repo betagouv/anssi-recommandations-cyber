@@ -5,6 +5,10 @@ from openai.types.chat.chat_completion import Choice
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees
+from adaptateurs.adaptateur_executeur_de_requetes import (
+    AdaptateurExecuteurDeRequetes,
+    fabrique_adaptateur_executeur_de_requetes,
+)
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
     fabrique_adaptateur_chiffrement,
@@ -159,6 +163,14 @@ class ConstructeurServeur:
 
     def avec_pages_statiques(self, pages_statiques):
         self.pages_statiques = pages_statiques
+        return self
+
+    def avec_adaptateur_executeur_de_requetes(
+        self, adaptateur_executeur_de_requetes: AdaptateurExecuteurDeRequetes
+    ):
+        self._dependances[fabrique_adaptateur_executeur_de_requetes] = (
+            lambda: adaptateur_executeur_de_requetes
+        )
         return self
 
     def construis(self):
