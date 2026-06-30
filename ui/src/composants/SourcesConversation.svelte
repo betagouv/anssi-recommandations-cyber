@@ -55,8 +55,22 @@
 
   .conteneur-sources {
     margin: 24px 0;
-    padding: 16px;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+
+    padding: 16px 0;
     background-color: #f6f6f6;
+
+    summary,
+    .sources {
+      max-width: 840px;
+      margin: 0 auto;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
     &[open] {
       summary {
         img {
@@ -77,7 +91,7 @@
       img {
         position: absolute;
         top: 1px;
-        right: 0;
+        right: 16px;
         transition: transform 0.2s ease-in-out;
       }
 
@@ -93,7 +107,8 @@
     }
 
     .sources {
-      padding: 16px 32px 32px 32px;
+      padding-top: 16px;
+      padding-bottom: 32px;
       display: flex;
       flex-direction: column;
     }
