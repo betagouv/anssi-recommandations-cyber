@@ -1,8 +1,8 @@
 import uuid
+from fastapi.testclient import TestClient
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import AdaptateurJournalMemoire, TypeEvenement
-from fastapi.testclient import TestClient
 
 
 def test_redirige_vers_le_document_source(
@@ -234,3 +234,110 @@ def test_journalise_le_document_source_demande(
         evenements[0]["donnees"].url_document
         == "http://mondocument.local/anssi-guide-gestion_crise_cyber.pdf"
     )
+
+
+def test_proxy_retourne_le_document_source(
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
+    un_adaptateur_executeur_de_requetes,
+):
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_executeur_de_requetes = un_adaptateur_executeur_de_requetes
+    serveur = un_serveur_de_test(
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=AdaptateurJournalMemoire(),
+        adaptateur_executeur_de_requetes=adaptateur_executeur_de_requetes,
+    )
+    paragraphe = (
+        un_constructeur_de_paragraphe()
+        .a_la_page(30)
+        .dans_le_document("anssi-guide-gestion_crise_cyber.pdf")
+        .construis()
+    )
+    une_interaction = (
+        un_constructeur_d_interaction()
+        .avec_une_reponse_contenant_les_paragraphes([paragraphe])
+        .construis()
+    )
+    une_conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(une_conversation)
+    client_http = TestClient(serveur)
+
+    reponse = client_http.get(
+        f"/source/proxy?document=anssi-guide-gestion_crise_cyber.pdf&page=30&interaction={str(une_interaction.id)}"
+    )
+
+    assert reponse.status_code == 200
+    assert reponse.content == b"contenu pdf"
+    assert reponse.headers["content-type"] == "application/pdf"
+    assert (
+        adaptateur_executeur_de_requetes.requete_get_appelee
+        == "http://mondocument.local/anssi-guide-gestion_crise_cyber.pdf"
+    )
+
+
+def test_proxy_retourne_une_erreur_502_si_la_recuperation_echoue(
+    un_serveur_de_test,
+    un_constructeur_d_interaction,
+    un_constructeur_de_paragraphe,
+    un_constructeur_de_conversation,
+    un_adaptateur_executeur_de_requetes,
+):
+    adaptateur_base_de_donnees = AdaptateurBaseDeDonneesEnMemoire("id-interaction-test")
+    adaptateur_executeur_de_requetes = un_adaptateur_executeur_de_requetes
+    adaptateur_executeur_de_requetes.retourne_erreur_http(502)
+    serveur = un_serveur_de_test(
+        adaptateur_base_de_donnees=adaptateur_base_de_donnees,
+        adaptateur_journal=AdaptateurJournalMemoire(),
+        adaptateur_executeur_de_requetes=adaptateur_executeur_de_requetes,
+    )
+    paragraphe = (
+        un_constructeur_de_paragraphe()
+        .a_la_page(30)
+        .dans_le_document("anssi-guide-gestion_crise_cyber.pdf")
+        .construis()
+    )
+    une_interaction = (
+        un_constructeur_d_interaction()
+        .avec_une_reponse_contenant_les_paragraphes([paragraphe])
+        .construis()
+    )
+    une_conversation = (
+        un_constructeur_de_conversation()
+        .ajoute_interaction(une_interaction)
+        .construis()
+    )
+    adaptateur_base_de_donnees.sauvegarde_conversation(une_conversation)
+    client_http = TestClient(serveur)
+
+    reponse = client_http.get(
+        f"/source/proxy?document=anssi-guide-gestion_crise_cyber.pdf&page=30&interaction={str(une_interaction.id)}"
+    )
+
+    assert reponse.status_code == 502
+
+
+def test_proxy_retourne_une_erreur_404_si_l_interaction_n_est_pas_trouvee(
+    un_serveur_de_test,
+    un_adaptateur_executeur_de_requetes,
+):
+    serveur = un_serveur_de_test(
+        adaptateur_base_de_donnees=AdaptateurBaseDeDonneesEnMemoire(
+            "id-interaction-test"
+        ),
+        adaptateur_journal=AdaptateurJournalMemoire(),
+        adaptateur_executeur_de_requetes=un_adaptateur_executeur_de_requetes,
+    )
+    client_http = TestClient(serveur)
+
+    reponse = client_http.get(
+        f"/source/proxy?document=doc.pdf&page=1&interaction={str(uuid.uuid4())}"
+    )
+
+    assert reponse.status_code == 404

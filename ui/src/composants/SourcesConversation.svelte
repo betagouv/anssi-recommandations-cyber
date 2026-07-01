@@ -6,37 +6,83 @@
   }
 
   const { message }: Props = $props();
+
+  let sourceCourante = $state(0);
+
+  const deplaceADroite = () => {
+    const liste = document.querySelector('.sources-liste');
+    if (liste) {
+      sourceCourante += 1;
+      const elementListe = liste.children.item(sourceCourante);
+      elementListe?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  };
+
+  const deplaceAGauche = () => {
+    const liste = document.querySelector('.sources-liste');
+    if (liste) {
+      sourceCourante -= 1;
+      const elementListe = liste.children.item(sourceCourante);
+      elementListe?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  };
 </script>
 
 {#if message.references && message.references.length > 0}
   <details class="conteneur-sources" open>
     <summary>
-      Sources
+      Sources ({message.references.length})
       <img src="./icons/fleche-extension.svg" alt="" />
     </summary>
 
     <div class="sources">
-      {#each message.references as reference, index (index)}
-        {@const titreDuLien =
-          reference.numero_page > 0
-            ? `Page ${reference.numero_page}`
-            : 'En savoir plus'}
-        <div class="source">
-          <span class="nom-document">{reference.nom_document}</span>
-          <dsfr-link
-            label={titreDuLien}
-            href={reference.url}
-            blank
-            title={reference.nom_document}
-          ></dsfr-link>
-          <div class="contenu-reference">
-            {reference.contenu}
+      <div class="navigation-carrousel">
+        {#if sourceCourante > 0}
+          <dsfr-button
+            label="< Précédent"
+            kind="secondary"
+            size="sm"
+            onclick={deplaceAGauche}
+          ></dsfr-button>
+        {/if}
+        <dsfr-button
+          label="Suivant >"
+          kind="secondary"
+          size="sm"
+          disabled={message.references === undefined ||
+            sourceCourante < message.references.length - 1}
+          onclick={deplaceADroite}
+        ></dsfr-button>
+      </div>
+      <div class="sources-liste">
+        {#each message.references as reference, index (index)}
+          {@const titreDuLien =
+            reference.numero_page > 0
+              ? `Page ${reference.numero_page}`
+              : 'En savoir plus'}
+          {@const imageUrl = URL.createObjectURL(reference.image ?? new Blob())}
+          <div class="source">
+            <span class="nom-document">{reference.nom_document}</span>
+            <dsfr-link
+              label={titreDuLien}
+              href={reference.url}
+              blank
+              title={reference.nom_document}
+            ></dsfr-link>
+            <div class="contenu-reference">
+              <img src={imageUrl} alt="" />
+            </div>
           </div>
-          {#if index !== message.references.length - 1}
-            <hr />
-          {/if}
-        </div>
-      {/each}
+        {/each}
+      </div>
     </div>
   </details>
 {/if}
@@ -44,12 +90,44 @@
 <style lang="scss">
   .contenu-reference {
     white-space: pre-line;
+    margin-top: 8px;
+    background-color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 841 / 1190;
+    width: 300px;
+
+    @media screen and (min-width: 767px) {
+      width: 500px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
   }
 
   .conteneur-sources {
     margin: 24px 0;
-    padding: 16px;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 24px 24px 48px 24px;
     background-color: #f6f6f6;
+
+    summary,
+    .sources {
+      max-width: 840px;
+      margin: 0 auto;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
     &[open] {
       summary {
         img {
@@ -66,11 +144,12 @@
       cursor: pointer;
       position: relative;
       list-style: none;
+      max-width: 1200px;
 
       img {
         position: absolute;
         top: 1px;
-        right: 0;
+        right: 16px;
         transition: transform 0.2s ease-in-out;
       }
 
@@ -86,26 +165,54 @@
     }
 
     .sources {
-      padding: 16px 32px 32px 32px;
+      padding-top: 16px;
+      padding-bottom: 32px;
       display: flex;
       flex-direction: column;
+      max-width: 1200px;
+    }
+
+    .navigation-carrousel {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .sources-liste {
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 8px;
+
+      &::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+      }
     }
 
     .source {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      //flex: 0 0 300px;
+      gap: 4px;
 
       .nom-document {
         font-weight: bold;
         overflow-wrap: anywhere;
-      }
-
-      hr {
-        width: 100%;
-        border: none;
-        border-top: 1px solid #dddddd;
-        margin: 16px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }

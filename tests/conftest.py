@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import Callable, Optional
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from mypy_extensions import DefaultNamedArg
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesEnMemoire
+from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
 from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
@@ -186,6 +187,24 @@ def un_adaptateur_de_chiffrement() -> Callable[
     return _un_adaptateur_de_chiffrement
 
 
+class AdaptateurExecuteurDeRequetesMemoire(AdaptateurExecuteurDeRequetes):
+    def __init__(self):
+        super().__init__()
+        self.requete_get_appelee = None
+        self.status_code = 200
+
+    async def get_asynchrone(self, url: str) -> Response:
+        self.requete_get_appelee = url
+        return Response(
+            content=b"contenu pdf",
+            media_type="application/pdf",
+            status_code=self.status_code,
+        )
+
+    def retourne_erreur_http(self, erreur_http: int):
+        self.status_code = erreur_http
+
+
 @pytest.fixture()
 def un_serveur_de_test(
     pages_statiques, un_adaptateur_de_chiffrement
@@ -216,6 +235,9 @@ def un_serveur_de_test(
         service_albert: Optional[ServiceAlbert] = None,
         adaptateur_base_de_donnees: Optional[AdaptateurBaseDeDonnees] = None,
         adaptateur_journal: Optional[AdaptateurJournal] = AdaptateurJournalMemoire(),
+        adaptateur_executeur_de_requetes: Optional[
+            AdaptateurExecuteurDeRequetes
+        ] = AdaptateurExecuteurDeRequetesMemoire(),
     ):
         serveur = ConstructeurServeur(
             mode=mode,  # type: ignore[arg-type]
@@ -230,9 +252,17 @@ def un_serveur_de_test(
                 adaptateur_base_de_donnees
             )
         serveur = serveur.avec_adaptateur_journal(adaptateur_journal)
+        serveur = serveur.avec_adaptateur_executeur_de_requetes(
+            adaptateur_executeur_de_requetes
+        )
         return serveur.construis()
 
     return _un_serveur_de_test
+
+
+@pytest.fixture()
+def un_adaptateur_executeur_de_requetes() -> AdaptateurExecuteurDeRequetesMemoire:
+    return AdaptateurExecuteurDeRequetesMemoire()
 
 
 @pytest.fixture()
@@ -246,6 +276,7 @@ def un_serveur_de_test_complet(
         AdaptateurBaseDeDonneesEnMemoire,
         AdaptateurJournalMemoire,
         ServiceAlbertMemoire,
+        AdaptateurExecuteurDeRequetesMemoire,
     ],
 ]:
     def _un_serveur_de_test_complet():

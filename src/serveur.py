@@ -121,8 +121,10 @@ def fabrique_serveur(
             .replace("%%FAVICON%%", "/icons/favicon.ico")
         )
         response = HTMLResponse(content=page_html)
+        # ATTENTION : on a dû mettre en place ce header pour tester en local
+        # et passer les CSP pour générer une image d’un PDF depuis le front
         headers = HEADERS_SECURITE | {
-            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; connect-src 'self' https://stats.beta.gouv.fr; style-src 'self' 'nonce-{nonce}' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; script-src 'self' 'nonce-{nonce}' https://stats.beta.gouv.fr; img-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com",
+            "Content-Security-Policy": f"default-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; connect-src 'self' https://stats.beta.gouv.fr; style-src 'self' 'nonce-{nonce}' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com; script-src 'self' 'nonce-{nonce}' https://stats.beta.gouv.fr; img-src 'self' https://lab-anssi-ui-kit-prod-s3-assets.cellar-c2.services.clever-cloud.com blob:;",
             "Cross-Origin-Embedder-Policy": "credentialless",
         }
         for header_name, header_value in headers.items():

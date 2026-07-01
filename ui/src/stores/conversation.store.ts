@@ -5,17 +5,19 @@ import {
   clientAPI,
   estReponseConversation,
   estReponseCreationConversation,
-  type ReponseEnErreur,
   type ReponseAjoutInteraction,
   type ReponseCreationConversation,
+  type ReponseEnErreur,
 } from '../client.api';
 import { storeAffichage } from './affichage.store';
+import { adaptateurPDF } from '../pdf/adaptateurPDF';
 
 export type Paragraphe = {
   numero_page: number;
   url: string;
   nom_document: string;
   contenu: string;
+  image?: Blob;
 };
 
 export type Message = {
@@ -78,10 +80,32 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   const contenuHTML = estReponseConversation(reponseAPI)
     ? await nettoyeurDOM.nettoie(reponseAPI.reponse)
     : reponseAPI.erreur;
+
+  const paragraphes: Paragraphe[] = [];
+  if (estReponseConversation(reponseAPI)) {
+    for await (const paragraphe of reponseAPI.paragraphes) {
+      const urlProxy = paragraphe.url.replace('/source/', '/source/proxy/');
+      let blob: Blob = new Blob();
+      try {
+        blob = await adaptateurPDF.pagePDFenPNG(urlProxy, paragraphe.numero_page);
+      } catch (error) {
+        console.error('Erreur lors de la conversion de la page PDF en PNG', error);
+      }
+      paragraphes.push({
+        numero_page: paragraphe.numero_page,
+        url: paragraphe.url,
+        nom_document: paragraphe.nom_document,
+        contenu: paragraphe.contenu,
+        image: blob,
+      });
+    }
+  }
+
   update((conversation) => {
     storeAffichage.estEnAttenteDeReponse(false);
     if (!estReponseConversation(reponseAPI)) {
       storeAffichage.erreurAlbert(true, reponseAPI.erreur);
+
       return {
         ...sauvegarde,
         messages: [...conversation.messages, questionUtilisateur],
@@ -99,7 +123,7 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
             contenu: contenuHTML,
             contenuMarkdown: reponse.reponse,
             emetteur: 'systeme',
-            references: reponse.paragraphes,
+            references: paragraphes,
             idInteraction: reponse.id_interaction,
           },
         ],

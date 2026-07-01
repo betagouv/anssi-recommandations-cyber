@@ -6,10 +6,14 @@ import {
 import { clientAPI, estReponseConversation } from '../../src/client.api';
 import { get } from 'svelte/store';
 import { storeAffichage } from '../../src/stores/affichage.store';
+import { unConstructeurParagraphe } from './constructeurDeParagraphe';
+import { adaptateurPDF } from '../../src/pdf/adaptateurPDF';
+import { InvalidPDFException } from 'pdfjs-dist';
 
 describe('le store de conversation', () => {
   beforeEach(() => {
     nettoyeurDOM.nettoie = async (contenu: string) => contenu;
+    adaptateurPDF.pagePDFenPNG = () => Promise.resolve(new Blob());
   });
 
   afterEach(() => {
@@ -261,6 +265,50 @@ describe('le store de conversation', () => {
 
       expect(get(storeAffichage).aUneErreurAlbert).toBe(false);
     });
+  });
+
+  it('continue la génération PDF en cas d’erreur', async () => {
+    let nombreAppel = 0;
+    adaptateurPDF.pagePDFenPNG = () => {
+      nombreAppel++;
+      if (nombreAppel === 3) {
+        throw new InvalidPDFException('PDF en erreur');
+      }
+      return Promise.resolve(new Blob());
+    };
+    clientAPI.ajouteInteraction = async () => ({
+      reponse: 'Une réponse',
+      question: 'Une question',
+      paragraphes: [
+        unConstructeurParagraphe().construis(),
+        unConstructeurParagraphe().construis(),
+        unConstructeurParagraphe().construis(),
+        unConstructeurParagraphe().construis(),
+      ],
+      id_interaction: 'id-interaction',
+    });
+    storeConversation.initialise({
+      messages: [
+        { contenu: 'une question ?', emetteur: 'utilisateur' },
+        {
+          contenu: 'une réponse',
+          contenuMarkdown: 'une réponse',
+          emetteur: 'systeme',
+          references: [],
+          idInteraction: 'id-interaction',
+        },
+      ],
+      derniereQuestion: 'une question ?',
+      idConversation: 'id-conversation',
+    });
+
+    await storeConversation.ajouteMessageUtilisateur({ question: 'Une question ?' });
+
+    const storeMisAJour = get(storeConversation);
+    const paragraphes = storeMisAJour.messages[3].references;
+    expect(paragraphes).toBeDefined();
+    expect(paragraphes!.every((p) => p.image !== undefined)).toBe(true);
+    expect(paragraphes).toHaveLength(4);
   });
 });
 
