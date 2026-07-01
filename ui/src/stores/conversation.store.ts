@@ -5,12 +5,12 @@ import {
   clientAPI,
   estReponseConversation,
   estReponseCreationConversation,
-  type ReponseEnErreur,
   type ReponseAjoutInteraction,
   type ReponseCreationConversation,
+  type ReponseEnErreur,
 } from '../client.api';
 import { storeAffichage } from './affichage.store';
-import { pagePDFenPNG } from '../pdf/adaptateurPDF';
+import { adaptateurPDF } from '../pdf/adaptateurPDF';
 
 export type Paragraphe = {
   numero_page: number;
@@ -85,7 +85,12 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   if (estReponseConversation(reponseAPI)) {
     for await (const paragraphe of reponseAPI.paragraphes) {
       const urlProxy = paragraphe.url.replace('/source/', '/source/proxy/');
-      const blob = await pagePDFenPNG(urlProxy, paragraphe.numero_page);
+      let blob: Blob = new Blob();
+      try {
+        blob = await adaptateurPDF.pagePDFenPNG(urlProxy, paragraphe.numero_page);
+      } catch (error) {
+        console.error('Erreur lors de la conversion de la page PDF en PNG', error);
+      }
       paragraphes.push({
         numero_page: paragraphe.numero_page,
         url: paragraphe.url,
