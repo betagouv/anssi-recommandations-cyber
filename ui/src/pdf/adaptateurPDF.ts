@@ -3,13 +3,7 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-async function pagePDFenPNG(pdfUrl: string, pageNumber: number): Promise<Blob> {
-  const response = await fetch(pdfUrl);
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-
+const genereImageDepuisPDF = async (response: Response, pageNumber: number) => {
   const pdfBytes = await response.arrayBuffer();
 
   const pdf = await pdfjsLib.getDocument({
@@ -48,7 +42,26 @@ async function pagePDFenPNG(pdfUrl: string, pageNumber: number): Promise<Blob> {
       resolve(blob);
     }, 'image/png');
   });
-}
+};
+
+const pagePDFenPNG = async (pdfUrl: string, pageNumber: number): Promise<Blob> => {
+  const response = await fetch(pdfUrl);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  response.headers.forEach((value, key) =>
+    console.log(`REPONSE : ${key}: ${value}`)
+  );
+
+  if (!response.headers.get('Content-Type')?.includes('application/pdf')) {
+    const reponse = await fetch('/images/image-generique.avif');
+    return reponse.blob();
+  }
+
+  return await genereImageDepuisPDF(response, pageNumber);
+};
 
 export const adaptateurPDF = {
   pagePDFenPNG,
