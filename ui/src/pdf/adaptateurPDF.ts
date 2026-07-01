@@ -3,10 +3,7 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-export async function pagePDFenPNG(
-  pdfUrl: string,
-  pageNumber: number
-): Promise<Blob> {
+async function pagePDFenPNG(pdfUrl: string, pageNumber: number): Promise<Blob> {
   const response = await fetch(pdfUrl);
 
   if (!response.ok) {
@@ -52,3 +49,7 @@ export async function pagePDFenPNG(
     }, 'image/png');
   });
 }
+
+export const adaptateurPDF = {
+  pagePDFenPNG,
+};

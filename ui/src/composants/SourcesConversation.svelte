@@ -53,14 +53,14 @@
             onclick={deplaceAGauche}
           ></dsfr-button>
         {/if}
-        {#if message.references === undefined || sourceCourante < message.references.length - 1}
-          <dsfr-button
-            label="Suivant >"
-            kind="secondary"
-            size="sm"
-            onclick={deplaceADroite}
-          ></dsfr-button>
-        {/if}
+        <dsfr-button
+          label="Suivant >"
+          kind="secondary"
+          size="sm"
+          disabled={message.references === undefined ||
+            sourceCourante < message.references.length - 1}
+          onclick={deplaceADroite}
+        ></dsfr-button>
       </div>
       <div class="sources-liste">
         {#each message.references as reference, index (index)}
@@ -190,9 +190,11 @@
       &::-webkit-scrollbar {
         height: 8px;
       }
+
       &::-webkit-scrollbar-track {
         background: #f1f1f1;
       }
+
       &::-webkit-scrollbar-thumb {
         background: #ccc;
         border-radius: 4px;
