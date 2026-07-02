@@ -15,7 +15,7 @@ from adaptateurs.journal import (
     DonneesAvisUtilisateurSoumis,
     DonneesAvisUtilisateurSupprime,
 )
-from api.conversation import extrais_type_utilisateur
+from api.api_conversation import extrais_type_utilisateur
 from infra.fast_api.fabrique_adaptateur_base_de_donnees import (
     fabrique_adaptateur_base_de_donnees,
 )

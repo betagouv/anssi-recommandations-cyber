@@ -1,4 +1,4 @@
-from api.conversation import extrais_type_utilisateur
+from api.api_conversation import extrais_type_utilisateur
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 
 
