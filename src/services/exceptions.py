@@ -8,3 +8,7 @@ class ErreurRechercheDocuments(ErreurAlbert):
 
 class ErreurCommunicationModele(ErreurAlbert):
     pass
+
+
+class ErreurCommunicationAlbert(ErreurAlbert):
+    pass
