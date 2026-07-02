@@ -1,10 +1,9 @@
-from typing import Callable
-
 import requests
 from openai import APITimeoutError, APIConnectionError
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
+from typing import Callable
 
 from configuration import logging, Albert
 from schemas.albert import (
@@ -20,7 +19,11 @@ from schemas.albert import (
     RechercheMetadonneesJeopardy,
 )
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurCommunicationModele, ErreurRechercheDocuments
+from services.exceptions import (
+    ErreurCommunicationModele,
+    ErreurRechercheDocuments,
+    ErreurCommunicationAlbert,
+)
 
 
 class ClientAlbertHttp(requests.Session):
@@ -202,8 +205,8 @@ class ClientAlbertApi(ClientAlbert):
             logging.error(
                 f"Route `/rerank` de l'API Albert retourne une erreur: {erreur}"
             )
-            return ReclasseReponse(
-                data=[],
+            raise ErreurCommunicationAlbert(
+                "Impossible de récupérer une réponse pour la question posée."
             )
 
     def recupere_propositions(

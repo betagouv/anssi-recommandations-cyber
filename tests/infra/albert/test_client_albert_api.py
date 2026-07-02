@@ -15,7 +15,11 @@ from schemas.albert import (
     ResultatRechercheJeopardy,
 )
 from schemas.albert import RecherchePayload, ReclassePayload
-from services.exceptions import ErreurCommunicationModele, ErreurRechercheDocuments
+from services.exceptions import (
+    ErreurCommunicationModele,
+    ErreurRechercheDocuments,
+    ErreurCommunicationAlbert,
+)
 
 REPONSE = "Patates et reblochon"
 FAUX_RETOURS_ALBERT_API = (
@@ -194,6 +198,27 @@ def test_reclasse_conserve_le_score(une_configuration_albert_client):
     assert resultat.data[0].score == 0.99
     assert resultat.data[0].index == 0
     assert resultat.data[1].score == 0.42
+
+
+def test_leve_une_erreur_communication_avec_albert_en_cas_de_probleme_lors_du_reclassement(
+    une_configuration_albert_client,
+):
+    mock_client_http = (
+        ConstructeurClientHttp().qui_retourne_une_erreur("Erreur 401").construis()
+    )
+    mock_client_openai_sans_reponse = (
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis()
+    )
+
+    mock_client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse,
+        mock_client_http,
+        une_configuration_albert_client,
+    )
+
+    with pytest.raises(ErreurCommunicationAlbert):
+        payload = ReclassePayload(query="", documents=[], model="modele")
+        mock_client_albert_api.reclasse(payload)
 
 
 def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():
