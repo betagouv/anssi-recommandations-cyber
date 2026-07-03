@@ -58,7 +58,7 @@
           kind="secondary"
           size="sm"
           disabled={message.references === undefined ||
-            sourceCourante < message.references.length - 1}
+            sourceCourante === message.references.length - 1}
           onclick={deplaceADroite}
         ></dsfr-button>
       </div>
