@@ -1,7 +1,7 @@
 import type { Paragraphe } from './stores/conversation.store';
 import type {
   AvisUtilisateurBis,
-  ValeurCompletude,
+  ValeurSourcesAdaptees,
   ValeurPertinence,
 } from './stores/avisUtilisateurBis.store';
 
@@ -139,11 +139,10 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
     ['Erronée', 'erronée'],
   ]);
 
-  const mappeValeurCompletude: Map<ValeurCompletude, string> = new Map([
-    ['Très bonne', 'très bonne'],
-    ['Bonne', 'bonne'],
-    ['Correcte', 'correcte'],
-    ['Mauvaise', 'fausse'],
+  const mappeValeursSourcesAdaptees: Map<ValeurSourcesAdaptees, string> = new Map([
+    ['Oui, tout à fait', 'très bonne'],
+    ['Oui, partiellement', 'bonne'],
+    ['Non', 'fausse'],
   ]);
 
   const payload = {
@@ -160,13 +159,14 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
         }),
       },
       completude: {
-        valeur: mappeValeurCompletude.get(avis.completude.valeur),
-        ...(avis.completude.commentaire && {
-          commentaire: avis.completude.commentaire,
+        valeur: mappeValeursSourcesAdaptees.get(avis.sourcesAdaptees.valeur),
+        ...(avis.sourcesAdaptees.commentaire && {
+          commentaire: avis.sourcesAdaptees.commentaire,
         }),
-        ...(avis.completude.valeur === 'Mauvaise' && {
-          informations_erronees: avis.completude.informationsManquantes,
-          sources_adaptees: avis.completude.sourcesAdaptees,
+        ...(avis.sourcesAdaptees.valeur === 'Non' && {
+          informations_erronees:
+            'WIP : informations erronées en attendant la modification de l’interface',
+          sources_adaptees: avis.sourcesAdaptees.liste,
         }),
       },
     },

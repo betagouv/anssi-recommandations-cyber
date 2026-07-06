@@ -5,7 +5,10 @@ export type ValeurPertinence =
   | 'Pertinente'
   | 'Correcte'
   | 'Erronée';
-export type ValeurCompletude = Omit<ValeurPertinence, 'Fausse'> | 'Mauvaise';
+export type ValeurSourcesAdaptees =
+  | 'Oui, tout à fait'
+  | 'Oui, partiellement'
+  | 'Non';
 
 export type Pertinence = {
   valeur: ValeurPertinence;
@@ -13,16 +16,15 @@ export type Pertinence = {
   precisionsInformationsErronees?: string;
   erreurs?: Partial<Record<'informations-erronees', string>>;
 };
-export type Completude = {
-  valeur: ValeurCompletude;
+export type SourcesAdaptees = {
+  valeur: ValeurSourcesAdaptees;
   commentaire?: string;
-  informationsManquantes?: string;
-  sourcesAdaptees?: string;
-  erreurs?: Partial<Record<'informations-manquantes' | 'sources-adaptees', string>>;
+  liste?: string;
+  erreurs?: Partial<Record<'sources-adaptees', string>>;
 };
 export type AvisUtilisateurBis = {
   pertinence: Pertinence;
-  completude: Completude;
+  sourcesAdaptees: SourcesAdaptees;
   idConversation: string;
   idInteraction: string;
   estValide: boolean;
@@ -30,7 +32,7 @@ export type AvisUtilisateurBis = {
 
 const { subscribe, set, update } = writable<AvisUtilisateurBis>({
   pertinence: {} as Pertinence,
-  completude: {} as Completude,
+  sourcesAdaptees: {} as SourcesAdaptees,
   idConversation: '',
   idInteraction: '',
   estValide: false,
@@ -90,61 +92,30 @@ const preciseLesInformationsErronees = (precisions: string) => {
   });
 };
 
-const modifieLaValeurDeLaCompletude = (valeur: ValeurCompletude) => {
+const modifieLaValeurDesSourcesAdaptees = (valeur: ValeurSourcesAdaptees) => {
   update((avisActuel: AvisUtilisateurBis) => {
     const nouvelEtat = {
       ...avisActuel,
-      completude: { valeur },
+      sourcesAdaptees: { valeur },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };
 
-const commenteLaCompletude = (commentaire: string) => {
+const commenteLesSourcesAdaptees = (commentaire: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
-    if (avisActuel.completude.valeur === 'Mauvaise') return avisActuel;
+    if (avisActuel.sourcesAdaptees.valeur === 'Non') return avisActuel;
     const nouvelEtat = {
       ...avisActuel,
-      completude: { ...avisActuel.completude, commentaire },
+      sourcesAdaptees: { ...avisActuel.sourcesAdaptees, commentaire },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };
 
-const preciseLesInformationsManquantes = (informationsManquantes: string) => {
+const indiqueLesSourcesAdaptees = (sourcesAdaptees: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
-    if (avisActuel.completude.valeur !== 'Mauvaise') return avisActuel;
-    let erreurInformationsManquantes = undefined;
-    if (informationsManquantes.trim().length > 5000)
-      erreurInformationsManquantes =
-        'Le champ `informations manquantes` ne peut contenir que 5000 caractères maximum';
-    if (informationsManquantes.trim().length < 50)
-      erreurInformationsManquantes =
-        'Le champ `informations manquantes` doit contenir au moins 50 caractères minimum';
-    const nouvelEtat = {
-      ...avisActuel,
-      completude: {
-        ...avisActuel.completude,
-        informationsManquantes: informationsManquantes,
-        ...(erreurInformationsManquantes && {
-          erreurs: {
-            ...avisActuel.completude.erreurs,
-            'informations-manquantes': erreurInformationsManquantes,
-          },
-        }),
-      },
-    };
-
-    if (!erreurInformationsManquantes) {
-      delete nouvelEtat.completude.erreurs?.['informations-manquantes'];
-    }
-    return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
-  });
-};
-
-const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
-  update((avisActuel: AvisUtilisateurBis) => {
-    if (avisActuel.completude.valeur !== 'Mauvaise') return avisActuel;
+    if (avisActuel.sourcesAdaptees.valeur !== 'Non') return avisActuel;
     let erreurSourcesAdaptees = undefined;
     if (sourcesAdaptees.trim().length > 5000) {
       erreurSourcesAdaptees =
@@ -156,12 +127,12 @@ const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
     }
     const nouvelEtat = {
       ...avisActuel,
-      completude: {
-        ...avisActuel.completude,
-        sourcesAdaptees: sourcesAdaptees,
+      sourcesAdaptees: {
+        ...avisActuel.sourcesAdaptees,
+        liste: sourcesAdaptees,
         ...(erreurSourcesAdaptees && {
           erreurs: {
-            ...avisActuel.completude.erreurs,
+            ...avisActuel.sourcesAdaptees.erreurs,
             'sources-adaptees': erreurSourcesAdaptees,
           },
         }),
@@ -169,7 +140,7 @@ const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
     };
 
     if (!erreurSourcesAdaptees) {
-      delete nouvelEtat.completude.erreurs?.['sources-adaptees'];
+      delete nouvelEtat.sourcesAdaptees.erreurs?.['sources-adaptees'];
     }
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
@@ -179,11 +150,11 @@ const estValide = (avisUtilisateurBis: AvisUtilisateurBis): boolean => {
   const pertinenceAvecOuSansCommentaire =
     avisUtilisateurBis.pertinence.valeur !== undefined &&
     avisUtilisateurBis.pertinence.valeur !== 'Erronée';
-  const completudeAvecOuSansCommentaire =
-    avisUtilisateurBis.completude.valeur !== undefined &&
-    avisUtilisateurBis.completude.valeur !== 'Mauvaise';
-  const pertinenceEtCompletudeAvecOuSansCommentaire =
-    pertinenceAvecOuSansCommentaire && completudeAvecOuSansCommentaire;
+  const sourcesAdapteesAvecOuSansCommentaire =
+    avisUtilisateurBis.sourcesAdaptees.valeur !== undefined &&
+    avisUtilisateurBis.sourcesAdaptees.valeur !== 'Non';
+  const pertinenceEtSourcesAdapteesAvecOuSansCommentaire =
+    pertinenceAvecOuSansCommentaire && sourcesAdapteesAvecOuSansCommentaire;
   const pertinenceAvecInformationsErronees =
     avisUtilisateurBis.pertinence.valeur === 'Erronée' &&
     avisUtilisateurBis.pertinence.precisionsInformationsErronees !== undefined &&
@@ -191,22 +162,17 @@ const estValide = (avisUtilisateurBis: AvisUtilisateurBis): boolean => {
     avisUtilisateurBis.pertinence.precisionsInformationsErronees.trim().length <=
       5000 &&
     avisUtilisateurBis.pertinence.precisionsInformationsErronees.trim().length > 50;
-  const completudeAvecInformationsManquantesEtSourcesAdaptees =
-    avisUtilisateurBis.completude.valeur === 'Mauvaise' &&
-    avisUtilisateurBis.completude.informationsManquantes !== undefined &&
-    avisUtilisateurBis.completude.informationsManquantes.trim() !== '' &&
-    avisUtilisateurBis.completude.informationsManquantes.trim().length <= 5000 &&
-    avisUtilisateurBis.completude.informationsManquantes.trim().length > 50 &&
-    avisUtilisateurBis.completude.sourcesAdaptees !== undefined &&
-    avisUtilisateurBis.completude.sourcesAdaptees?.trim() !== '' &&
-    avisUtilisateurBis.completude.sourcesAdaptees.trim().length <= 5000 &&
-    avisUtilisateurBis.completude.sourcesAdaptees.trim().length > 50;
+  const sourcesAdaptees =
+    avisUtilisateurBis.sourcesAdaptees.valeur === 'Non' &&
+    avisUtilisateurBis.sourcesAdaptees.liste !== undefined &&
+    avisUtilisateurBis.sourcesAdaptees.liste?.trim() !== '' &&
+    avisUtilisateurBis.sourcesAdaptees.liste.trim().length <= 5000 &&
+    avisUtilisateurBis.sourcesAdaptees.liste.trim().length > 50;
   return (
-    pertinenceEtCompletudeAvecOuSansCommentaire ||
+    pertinenceEtSourcesAdapteesAvecOuSansCommentaire ||
     (pertinenceAvecInformationsErronees &&
-      (completudeAvecOuSansCommentaire ||
-        completudeAvecInformationsManquantesEtSourcesAdaptees)) ||
-    (completudeAvecInformationsManquantesEtSourcesAdaptees &&
+      (sourcesAdapteesAvecOuSansCommentaire || sourcesAdaptees)) ||
+    (sourcesAdaptees &&
       (pertinenceAvecOuSansCommentaire || pertinenceAvecInformationsErronees))
   );
 };
@@ -215,10 +181,9 @@ export const storeAvisUtilisateurBis = {
   subscribe,
   initialise: set,
   modifieLaValeurDeLaPertinence,
-  modifieLaValeurDeLaCompletude,
+  modifieLaValeurDesSourcesAdaptees,
   commenteLaPertinence,
-  commenteLaCompletude,
+  commenteLesSourcesAdaptees,
   preciseLesInformationsErronees,
-  preciseLesInformationsManquantes,
-  indiqueLesSourcesAdapteesPourLaCompletude,
+  indiqueLesSourcesAdaptees,
 };

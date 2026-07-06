@@ -1,17 +1,17 @@
 <script lang="ts">
   import {
-    type Completude,
+    type SourcesAdaptees,
     type Pertinence,
     storeAvisUtilisateurBis,
-    type ValeurCompletude,
+    type ValeurSourcesAdaptees,
     type ValeurPertinence,
   } from '../stores/avisUtilisateurBis.store';
   import { clientAPI } from '../client.api';
 
   let afficheCommentairePertinence = $state(false);
-  let afficheCommentaireCompletude = $state(false);
+  let afficheCommentaireSourcesAdaptees = $state(false);
   let affichePrecisionPertinence = $state(false);
-  let affichePrecisionEtSourcesCompletude = $state(false);
+  let affichePrecisionsSourcesAdaptees = $state(false);
   let afficheMessageSucces = $state(false);
   let afficheMessageErreur = $state<string | undefined>(undefined);
 
@@ -27,7 +27,7 @@
       idConversation,
       idInteraction,
       pertinence: {} as Pertinence,
-      completude: {} as Completude,
+      sourcesAdaptees: {} as SourcesAdaptees,
       estValide: false,
     });
   });
@@ -37,7 +37,7 @@
     | 'pertinente'
     | 'correcte'
     | 'erronee';
-  type ValeurOptionCompletude = 'tres-bonne' | 'bonne' | 'correcte' | 'mauvaise';
+  type ValeurOptionSourcesAdaptees = 'oui-tout-a-fait' | 'oui-partiellement' | 'non';
   const mappeOptionsPertinenceValeurPertinence: Map<
     ValeurOptionPertinence,
     ValeurPertinence
@@ -47,14 +47,14 @@
     ['correcte', 'Correcte'],
     ['erronee', 'Erronée'],
   ]);
-  const mappeOptionsCempletudeValeurCompletude: Map<
-    ValeurOptionCompletude,
-    ValeurCompletude
+
+  const mappeOptionsSourcesAdapteesValeurSourcesAdaptees: Map<
+    ValeurOptionSourcesAdaptees,
+    ValeurSourcesAdaptees
   > = new Map([
-    ['tres-bonne', 'Très bonne'],
-    ['bonne', 'Bonne'],
-    ['correcte', 'Correcte'],
-    ['mauvaise', 'Mauvaise'],
+    ['oui-tout-a-fait', 'Oui, tout à fait'],
+    ['oui-partiellement', 'Oui, partiellement'],
+    ['non', 'Non'],
   ]);
 
   const surClickPertinence = (e: { detail: ValeurOptionPertinence }) => {
@@ -65,11 +65,11 @@
     );
   };
 
-  const surClickCompletude = (e: { detail: ValeurOptionCompletude }) => {
-    afficheCommentaireCompletude = e.detail !== 'mauvaise';
-    affichePrecisionEtSourcesCompletude = e.detail === 'mauvaise';
-    storeAvisUtilisateurBis.modifieLaValeurDeLaCompletude(
-      mappeOptionsCempletudeValeurCompletude.get(e.detail)!
+  const surClickSourcesAdaptees = (e: { detail: ValeurOptionSourcesAdaptees }) => {
+    afficheCommentaireSourcesAdaptees = e.detail !== 'non';
+    affichePrecisionsSourcesAdaptees = e.detail === 'non';
+    storeAvisUtilisateurBis.modifieLaValeurDesSourcesAdaptees(
+      mappeOptionsSourcesAdapteesValeurSourcesAdaptees.get(e.detail)!
     );
   };
 
@@ -77,22 +77,16 @@
     storeAvisUtilisateurBis.commenteLaPertinence(e.detail);
   };
 
-  const ajouteCommentaireCompletude = (e: CustomEvent<string>) => {
-    storeAvisUtilisateurBis.commenteLaCompletude(e.detail);
+  const ajouteCommentaireSourcesAdaptees = (e: CustomEvent<string>) => {
+    storeAvisUtilisateurBis.commenteLesSourcesAdaptees(e.detail);
   };
 
   const ajouteInformationsErronees = (e: CustomEvent<string>) => {
     storeAvisUtilisateurBis.preciseLesInformationsErronees(e.detail);
   };
 
-  const ajoutePrecisionsInformationsManquantesCompletude = (
-    e: CustomEvent<string>
-  ) => {
-    storeAvisUtilisateurBis.preciseLesInformationsManquantes(e.detail);
-  };
-
-  const ajouteSourcesAdapteesCompletude = (e: CustomEvent<string>) => {
-    storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLaCompletude(e.detail);
+  const ajouteSourcesAdaptees = (e: CustomEvent<string>) => {
+    storeAvisUtilisateurBis.indiqueLesSourcesAdaptees(e.detail);
   };
 
   const soumetsAvisUtilisateur = async () => {
@@ -145,14 +139,11 @@
               },
             ]}
             legend="La réponse est-elle pertinente au regard de la question posée ?"
-            legendSize="md"
-            legendWeight="bold"
+            legend-size="md"
+            legend-weight="bold"
             size="md"
             status="default"
-            error-message="Texte d’erreur"
-            valid-message="Texte de succès"
-            id="storybook-form"
-            has-pictogram
+            id="conteneur-options-pertinence"
             inline
             onvaluechanged={surClickPertinence}
           ></dsfr-radios-group>
@@ -195,98 +186,73 @@
           </div>
         {/if}
       </div>
-      <div class="avis-completude">
+      <div class="avis-sources-adaptees">
         <div class="avis-utilisateur-bis-options">
           <dsfr-radios-group
             radios={[
               {
-                label: 'Très bonne',
-                id: 'tres-bonne',
-                name: 'options-completude',
-                value: 'tres-bonne',
+                label: 'Oui, tout à fait',
+                id: 'oui-tout-a-fait',
+                name: 'options-sources-adaptees',
+                value: 'oui-tout-a-fait',
               },
               {
-                label: 'Bonne',
-                id: 'bonne',
-                name: 'options-completude',
-                value: 'bonne',
+                label: 'Oui, partiellement',
+                id: 'oui-partiellement',
+                name: 'options-sources-adaptees',
+                value: 'oui-partiellement',
               },
               {
-                label: 'Correcte',
-                id: 'correcte',
-                name: 'options-completude',
-                value: 'correcte',
-              },
-              {
-                label: 'Mauvaise',
-                id: 'mauvaise',
-                name: 'options-completude',
-                value: 'mauvaise',
+                label: 'Non',
+                id: 'non',
+                name: 'options-sources-adaptees',
+                value: 'non',
               },
             ]}
-            legend="Complétude de la réponse"
+            legend="Les sources citées sont-elles adaptées ?"
             size="md"
             status="default"
-            error-message="Texte d’erreur"
-            valid-message="Texte de succès"
-            id="storybook-form"
-            has-pictogram
+            legend-size="md"
+            legend-weight="bold"
+            id="conteneur-options-sources-adaptees"
             inline
-            onvaluechanged={surClickCompletude}
+            onvaluechanged={surClickSourcesAdaptees}
           ></dsfr-radios-group>
-          {#if afficheCommentaireCompletude}
+          {#if afficheCommentaireSourcesAdaptees}
             <div class="conteneur-commentaire">
               <dsfr-textarea
                 label="Ajouter un commentaire"
                 type="text"
-                name="commentaire-completude"
-                id="commentaire-completude"
+                name="commentaire-sources-adaptees"
+                id="commentaire-sources-adaptees"
                 rows="3"
                 maxlength="5000"
-                onvaluechanged={ajouteCommentaireCompletude}
+                onvaluechanged={ajouteCommentaireSourcesAdaptees}
               ></dsfr-textarea>
             </div>
           {/if}
-          {#if affichePrecisionEtSourcesCompletude}
+          {#if affichePrecisionsSourcesAdaptees}
             <div class="info-champ-obligatoire">
-              Tous les Champs sont obligatoires
+              Les informations demandées sont obligatoires.
             </div>
             <div class="conteneur-commentaire">
               <dsfr-textarea
-                label="Précisez les informations manquantes"
+                label="Indiquez les sources adaptées"
+                hint="Guides, numéro de page, paragraphes ..."
                 type="text"
-                name="precisions-completude"
-                id="precisions-completude"
+                name="sources-adaptees"
+                id="sources-adaptees"
                 rows="3"
                 maxlength="5000"
-                status={$storeAvisUtilisateurBis.completude.erreurs?.[
-                  'informations-manquantes'
-                ]
-                  ? 'error'
-                  : 'default'}
-                error-message={$storeAvisUtilisateurBis.completude.erreurs?.[
-                  'informations-manquantes'
-                ] ?? ''}
-                onvaluechanged={ajoutePrecisionsInformationsManquantesCompletude}
-              ></dsfr-textarea>
-            </div>
-            <div class="conteneur-commentaire">
-              <dsfr-textarea
-                label="Indiquez les sources adaptées (guide, page, paragraphes)"
-                type="text"
-                name="sources-adaptees-completude"
-                id="sources-adaptees-completude"
-                rows="3"
-                maxlength="5000"
-                status={$storeAvisUtilisateurBis.completude.erreurs?.[
+                status={$storeAvisUtilisateurBis.sourcesAdaptees.erreurs?.[
                   'sources-adaptees'
                 ]
                   ? 'error'
                   : 'default'}
-                error-message={$storeAvisUtilisateurBis.completude.erreurs?.[
+                error-message={$storeAvisUtilisateurBis.sourcesAdaptees.erreurs?.[
                   'sources-adaptees'
                 ] ?? ''}
-                onvaluechanged={ajouteSourcesAdapteesCompletude}
+                onvaluechanged={ajouteSourcesAdaptees}
               ></dsfr-textarea>
             </div>
           {/if}
@@ -383,7 +349,7 @@
     background: #f9f6f2;
 
     .avis-pertinence,
-    .avis-completude {
+    .avis-sources-adaptees {
       display: flex;
       flex-direction: column;
       align-self: stretch;
