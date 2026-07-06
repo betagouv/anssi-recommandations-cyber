@@ -130,15 +130,14 @@ class AvisCompletudeSoumis(BaseModel):
     sources_adaptees: Optional[str] = None
 
 
-class AvisExactitudeSoumis(BaseModel):
+class AvisPertinenceSoumis(BaseModel):
     valeur: str
     commentaire: Optional[str] = None
     informations_erronees: Optional[str] = None
-    sources_adaptees: Optional[str] = None
 
 
 class AvisSoumis(BaseModel):
-    exactitude: AvisExactitudeSoumis
+    pertinence: AvisPertinenceSoumis
     completude: AvisCompletudeSoumis
 
 

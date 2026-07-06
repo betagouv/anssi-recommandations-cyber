@@ -5,11 +5,11 @@ from adaptateurs.journal import AdaptateurJournalMemoire, TypeEvenement
 
 
 @pytest.mark.parametrize(
-    "valeur_exactitude",
-    ["très bonne", "bonne", "correcte"],
+    "valeur_pertinence",
+    ["très pertinente", "pertinente", "correcte"],
 )
-def test_peut_ajouter_un_avis_sur_l_exactitude(
-    valeur_exactitude: str, un_serveur_de_test
+def test_peut_ajouter_un_avis_sur_la_pertinence(
+    valeur_pertinence: str, un_serveur_de_test
 ):
     serveur = un_serveur_de_test()
     client = TestClient(serveur)
@@ -17,7 +17,7 @@ def test_peut_ajouter_un_avis_sur_l_exactitude(
         "id_interaction": "123",
         "id_conversation": "456",
         "avis": {
-            "exactitude": {"valeur": valeur_exactitude},
+            "pertinence": {"valeur": valeur_pertinence},
             "completude": {"valeur": "bonne"},
         },
     }
@@ -40,7 +40,7 @@ def test_peut_ajouter_un_avis_sur_la_completude(
         "id_interaction": "123",
         "id_conversation": "456",
         "avis": {
-            "exactitude": {"valeur": "bonne"},
+            "pertinence": {"valeur": "pertinente"},
             "completude": {"valeur": valeur_completude},
         },
     }
@@ -51,42 +51,24 @@ def test_peut_ajouter_un_avis_sur_la_completude(
 
 
 @pytest.mark.parametrize(
-    "valeur_exactitude",
+    "valeur_pertinence",
     [
         {
             "informations_erronees": "",
-            "sources_adaptees": "ma source",
-            "message_attendu": "Value error, Le champ 'informations_erronees' est obligatoire lorsque l'exactitude est fausse.",
-        },
-        {
-            "informations_erronees": "Les informations erronées sont : les infos erronées",
-            "sources_adaptees": "",
-            "message_attendu": "Value error, Le champ 'sources_adaptees' est obligatoire lorsque l'exactitude est fausse.",
+            "message_attendu": "Value error, Le champ 'informations_erronees' est obligatoire lorsque la pertinence est erronée.",
         },
         {
             "informations_erronees": "valeur pas assez longue",
-            "sources_adaptees": "Les sources adaptées pour l’exactitude sont : les sources adaptées",
             "message_attendu": "Value error, Le champ 'informations_erronees' doit contenir au moins 50 caractères.",
         },
         {
-            "informations_erronees": "Les informations erronées sont : les infos erronées",
-            "sources_adaptees": "valeur pas assez longue",
-            "message_attendu": "Value error, Le champ 'sources_adaptees' doit contenir au moins 50 caractères.",
-        },
-        {
             "informations_erronees": "a" * 5_001,
-            "sources_adaptees": "Les sources adaptées pour l’exactitude sont : les sources adaptées",
             "message_attendu": "Value error, Le champ 'informations_erronees' ne peut contenir que 5000 caractères maximum.",
-        },
-        {
-            "informations_erronees": "Les informations erronées sont : les infos erronées",
-            "sources_adaptees": "b" * 5_001,
-            "message_attendu": "Value error, Le champ 'sources_adaptees' ne peut contenir que 5000 caractères maximum.",
         },
     ],
 )
-def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_l_exactitude(
-    valeur_exactitude,
+def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_pertinence(
+    valeur_pertinence,
     un_serveur_de_test,
 ):
     serveur = un_serveur_de_test()
@@ -95,10 +77,9 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_l_e
         "id_interaction": "123",
         "id_conversation": "456",
         "avis": {
-            "exactitude": {
-                "valeur": "fausse",
-                "informations_erronees": valeur_exactitude.get("informations_erronees"),
-                "sources_adaptees": valeur_exactitude.get("sources_adaptees"),
+            "pertinence": {
+                "valeur": "erronée",
+                "informations_erronees": valeur_pertinence.get("informations_erronees"),
             },
             "completude": {"valeur": "bonne"},
         },
@@ -107,7 +88,7 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_l_e
     reponse = client.post("/api/avis", json=payload)
     print(reponse.json())
     assert reponse.status_code == 422
-    assert reponse.json().get("detail")[0].get("msg") == valeur_exactitude.get(
+    assert reponse.json().get("detail")[0].get("msg") == valeur_pertinence.get(
         "message_attendu"
     )
 
@@ -162,7 +143,7 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
                 "informations_erronees": valeur_completude.get("informations_erronees"),
                 "sources_adaptees": valeur_completude.get("sources_adaptees"),
             },
-            "exactitude": {"valeur": "bonne"},
+            "pertinence": {"valeur": "pertinente"},
         },
     }
 
@@ -187,7 +168,7 @@ def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
                 "informations_erronees": "Les informations erronées sont : les infos erronées",
                 "sources_adaptees": "Les sources adaptées pour la complétude sont : les sources adaptées",
             },
-            "exactitude": {"valeur": "bonne"},
+            "pertinence": {"valeur": "pertinente"},
         },
     }
 
@@ -206,7 +187,6 @@ def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
         evenements[0]["donnees"].avis.completude.sources_adaptees
         == "Les sources adaptées pour la complétude sont : les sources adaptées"
     )
-    assert evenements[0]["donnees"].avis.exactitude.valeur == "bonne"
-    assert evenements[0]["donnees"].avis.exactitude.informations_erronees is None
-    assert evenements[0]["donnees"].avis.exactitude.sources_adaptees is None
-    assert evenements[0]["donnees"].avis.exactitude.commentaire is None
+    assert evenements[0]["donnees"].avis.pertinence.valeur == "pertinente"
+    assert evenements[0]["donnees"].avis.pertinence.informations_erronees is None
+    assert evenements[0]["donnees"].avis.pertinence.commentaire is None
