@@ -16,12 +16,24 @@ export type Pertinence = {
   precisionsInformationsErronees?: string;
   erreurs?: Partial<Record<'informations-erronees', string>>;
 };
+
+export type RaisonSourcesNonAdaptees =
+  | 'Sources peu pertinentes'
+  | 'Sources manquantes';
+type RaisonsSourcesNonAdaptees = RaisonSourcesNonAdaptees[];
+
+export type ErreursPotentiellesSourcesAdaptees = Partial<
+  Record<'sources-adaptees' | 'raisons', string>
+>;
+
 export type SourcesAdaptees = {
   valeur: ValeurSourcesAdaptees;
   commentaire?: string;
   liste?: string;
-  erreurs?: Partial<Record<'sources-adaptees', string>>;
+  raisons?: RaisonsSourcesNonAdaptees;
+  erreurs?: ErreursPotentiellesSourcesAdaptees;
 };
+
 export type AvisUtilisateurBis = {
   pertinence: Pertinence;
   sourcesAdaptees: SourcesAdaptees;
@@ -113,6 +125,33 @@ const commenteLesSourcesAdaptees = (commentaire: string) => {
   });
 };
 
+const preciseEnQuoiLesSourcesNeSontPasAdaptees = (
+  raisons: RaisonsSourcesNonAdaptees
+) => {
+  update((avisActuel: AvisUtilisateurBis) => {
+    let erreurRaisons = undefined;
+    if (raisons.length === 0) {
+      erreurRaisons =
+        'Veuillez préciser au moins une raison pour lesquelles les sources ne sont pas adaptées.';
+    }
+    const nouvelEtat = {
+      ...avisActuel,
+      sourcesAdaptees: {
+        ...avisActuel.sourcesAdaptees,
+        raisons: raisons,
+        ...(erreurRaisons && {
+          erreurs: { ...avisActuel.sourcesAdaptees.erreurs, raisons: erreurRaisons },
+        }),
+      },
+    };
+
+    if (!erreurRaisons) {
+      delete nouvelEtat.sourcesAdaptees.erreurs?.['raisons'];
+    }
+    return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
+  });
+};
+
 const indiqueLesSourcesAdaptees = (sourcesAdaptees: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
     if (avisActuel.sourcesAdaptees.valeur !== 'Non') return avisActuel;
@@ -167,7 +206,9 @@ const estValide = (avisUtilisateurBis: AvisUtilisateurBis): boolean => {
     avisUtilisateurBis.sourcesAdaptees.liste !== undefined &&
     avisUtilisateurBis.sourcesAdaptees.liste?.trim() !== '' &&
     avisUtilisateurBis.sourcesAdaptees.liste.trim().length <= 5000 &&
-    avisUtilisateurBis.sourcesAdaptees.liste.trim().length > 50;
+    avisUtilisateurBis.sourcesAdaptees.liste.trim().length > 50 &&
+    avisUtilisateurBis.sourcesAdaptees.raisons !== undefined &&
+    avisUtilisateurBis.sourcesAdaptees.raisons.length > 0;
   return (
     pertinenceEtSourcesAdapteesAvecOuSansCommentaire ||
     (pertinenceAvecInformationsErronees &&
@@ -186,4 +227,5 @@ export const storeAvisUtilisateurBis = {
   commenteLesSourcesAdaptees,
   preciseLesInformationsErronees,
   indiqueLesSourcesAdaptees,
+  preciseEnQuoiLesSourcesNeSontPasAdaptees,
 };
