@@ -133,10 +133,10 @@ export const estReponseCreationConversation = (
 
 const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
   const mapValeursPertinence: Map<ValeurPertinence, string> = new Map([
-    ['Très pertinente', 'très bonne'],
-    ['Pertinente', 'bonne'],
+    ['Très pertinente', 'très pertinente'],
+    ['Pertinente', 'pertinente'],
     ['Correcte', 'correcte'],
-    ['Erronée', 'fausse'],
+    ['Erronée', 'erronée'],
   ]);
 
   const mappeValeurCompletude: Map<ValeurCompletude, string> = new Map([
@@ -150,15 +150,13 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
     id_interaction: avis.idInteraction,
     id_conversation: avis.idConversation,
     avis: {
-      exactitude: {
+      pertinence: {
         valeur: mapValeursPertinence.get(avis.pertinence.valeur),
         ...(avis.pertinence.commentaire && {
           commentaire: avis.pertinence.commentaire,
         }),
         ...(avis.pertinence.valeur === 'Erronée' && {
           informations_erronees: avis.pertinence.precisionsInformationsErronees,
-          sources_adaptees:
-            'WIP : valeur par défaut pour continuer à utiliser l’API',
         }),
       },
       completude: {

@@ -22,7 +22,12 @@ from schemas.retour_utilisatrice import Conversation
 document_source = APIRouter(prefix="/source")
 
 
-def _recupere_les_documents(adaptateur_base_de_donnees: AdaptateurBaseDeDonnees, interaction: UUID, document: str, page: int) -> tuple[Conversation, Paragraphe] | None:
+def _recupere_les_documents(
+    adaptateur_base_de_donnees: AdaptateurBaseDeDonnees,
+    interaction: UUID,
+    document: str,
+    page: int,
+) -> tuple[Conversation, Paragraphe] | None:
     conversation_recuperee = (
         adaptateur_base_de_donnees.recupere_conversation_par_id_interaction(interaction)
     )
@@ -41,6 +46,7 @@ def _recupere_les_documents(adaptateur_base_de_donnees: AdaptateurBaseDeDonnees,
         return None
     return conversation_recuperee, documents_trouves[0]
 
+
 @document_source.get("/", status_code=301)
 async def route_document_source(
     document: str,
@@ -51,7 +57,9 @@ async def route_document_source(
     ),
     adaptateur_journal: AdaptateurJournal = Depends(fabrique_adaptateur_journal),
 ):
-    resultat = _recupere_les_documents(adaptateur_base_de_donnees, interaction, document, page)
+    resultat = _recupere_les_documents(
+        adaptateur_base_de_donnees, interaction, document, page
+    )
     if resultat is None:
         return Response(status_code=404)
     conversation_recuperee, document_cible = resultat
@@ -80,7 +88,9 @@ async def route_proxy_document(
         fabrique_adaptateur_executeur_de_requetes
     ),
 ):
-    resultat = _recupere_les_documents(adaptateur_base_de_donnees, interaction, document, page)
+    resultat = _recupere_les_documents(
+        adaptateur_base_de_donnees, interaction, document, page
+    )
     if resultat is None:
         return Response(status_code=404)
     _, document_cible = resultat
