@@ -48,7 +48,7 @@
     "vitest": "^4.0.0"
   },
   "dependencies": {
-    "@lab-anssi/ui-kit": "^1.48.1",
+    "@lab-anssi/ui-kit": "^1.55.0",
     "dompurify": "^3.4.2",
     "marked": "^18.0.0",
     "pdfjs-dist": "^6.0.227",

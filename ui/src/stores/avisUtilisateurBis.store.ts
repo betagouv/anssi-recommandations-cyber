@@ -1,14 +1,17 @@
 import { writable } from 'svelte/store';
 
-export type ValeurExactitude = 'Très bonne' | 'Bonne' | 'Correcte' | 'Fausse';
-export type ValeurCompletude = Omit<ValeurExactitude, 'Fausse'> | 'Mauvaise';
+export type ValeurPertinence =
+  | 'Très pertinente'
+  | 'Pertinente'
+  | 'Correcte'
+  | 'Erronée';
+export type ValeurCompletude = Omit<ValeurPertinence, 'Fausse'> | 'Mauvaise';
 
-export type Exactitude = {
-  valeur: ValeurExactitude;
+export type Pertinence = {
+  valeur: ValeurPertinence;
   commentaire?: string;
   precisionsInformationsErronees?: string;
-  sourcesAdaptees?: string;
-  erreurs?: Partial<Record<'informations-erronees' | 'sources-adaptees', string>>;
+  erreurs?: Partial<Record<'informations-erronees', string>>;
 };
 export type Completude = {
   valeur: ValeurCompletude;
@@ -18,7 +21,7 @@ export type Completude = {
   erreurs?: Partial<Record<'informations-manquantes' | 'sources-adaptees', string>>;
 };
 export type AvisUtilisateurBis = {
-  exactitude: Exactitude;
+  pertinence: Pertinence;
   completude: Completude;
   idConversation: string;
   idInteraction: string;
@@ -26,29 +29,29 @@ export type AvisUtilisateurBis = {
 };
 
 const { subscribe, set, update } = writable<AvisUtilisateurBis>({
-  exactitude: {} as Exactitude,
+  pertinence: {} as Pertinence,
   completude: {} as Completude,
   idConversation: '',
   idInteraction: '',
   estValide: false,
 });
 
-const modifieLaValeurDeLExactitude = (valeur: ValeurExactitude) => {
+const modifieLaValeurDeLaPertinence = (valeur: ValeurPertinence) => {
   update((avisActuel: AvisUtilisateurBis) => {
     const nouvelEtat = {
       ...avisActuel,
-      exactitude: { valeur },
+      pertinence: { valeur },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
 };
 
-const commenteLExactitude = (commentaire: string) => {
+const commenteLaPertinence = (commentaire: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
-    if (avisActuel.exactitude.valeur === 'Fausse') return avisActuel;
+    if (avisActuel.pertinence.valeur === 'Erronée') return avisActuel;
     const nouvelEtat = {
       ...avisActuel,
-      exactitude: { ...avisActuel.exactitude, commentaire },
+      pertinence: { ...avisActuel.pertinence, commentaire },
     };
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
@@ -56,7 +59,7 @@ const commenteLExactitude = (commentaire: string) => {
 
 const preciseLesInformationsErronees = (precisions: string) => {
   update((avisActuel: AvisUtilisateurBis) => {
-    if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
+    if (avisActuel.pertinence.valeur !== 'Erronée') return avisActuel;
     let erreurInformationsErronees = undefined;
     if (precisions.trim().length > 5000) {
       erreurInformationsErronees =
@@ -69,12 +72,11 @@ const preciseLesInformationsErronees = (precisions: string) => {
 
     const nouvelEtat = {
       ...avisActuel,
-      exactitude: {
-        ...avisActuel.exactitude,
+      pertinence: {
+        ...avisActuel.pertinence,
         precisionsInformationsErronees: precisions,
         ...(erreurInformationsErronees && {
           erreurs: {
-            ...avisActuel.exactitude.erreurs,
             'informations-erronees': erreurInformationsErronees,
           },
         }),
@@ -82,40 +84,7 @@ const preciseLesInformationsErronees = (precisions: string) => {
     };
 
     if (!erreurInformationsErronees) {
-      delete nouvelEtat.exactitude.erreurs?.['informations-erronees'];
-    }
-    return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
-  });
-};
-
-const indiqueLesSourcesAdapteesPourLExactitude = (sourcesAdaptees: string) => {
-  update((avisActuel: AvisUtilisateurBis) => {
-    if (avisActuel.exactitude.valeur !== 'Fausse') return avisActuel;
-    let erreurSourcesAdaptees = undefined;
-    if (sourcesAdaptees.trim().length > 5000) {
-      erreurSourcesAdaptees =
-        'Le champ `sources adaptées` ne peut contenir que 5000 caractères maximum';
-    }
-    if (sourcesAdaptees.trim().length < 50) {
-      erreurSourcesAdaptees =
-        'Le champ `sources adaptées` doit contenir au moins 50 caractères minimum';
-    }
-    const nouvelEtat = {
-      ...avisActuel,
-      exactitude: {
-        ...avisActuel.exactitude,
-        sourcesAdaptees: sourcesAdaptees,
-        ...(erreurSourcesAdaptees && {
-          erreurs: {
-            ...avisActuel.exactitude.erreurs,
-            'sources-adaptees': erreurSourcesAdaptees,
-          },
-        }),
-      },
-    };
-
-    if (!erreurSourcesAdaptees) {
-      delete nouvelEtat.exactitude.erreurs?.['sources-adaptees'];
+      delete nouvelEtat.pertinence.erreurs?.['informations-erronees'];
     }
     return { ...nouvelEtat, estValide: estValide(nouvelEtat) };
   });
@@ -207,26 +176,21 @@ const indiqueLesSourcesAdapteesPourLaCompletude = (sourcesAdaptees: string) => {
 };
 
 const estValide = (avisUtilisateurBis: AvisUtilisateurBis): boolean => {
-  const exactitudeAvecOuSansCommentaire =
-    avisUtilisateurBis.exactitude.valeur !== undefined &&
-    avisUtilisateurBis.exactitude.valeur !== 'Fausse';
+  const pertinenceAvecOuSansCommentaire =
+    avisUtilisateurBis.pertinence.valeur !== undefined &&
+    avisUtilisateurBis.pertinence.valeur !== 'Erronée';
   const completudeAvecOuSansCommentaire =
     avisUtilisateurBis.completude.valeur !== undefined &&
     avisUtilisateurBis.completude.valeur !== 'Mauvaise';
-  const exactitudeEtCompletudeAvecOuSansCommentaire =
-    exactitudeAvecOuSansCommentaire && completudeAvecOuSansCommentaire;
-  const exactitudeAvecInformationsErroneesEtSourcesAdaptees =
-    avisUtilisateurBis.exactitude.valeur === 'Fausse' &&
-    avisUtilisateurBis.exactitude.precisionsInformationsErronees !== undefined &&
-    avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim() !== '' &&
-    avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim().length <=
+  const pertinenceEtCompletudeAvecOuSansCommentaire =
+    pertinenceAvecOuSansCommentaire && completudeAvecOuSansCommentaire;
+  const pertinenceAvecInformationsErronees =
+    avisUtilisateurBis.pertinence.valeur === 'Erronée' &&
+    avisUtilisateurBis.pertinence.precisionsInformationsErronees !== undefined &&
+    avisUtilisateurBis.pertinence.precisionsInformationsErronees.trim() !== '' &&
+    avisUtilisateurBis.pertinence.precisionsInformationsErronees.trim().length <=
       5000 &&
-    avisUtilisateurBis.exactitude.precisionsInformationsErronees.trim().length >
-      50 &&
-    avisUtilisateurBis.exactitude.sourcesAdaptees !== undefined &&
-    avisUtilisateurBis.exactitude.sourcesAdaptees.trim() !== '' &&
-    avisUtilisateurBis.exactitude.sourcesAdaptees.trim().length <= 5000 &&
-    avisUtilisateurBis.exactitude.sourcesAdaptees.trim().length > 50;
+    avisUtilisateurBis.pertinence.precisionsInformationsErronees.trim().length > 50;
   const completudeAvecInformationsManquantesEtSourcesAdaptees =
     avisUtilisateurBis.completude.valeur === 'Mauvaise' &&
     avisUtilisateurBis.completude.informationsManquantes !== undefined &&
@@ -238,25 +202,23 @@ const estValide = (avisUtilisateurBis: AvisUtilisateurBis): boolean => {
     avisUtilisateurBis.completude.sourcesAdaptees.trim().length <= 5000 &&
     avisUtilisateurBis.completude.sourcesAdaptees.trim().length > 50;
   return (
-    exactitudeEtCompletudeAvecOuSansCommentaire ||
-    (exactitudeAvecInformationsErroneesEtSourcesAdaptees &&
+    pertinenceEtCompletudeAvecOuSansCommentaire ||
+    (pertinenceAvecInformationsErronees &&
       (completudeAvecOuSansCommentaire ||
         completudeAvecInformationsManquantesEtSourcesAdaptees)) ||
     (completudeAvecInformationsManquantesEtSourcesAdaptees &&
-      (exactitudeAvecOuSansCommentaire ||
-        exactitudeAvecInformationsErroneesEtSourcesAdaptees))
+      (pertinenceAvecOuSansCommentaire || pertinenceAvecInformationsErronees))
   );
 };
 
 export const storeAvisUtilisateurBis = {
   subscribe,
   initialise: set,
-  modifieLaValeurDeLExactitude,
+  modifieLaValeurDeLaPertinence,
   modifieLaValeurDeLaCompletude,
-  commenteLExactitude,
+  commenteLaPertinence,
   commenteLaCompletude,
   preciseLesInformationsErronees,
-  indiqueLesSourcesAdapteesPourLExactitude,
   preciseLesInformationsManquantes,
   indiqueLesSourcesAdapteesPourLaCompletude,
 };

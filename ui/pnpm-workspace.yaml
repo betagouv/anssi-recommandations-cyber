@@ -7,3 +7,4 @@ minimumReleaseAgeExclude:
   - immutable@5.1.5
   # Renovate security update: dompurify@3.4.11
   - dompurify@3.4.11
+  - '@lab-anssi/ui-kit@1.55.0'
