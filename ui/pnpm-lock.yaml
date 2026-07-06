@@ -14,8 +14,8 @@ importers:
   .:
     dependencies:
       '@lab-anssi/ui-kit':
-        specifier: ^1.48.1
-        version: 1.49.1(svelte@5.55.7(@typescript-eslint/types@8.59.2))
+        specifier: ^1.55.0
+        version: 1.55.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))
       dompurify:
         specifier: ^3.4.2
         version: 3.4.11
@@ -398,10 +398,10 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lab-anssi/ui-kit@1.49.1':
-    resolution: {integrity: sha512-fsiV0PioLPOO2gmbxxPQklOfYQ35l5aPppr8/f70RRMh7Ua+/te6LfAe81bOyBvZYq895gNVPoCMgxKPFqbzLQ==}
+  '@lab-anssi/ui-kit@1.55.0':
+    resolution: {integrity: sha512-jnzFRT+kSGSEwf/4DeDCsm/GTXaYTG7xX8KYZa1qSdUaq6vLD0LNb3t+oFlktuqAsx5QIFIAznCrZ/Nxi/QvCw==}
     peerDependencies:
-      svelte: ~5.38.8
+      svelte: ~5.55.10
 
   '@napi-rs/canvas-android-arm64@1.0.0':
     resolution: {integrity: sha512-3hNKJObUK7JsCF9aJlVCs1J0/KE/gGfZNeK8MO1ge6bB3aicr5walGme9t9No1f/oyk9GgvdAT/rjSdsx3gbIw==}
@@ -2144,7 +2144,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lab-anssi/ui-kit@1.49.1(svelte@5.55.7(@typescript-eslint/types@8.59.2))':
+  '@lab-anssi/ui-kit@1.55.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))':
     dependencies:
       svelte: 5.55.7(@typescript-eslint/types@8.59.2)
 

@@ -1,16 +1,16 @@
 <script lang="ts">
   import {
     type Completude,
-    type Exactitude,
+    type Pertinence,
     storeAvisUtilisateurBis,
     type ValeurCompletude,
-    type ValeurExactitude,
+    type ValeurPertinence,
   } from '../stores/avisUtilisateurBis.store';
   import { clientAPI } from '../client.api';
 
-  let afficheCommentaireExactitude = $state(false);
+  let afficheCommentairePertinence = $state(false);
   let afficheCommentaireCompletude = $state(false);
-  let affichePrecisionEtSourcesExactitude = $state(false);
+  let affichePrecisionPertinence = $state(false);
   let affichePrecisionEtSourcesCompletude = $state(false);
   let afficheMessageSucces = $state(false);
   let afficheMessageErreur = $state<string | undefined>(undefined);
@@ -26,22 +26,26 @@
     storeAvisUtilisateurBis.initialise({
       idConversation,
       idInteraction,
-      exactitude: {} as Exactitude,
+      pertinence: {} as Pertinence,
       completude: {} as Completude,
       estValide: false,
     });
   });
 
-  type ValeurOptionExactitude = 'tres-bonne' | 'bonne' | 'correcte' | 'fausse';
+  type ValeurOptionPertinence =
+    | 'tres-pertinente'
+    | 'pertinente'
+    | 'correcte'
+    | 'erronee';
   type ValeurOptionCompletude = 'tres-bonne' | 'bonne' | 'correcte' | 'mauvaise';
-  const mappeOptionsExactitudeValeurExactitude: Map<
-    ValeurOptionExactitude,
-    ValeurExactitude
+  const mappeOptionsPertinenceValeurPertinence: Map<
+    ValeurOptionPertinence,
+    ValeurPertinence
   > = new Map([
-    ['tres-bonne', 'Très bonne'],
-    ['bonne', 'Bonne'],
+    ['tres-pertinente', 'Très pertinente'],
+    ['pertinente', 'Pertinente'],
     ['correcte', 'Correcte'],
-    ['fausse', 'Fausse'],
+    ['erronee', 'Erronée'],
   ]);
   const mappeOptionsCempletudeValeurCompletude: Map<
     ValeurOptionCompletude,
@@ -53,11 +57,11 @@
     ['mauvaise', 'Mauvaise'],
   ]);
 
-  const surClickExactitude = (e: { detail: ValeurOptionExactitude }) => {
-    afficheCommentaireExactitude = e.detail !== 'fausse';
-    affichePrecisionEtSourcesExactitude = e.detail === 'fausse';
-    storeAvisUtilisateurBis.modifieLaValeurDeLExactitude(
-      mappeOptionsExactitudeValeurExactitude.get(e.detail)!
+  const surClickPertinence = (e: { detail: ValeurOptionPertinence }) => {
+    afficheCommentairePertinence = e.detail !== 'erronee';
+    affichePrecisionPertinence = e.detail === 'erronee';
+    storeAvisUtilisateurBis.modifieLaValeurDeLaPertinence(
+      mappeOptionsPertinenceValeurPertinence.get(e.detail)!
     );
   };
 
@@ -69,17 +73,15 @@
     );
   };
 
-  const ajouteCommentaireExactitude = (e: CustomEvent<string>) => {
-    storeAvisUtilisateurBis.commenteLExactitude(e.detail);
+  const ajouteCommentairePertinence = (e: CustomEvent<string>) => {
+    storeAvisUtilisateurBis.commenteLaPertinence(e.detail);
   };
 
   const ajouteCommentaireCompletude = (e: CustomEvent<string>) => {
     storeAvisUtilisateurBis.commenteLaCompletude(e.detail);
   };
 
-  const ajoutePrecisionsInformationsErroneesExactitude = (
-    e: CustomEvent<string>
-  ) => {
+  const ajouteInformationsErronees = (e: CustomEvent<string>) => {
     storeAvisUtilisateurBis.preciseLesInformationsErronees(e.detail);
   };
 
@@ -87,10 +89,6 @@
     e: CustomEvent<string>
   ) => {
     storeAvisUtilisateurBis.preciseLesInformationsManquantes(e.detail);
-  };
-
-  const ajouteSourcesAdapteesExactitude = (e: CustomEvent<string>) => {
-    storeAvisUtilisateurBis.indiqueLesSourcesAdapteesPourLExactitude(e.detail);
   };
 
   const ajouteSourcesAdapteesCompletude = (e: CustomEvent<string>) => {
@@ -117,36 +115,38 @@
   </div>
   {#if !afficheMessageSucces && !afficheMessageErreur}
     <div class="conteneur-avis-utilisateur-bis">
-      <div class="avis-exactitude">
+      <div class="avis-pertinence">
         <div class="avis-utilisateur-bis-options">
           <dsfr-radios-group
             radios={[
               {
-                label: 'Très bonne',
-                id: 'tres-bonne',
-                name: 'options-exactitude',
-                value: 'tres-bonne',
+                label: 'Très pertinente',
+                id: 'tres-pertinente',
+                name: 'options-pertinence',
+                value: 'tres-pertinente',
               },
               {
-                label: 'Bonne',
-                id: 'bonne',
-                name: 'options-exactitude',
-                value: 'bonne',
+                label: 'Pertinente',
+                id: 'pertinente',
+                name: 'options-pertinence',
+                value: 'pertinente',
               },
               {
                 label: 'Correcte',
                 id: 'correcte',
-                name: 'options-exactitude',
+                name: 'options-pertinence',
                 value: 'correcte',
               },
               {
-                label: 'Fausse',
-                id: 'fausse',
-                name: 'options-exactitude',
-                value: 'fausse',
+                label: 'Erronée',
+                id: 'erronee',
+                name: 'options-pertinence',
+                value: 'erronee',
               },
             ]}
-            legend="Exactitude de la réponse"
+            legend="La réponse est-elle pertinente au regard de la question posée ?"
+            legendSize="md"
+            legendWeight="bold"
             size="md"
             status="default"
             error-message="Texte d’erreur"
@@ -154,60 +154,43 @@
             id="storybook-form"
             has-pictogram
             inline
-            onvaluechanged={surClickExactitude}
+            onvaluechanged={surClickPertinence}
           ></dsfr-radios-group>
         </div>
-        {#if afficheCommentaireExactitude}
+        {#if afficheCommentairePertinence}
           <div class="conteneur-commentaire">
             <dsfr-textarea
               label="Ajouter un commentaire"
               type="text"
-              name="commentaire-exactitude"
-              id="commentaire-exactitude"
+              name="commentaire-pertinence"
+              id="commentaire-pertinence"
               rows="3"
               maxlength="5000"
-              onvaluechanged={ajouteCommentaireExactitude}
+              onvaluechanged={ajouteCommentairePertinence}
             ></dsfr-textarea>
           </div>
         {/if}
-        {#if affichePrecisionEtSourcesExactitude}
-          <div class="info-champ-obligatoire">Tous les champs sont obligatoires</div>
-          <div class="conteneur-commentaire">
-            <dsfr-textarea
-              label="Précisez les informations erronées"
-              type="text"
-              name="precisions-exactitude"
-              id="precisions-exactitude"
-              rows="3"
-              maxlength="5000"
-              status={$storeAvisUtilisateurBis.exactitude.erreurs?.[
-                'informations-erronees'
-              ]
-                ? 'error'
-                : 'default'}
-              error-message={$storeAvisUtilisateurBis.exactitude.erreurs?.[
-                'informations-erronees'
-              ] ?? ''}
-              onvaluechanged={ajoutePrecisionsInformationsErroneesExactitude}
-            ></dsfr-textarea>
+        {#if affichePrecisionPertinence}
+          <div class="info-champ-obligatoire">
+            Les informations demandées sont obligatoires.
           </div>
           <div class="conteneur-commentaire">
             <dsfr-textarea
-              label="Indiquez les sources adaptées (guide, page, paragraphes)"
+              label="Précisez les informations erronées (obligatoire)"
               type="text"
-              name="sources-adaptees-exactitude"
-              id="sources-adaptees-exactitude"
+              name="informations-erronees"
+              id="informations-erronees"
               rows="3"
               maxlength="5000"
-              status={$storeAvisUtilisateurBis.exactitude.erreurs?.[
-                'sources-adaptees'
+              status={$storeAvisUtilisateurBis.pertinence.erreurs?.[
+                'informations-erronees'
               ]
                 ? 'error'
                 : 'default'}
-              error-message={$storeAvisUtilisateurBis.exactitude.erreurs?.[
-                'sources-adaptees'
+              error-message={$storeAvisUtilisateurBis.pertinence.erreurs?.[
+                'informations-erronees'
               ] ?? ''}
-              onvaluechanged={ajouteSourcesAdapteesExactitude}
+              onvaluechanged={ajouteInformationsErronees}
             ></dsfr-textarea>
           </div>
         {/if}
@@ -399,7 +382,7 @@
     align-self: stretch;
     background: #f9f6f2;
 
-    .avis-exactitude,
+    .avis-pertinence,
     .avis-completude {
       display: flex;
       flex-direction: column;
@@ -410,7 +393,7 @@
       }
 
       .info-champ-obligatoire {
-        color: #666;
+        color: #0063cb;
         font-size: 14px;
         line-height: 24px;
         padding-bottom: 16px;

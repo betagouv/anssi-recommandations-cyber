@@ -2,7 +2,7 @@ import type { Paragraphe } from './stores/conversation.store';
 import type {
   AvisUtilisateurBis,
   ValeurCompletude,
-  ValeurExactitude,
+  ValeurPertinence,
 } from './stores/avisUtilisateurBis.store';
 
 const urlAPI = import.meta.env.VITE_URL_API;
@@ -132,11 +132,11 @@ export const estReponseCreationConversation = (
 };
 
 const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
-  const mappeValeurExactitude: Map<ValeurExactitude, string> = new Map([
-    ['Très bonne', 'très bonne'],
-    ['Bonne', 'bonne'],
+  const mapValeursPertinence: Map<ValeurPertinence, string> = new Map([
+    ['Très pertinente', 'très bonne'],
+    ['Pertinente', 'bonne'],
     ['Correcte', 'correcte'],
-    ['Fausse', 'fausse'],
+    ['Erronée', 'fausse'],
   ]);
 
   const mappeValeurCompletude: Map<ValeurCompletude, string> = new Map([
@@ -151,13 +151,14 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
     id_conversation: avis.idConversation,
     avis: {
       exactitude: {
-        valeur: mappeValeurExactitude.get(avis.exactitude.valeur),
-        ...(avis.exactitude.commentaire && {
-          commentaire: avis.exactitude.commentaire,
+        valeur: mapValeursPertinence.get(avis.pertinence.valeur),
+        ...(avis.pertinence.commentaire && {
+          commentaire: avis.pertinence.commentaire,
         }),
-        ...(avis.exactitude.valeur === 'Fausse' && {
-          informations_erronees: avis.exactitude.precisionsInformationsErronees,
-          sources_adaptees: avis.exactitude.sourcesAdaptees,
+        ...(avis.pertinence.valeur === 'Erronée' && {
+          informations_erronees: avis.pertinence.precisionsInformationsErronees,
+          sources_adaptees:
+            'WIP : valeur par défaut pour continuer à utiliser l’API',
         }),
       },
       completude: {
