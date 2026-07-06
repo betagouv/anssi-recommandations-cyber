@@ -1,10 +1,11 @@
 <script lang="ts">
   import {
-    type SourcesAdaptees,
     type Pertinence,
+    type RaisonSourcesNonAdaptees,
+    type SourcesAdaptees,
     storeAvisUtilisateurBis,
-    type ValeurSourcesAdaptees,
     type ValeurPertinence,
+    type ValeurSourcesAdaptees,
   } from '../stores/avisUtilisateurBis.store';
   import { clientAPI } from '../client.api';
 
@@ -57,6 +58,12 @@
     ['non', 'Non'],
   ]);
 
+  const mappeRaisonsSourcesNonAdaptees: Map<string, RaisonSourcesNonAdaptees> =
+    new Map([
+      ['sources-peu-pertinentes', 'Sources peu pertinentes'],
+      ['sources-manquantes', 'Sources manquantes'],
+    ]);
+
   const surClickPertinence = (e: { detail: ValeurOptionPertinence }) => {
     afficheCommentairePertinence = e.detail !== 'erronee';
     affichePrecisionPertinence = e.detail === 'erronee';
@@ -83,6 +90,13 @@
 
   const ajouteInformationsErronees = (e: CustomEvent<string>) => {
     storeAvisUtilisateurBis.preciseLesInformationsErronees(e.detail);
+  };
+
+  const surClickPrecisionsSourcesNonAdaptees = (e: CustomEvent<string[]>) => {
+    const raisons = e.detail
+      .map((raison) => mappeRaisonsSourcesNonAdaptees.get(raison))
+      .filter((raison) => raison !== undefined);
+    storeAvisUtilisateurBis.preciseEnQuoiLesSourcesNeSontPasAdaptees(raisons);
   };
 
   const ajouteSourcesAdaptees = (e: CustomEvent<string>) => {
@@ -234,6 +248,28 @@
           {#if affichePrecisionsSourcesAdaptees}
             <div class="info-champ-obligatoire">
               Les informations demandées sont obligatoires.
+            </div>
+            <div>
+              <dsfr-checkboxes-group
+                legend="Précisez en quoi les sources ne sont pas adaptées"
+                size="sm"
+                status="default"
+                checkboxes={[
+                  {
+                    id: 'sources-peu-pertinentes',
+                    value: 'sources-peu-pertinentes',
+                    label: 'Sources peu pertinentes',
+                  },
+                  {
+                    id: 'sources-manquantes',
+                    value: 'sources-manquantes',
+                    label: 'Sources manquantes',
+                  },
+                ]}
+                id="conteneur-checkboxes-sources-adaptees"
+                inline
+                onvalueschanged={surClickPrecisionsSourcesNonAdaptees}
+              ></dsfr-checkboxes-group>
             </div>
             <div class="conteneur-commentaire">
               <dsfr-textarea

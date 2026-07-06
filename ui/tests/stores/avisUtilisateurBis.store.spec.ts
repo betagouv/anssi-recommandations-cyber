@@ -3,6 +3,7 @@ import {
   SourcesAdaptees,
   Pertinence,
   storeAvisUtilisateurBis,
+  ErreursPotentiellesSourcesAdaptees,
 } from '../../src/stores/avisUtilisateurBis.store';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -422,7 +423,7 @@ describe('le store des avis', () => {
       it('valide les sources adaptées', () => {
         storeAvisUtilisateurBis.initialise({
           pertinence: { valeur: 'Pertinente' },
-          sourcesAdaptees: { valeur: 'Non' },
+          sourcesAdaptees: { valeur: 'Non', raisons: ['Sources peu pertinentes'] },
           idConversation: '123',
           idInteraction: '456',
           estValide: false,
@@ -439,6 +440,7 @@ describe('le store des avis', () => {
           sourcesAdaptees: {
             valeur: 'Non',
             liste: 'Les sources adaptées sont les suivantes : les sources adaptées',
+            raisons: ['Sources peu pertinentes'],
           },
           idConversation: '123',
           idInteraction: '456',
@@ -484,6 +486,123 @@ describe('le store des avis', () => {
         });
       });
 
+      it('ne valide pas si il n’y a pas de raison', () => {
+        storeAvisUtilisateurBis.initialise({
+          pertinence: { valeur: 'Pertinente' },
+          sourcesAdaptees: {
+            valeur: 'Non',
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.indiqueLesSourcesAdaptees(
+          'Les sources adaptées sont les suivantes : les sources adaptées'
+        );
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+      });
+
+      it('peut ajouter une raison pour lesquelles les sources ne sont pas adaptées', () => {
+        storeAvisUtilisateurBis.initialise({
+          pertinence: { valeur: 'Pertinente' },
+          sourcesAdaptees: {
+            valeur: 'Non',
+            liste: 'Les sources adaptées sont les suivantes : les sources adaptées',
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.preciseEnQuoiLesSourcesNeSontPasAdaptees([
+          'Sources peu pertinentes',
+        ]);
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(true);
+      });
+
+      it('ne valide pas si aucune raison donnée pour lesquelles les sources ne sont pas adaptées', () => {
+        storeAvisUtilisateurBis.initialise({
+          pertinence: { valeur: 'Pertinente' },
+          sourcesAdaptees: {
+            valeur: 'Non',
+            liste: 'Les sources adaptées sont les suivantes : les sources adaptées',
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.preciseEnQuoiLesSourcesNeSontPasAdaptees([]);
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(storeMisAJour.sourcesAdaptees.erreurs).toEqual({
+          raisons:
+            'Veuillez préciser au moins une raison pour lesquelles les sources ne sont pas adaptées.',
+        });
+      });
+
+      it('conserve l’erreur des sources adaptées', () => {
+        storeAvisUtilisateurBis.initialise({
+          pertinence: {
+            valeur: 'Pertinente',
+          },
+          sourcesAdaptees: {
+            valeur: 'Non',
+            erreurs: { 'sources-adaptees': 'Erreur' },
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.preciseEnQuoiLesSourcesNeSontPasAdaptees([]);
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(
+          storeMisAJour.sourcesAdaptees.erreurs
+        ).toStrictEqual<ErreursPotentiellesSourcesAdaptees>({
+          'sources-adaptees': 'Erreur',
+          raisons:
+            'Veuillez préciser au moins une raison pour lesquelles les sources ne sont pas adaptées.',
+        });
+      });
+
+      it('conserve l’erreur des raisons pour lesquelles les sources ne sont pas adaptées.', () => {
+        storeAvisUtilisateurBis.initialise({
+          pertinence: {
+            valeur: 'Pertinente',
+          },
+          sourcesAdaptees: {
+            valeur: 'Non',
+            erreurs: {
+              raisons: 'Une erreur',
+            },
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.indiqueLesSourcesAdaptees('a'.repeat(49));
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(false);
+        expect(
+          storeMisAJour.sourcesAdaptees.erreurs
+        ).toStrictEqual<ErreursPotentiellesSourcesAdaptees>({
+          raisons: 'Une erreur',
+          'sources-adaptees':
+            'Le champ `sources adaptées` doit contenir au moins 50 caractères minimum',
+        });
+      });
+
       it('supprime l’erreur des sources adaptées si elle est corrigée', () => {
         storeAvisUtilisateurBis.initialise({
           pertinence: {
@@ -491,6 +610,7 @@ describe('le store des avis', () => {
           },
           sourcesAdaptees: {
             valeur: 'Non',
+            raisons: ['Sources peu pertinentes'],
             erreurs: {
               'sources-adaptees': 'Erreur sources',
             },
@@ -509,6 +629,33 @@ describe('le store des avis', () => {
         expect(
           storeMisAJour.sourcesAdaptees.erreurs?.['sources-adaptees']
         ).toBeUndefined();
+      });
+
+      it('supprime l’erreur de la raison des sources non adaptées si elle est corrigée', () => {
+        storeAvisUtilisateurBis.initialise({
+          pertinence: {
+            valeur: 'Pertinente',
+          },
+          sourcesAdaptees: {
+            valeur: 'Non',
+            liste: 'Les sources adaptées sont les suivantes : les sources adaptées',
+            raisons: [],
+            erreurs: {
+              raisons: 'Raisons erreur',
+            },
+          },
+          idConversation: '123',
+          idInteraction: '456',
+          estValide: false,
+        });
+
+        storeAvisUtilisateurBis.preciseEnQuoiLesSourcesNeSontPasAdaptees([
+          'Sources manquantes',
+        ]);
+
+        const storeMisAJour = get(storeAvisUtilisateurBis);
+        expect(storeMisAJour.estValide).toBe(true);
+        expect(storeMisAJour.sourcesAdaptees.erreurs?.['raisons']).toBeUndefined();
       });
     });
   });
