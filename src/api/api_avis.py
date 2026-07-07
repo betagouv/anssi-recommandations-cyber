@@ -24,7 +24,7 @@ class AvisPertinence(BaseModel):
 
     @field_validator("informations_erronees")
     @classmethod
-    def informations_erronees_obligatoire_si_exactitude_fausse(
+    def informations_erronees_obligatoire_si_pertinence_erronee(
         cls,
         commentaire: Optional[str],
         informations: ValidationInfo,
@@ -42,7 +42,7 @@ class AvisSourcesAdaptees(BaseModel):
 
     @field_validator("liste")
     @classmethod
-    def sources_adaptees_obligatoire_si_exactitude_fausse(
+    def sources_adaptees_obligatoire_si_reponse_negative(
         cls,
         commentaire: Optional[str],
         informations: ValidationInfo,
