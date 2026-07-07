@@ -127,6 +127,7 @@ class AvisSourcesAdapteesSoumis(BaseModel):
     valeur: str
     commentaire: Optional[str] = None
     liste: Optional[str] = None
+    raisons: Optional[list[str]] = None
 
 
 class AvisPertinenceSoumis(BaseModel):
