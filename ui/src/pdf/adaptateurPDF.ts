@@ -51,10 +51,6 @@ const pagePDFenPNG = async (pdfUrl: string, pageNumber: number): Promise<Blob> =
     throw new Error(`HTTP ${response.status}`);
   }
 
-  response.headers.forEach((value, key) =>
-    console.log(`REPONSE : ${key}: ${value}`)
-  );
-
   if (!response.headers.get('Content-Type')?.includes('application/pdf')) {
     const reponse = await fetch('/images/image-generique.avif');
     return reponse.blob();
