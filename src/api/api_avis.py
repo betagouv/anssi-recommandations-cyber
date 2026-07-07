@@ -8,7 +8,7 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
     TypeEvenement,
-    AvisCompletudeSoumis,
+    AvisSourcesAdapteesSoumis,
     AvisPertinenceSoumis,
     AvisSoumis,
     DonneesAvisSoumis,
@@ -34,25 +34,12 @@ class AvisPertinence(BaseModel):
         )
 
 
-class AvisCompletude(BaseModel):
-    valeur: Literal["très bonne", "bonne", "correcte", "fausse"]
+class AvisSourcesAdaptees(BaseModel):
+    valeur: Literal["oui, tout à fait", "oui, partiellement", "non"]
     commentaire: Optional[str] = None
-    informations_erronees: Optional[str] = Field(default=None, validate_default=True)
+    liste: Optional[str] = Field(default=None, validate_default=True)
 
-    sources_adaptees: Optional[str] = Field(default=None, validate_default=True)
-
-    @field_validator("informations_erronees")
-    @classmethod
-    def informations_erronees_obligatoire_si_exactitude_fausse(
-        cls,
-        commentaire: Optional[str],
-        informations: ValidationInfo,
-    ) -> Optional[str]:
-        return valide_commentaire_avis(
-            informations, commentaire, "la complétude", "informations_erronees"
-        )
-
-    @field_validator("sources_adaptees")
+    @field_validator("liste")
     @classmethod
     def sources_adaptees_obligatoire_si_exactitude_fausse(
         cls,
@@ -60,7 +47,7 @@ class AvisCompletude(BaseModel):
         informations: ValidationInfo,
     ) -> Optional[str]:
         return valide_commentaire_avis(
-            informations, commentaire, "la complétude", "sources_adaptees"
+            informations, commentaire, "l’avis sur les sources adaptées", "liste"
         )
 
 
@@ -69,7 +56,7 @@ def valide_commentaire_avis(
 ):
     valeur = informations.data.get("valeur")
 
-    if valeur == "erronée" or valeur == "fausse":
+    if valeur == "erronée" or valeur == "non":
         if commentaire is None or commentaire.strip() == "":
             raise ValueError(
                 f"Le champ '{champ}' est obligatoire lorsque {type_avis} est {valeur}."
@@ -88,7 +75,7 @@ def valide_commentaire_avis(
 
 class Avis(BaseModel):
     pertinence: AvisPertinence
-    completude: AvisCompletude
+    sources_adaptees: AvisSourcesAdaptees
 
 
 class DonneesAvis(BaseModel):
@@ -108,11 +95,10 @@ def ajoute_avis(
             commentaire=requete.avis.pertinence.commentaire,
             informations_erronees=requete.avis.pertinence.informations_erronees,
         ),
-        completude=AvisCompletudeSoumis(
-            valeur=requete.avis.completude.valeur,
-            commentaire=requete.avis.completude.commentaire,
-            informations_erronees=requete.avis.completude.informations_erronees,
-            sources_adaptees=requete.avis.completude.sources_adaptees,
+        sources_adaptees=AvisSourcesAdapteesSoumis(
+            valeur=requete.avis.sources_adaptees.valeur,
+            commentaire=requete.avis.sources_adaptees.commentaire,
+            liste=requete.avis.sources_adaptees.liste,
         ),
     )
     adaptateur_journal.consigne_evenement(

@@ -140,9 +140,9 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
   ]);
 
   const mappeValeursSourcesAdaptees: Map<ValeurSourcesAdaptees, string> = new Map([
-    ['Oui, tout à fait', 'très bonne'],
-    ['Oui, partiellement', 'bonne'],
-    ['Non', 'fausse'],
+    ['Oui, tout à fait', 'oui, tout à fait'],
+    ['Oui, partiellement', 'oui, partiellement'],
+    ['Non', 'non'],
   ]);
 
   const payload = {
@@ -158,15 +158,13 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
           informations_erronees: avis.pertinence.precisionsInformationsErronees,
         }),
       },
-      completude: {
+      sources_adaptees: {
         valeur: mappeValeursSourcesAdaptees.get(avis.sourcesAdaptees.valeur),
         ...(avis.sourcesAdaptees.commentaire && {
           commentaire: avis.sourcesAdaptees.commentaire,
         }),
         ...(avis.sourcesAdaptees.valeur === 'Non' && {
-          informations_erronees:
-            'WIP : informations erronées en attendant la modification de l’interface',
-          sources_adaptees: avis.sourcesAdaptees.liste,
+          liste: avis.sourcesAdaptees.liste,
         }),
       },
     },
