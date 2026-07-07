@@ -18,7 +18,7 @@ def test_peut_ajouter_un_avis_sur_la_pertinence(
         "id_conversation": "456",
         "avis": {
             "pertinence": {"valeur": valeur_pertinence},
-            "completude": {"valeur": "bonne"},
+            "sources_adaptees": {"valeur": "oui, partiellement"},
         },
     }
 
@@ -28,11 +28,11 @@ def test_peut_ajouter_un_avis_sur_la_pertinence(
 
 
 @pytest.mark.parametrize(
-    "valeur_completude",
-    ["très bonne", "bonne", "correcte"],
+    "valeur_sources_adaptees",
+    ["oui, tout à fait", "oui, partiellement"],
 )
-def test_peut_ajouter_un_avis_sur_la_completude(
-    valeur_completude: str, un_serveur_de_test
+def test_peut_ajouter_un_avis_sur_les_sources_adaptees(
+    valeur_sources_adaptees, un_serveur_de_test
 ):
     serveur = un_serveur_de_test()
     client = TestClient(serveur)
@@ -41,7 +41,7 @@ def test_peut_ajouter_un_avis_sur_la_completude(
         "id_conversation": "456",
         "avis": {
             "pertinence": {"valeur": "pertinente"},
-            "completude": {"valeur": valeur_completude},
+            "sources_adaptees": {"valeur": valeur_sources_adaptees},
         },
     }
 
@@ -67,7 +67,7 @@ def test_peut_ajouter_un_avis_sur_la_completude(
         },
     ],
 )
-def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_pertinence(
+def test_les_informations_erronees_sont_obligatoires_pour_un_avis_sur_la_pertinence(
     valeur_pertinence,
     un_serveur_de_test,
 ):
@@ -81,7 +81,7 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
                 "valeur": "erronée",
                 "informations_erronees": valeur_pertinence.get("informations_erronees"),
             },
-            "completude": {"valeur": "bonne"},
+            "sources_adaptees": {"valeur": "bonne"},
         },
     }
 
@@ -94,42 +94,24 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
 
 
 @pytest.mark.parametrize(
-    "valeur_completude",
+    "valeur_sources_adaptees",
     [
         {
-            "informations_erronees": "",
-            "sources_adaptees": "Les sources adaptées pour l’exactitude sont : les sources adaptées",
-            "message_attendu": "Value error, Le champ 'informations_erronees' est obligatoire lorsque la complétude est fausse.",
-        },
-        {
-            "informations_erronees": "Les informations erronées sont : les infos erronées",
             "sources_adaptees": "",
-            "message_attendu": "Value error, Le champ 'sources_adaptees' est obligatoire lorsque la complétude est fausse.",
+            "message_attendu": "Value error, Le champ 'liste' est obligatoire lorsque l’avis sur les sources adaptées est non.",
         },
         {
-            "informations_erronees": "valeur pas assez longue",
-            "sources_adaptees": "Les sources adaptées pour l’exactitude sont : les sources adaptées",
-            "message_attendu": "Value error, Le champ 'informations_erronees' doit contenir au moins 50 caractères.",
-        },
-        {
-            "informations_erronees": "Les informations erronées sont : les infos erronées",
             "sources_adaptees": "valeur pas assez longue",
-            "message_attendu": "Value error, Le champ 'sources_adaptees' doit contenir au moins 50 caractères.",
+            "message_attendu": "Value error, Le champ 'liste' doit contenir au moins 50 caractères.",
         },
         {
-            "informations_erronees": "a" * 5_001,
-            "sources_adaptees": "Les sources adaptées pour l’exactitude sont : les sources adaptées",
-            "message_attendu": "Value error, Le champ 'informations_erronees' ne peut contenir que 5000 caractères maximum.",
-        },
-        {
-            "informations_erronees": "Les informations erronées sont : les infos erronées",
             "sources_adaptees": "b" * 5_001,
-            "message_attendu": "Value error, Le champ 'sources_adaptees' ne peut contenir que 5000 caractères maximum.",
+            "message_attendu": "Value error, Le champ 'liste' ne peut contenir que 5000 caractères maximum.",
         },
     ],
 )
-def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_completude(
-    valeur_completude,
+def test_la_liste_des_sources_adaptees_est_obligatoire_si_l_avis_est_negatif(
+    valeur_sources_adaptees,
     un_serveur_de_test,
 ):
     serveur = un_serveur_de_test()
@@ -138,10 +120,9 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
         "id_interaction": "123",
         "id_conversation": "456",
         "avis": {
-            "completude": {
-                "valeur": "fausse",
-                "informations_erronees": valeur_completude.get("informations_erronees"),
-                "sources_adaptees": valeur_completude.get("sources_adaptees"),
+            "sources_adaptees": {
+                "valeur": "non",
+                "liste": valeur_sources_adaptees.get("sources_adaptees"),
             },
             "pertinence": {"valeur": "pertinente"},
         },
@@ -150,7 +131,7 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_fausse_sur_la_
     reponse = client.post("/api/avis", json=payload)
     print(reponse.json())
     assert reponse.status_code == 422
-    assert reponse.json().get("detail")[0].get("msg") == valeur_completude.get(
+    assert reponse.json().get("detail")[0].get("msg") == valeur_sources_adaptees.get(
         "message_attendu"
     )
 
@@ -163,10 +144,9 @@ def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
         "id_interaction": "123",
         "id_conversation": "456",
         "avis": {
-            "completude": {
-                "valeur": "fausse",
-                "informations_erronees": "Les informations erronées sont : les infos erronées",
-                "sources_adaptees": "Les sources adaptées pour la complétude sont : les sources adaptées",
+            "sources_adaptees": {
+                "valeur": "non",
+                "liste": "Les sources adaptées pour la complétude sont : les sources adaptées",
             },
             "pertinence": {"valeur": "pertinente"},
         },
@@ -178,13 +158,9 @@ def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
     assert evenements[0]["type"] == TypeEvenement.AVIS_AVANCE_SOUMIS
     assert evenements[0]["donnees"].id_interaction == "123"
     assert evenements[0]["donnees"].id_conversation == "456"
-    assert evenements[0]["donnees"].avis.completude.valeur == "fausse"
+    assert evenements[0]["donnees"].avis.sources_adaptees.valeur == "non"
     assert (
-        evenements[0]["donnees"].avis.completude.informations_erronees
-        == "Les informations erronées sont : les infos erronées"
-    )
-    assert (
-        evenements[0]["donnees"].avis.completude.sources_adaptees
+        evenements[0]["donnees"].avis.sources_adaptees.liste
         == "Les sources adaptées pour la complétude sont : les sources adaptées"
     )
     assert evenements[0]["donnees"].avis.pertinence.valeur == "pertinente"

@@ -123,11 +123,10 @@ def fabrique_adaptateur_journal() -> AdaptateurJournal:
     return AdaptateurJournalMemoire()
 
 
-class AvisCompletudeSoumis(BaseModel):
+class AvisSourcesAdapteesSoumis(BaseModel):
     valeur: str
     commentaire: Optional[str] = None
-    informations_erronees: Optional[str] = None
-    sources_adaptees: Optional[str] = None
+    liste: Optional[str] = None
 
 
 class AvisPertinenceSoumis(BaseModel):
@@ -138,7 +137,7 @@ class AvisPertinenceSoumis(BaseModel):
 
 class AvisSoumis(BaseModel):
     pertinence: AvisPertinenceSoumis
-    completude: AvisCompletudeSoumis
+    sources_adaptees: AvisSourcesAdapteesSoumis
 
 
 class DonneesAvisSoumis(Donnees):
