@@ -38,6 +38,7 @@ class AvisSourcesAdaptees(BaseModel):
     valeur: Literal["oui, tout à fait", "oui, partiellement", "non"]
     commentaire: Optional[str] = None
     liste: Optional[str] = Field(default=None, validate_default=True)
+    raisons: Optional[list[str]] = Field(default=None, validate_default=True)
 
     @field_validator("liste")
     @classmethod
@@ -49,6 +50,32 @@ class AvisSourcesAdaptees(BaseModel):
         return valide_commentaire_avis(
             informations, commentaire, "l’avis sur les sources adaptées", "liste"
         )
+
+    @field_validator("raisons")
+    @classmethod
+    def raisons_obligatoire_si_sources_adaptees_negatives(
+        cls,
+        raisons: Optional[
+            list[Literal["Sources peu pertinentes", "Sources manquantes"]]
+        ],
+        informations: ValidationInfo,
+    ) -> Optional[list[Literal["Sources peu pertinentes", "Sources manquantes"]]]:
+        valeur = informations.data.get("valeur")
+        if valeur == "non":
+            if raisons is None or len(raisons) == 0:
+                raise ValueError(
+                    "Le champ 'raisons' est obligatoire lorsque l’avis sur les sources adaptées est non."
+                )
+
+            if (
+                "Sources peu pertinentes" not in raisons
+                and "Sources manquantes" not in raisons
+            ):
+                raise ValueError(
+                    "Le champ 'raisons' accepte comme valeurs 'Sources peu pertinentes', 'Sources manquantes'."
+                )
+
+        return raisons
 
 
 def valide_commentaire_avis(
