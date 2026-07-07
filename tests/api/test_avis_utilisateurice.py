@@ -99,14 +99,17 @@ def test_les_informations_erronees_sont_obligatoires_pour_un_avis_sur_la_pertine
         {
             "sources_adaptees": "",
             "message_attendu": "Value error, Le champ 'liste' est obligatoire lorsque l’avis sur les sources adaptées est non.",
+            "raisons": ["Sources peu pertinentes"],
         },
         {
             "sources_adaptees": "valeur pas assez longue",
             "message_attendu": "Value error, Le champ 'liste' doit contenir au moins 50 caractères.",
+            "raisons": ["Sources manquantes"],
         },
         {
             "sources_adaptees": "b" * 5_001,
             "message_attendu": "Value error, Le champ 'liste' ne peut contenir que 5000 caractères maximum.",
+            "raisons": ["Sources peu pertinentes", "Sources manquantes"],
         },
     ],
 )
@@ -136,6 +139,48 @@ def test_la_liste_des_sources_adaptees_est_obligatoire_si_l_avis_est_negatif(
     )
 
 
+@pytest.mark.parametrize(
+    "valeur_sources_adaptees",
+    [
+        {
+            "raisons": [],
+            "message_attendu": "Value error, Le champ 'raisons' est obligatoire lorsque l’avis sur les sources adaptées est non.",
+            "sources_adaptees": "Les sources non adaptées sont : les sources non adaptées",
+        },
+        {
+            "raisons": ["raison non valable"],
+            "message_attendu": "Value error, Le champ 'raisons' accepte comme valeurs 'Sources peu pertinentes', 'Sources manquantes'.",
+            "sources_adaptees": "Les sources non adaptées sont : les sources non adaptées",
+        },
+    ],
+)
+def test_les_raisons_sont_obligatoires_si_l_avis_est_negatif_pour_les_sources_adaptees(
+    valeur_sources_adaptees,
+    un_serveur_de_test,
+):
+    serveur = un_serveur_de_test()
+    client = TestClient(serveur)
+    payload = {
+        "id_interaction": "123",
+        "id_conversation": "456",
+        "avis": {
+            "sources_adaptees": {
+                "valeur": "non",
+                "liste": valeur_sources_adaptees.get("sources_adaptees"),
+                "raisons": valeur_sources_adaptees.get("raisons"),
+            },
+            "pertinence": {"valeur": "pertinente"},
+        },
+    }
+
+    reponse = client.post("/api/avis", json=payload)
+    print(reponse.json())
+    assert reponse.status_code == 422
+    assert reponse.json().get("detail")[0].get("msg") == valeur_sources_adaptees.get(
+        "message_attendu"
+    )
+
+
 def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
     adaptateur_journal = AdaptateurJournalMemoire()
     serveur = un_serveur_de_test(adaptateur_journal=adaptateur_journal)
@@ -147,6 +192,7 @@ def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
             "sources_adaptees": {
                 "valeur": "non",
                 "liste": "Les sources adaptées pour la complétude sont : les sources adaptées",
+                "raisons": ["Sources peu pertinentes"],
             },
             "pertinence": {"valeur": "pertinente"},
         },

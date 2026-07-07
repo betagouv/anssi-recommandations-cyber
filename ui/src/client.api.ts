@@ -166,6 +166,10 @@ const soumetsAvisUtilisateurBisAPI = async (avis: AvisUtilisateurBis) => {
         ...(avis.sourcesAdaptees.valeur === 'Non' && {
           liste: avis.sourcesAdaptees.liste,
         }),
+        ...(avis.sourcesAdaptees.raisons &&
+          avis.sourcesAdaptees.raisons?.length > 0 && {
+            raisons: avis.sourcesAdaptees.raisons,
+          }),
       },
     },
   };
