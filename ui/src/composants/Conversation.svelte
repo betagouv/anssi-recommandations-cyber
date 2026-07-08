@@ -43,7 +43,18 @@
       if (!container) {
         return;
       }
-      const leDernierMessage = [...container.querySelectorAll('.message')]
+      const leDernierMessage = [...container.querySelectorAll('.utilisateur')]
+        .filter((element) => !(element as HTMLElement).inert)
+        .at(-1);
+      leDernierMessage?.scrollIntoView({ block: 'start' });
+    });
+  });
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $storeAffichage.enAttenteDeReponse;
+    tick().then(() => {
+      const leDernierMessage = [...document.querySelectorAll('.utilisateur')]
         .filter((element) => !(element as HTMLElement).inert)
         .at(-1);
       leDernierMessage?.scrollIntoView({ block: 'start' });
