@@ -8,12 +8,12 @@
   const { message }: Props = $props();
 
   let sourceCourante = $state(0);
+  let listeElement: HTMLDivElement | undefined = $state();
 
   const deplaceADroite = () => {
-    const liste = document.querySelector('.sources-liste');
-    if (liste) {
+    if (listeElement) {
       sourceCourante += 1;
-      const elementListe = liste.children.item(sourceCourante);
+      const elementListe = listeElement.children.item(sourceCourante);
       elementListe?.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
@@ -23,10 +23,9 @@
   };
 
   const deplaceAGauche = () => {
-    const liste = document.querySelector('.sources-liste');
-    if (liste) {
+    if (listeElement) {
       sourceCourante -= 1;
-      const elementListe = liste.children.item(sourceCourante);
+      const elementListe = listeElement.children.item(sourceCourante);
       elementListe?.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
@@ -62,7 +61,7 @@
           onclick={deplaceADroite}
         ></dsfr-button>
       </div>
-      <div class="sources-liste">
+      <div class="sources-liste" bind:this={listeElement}>
         {#each message.references as reference, index (index)}
           {@const titreDuLien =
             reference.numero_page > 0
