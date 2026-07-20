@@ -31,7 +31,11 @@ class ClientAlbert(ABC):
 
     @abstractmethod
     def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam], modele: str | None = None
+        self,
+        messages: list[ChatCompletionMessageParam],
+        modele: str | None = None,
+        contexte: str = "generation",
+        temperature: float | None = None,
     ) -> list[Choice]:
         pass
 

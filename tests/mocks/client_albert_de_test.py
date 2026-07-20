@@ -159,6 +159,11 @@ class ClientAlbertMemoire(ClientAlbert):
         self.choix = []
         self.resultats_jeopardy = []
         self.payload_jeopardy_recu = None
+        self.choix_par_appel = []
+        self.appels_recupere_propositions = 0
+        self.messages_recus_par_appel = []
+        self.contextes_recus = []
+        self.temperatures_recues = []
         self.appels_recherche = 0
         self.resultats_par_appel = []
         self.chunks_par_id = []
@@ -201,9 +206,20 @@ class ClientAlbertMemoire(ClientAlbert):
         return un_resultat_de_recherche().construis()
 
     def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam], modele: str | None = None
+        self,
+        messages: list[ChatCompletionMessageParam],
+        modele: str | None = None,
+        contexte: str = "generation",
+        temperature: float | None = None,
     ) -> list[Choice]:
         self.messages_recus = messages
+        self.messages_recus_par_appel.append(messages)
+        self.contextes_recus.append(contexte)
+        self.temperatures_recues.append(temperature)
+        if self.choix_par_appel:
+            choix = self.choix_par_appel[self.appels_recupere_propositions]
+            self.appels_recupere_propositions += 1
+            return choix
         return self.choix if self.propositions_vides is False else []
 
     def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
@@ -229,6 +245,9 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_propositions(self, choix: list[Choice]):
         self.choix.extend(choix)
+
+    def avec_les_propositions_par_appel(self, choix_par_appel: list[list[Choice]]):
+        self.choix_par_appel = choix_par_appel
 
     def qui_leve_une_erreur_sur_recherche(self):
         self.leve_une_erreur_sur_recherche = True
