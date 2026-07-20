@@ -92,9 +92,7 @@ class ReclasseurLLM(Reclasseur):
                 ),
             }
         ]
-        propositions = self.client.recupere_propositions(
-            messages, contexte="reclassement_llm", temperature=0
-        )
+        propositions = self.client.recupere_propositions(messages, temperature=0)
         contenu = cast(str, propositions[0].message.content)
         resultat = json.loads(contenu)
         categories = {

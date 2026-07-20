@@ -34,7 +34,6 @@ class ClientAlbert(ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
-        contexte: str = "generation",
         temperature: float | None = None,
     ) -> list[Choice]:
         pass
