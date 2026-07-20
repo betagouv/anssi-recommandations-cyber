@@ -161,7 +161,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self.payload_jeopardy_recu = None
         self.choix_par_appel = []
         self.appels_recupere_propositions = 0
-        self.messages_recus_par_appel = []
+        self.messages_envoyes_pour_les_propositions = []
         self.contextes_recus = []
         self.temperatures_recues = []
         self.appels_recherche = 0
@@ -213,7 +213,7 @@ class ClientAlbertMemoire(ClientAlbert):
         temperature: float | None = None,
     ) -> list[Choice]:
         self.messages_recus = messages
-        self.messages_recus_par_appel.append(messages)
+        self.messages_envoyes_pour_les_propositions.append(messages)
         self.contextes_recus.append(contexte)
         self.temperatures_recues.append(temperature)
         if self.choix_par_appel:

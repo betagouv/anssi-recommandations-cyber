@@ -110,7 +110,7 @@ class ServiceAlbert:
             method=methode_recherche,
         )
 
-        def _transforme_en_paragraphe(donnee):
+        def _transforme_en_paragraphe(donnee, rang):
             id_reponse = donnee.chunk.metadata.id_reponse
 
             if id_reponse:
@@ -122,6 +122,7 @@ class ServiceAlbert:
                     numero_page=donnee.chunk.metadata.page,
                     nom_document=donnee.chunk.metadata.nom_document,
                     reponse=reponse_texte,
+                    rang_initial=1,
                 )
 
             return Paragraphe(
@@ -130,11 +131,12 @@ class ServiceAlbert:
                 score_similarite=donnee.score,
                 numero_page=donnee.chunk.metadata.page,
                 nom_document=donnee.chunk.metadata.nom_document,
+                rang_initial=rang,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
         paragraphes_classiques = [
-            _transforme_en_paragraphe(donnee).model_copy(update={"rang_initial": rang})
+            _transforme_en_paragraphe(donnee, rang)
             for rang, donnee in enumerate(donnees_classiques, 1)
         ]
 
