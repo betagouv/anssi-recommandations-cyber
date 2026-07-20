@@ -1,18 +1,17 @@
-from typing import Optional, cast, NamedTuple, Union
-
 from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionUserMessageParam,
 )
 from openai.types.chat.chat_completion import Choice
+from typing import Optional, cast, NamedTuple, Union
 
 from configuration import Albert, TypeReclasseur
+from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
     Paragraphe,
     RecherchePayload,
     ReponseQuestion,
-    ReclassePayload,
     ParagrapheReponseMaitrisee,
 )
 from schemas.retour_utilisatrice import Conversation
@@ -25,7 +24,6 @@ from schemas.violations import (
     ViolationQuestionNonComprise,
     REPONSE_PAR_DEFAUT,
 )
-from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from services.client_albert import ClientAlbert
 from services.reclasseur import (
     Reclasseur,
@@ -42,8 +40,7 @@ def _filtre_reponses_maitrisees(
     maitrisees: list[Union[Paragraphe | ParagrapheReponseMaitrisee]] = [
         p
         for p in paragraphes
-        if isinstance(p, ParagrapheReponseMaitrisee)
-        and p.score_reclassement >= seuil
+        if isinstance(p, ParagrapheReponseMaitrisee) and p.score_reclassement >= seuil
     ]
     return maitrisees if maitrisees else paragraphes
 
@@ -137,9 +134,7 @@ class ServiceAlbert:
 
         donnees_classiques = self.client.recherche(payload_classique)
         paragraphes_classiques = [
-            _transforme_en_paragraphe(donnee).model_copy(
-                update={"rang_initial": rang}
-            )
+            _transforme_en_paragraphe(donnee).model_copy(update={"rang_initial": rang})
             for rang, donnee in enumerate(donnees_classiques, 1)
         ]
 
@@ -246,14 +241,6 @@ class ServiceAlbert:
             question_reformulee=question_reformulee,
             violation=violation_resultat,
         )
-
-    def reclasse(self, payload: ReclassePayload):
-        return ReclasseurBGE(
-            self.client,
-            self.modele_reclassement,
-            self.prompt_reclassement,
-            self.nombre_paragraphes,
-        ).reclasse_payload(payload)
 
     def __effectue_recuperation_propositions(
         self,
