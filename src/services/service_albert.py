@@ -65,7 +65,6 @@ class ServiceAlbert:
         )
         self.reclassement_active = configuration_service_albert.reclassement_active
         self.jeopardy_active = configuration_service_albert.jeopardy_active
-        self.modele_reclassement = configuration_service_albert.modele_reclassement
         self.seuil_reponse_maitrisee = (
             configuration_service_albert.seuil_reponse_maitrisee
         )
@@ -74,7 +73,6 @@ class ServiceAlbert:
         )
         self.nombre_paragraphes = configuration_service_albert.nombre_paragraphes
         self.prompt_systeme = prompts.prompt_systeme
-        self.prompt_reclassement = prompts.prompt_reclassement
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
         self.reformulateur = reformulateur
