@@ -60,7 +60,6 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
         collection_nom_anssi_lab="",
         id_collection_anssi_lab=157814,
         id_collection_anssi_lab_jeopardy=161155,
-        reclassement_active=False,
         modele_reclassement="",
         taille_fenetre_historique=2,
         jeopardy_active=False,
@@ -128,12 +127,11 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(un_recla
         collection_nom_anssi_lab="",
         id_collection_anssi_lab=157814,
         id_collection_anssi_lab_jeopardy=161155,
-        reclassement_active=False,
         modele_reclassement="",
         taille_fenetre_historique=2,
         jeopardy_active=True,
         seuil_reponse_maitrisee=0.5,
-        nombre_paragraphes=5,
+        nombre_paragraphes=10,
     )
 
     service_albert = ServiceAlbert(
@@ -186,7 +184,6 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
         collection_nom_anssi_lab="",
         id_collection_anssi_lab=157814,
         id_collection_anssi_lab_jeopardy=161155,
-        reclassement_active=False,
         modele_reclassement="",
         taille_fenetre_historique=2,
         jeopardy_active=True,
@@ -252,7 +249,6 @@ def test_recherche_paragraphes_limite_a_20_candidats(un_reclasseur):
         collection_nom_anssi_lab="",
         id_collection_anssi_lab=157814,
         id_collection_anssi_lab_jeopardy=161155,
-        reclassement_active=True,
         modele_reclassement="",
         taille_fenetre_historique=2,
         jeopardy_active=True,

@@ -66,7 +66,6 @@ class ServiceAlbertMemoire(ServiceAlbert):
                 collection_nom_anssi_lab="",
                 id_collection_anssi_lab=1,
                 id_collection_anssi_lab_jeopardy=2,
-                reclassement_active=False,
                 modele_reclassement="",
                 taille_fenetre_historique=2,
                 jeopardy_active=False,

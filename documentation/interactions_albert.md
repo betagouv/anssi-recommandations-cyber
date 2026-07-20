@@ -52,7 +52,7 @@ complet ; les résultats sont fusionnés et dédoublonnés avec ceux de l'étape
 
 `service_albert.py:137 → POST /search (collection jeopardy) · GET /documents/{id_document}/chunks/{id_chunk} (un appel par résultat)`
 
-### ③ Reclassement des paragraphes — REST (si reclassement_active)
+### ③ Reclassement des paragraphes — REST 
 
 `reclasse()` envoie les paragraphes candidats au modèle de reclassement ; les résultats sont retriés par score, puis
 filtrés sur les « réponses maîtrisées » (FAQ) au-delà d'un seuil.

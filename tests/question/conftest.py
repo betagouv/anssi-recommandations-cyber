@@ -122,7 +122,6 @@ def un_service_albert_avec_un_client_memoire(
                 collection_nom_anssi_lab="",
                 id_collection_anssi_lab=42,
                 id_collection_anssi_lab_jeopardy=43,
-                reclassement_active=False,
                 modele_reclassement="Aucun",
                 taille_fenetre_historique=10,
                 jeopardy_active=False,
