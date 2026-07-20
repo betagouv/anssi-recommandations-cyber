@@ -8,7 +8,7 @@ from client_albert_de_test import (
     un_constructeur_de_reponse_de_reclassement,
 )
 from client_albert_de_test import ConstructeurDeChoix
-from configuration import Albert
+from configuration import Albert, TypeReclasseur
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
@@ -22,6 +22,7 @@ from schemas.violations import (
     ViolationMalveillance,
     ViolationThematique,
     ViolationQuestionNonComprise,
+    ViolationMeconnaissance,
 )
 from services.service_albert import ServiceAlbert, Prompts
 
@@ -999,3 +1000,185 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee():
         paragraphe_attendu.contexte_dans_le_document
         == "Quel est le directeur de l'ANSSI ?\nVincent Strubel"
     )
+
+
+def une_configuration(
+    type_reclasseur: TypeReclasseur, seuil_reponse_maitrisee: float = 0.5
+) -> Albert.Service:  # type: ignore[name-defined, attr-defined]
+    return Albert.Service(  # type: ignore[attr-defined]
+        collection_nom_anssi_lab="",
+        id_collection_anssi_lab=42,
+        id_collection_anssi_lab_jeopardy=43,
+        reclassement_active=True,
+        modele_reclassement="bge-reranker-v2-m3",
+        taille_fenetre_historique=2,
+        jeopardy_active=False,
+        seuil_reponse_maitrisee=seuil_reponse_maitrisee,
+        nombre_paragraphes=1,
+        type_reclasseur=type_reclasseur,
+    )
+
+
+def construit_service(
+    client: ClientAlbertMemoire, type_reclasseur: TypeReclasseur
+) -> ServiceAlbert:
+    prompt_reclassement = (
+        "Question BGE : {QUESTION}"
+        if type_reclasseur is TypeReclasseur.BGE
+        else PROMPTS.prompt_reclassement
+    )
+    return ServiceAlbert(
+        configuration_service_albert=une_configuration(type_reclasseur),
+        client=client,
+        utilise_recherche_hybride=False,
+        prompts=Prompts(
+            prompt_systeme=PROMPTS.prompt_systeme,
+            prompt_reclassement=prompt_reclassement,
+        ),
+        reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
+    )
+
+
+def test_reclassement_llm_retourne_une_meconnaissance_sans_appeler_la_generation_si_aucun_passage_n_est_utile():
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu("Une bibliographie.")
+            .construis()
+        ]
+    )
+    client.avec_les_propositions_par_appel(
+        [
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(
+                    json.dumps(
+                        {
+                            "evaluations": [
+                                {"id": 1, "categorie": "dans_la_thematique_sans_apport"}
+                            ],
+                            "ids_retenus": [],
+                        }
+                    )
+                )
+                .construis()
+            ]
+        ]
+    )
+
+    reponse = construit_service(client, TypeReclasseur.LLM).pose_question(
+        question="Question ?"
+    )
+
+    assert reponse.violation == ViolationMeconnaissance()
+    assert reponse.paragraphes == []
+    assert len(client.messages_envoyes_pour_les_propositions) == 1
+
+
+def test_reclasseur_llm_donne_priorite_a_une_reponse_maitrisee_retenue():
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu("Réponse maîtrisée")
+            .ayant_reponse_maitrisee("reponse-maitrisee")
+            .construis(),
+            un_resultat_de_recherche().ayant_pour_contenu("Autre preuve").construis(),
+        ]
+    )
+    client.avec_les_propositions_par_appel(
+        [
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(
+                    json.dumps(
+                        {
+                            "evaluations": [
+                                {"id": 1, "categorie": "preuve_principale"},
+                                {"id": 2, "categorie": "preuve_principale"},
+                            ],
+                            "ids_retenus": [2, 1],
+                        }
+                    )
+                )
+                .construis()
+            ],
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu("Réponse finale")
+                .construis()
+            ],
+        ]
+    )
+    service = ServiceAlbert(
+        configuration_service_albert=une_configuration(TypeReclasseur.LLM),
+        client=client,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees(
+            {"reponse-maitrisee": "La réponse maîtrisée complète."}
+        ),
+    )
+
+    reponse = service.pose_question(question="Question ?")
+
+    assert [p.contenu for p in reponse.paragraphes] == ["Réponse maîtrisée"]
+
+
+def test_reclasseur_llm_ne_priorise_pas_une_reponse_maitrisee_sous_le_seuil():
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu("Réponse maîtrisée")
+            .ayant_reponse_maitrisee("reponse-maitrisee")
+            .construis(),
+            un_resultat_de_recherche().ayant_pour_contenu("Autre preuve").construis(),
+        ]
+    )
+    client.avec_les_propositions_par_appel(
+        [
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(
+                    json.dumps(
+                        {
+                            "evaluations": [
+                                {"id": 1, "categorie": "preuve_principale"},
+                                {"id": 2, "categorie": "preuve_principale"},
+                            ],
+                            "ids_retenus": [2, 1],
+                        }
+                    )
+                )
+                .construis()
+            ],
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu("Réponse finale")
+                .construis()
+            ],
+        ]
+    )
+    service = ServiceAlbert(
+        configuration_service_albert=une_configuration(
+            TypeReclasseur.LLM, seuil_reponse_maitrisee=1.1
+        ),
+        client=client,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees(
+            {"reponse-maitrisee": "La réponse maîtrisée complète."}
+        ),
+    )
+
+    reponse = service.pose_question(question="Question ?")
+
+    assert [p.contenu for p in reponse.paragraphes] == [
+        "Autre preuve",
+        "Réponse maîtrisée",
+    ]

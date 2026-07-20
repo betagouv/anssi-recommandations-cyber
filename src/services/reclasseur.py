@@ -1,9 +1,7 @@
 import json
-import logging
 from abc import ABC, abstractmethod
-from typing import NamedTuple, cast
-
 from openai.types.chat import ChatCompletionMessageParam
+from typing import NamedTuple, cast
 
 from schemas.albert import Paragraphe, ReclassePayload
 from services.client_albert import ClientAlbert
@@ -98,7 +96,6 @@ class ReclasseurLLM(Reclasseur):
             messages, contexte="reclassement_llm", temperature=0
         )
         contenu = cast(str, propositions[0].message.content)
-        logging.info("[RECLASSEMENT_LLM] réponse JSON brute : %s", contenu)
         resultat = json.loads(contenu)
         categories = {
             evaluation["id"]: evaluation["categorie"]
@@ -114,12 +111,6 @@ class ReclasseurLLM(Reclasseur):
             for identifiant in resultat["ids_retenus"]
             if categories[identifiant] == self._CATEGORIE_RETENUE
         ]
-        logging.info(
-            "[RECLASSEMENT_LLM] %s candidat(s), %s preuve(s) principale(s) retenue(s), évaluations=%s",
-            len(paragraphes),
-            len(paragraphes_retenus),
-            sorted(categories.items()),
-        )
         return ResultatReclassement(
             paragraphes_retenus=paragraphes_retenus,
             tous_les_candidats=paragraphes,

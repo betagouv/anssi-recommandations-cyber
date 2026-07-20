@@ -33,6 +33,7 @@ class ConstructeurDeParagraphe:
         self.contenu = "un contenu"
         self.numero_page = random.randint(1, 100)
         self.nom_document = "Mon document"
+        self.rang_initial = 0
 
     def avec_contenu(self, contenu: str):
         self.contenu = contenu
@@ -51,6 +52,10 @@ class ConstructeurDeParagraphe:
         self.url = f"{self.url}/{nom_document}"
         return self
 
+    def avec_rang_initial(self, rang_initial: int):
+        self.rang_initial = rang_initial
+        return self
+
     def construis(self) -> Paragraphe:
         return Paragraphe(
             nom_document=self.nom_document,
@@ -58,6 +63,7 @@ class ConstructeurDeParagraphe:
             contenu=self.contenu,
             score_similarite=self.score_similarite,
             url=self.url,
+            rang_initial=self.rang_initial,
         )
 
 
