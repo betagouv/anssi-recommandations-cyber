@@ -12,7 +12,6 @@ def une_configuration_de_service_albert() -> Callable[[], Albert.Service]:  # ty
             collection_nom_anssi_lab="",
             id_collection_anssi_lab=42,
             id_collection_anssi_lab_jeopardy=43,
-            reclassement_active=False,
             modele_reclassement="Aucun",
             taille_fenetre_historique=10,
             jeopardy_active=False,

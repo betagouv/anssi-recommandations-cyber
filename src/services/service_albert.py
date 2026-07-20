@@ -63,7 +63,6 @@ class ServiceAlbert:
         self.id_collection_jeopardy = (
             configuration_service_albert.id_collection_anssi_lab_jeopardy
         )
-        self.reclassement_active = configuration_service_albert.reclassement_active
         self.jeopardy_active = configuration_service_albert.jeopardy_active
         self.seuil_reponse_maitrisee = (
             configuration_service_albert.seuil_reponse_maitrisee
@@ -81,9 +80,7 @@ class ServiceAlbert:
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
-        nombre_paragraphes_a_retourner = (
-            20 if self.reclassement_active else self.nombre_paragraphes
-        )
+        nombre_paragraphes_a_retourner = self.nombre_paragraphes
 
         payload_classique = RecherchePayload(
             collection_ids=[self.id_collection],
@@ -133,10 +130,7 @@ class ServiceAlbert:
                     paragraphes_uniques.append(p)
                     contenus_vus.add(p.contenu)
 
-            if self.reclassement_active:
-                return paragraphes_uniques[:20]
-            else:
-                return paragraphes_uniques
+            return paragraphes_uniques[:nombre_paragraphes_a_retourner]
         else:
             return paragraphes_classiques
 
@@ -289,7 +283,7 @@ class ServiceAlbert:
     def __effectue_reclassement(
         self, paragraphes: list[Paragraphe], question: str
     ) -> ResultatReclassement:
-        if self.reclassement_active and len(paragraphes) > 0:
+        if len(paragraphes) > 0:
             resultat = self.reclasseur.reclasse(question, paragraphes)
             return ResultatReclassement(
                 paragraphes_retenus=_filtre_reponses_maitrisees(

@@ -19,7 +19,6 @@ FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL = Albert.Service(  # type: ignor
     collection_nom_anssi_lab="",
     id_collection_anssi_lab=42,
     id_collection_anssi_lab_jeopardy=43,
-    reclassement_active=True,
     modele_reclassement="rerank-small",
     taille_fenetre_historique=2,
     jeopardy_active=False,

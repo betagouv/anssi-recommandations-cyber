@@ -48,7 +48,6 @@ class Albert(NamedTuple):
         collection_nom_anssi_lab: str
         id_collection_anssi_lab: int
         id_collection_anssi_lab_jeopardy: int
-        reclassement_active: bool
         modele_reclassement: str
         taille_fenetre_historique: int
         jeopardy_active: bool
@@ -204,15 +203,13 @@ def recupere_configuration() -> Configuration:
             id_collection_anssi_lab_jeopardy=int(
                 os.getenv("COLLECTION_ID_ANSSI_LAB_JEOPARDY", "4243")
             ),
-            reclassement_active=os.getenv("RECLASSEMENT_ACTIVE", "false").lower()
-            == "true",
             modele_reclassement=os.getenv("MODELE_RECLASSEMENT", "openweight-rerank"),
             taille_fenetre_historique=int(
                 os.getenv("ALBERT_TAILLE_FENETRE_HISTORIQUE", "10")
             ),
             jeopardy_active=os.getenv("JEOPARDY_ACTIVE", "false").lower() == "true",
             seuil_reponse_maitrisee=float(os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")),
-            nombre_paragraphes=int(os.getenv("NOMBRE_PARAGRAPHES", 0)),
+            nombre_paragraphes=int(os.getenv("NOMBRE_PARAGRAPHES", 10)),
             type_reclasseur=TypeReclasseur(os.getenv("TYPE_RECLASSEUR", "bge")),
         ),
     )
