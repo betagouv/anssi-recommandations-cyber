@@ -210,7 +210,11 @@ class ClientAlbertApi(ClientAlbert):
             )
 
     def recupere_propositions(
-        self, messages: list[ChatCompletionMessageParam], modele: str | None = None
+        self,
+        messages: list[ChatCompletionMessageParam],
+        modele: str | None = None,
+        contexte: str = "generation",
+        temperature: float | None = None,
     ) -> list[Choice]:
         modele_a_utiliser = modele if modele else self.modele_reponse
         try:
@@ -218,6 +222,7 @@ class ClientAlbertApi(ClientAlbert):
                 messages=messages,
                 model=modele_a_utiliser,
                 stream=False,
+                temperature=temperature,
             ).choices
             return propositions_albert
 
