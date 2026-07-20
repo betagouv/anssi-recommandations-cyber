@@ -209,12 +209,10 @@ class ClientAlbertMemoire(ClientAlbert):
         self,
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
-        contexte: str = "generation",
         temperature: float | None = None,
     ) -> list[Choice]:
         self.messages_recus = messages
         self.messages_envoyes_pour_les_propositions.append(messages)
-        self.contextes_recus.append(contexte)
         self.temperatures_recues.append(temperature)
         if self.choix_par_appel:
             choix = self.choix_par_appel[self.appels_recupere_propositions]

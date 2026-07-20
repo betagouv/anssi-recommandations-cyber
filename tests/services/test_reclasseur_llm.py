@@ -69,7 +69,6 @@ def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(
         == "R50 Stocker les mots de passe dans un coffre-fort."
     )
     assert reponse.paragraphes_retenus[0].score_reclassement == 1.0
-    assert client.contextes_recus == ["reclassement_llm"]
     assert client.temperatures_recues == [0]
     assert (
         "[PASSAGE id=1"
