@@ -209,7 +209,9 @@ def test_consigne_dans_le_journal_un_avis(un_serveur_de_test):
         evenements[0]["donnees"].avis.sources_adaptees.liste
         == "Les sources adaptées pour la complétude sont : les sources adaptées"
     )
-    assert evenements[0]["donnees"].avis.sources_adaptees.raisons == ["Sources peu pertinentes"]
+    assert evenements[0]["donnees"].avis.sources_adaptees.raisons == [
+        "Sources peu pertinentes"
+    ]
     assert evenements[0]["donnees"].avis.pertinence.valeur == "pertinente"
     assert evenements[0]["donnees"].avis.pertinence.informations_erronees is None
     assert evenements[0]["donnees"].avis.pertinence.commentaire is None

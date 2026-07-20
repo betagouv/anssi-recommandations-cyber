@@ -126,7 +126,7 @@ def ajoute_avis(
             valeur=requete.avis.sources_adaptees.valeur,
             commentaire=requete.avis.sources_adaptees.commentaire,
             liste=requete.avis.sources_adaptees.liste,
-            raisons=requete.avis.sources_adaptees.raisons
+            raisons=requete.avis.sources_adaptees.raisons,
         ),
     )
     adaptateur_journal.consigne_evenement(

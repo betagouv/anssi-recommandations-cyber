@@ -16,8 +16,7 @@ from services.service_albert import Prompts, ServiceAlbert
 PROMPTS = Prompts(
     prompt_systeme="Documents : {chunks}",
     prompt_reclassement=(
-        "Question : {QUESTION}\n\nCandidats :\n{CANDIDATS}\n\n"
-        "Retourne du JSON."
+        "Question : {QUESTION}\n\nCandidats :\n{CANDIDATS}\n\nRetourne du JSON."
     ),
 )
 
@@ -128,7 +127,11 @@ def test_reclasseur_llm_envoie_les_candidats_et_ne_conserve_que_les_preuves_prin
                 )
                 .construis()
             ],
-            [un_choix_de_proposition().ayant_pour_contenu("Réponse finale").construis()],
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu("Réponse finale")
+                .construis()
+            ],
         ]
     )
 
@@ -144,9 +147,18 @@ def test_reclasseur_llm_envoie_les_candidats_et_ne_conserve_que_les_preuves_prin
     assert client.temperatures_recues == [0, None]
     assert "[PASSAGE id=1" in client.messages_recus_par_appel[0][0]["content"]
     assert "rang_initial=1" in client.messages_recus_par_appel[0][0]["content"]
-    assert "R50 Stocker les mots de passe dans un coffre-fort." in client.messages_recus_par_appel[0][0]["content"]
-    assert "Passage dans la thématique, sans réponse" not in client.messages_recus_par_appel[1][0]["content"]
-    assert "Une recommandation complémentaire utile." not in client.messages_recus_par_appel[1][0]["content"]
+    assert (
+        "R50 Stocker les mots de passe dans un coffre-fort."
+        in client.messages_recus_par_appel[0][0]["content"]
+    )
+    assert (
+        "Passage dans la thématique, sans réponse"
+        not in client.messages_recus_par_appel[1][0]["content"]
+    )
+    assert (
+        "Une recommandation complémentaire utile."
+        not in client.messages_recus_par_appel[1][0]["content"]
+    )
     assert "[RECLASSEMENT_LLM] réponse JSON brute" in caplog.text
     assert '"ids_retenus": [3, 2]' in caplog.text
 
@@ -154,7 +166,11 @@ def test_reclasseur_llm_envoie_les_candidats_et_ne_conserve_que_les_preuves_prin
 def test_reclasseur_llm_retourne_une_meconnaissance_sans_appeler_la_generation_si_aucun_passage_n_est_utile():
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
-        [un_resultat_de_recherche().ayant_pour_contenu("Une bibliographie.").construis()]
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu("Une bibliographie.")
+            .construis()
+        ]
     )
     client.avec_les_propositions_par_appel(
         [
@@ -175,7 +191,9 @@ def test_reclasseur_llm_retourne_une_meconnaissance_sans_appeler_la_generation_s
         ]
     )
 
-    reponse = construit_service(client, TypeReclasseur.LLM).pose_question(question="Question ?")
+    reponse = construit_service(client, TypeReclasseur.LLM).pose_question(
+        question="Question ?"
+    )
 
     assert reponse.violation == ViolationMeconnaissance()
     assert reponse.paragraphes == []
@@ -190,9 +208,7 @@ def test_reclasseur_llm_donne_priorite_a_une_reponse_maitrisee_retenue():
             .ayant_pour_contenu("Réponse maîtrisée")
             .ayant_reponse_maitrisee("reponse-maitrisee")
             .construis(),
-            un_resultat_de_recherche()
-            .ayant_pour_contenu("Autre preuve")
-            .construis(),
+            un_resultat_de_recherche().ayant_pour_contenu("Autre preuve").construis(),
         ]
     )
     client.avec_les_propositions_par_appel(
@@ -212,7 +228,11 @@ def test_reclasseur_llm_donne_priorite_a_une_reponse_maitrisee_retenue():
                 )
                 .construis()
             ],
-            [un_choix_de_proposition().ayant_pour_contenu("Réponse finale").construis()],
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu("Réponse finale")
+                .construis()
+            ],
         ]
     )
     service = ServiceAlbert(
@@ -239,9 +259,7 @@ def test_reclasseur_llm_ne_priorise_pas_une_reponse_maitrisee_sous_le_seuil():
             .ayant_pour_contenu("Réponse maîtrisée")
             .ayant_reponse_maitrisee("reponse-maitrisee")
             .construis(),
-            un_resultat_de_recherche()
-            .ayant_pour_contenu("Autre preuve")
-            .construis(),
+            un_resultat_de_recherche().ayant_pour_contenu("Autre preuve").construis(),
         ]
     )
     client.avec_les_propositions_par_appel(
@@ -261,7 +279,11 @@ def test_reclasseur_llm_ne_priorise_pas_une_reponse_maitrisee_sous_le_seuil():
                 )
                 .construis()
             ],
-            [un_choix_de_proposition().ayant_pour_contenu("Réponse finale").construis()],
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu("Réponse finale")
+                .construis()
+            ],
         ]
     )
     service = ServiceAlbert(
