@@ -28,6 +28,11 @@ class VariablesEnvironnementNecessaires(TypedDict):
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
+class TypeReclasseur(StrEnum):
+    BGE = "bge"
+    LLM = "llm"
+
+
 class Albert(NamedTuple):
     class Client(NamedTuple):
         api_key: str
@@ -49,6 +54,7 @@ class Albert(NamedTuple):
         jeopardy_active: bool
         seuil_reponse_maitrisee: float
         nombre_paragraphes: int
+        type_reclasseur: TypeReclasseur = TypeReclasseur.BGE
 
     client: Client
     service: Service
@@ -207,6 +213,7 @@ def recupere_configuration() -> Configuration:
             jeopardy_active=os.getenv("JEOPARDY_ACTIVE", "false").lower() == "true",
             seuil_reponse_maitrisee=float(os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")),
             nombre_paragraphes=int(os.getenv("NOMBRE_PARAGRAPHES", 0)),
+            type_reclasseur=TypeReclasseur(os.getenv("TYPE_RECLASSEUR", "bge")),
         ),
     )
     configuration_base_de_donnees = _recupere_configuration_postgres(

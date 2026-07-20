@@ -3,7 +3,7 @@ from pathlib import Path
 
 import requests
 
-from configuration import recupere_configuration
+from configuration import TypeReclasseur, recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
@@ -37,7 +37,12 @@ def fabrique_service_albert() -> ServiceAlbert:
 
     client_albert_api = fabrique_client_albert(configuration.albert.client)
     prompt_systeme = lis_fichier_prompt("prompt_assistant_cyber.txt")
-    prompt_reclassement = lis_fichier_prompt("prompt_reclassement.txt")
+    nom_fichier_prompt_reclassement = (
+        "prompt_reclassement_llm.txt"
+        if configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
+        else "prompt_reclassement.txt"
+    )
+    prompt_reclassement = lis_fichier_prompt(nom_fichier_prompt_reclassement)
     prompt_reformulation = lis_fichier_prompt("prompt_reformulation.txt")
 
     reformulateur = ReformulateurDeQuestion(
@@ -51,7 +56,8 @@ def fabrique_service_albert() -> ServiceAlbert:
         client=client_albert_api,
         utilise_recherche_hybride=configuration.albert.client.utilise_recherche_hybride,
         prompts=Prompts(
-            prompt_systeme=prompt_systeme, prompt_reclassement=prompt_reclassement
+            prompt_systeme=prompt_systeme,
+            prompt_reclassement=prompt_reclassement,
         ),
         reformulateur=reformulateur,
         mapping_reponses=DepotMappingReponses.charger(

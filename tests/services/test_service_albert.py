@@ -1025,6 +1025,7 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee():
         numero_page=1,
         nom_document="",
         reponse="Vincent Strubel",
+        rang_initial=1,
     )
     assert paragraphes[0] == paragraphe_attendu
     assert (
