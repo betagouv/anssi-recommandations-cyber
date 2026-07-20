@@ -6,7 +6,7 @@ from openai.types.chat import (
 )
 from openai.types.chat.chat_completion import Choice
 
-from configuration import Albert
+from configuration import Albert, TypeReclasseur
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
     Paragraphe,
@@ -27,15 +27,23 @@ from schemas.violations import (
 )
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from services.client_albert import ClientAlbert
+from services.reclasseur import (
+    Reclasseur,
+    ReclasseurBGE,
+    ReclasseurLLM,
+    ResultatReclassement,
+)
 
 
 def _filtre_reponses_maitrisees(
-    paragraphes: list[Union[Paragraphe | ParagrapheReponseMaitrisee]], seuil: float
+    paragraphes: list[Union[Paragraphe | ParagrapheReponseMaitrisee]],
+    seuil: float,
 ) -> list[Union[Paragraphe | ParagrapheReponseMaitrisee]]:
     maitrisees: list[Union[Paragraphe | ParagrapheReponseMaitrisee]] = [
         p
         for p in paragraphes
-        if isinstance(p, ParagrapheReponseMaitrisee) and p.score_reclassement >= seuil
+        if isinstance(p, ParagrapheReponseMaitrisee)
+        and p.score_reclassement >= seuil
     ]
     return maitrisees if maitrisees else paragraphes
 
@@ -75,6 +83,22 @@ class ServiceAlbert:
         self.utilise_recherche_hybride = utilise_recherche_hybride
         self.reformulateur = reformulateur
         self.mapping_reponses = mapping_reponses
+        self.reclasseur: Reclasseur = self.__fabrique_reclasseur(
+            configuration_service_albert.type_reclasseur,
+            self.prompt_reclassement,
+        )
+
+    def __fabrique_reclasseur(
+        self, type_reclasseur: TypeReclasseur, prompt_reclassement: str
+    ) -> Reclasseur:
+        if type_reclasseur is TypeReclasseur.LLM:
+            return ReclasseurLLM(self.client, prompt_reclassement)
+        return ReclasseurBGE(
+            self.client,
+            self.modele_reclassement,
+            self.prompt_reclassement,
+            self.nombre_paragraphes,
+        )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
@@ -112,9 +136,12 @@ class ServiceAlbert:
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
-        paragraphes_classiques = list(
-            map(_transforme_en_paragraphe, donnees_classiques)
-        )
+        paragraphes_classiques = [
+            _transforme_en_paragraphe(donnee).model_copy(
+                update={"rang_initial": rang}
+            )
+            for rang, donnee in enumerate(donnees_classiques, 1)
+        ]
 
         if self.jeopardy_active:
             paragraphes_jeopardy = self.__recherche_dans_collection_jeopardy(question)
@@ -149,7 +176,7 @@ class ServiceAlbert:
             return []
 
         paragraphes = []
-        for resultat in resultats_jeopardy:
+        for rang, resultat in enumerate(resultats_jeopardy, 1):
             id_document = resultat.chunk.metadata.source_id_document
             id_chunk = resultat.chunk.metadata.source_id_chunk
             donnee = self.client.recherche_chunk_par_id(id_document, id_chunk)
@@ -160,6 +187,7 @@ class ServiceAlbert:
                     score_similarite=resultat.score,
                     numero_page=donnee.chunk.metadata.page,
                     nom_document=donnee.chunk.metadata.nom_document,
+                    rang_initial=rang,
                 )
             )
         return paragraphes
@@ -188,9 +216,19 @@ class ServiceAlbert:
             question_reformulee if question_reformulee else question
         )
         recherche_paragraphes = self.recherche_paragraphes(question_pour_recherche)
-        paragraphes = self.__effectue_reclassement(
+        resultat_reclassement = self.__effectue_reclassement(
             recherche_paragraphes, question_pour_recherche
         )
+        if resultat_reclassement.aucune_source_utile:
+            violation_meconnaissance = ViolationMeconnaissance()
+            return ReponseQuestion(
+                reponse=violation_meconnaissance.reponse,
+                paragraphes=[],
+                question=question,
+                question_reformulee=question_reformulee,
+                violation=violation_meconnaissance,
+            )
+        paragraphes = resultat_reclassement.paragraphes_retenus
         propositions_albert = self.__effectue_recuperation_propositions(
             paragraphes, prompt, question_pour_recherche, conversation
         )
@@ -210,18 +248,12 @@ class ServiceAlbert:
         )
 
     def reclasse(self, payload: ReclassePayload):
-        resultat_du_reclassement = self.client.reclasse(payload)
-
-        resultats_reclassement_donnees = resultat_du_reclassement.data
-        resultats_reclassement_donnees.sort(key=lambda data: data.score, reverse=True)
-        index_tries = list(map(lambda d: d.index, resultats_reclassement_donnees))
-        scores_tries = list(map(lambda d: d.score, resultats_reclassement_donnees))
-        toutes_les_entrees = payload.documents
-
-        return {
-            "paragraphes_tries": [toutes_les_entrees[i] for i in index_tries],
-            "scores_tries": scores_tries,
-        }
+        return ReclasseurBGE(
+            self.client,
+            self.modele_reclassement,
+            self.prompt_reclassement,
+            self.nombre_paragraphes,
+        ).reclasse_payload(payload)
 
     def __effectue_recuperation_propositions(
         self,
@@ -285,34 +317,21 @@ class ServiceAlbert:
 
     def __effectue_reclassement(
         self, paragraphes: list[Paragraphe], question: str
-    ) -> list[Paragraphe]:
+    ) -> ResultatReclassement:
         if self.reclassement_active and len(paragraphes) > 0:
-            prompt_reclassement_avec_question = self.prompt_reclassement.format(
-                QUESTION=question
+            resultat = self.reclasseur.reclasse(question, paragraphes)
+            return ResultatReclassement(
+                paragraphes_retenus=_filtre_reponses_maitrisees(
+                    resultat.paragraphes_retenus,
+                    self.seuil_reponse_maitrisee,
+                ),
+                tous_les_candidats=resultat.tous_les_candidats,
+                aucune_source_utile=resultat.aucune_source_utile,
             )
-            reclasse_payload = ReclassePayload(
-                query=prompt_reclassement_avec_question,
-                documents=list(map(lambda p: p.contenu, paragraphes)),
-                model=self.modele_reclassement,
-            )
-            reclassement = self.reclasse(reclasse_payload)
-
-            contenus_tries = reclassement["paragraphes_tries"]
-            scores_tries = reclassement["scores_tries"]
-            reclassement_non_vide = len(contenus_tries) > 0
-            if reclassement_non_vide:
-                paragraphes_a_filtrer = [
-                    next(p for p in paragraphes if p.contenu == contenu).model_copy(
-                        update={"score_reclassement": score}
-                    )
-                    for contenu, score in zip(contenus_tries, scores_tries)
-                ][: self.nombre_paragraphes]
-            else:
-                paragraphes_a_filtrer = paragraphes[: self.nombre_paragraphes]
-            return _filtre_reponses_maitrisees(
-                paragraphes_a_filtrer, self.seuil_reponse_maitrisee
-            )
-        return paragraphes
+        return ResultatReclassement(
+            paragraphes_retenus=paragraphes,
+            tous_les_candidats=paragraphes,
+        )
 
     def _recupere_reponse_paragraphes_et_violation(
         self, propositions_albert: list[Choice], paragraphes: list[Paragraphe]

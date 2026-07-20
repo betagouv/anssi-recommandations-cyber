@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import NamedTuple, Optional
 from schemas.violations import Violation
 
@@ -10,6 +10,7 @@ class Paragraphe(BaseModel):
     url: str
     nom_document: str
     contenu: str
+    rang_initial: int = Field(default=0, exclude=True)
 
     @property
     def contexte_dans_le_document(self):
