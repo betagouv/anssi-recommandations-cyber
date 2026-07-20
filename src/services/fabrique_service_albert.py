@@ -7,6 +7,7 @@ from configuration import TypeReclasseur, recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
+from services.reclasseur import ReclasseurBGE, ReclasseurLLM
 from services.service_albert import ServiceAlbert, Prompts
 
 URL_MAPPING_PAR_DEFAUT = "https://raw.githubusercontent.com/betagouv/anssi-recommandations-cyber-data/refs/heads/main/donnees/collection_reponses_maitrisees/faq_reponses_maitrisees.mapping.json"
@@ -51,6 +52,17 @@ def fabrique_service_albert() -> ServiceAlbert:
         modele_reformulation=configuration.albert.client.modele_reformulation,
     )
 
+    reclasseur = (
+        ReclasseurLLM(client_albert_api, prompt_reclassement)
+        if configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
+        else ReclasseurBGE(
+            client_albert_api,
+            configuration.albert.service.modele_reclassement,
+            prompt_reclassement,
+            configuration.albert.service.nombre_paragraphes,
+        )
+    )
+
     return ServiceAlbert(
         configuration_service_albert=configuration.albert.service,
         client=client_albert_api,
@@ -64,6 +76,7 @@ def fabrique_service_albert() -> ServiceAlbert:
             URL_MAPPING_PAR_DEFAUT,
             requests.Session(),
         ),
+        reclasseur=reclasseur,
     )
 
 
