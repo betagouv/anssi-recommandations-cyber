@@ -1,6 +1,6 @@
 import json
-
 import pytest
+
 from client_albert_de_test import (
     ClientAlbertMemoire,
     un_resultat_de_recherche,
@@ -8,15 +8,11 @@ from client_albert_de_test import (
     un_constructeur_de_reponse_de_reclassement,
 )
 from client_albert_de_test import ConstructeurDeChoix
-
 from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import (
-    ReclasseReponse,
-    ResultatReclasse,
-    ReclassePayload,
     ParagrapheReponseMaitrisee,
 )
 from schemas.violations import (
@@ -251,35 +247,6 @@ def test_pose_question_illegale(erreur: str, violation_attendue: Violation):
     assert retour.reponse == violation_attendue.reponse
     assert retour.paragraphes == []
     assert retour.violation == violation_attendue
-
-
-def test_reclasse_les_paragraphes():
-    client_albert_memoire = ClientAlbertMemoire()
-    client_albert_memoire.avec_le_reclassement(
-        ReclasseReponse(
-            data=[
-                ResultatReclasse(object="rerank", score=0.5, index=1),
-                ResultatReclasse(object="rerank", score=0.4, index=0),
-            ],
-        )
-    )
-
-    payload = ReclassePayload(
-        query="un prompt", documents=["texte1", "texte2"], model="albert_rerank"
-    )
-    reclassement = ServiceAlbert(
-        configuration_service_albert=FAUSSE_CONFIGURATION_ALBERT_SERVICE,
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
-        mapping_reponses=MappingReponsesMaitrisees({}),
-    ).reclasse(payload)
-
-    assert reclassement == {
-        "paragraphes_tries": ["texte2", "texte1"],
-        "scores_tries": [0.5, 0.4],
-    }
 
 
 def test_le_score_reclassement_est_propage_sur_le_paragraphe():

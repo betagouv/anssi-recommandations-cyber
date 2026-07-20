@@ -44,7 +44,7 @@ class ReclasseurBGE(Reclasseur):
             documents=[p.contenu for p in paragraphes],
             model=self.modele,
         )
-        reclassement = self.reclasse_payload(payload)
+        reclassement = self.__reclasse_payload(payload)
         contenus_tries = reclassement["paragraphes_tries"]
         scores_tries = reclassement["scores_tries"]
 
@@ -65,7 +65,7 @@ class ReclasseurBGE(Reclasseur):
             tous_les_candidats=paragraphes_tries,
         )
 
-    def reclasse_payload(self, payload: ReclassePayload) -> dict[str, list]:
+    def __reclasse_payload(self, payload: ReclassePayload) -> dict[str, list]:
         resultat = self.client.reclasse(payload)
         donnees = sorted(resultat.data, key=lambda data: data.score, reverse=True)
         return {
@@ -104,12 +104,12 @@ class ReclasseurLLM(Reclasseur):
             evaluation["id"]: evaluation["categorie"]
             for evaluation in resultat["evaluations"]
         }
-        paragraphes_par_id = {identifiant: p for identifiant, p in enumerate(paragraphes, 1)}
+        paragraphes_par_id = {
+            identifiant: p for identifiant, p in enumerate(paragraphes, 1)
+        }
         paragraphes_retenus = [
             paragraphes_par_id[identifiant].model_copy(
-                update={
-                    "score_reclassement": self._SCORE_PREUVE_PRINCIPALE
-                }
+                update={"score_reclassement": self._SCORE_PREUVE_PRINCIPALE}
             )
             for identifiant in resultat["ids_retenus"]
             if categories[identifiant] == self._CATEGORIE_RETENUE
