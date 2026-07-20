@@ -30,7 +30,7 @@ def test_recherche_chunk_par_id_utilise_api_documents():
     assert client_albert_memoire.id_chunk_recu == 73
 
 
-def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
+def test_recherche_jeopardy_utilise_recherche_chunk_par_id(un_reclasseur):
     client_albert_memoire = ClientAlbertMemoire()
     resultats_jeopardy = [
         ResultatRechercheJeopardy(
@@ -88,6 +88,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id():
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitriseesDeTest(),
+        reclasseur=un_reclasseur,
     )
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
         "Ma question ?"

@@ -28,7 +28,7 @@ FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL = Albert.Service(  # type: ignor
 )
 
 
-def test_retourne_uniquement_le_paragraphe_maitrise():
+def test_retourne_uniquement_le_paragraphe_maitrise(un_reclasseur):
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
         [
@@ -60,13 +60,16 @@ def test_retourne_uniquement_le_paragraphe_maitrise():
         mapping_reponses=MappingReponsesMaitrisees(
             {"question-maitrisee": "Une réponse."}
         ),
+        reclasseur=un_reclasseur,
     ).pose_question(question="Ma question ?")
 
     assert len(reponse.paragraphes) == 1
     assert isinstance(reponse.paragraphes[0], ParagrapheReponseMaitrisee)
 
 
-def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au_seuil():
+def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au_seuil(
+    un_reclasseur,
+):
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
         [
@@ -98,6 +101,7 @@ def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au
         mapping_reponses=MappingReponsesMaitrisees(
             {"qui-est-le-directeur-de-lanssi": "Vincent Strubel."}
         ),
+        reclasseur=un_reclasseur,
     ).pose_question(question="Qui est le directeur de l'ANSSI ?")
 
     assert len(reponse.paragraphes) == 1

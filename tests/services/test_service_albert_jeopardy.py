@@ -15,7 +15,7 @@ PROMPTS = Prompts(
 )
 
 
-def test_recherche_jeopardy_retourne_les_chunks_sources():
+def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
     client_albert_memoire = ClientAlbertMemoire()
 
     # Résultats jeopardy (questions générées)
@@ -75,6 +75,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources():
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
     )
 
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
@@ -87,7 +88,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources():
     assert client_albert_memoire.payload_jeopardy_recu.collection_ids == [161155]
 
 
-def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
+def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(un_reclasseur):
     client_albert_memoire = ClientAlbertMemoire()
 
     resultats_classiques = [
@@ -142,6 +143,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -149,7 +151,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy():
     assert len(paragraphes) == 10
 
 
-def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
+def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
     client_albert_memoire = ClientAlbertMemoire()
 
     resultats_classiques = [
@@ -199,6 +201,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -208,7 +211,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs():
     assert contenus.count("Chunk commun") == 1
 
 
-def test_recherche_paragraphes_limite_a_20_candidats():
+def test_recherche_paragraphes_limite_a_20_candidats(un_reclasseur):
     client_albert_memoire = ClientAlbertMemoire()
 
     resultats_classiques = [
@@ -264,6 +267,7 @@ def test_recherche_paragraphes_limite_a_20_candidats():
         prompts=PROMPTS,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")

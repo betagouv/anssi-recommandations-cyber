@@ -1,7 +1,6 @@
+import pytest
 import uuid
 from typing import Callable, Optional
-
-import pytest
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
@@ -112,9 +111,9 @@ def une_configuration_complete() -> Callable[
 
 
 @pytest.fixture()
-def un_service_albert_avec_un_client_memoire() -> Callable[
-    [ClientAlbertMemoire, Prompts], ServiceAlbert
-]:
+def un_service_albert_avec_un_client_memoire(
+    un_reclasseur,
+) -> Callable[[ClientAlbertMemoire, Prompts], ServiceAlbert]:
     def _un_service_albert_avec_un_client_memoire(
         client_albert_memoire: ClientAlbertMemoire, prompts: Prompts
     ) -> ServiceAlbert:
@@ -135,6 +134,7 @@ def un_service_albert_avec_un_client_memoire() -> Callable[
             prompts=prompts,
             reformulateur=ReformulateurDeQuestionDeTest(),
             mapping_reponses=MappingReponsesMaitriseesDeTest(),
+            reclasseur=un_reclasseur,
         )
 
     return _un_service_albert_avec_un_client_memoire

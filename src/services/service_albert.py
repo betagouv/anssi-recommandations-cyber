@@ -5,7 +5,7 @@ from openai.types.chat import (
 from openai.types.chat.chat_completion import Choice
 from typing import Optional, cast, NamedTuple, Union
 
-from configuration import Albert, TypeReclasseur
+from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
@@ -27,8 +27,6 @@ from schemas.violations import (
 from services.client_albert import ClientAlbert
 from services.reclasseur import (
     Reclasseur,
-    ReclasseurBGE,
-    ReclasseurLLM,
     ResultatReclassement,
 )
 
@@ -59,6 +57,7 @@ class ServiceAlbert:
         prompts: Prompts,
         reformulateur: ReformulateurDeQuestion,
         mapping_reponses: MappingReponsesMaitrisees,
+        reclasseur: Reclasseur,
     ) -> None:
         self.id_collection = configuration_service_albert.id_collection_anssi_lab
         self.id_collection_jeopardy = (
@@ -80,22 +79,7 @@ class ServiceAlbert:
         self.utilise_recherche_hybride = utilise_recherche_hybride
         self.reformulateur = reformulateur
         self.mapping_reponses = mapping_reponses
-        self.reclasseur: Reclasseur = self.__fabrique_reclasseur(
-            configuration_service_albert.type_reclasseur,
-            self.prompt_reclassement,
-        )
-
-    def __fabrique_reclasseur(
-        self, type_reclasseur: TypeReclasseur, prompt_reclassement: str
-    ) -> Reclasseur:
-        if type_reclasseur is TypeReclasseur.LLM:
-            return ReclasseurLLM(self.client, prompt_reclassement)
-        return ReclasseurBGE(
-            self.client,
-            self.modele_reclassement,
-            self.prompt_reclassement,
-            self.nombre_paragraphes,
-        )
+        self.reclasseur: Reclasseur = reclasseur
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"

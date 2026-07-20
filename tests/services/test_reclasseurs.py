@@ -4,7 +4,7 @@ from client_albert_de_test import (
 from configuration import Albert, TypeReclasseur
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
-from services.reclasseur import ReclasseurBGE, ReclasseurLLM
+from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
 from services.service_albert import Prompts, ServiceAlbert
 
 
@@ -36,11 +36,18 @@ def une_configuration(
 def construit_service(
     client: ClientAlbertMemoire, type_reclasseur: TypeReclasseur
 ) -> ServiceAlbert:
-    prompt_reclassement = (
-        "Question BGE : {QUESTION}"
-        if type_reclasseur is TypeReclasseur.BGE
-        else PROMPTS.prompt_reclassement
-    )
+    reclasseur: Reclasseur
+    if type_reclasseur == TypeReclasseur.BGE:
+        prompt_reclassement = "Question BGE : {QUESTION}"
+        reclasseur = ReclasseurBGE(
+            client,
+            "modèle",
+            prompt_reclassement,
+            5,
+        )
+    else:
+        prompt_reclassement = PROMPTS.prompt_reclassement
+        reclasseur = ReclasseurLLM(client, prompt_reclassement)
     return ServiceAlbert(
         configuration_service_albert=une_configuration(type_reclasseur),
         client=client,
@@ -51,6 +58,7 @@ def construit_service(
         ),
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=reclasseur,
     )
 
 

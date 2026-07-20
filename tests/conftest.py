@@ -14,7 +14,7 @@ from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
 from configuration import Mode
-from schemas.albert import Paragraphe, ReponseQuestion
+from schemas.albert import Paragraphe, ReponseQuestion, ParagrapheReponseMaitrisee
 from schemas.api import QuestionRequete
 from schemas.retour_utilisatrice import Interaction, Conversation, RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
@@ -23,6 +23,7 @@ from serveur_de_test import (
     ConstructeurServeur,
     ServiceAlbertMemoire,
 )
+from services.reclasseur import Reclasseur, ResultatReclassement
 from services.service_albert import ServiceAlbert
 
 
@@ -30,6 +31,7 @@ class ConstructeurDeParagraphe:
     def __init__(self):
         self.url = "http://mondocument.local"
         self.score_similarite = random.uniform(0, 1)
+        self.score_reclassement = random.uniform(0, 1)
         self.contenu = "un contenu"
         self.numero_page = random.randint(1, 100)
         self.nom_document = "Mon document"
@@ -41,6 +43,7 @@ class ConstructeurDeParagraphe:
 
     def ayant_comme_score(self, score: float):
         self.score_similarite = score
+        self.score_reclassement = score
         return self
 
     def a_la_page(self, numero_page: int):
@@ -62,6 +65,7 @@ class ConstructeurDeParagraphe:
             numero_page=self.numero_page,
             contenu=self.contenu,
             score_similarite=self.score_similarite,
+            score_reclassement=self.score_reclassement,
             url=self.url,
             rang_initial=self.rang_initial,
         )
@@ -76,6 +80,30 @@ def un_constructeur_de_paragraphe() -> Callable[
         return ConstructeurDeParagraphe()
 
     return _un_constructeur_de_paragraphe
+
+
+class ConstructeurDeParagrapheReponseMaitrisee(ConstructeurDeParagraphe):
+    def construis(self) -> Paragraphe:
+        return ParagrapheReponseMaitrisee(
+            nom_document=self.nom_document,
+            numero_page=self.numero_page,
+            contenu=self.contenu,
+            score_similarite=self.score_similarite,
+            score_reclassement=self.score_reclassement,
+            url=self.url,
+            rang_initial=self.rang_initial,
+        )
+
+
+@pytest.fixture()
+def un_constructeur_de_paragraphe_reponse_maitrisee() -> Callable[
+    [],
+    ConstructeurDeParagrapheReponseMaitrisee,
+]:
+    def _un_constructeur_de_paragraphe_reponse_maitrisee():
+        return ConstructeurDeParagrapheReponseMaitrisee()
+
+    return _un_constructeur_de_paragraphe_reponse_maitrisee
 
 
 class ConstructeurDeReponseQuestion:
@@ -410,3 +438,46 @@ def un_constructeur_de_conversation(
         )
 
     return _un_constructeur_de_conversation
+
+
+class ReclasseurDeTest(Reclasseur):
+    def __init__(self, paragraphes_retenus: list[Paragraphe] | None = None):
+        self.paragraphes_retenus = paragraphes_retenus
+        self.question_recue: str | None = None
+
+    def reclasse(
+        self, question: str, paragraphes: list[Paragraphe]
+    ) -> ResultatReclassement:
+        self.question_recue = question
+        return ResultatReclassement(
+            paragraphes_retenus=self.paragraphes_retenus
+            if self.paragraphes_retenus is not None
+            else paragraphes,
+            tous_les_candidats=paragraphes,
+        )
+
+
+@pytest.fixture()
+def un_reclasseur() -> ReclasseurDeTest:
+    return ReclasseurDeTest()
+
+
+class ConstructeurReclasseurDeTest:
+    def __init__(self):
+        super().__init__()
+        self.paragraphes_retenus = None
+
+    def avec_les_paragraphes(self, paragraphes: list[Paragraphe]):
+        self.paragraphes_retenus = paragraphes
+        return self
+
+    def construis(self) -> Reclasseur:
+        return ReclasseurDeTest(self.paragraphes_retenus)
+
+
+@pytest.fixture()
+def un_constructeur_de_reclasseur() -> Callable[[], ConstructeurReclasseurDeTest]:
+    def _un_constructeur_de_reclasseur():
+        return ConstructeurReclasseurDeTest()
+
+    return _un_constructeur_de_reclasseur
