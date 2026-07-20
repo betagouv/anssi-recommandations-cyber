@@ -15,7 +15,7 @@ importers:
     dependencies:
       '@lab-anssi/ui-kit':
         specifier: ^1.55.0
-        version: 1.55.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))
+        version: 1.55.1(svelte@5.55.7(@typescript-eslint/types@8.59.2))
       dompurify:
         specifier: ^3.4.2
         version: 3.4.11
@@ -398,10 +398,10 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lab-anssi/ui-kit@1.55.0':
-    resolution: {integrity: sha512-jnzFRT+kSGSEwf/4DeDCsm/GTXaYTG7xX8KYZa1qSdUaq6vLD0LNb3t+oFlktuqAsx5QIFIAznCrZ/Nxi/QvCw==}
+  '@lab-anssi/ui-kit@1.55.1':
+    resolution: {integrity: sha512-My9bkh/fDR00ssFlf+h9UqlBK1iz09eEh4hrhabwTr3t8qvS4O1gZ0cA7DiZ3FgrB2rjF7d1CXY0Jzs6RZS7AA==}
     peerDependencies:
-      svelte: ~5.55.10
+      svelte: ~5.55.10 || ~5.56.0
 
   '@napi-rs/canvas-android-arm64@1.0.0':
     resolution: {integrity: sha512-3hNKJObUK7JsCF9aJlVCs1J0/KE/gGfZNeK8MO1ge6bB3aicr5walGme9t9No1f/oyk9GgvdAT/rjSdsx3gbIw==}
@@ -1287,8 +1287,8 @@ packages:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
     engines: {node: '>=18'}
 
-  lru-cache@11.5.1:
-    resolution: {integrity: sha512-RPimw/7aMdv2oqRrxKwvZXcPfwBrn/JZ2xYcY9Hus/6LaS3VOAKVWKWgNLCFSiOm1ESXinjsDlidVU7JlnCN2A==}
+  lru-cache@11.5.2:
+    resolution: {integrity: sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g==}
     engines: {node: 20 || >=22}
 
   magic-string@0.30.21:
@@ -1698,15 +1698,15 @@ packages:
     resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
     engines: {node: '>=14.0.0'}
 
-  tldts-core@7.4.5:
-    resolution: {integrity: sha512-pGrwzZDvPwKe+7NNUqAunb6rqTfynr0VOUhCMdqbu5xlvNiszsAJygRzwvpVycdzejlbpY+SWJOn+s75Og7FEA==}
+  tldts-core@7.4.8:
+    resolution: {integrity: sha512-c1P7u0EhACHj7lPy4MJm8iTFEU8+nB0LCtddH0fhP7noaVoXAqafMtOOeX+ulpuPBqnrRgRhw494RICT3mbhnw==}
 
-  tldts@7.4.5:
-    resolution: {integrity: sha512-RfEzKWcq5fHUOFq7J3rl3Oz6ylKGtcHqUznzj4EcXsxLSIjJcvpbXAQtWGeJQ0xKnimR5e0Cn+cn9TssfMzm+g==}
+  tldts@7.4.8:
+    resolution: {integrity: sha512-htwgN/8KRB3z3vnC0BOETVh2m499g5GmyTK9Wq5JBLX3FNz6tSBveAd+fQhzy9hkjif8vy2jwDMR1sGhLtZl2A==}
     hasBin: true
 
-  tough-cookie@6.0.1:
-    resolution: {integrity: sha512-LktZQb3IeoUWB9lqR5EWTHgW/VTITCXg4D21M+lvybRVdylLrRMnqaIONLVb5mav8vM19m44HIcGq4qASeu2Qw==}
+  tough-cookie@6.0.2:
+    resolution: {integrity: sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==}
     engines: {node: '>=16'}
 
   tr46@6.0.0:
@@ -1929,7 +1929,7 @@ snapshots:
       '@csstools/css-color-parser': 4.1.9(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-      lru-cache: 11.5.1
+      lru-cache: 11.5.2
     optional: true
 
   '@asamuzakjp/dom-selector@6.8.1':
@@ -1938,7 +1938,7 @@ snapshots:
       bidi-js: 1.0.3
       css-tree: 3.2.1
       is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.5.1
+      lru-cache: 11.5.2
     optional: true
 
   '@asamuzakjp/nwsapi@2.3.9':
@@ -2148,7 +2148,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lab-anssi/ui-kit@1.55.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))':
+  '@lab-anssi/ui-kit@1.55.1(svelte@5.55.7(@typescript-eslint/types@8.59.2))':
     dependencies:
       svelte: 5.55.7(@typescript-eslint/types@8.59.2)
 
@@ -2581,7 +2581,7 @@ snapshots:
       '@asamuzakjp/css-color': 4.1.2
       '@csstools/css-syntax-patches-for-csstree': 1.1.6(css-tree@3.2.1)
       css-tree: 3.2.1
-      lru-cache: 11.5.1
+      lru-cache: 11.5.2
     optional: true
 
   data-urls@6.0.1:
@@ -2871,7 +2871,7 @@ snapshots:
       parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
-      tough-cookie: 6.0.1
+      tough-cookie: 6.0.2
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 4.0.0
@@ -2985,7 +2985,7 @@ snapshots:
       strip-ansi: 7.2.0
       wrap-ansi: 9.0.2
 
-  lru-cache@11.5.1:
+  lru-cache@11.5.2:
     optional: true
 
   magic-string@0.30.21:
@@ -3361,17 +3361,17 @@ snapshots:
 
   tinyrainbow@3.1.0: {}
 
-  tldts-core@7.4.5:
+  tldts-core@7.4.8:
     optional: true
 
-  tldts@7.4.5:
+  tldts@7.4.8:
     dependencies:
-      tldts-core: 7.4.5
+      tldts-core: 7.4.8
     optional: true
 
-  tough-cookie@6.0.1:
+  tough-cookie@6.0.2:
     dependencies:
-      tldts: 7.4.5
+      tldts: 7.4.8
     optional: true
 
   tr46@6.0.0:
