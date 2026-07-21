@@ -9,21 +9,33 @@
   import { storeConversation } from './stores/conversation.store';
   import PiedDePage from './composants/PiedDePage.svelte';
   import { storeAffichage } from './stores/affichage.store';
+  import BandeauInformationANSSI from './composants/BandeauInformationANSSI.svelte';
+  import IntroductionANSSI from './composants/IntroductionANSSI.svelte';
 
   let inputUtilisateur: InputUtilisateur | undefined = $state(undefined);
+  const estPublicInterneAnssi = () =>
+    import.meta.env.VITE_PUBLIC_INTERNE_ANSSI === 'true';
 </script>
 
 <Entete />
 
 <main class="main">
   <div class="bandeau">
-    <BandeauInformation />
+    {#if estPublicInterneAnssi()}
+      <BandeauInformationANSSI />
+    {:else}
+      <BandeauInformation />
+    {/if}
   </div>
 
   <div class="contenu">
     {#if $storeConversation?.messages.length === 0 && !$storeAffichage.enAttenteDeReponse}
       <div transition:fade>
-        <Introduction />
+        {#if estPublicInterneAnssi()}
+          <IntroductionANSSI />
+        {:else}
+          <Introduction />
+        {/if}
       </div>
     {:else}
       <div transition:fade>
