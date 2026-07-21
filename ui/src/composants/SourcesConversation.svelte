@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Message } from '../stores/conversation.store';
+  import { infobulle } from '../directives/infobulle';
 
   interface Props {
     message: Message;
@@ -33,6 +34,17 @@
       });
     }
   };
+
+  const copieLesSourcesDeLaReponse = (message: Message) => {
+    navigator.clipboard.writeText(
+      (
+        message.references?.map(
+          (reference) =>
+            `${reference.nom_document}\n${window.location.origin}${reference.url}`
+        ) || ['']
+      ).join('\n\n')
+    );
+  };
 </script>
 
 {#if message.references && message.references.length > 0}
@@ -43,23 +55,39 @@
     </summary>
 
     <div class="sources">
-      <div class="navigation-carrousel">
-        {#if sourceCourante > 0}
+      <div class="actions-sources">
+        <div class="copie-sources">
           <dsfr-button
-            label="< Précédent"
+            use:infobulle={{ contenu: 'Sources copiées', mode: 'click' }}
+            label="Copier les sources de la réponse"
             kind="secondary"
             size="sm"
-            onclick={deplaceAGauche}
+            id="copie-sources"
+            title="Copier les sources de la réponse"
+            markup="button"
+            type="button"
+            onclick={() => copieLesSourcesDeLaReponse(message)}
+            data-copie-sources="copie-sources"
           ></dsfr-button>
-        {/if}
-        <dsfr-button
-          label="Suivant >"
-          kind="secondary"
-          size="sm"
-          disabled={message.references === undefined ||
-            sourceCourante === message.references.length - 1}
-          onclick={deplaceADroite}
-        ></dsfr-button>
+        </div>
+        <div class="navigation-carrousel">
+          {#if sourceCourante > 0}
+            <dsfr-button
+              label="< Précédent"
+              kind="secondary"
+              size="sm"
+              onclick={deplaceAGauche}
+            ></dsfr-button>
+          {/if}
+          <dsfr-button
+            label="Suivant >"
+            kind="secondary"
+            size="sm"
+            disabled={message.references === undefined ||
+              sourceCourante === message.references.length - 1}
+            onclick={deplaceADroite}
+          ></dsfr-button>
+        </div>
       </div>
       <div class="sources-liste" bind:this={listeElement}>
         {#each message.references as reference, index (index)}
@@ -169,6 +197,18 @@
       display: flex;
       flex-direction: column;
       max-width: 1200px;
+    }
+
+    .actions-sources {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .copie-sources {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
     .navigation-carrousel {
