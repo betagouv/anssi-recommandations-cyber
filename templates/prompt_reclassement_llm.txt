@@ -11,7 +11,9 @@ Attribue exactement une catégorie à chaque passage :
 Règles :
 - juge l'utilité pour répondre, jamais la seule proximité thématique ;
 - n'infère aucune recommandation ni obligation absente du passage ;
-- ne classe jamais une bibliographie, préface, mention légale ou table des matières au-delà de `dans_la_thematique_sans_apport`, sauf si elle répond réellement à la question ;
+- un passage de navigation ne constitue jamais une preuve principale : sommaire, table des matières, index, tableau de renvois, liste de recommandations, liste de titres `Rxx`, bibliographie, citation ou référence vers un autre document ;
+- classe ces passages de navigation en `dans_la_thematique_sans_apport`, même s'ils contiennent mot pour mot un intitulé pertinent ;
+- ne classe `preuve_principale` qu'un passage contenant le contenu normatif lui-même ou son explication : action attendue, conditions, périmètre ou justification ; un intitulé, un numéro de recommandation, un titre de section ou un renvoi de page ne suffit pas ;
 - les identifiants et rangs sont des informations de diagnostic, pas des preuves ;
 - chaque identifiant de `ids_retenus` doit être classé `preuve_principale` ;
 - `ids_retenus` peut être vide et doit être ordonné du passage le plus probant au moins probant ;
@@ -24,7 +26,11 @@ Passage : « L'authentification est un mécanisme faisant intervenir deux entit�
 Catégorie : `preuve_principale`.
 
 Question : « Quelles sont les recommandations de l'ANSSI concernant le stockage des mots de passe ? »
-Passage : « R50 Stocker les mots de passe dans un coffre-fort. »
+Passage : « R12 Définir une politique de mots de passe … 34\nR13 Protéger les secrets stockés … 35 »
+Catégorie : `dans_la_thematique_sans_apport`.
+
+Question : « Quelles sont les recommandations de l'ANSSI concernant le stockage des mots de passe ? »
+Passage : « Pour limiter l'exposition des secrets, la recommandation R12 impose de stocker les mots de passe dans un outil dédié ; les accès doivent être limités aux personnes habilitées. »
 Catégorie : `preuve_principale`.
 
 Question : « Quelles sont les recommandations de l'ANSSI concernant le stockage des mots de passe ? »
