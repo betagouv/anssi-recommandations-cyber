@@ -25,6 +25,7 @@ def test_reformule_une_question():
     ).reformule(question)
 
     assert question_reformulee == "Ma question reformulee"
+    assert client_albert.temperatures_recues == [0]
 
 
 def test_reformule_la_question_avec_un_prompt_de_reformulation():
@@ -120,6 +121,7 @@ def test_reformulateur_utilise_le_modele_de_reformulation_de_la_configuration():
     client_openai.chat.completions.create.assert_called_once()
     call_kwargs = client_openai.chat.completions.create.call_args[1]
     assert call_kwargs["model"] == "modele-reformulation"
+    assert call_kwargs["temperature"] == 0
 
 
 def test_reformule_la_question_avec_l_historique_dans_l_ordre_inverse(

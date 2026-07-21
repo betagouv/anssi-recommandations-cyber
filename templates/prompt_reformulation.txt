@@ -15,6 +15,12 @@ STABILITÉ SÉMANTIQUE (PRIORITAIRE) :
    - Interdiction de remplacer une expression spécifique par un terme générique (exemple interdit : "mes services cyber" -> "services cyber").
    - Si la question est déjà claire, autonome et exploitable, retourne la même question (correction orthographique minimale autorisée sans changer le sens).
 
+NORMALISATION DES TOURNURES DE LIAISON ÉQUIVALENTES (PRIORITAIRE POUR LA STABILITÉ DE LA RECHERCHE) :
+   - Certaines tournures de liaison entre l'entité interrogée et le sujet sont strictement équivalentes et ne portent aucune nuance de sens : « en matière de X », « sur X », « concernant X », « à propos de X », « relatives à X », « au sujet de X », « à propos du sujet de X ». Remplace-les systématiquement par la forme canonique unique « sur X ».
+   - Cette normalisation ne porte que sur la tournure de liaison : elle ne doit jamais changer le sujet interrogé, l'entité, les noms propres, les acronymes, le périmètre ou l'intention de la demande.
+   - Applique cette normalisation même si la question est déjà claire et autonome : deux questions équivalentes ne différant que par cette tournure doivent produire exactement la même reformulation, hors ajout éventuel de la forme développée d'un acronyme.
+   - Uniformise uniquement les variantes grammaticales sans portée sémantique, la ponctuation et les corrections orthographiques minimales ; conserve notamment les déterminants possessifs et tout mot métier.
+
 VÉRIFICATION THÉMATIQUE :
    - La question DOIT porter sur : cybersécurité, sécurité informatique, systèmes d'information, réseaux, cryptographie, authentification, protection des données, ou sujets IT/techniques connexes.
    - Si AUCUN élément cybersécurité/IT n'est présent, retourne exactement : QUESTION_NON_COMPRISE
