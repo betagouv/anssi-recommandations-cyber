@@ -185,7 +185,7 @@ class ClientAlbertMemoire(ClientAlbert):
                 else []
             )
             self.appels_recherche += 1
-            return resultat
+            return resultat[: payload.limit]
 
         return self.resultats if self.resultats_vides is False else []
 
@@ -193,7 +193,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self, payload: RecherchePayload
     ) -> list[ResultatRechercheJeopardy]:
         self.payload_jeopardy_recu = payload
-        return self.resultats_jeopardy
+        return self.resultats_jeopardy[: payload.limit]
 
     def recherche_chunk_par_id(
         self, id_document: str, id_chunk: int
