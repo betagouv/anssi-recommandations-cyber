@@ -80,11 +80,9 @@ class ServiceAlbert:
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
-        nombre_paragraphes_a_retourner = self.nombre_paragraphes
-
         payload_classique = RecherchePayload(
             collection_ids=[self.id_collection],
-            limit=10 if self.jeopardy_active else nombre_paragraphes_a_retourner,
+            limit=self.nombre_paragraphes,
             prompt=question,
             method=methode_recherche,
         )
@@ -130,7 +128,7 @@ class ServiceAlbert:
                     paragraphes_uniques.append(p)
                     contenus_vus.add(p.contenu)
 
-            return paragraphes_uniques[:nombre_paragraphes_a_retourner]
+            return paragraphes_uniques
         else:
             return paragraphes_classiques
 
@@ -138,7 +136,7 @@ class ServiceAlbert:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
         payload = RecherchePayload(
             collection_ids=[self.id_collection_jeopardy],
-            limit=10,
+            limit=self.nombre_paragraphes,
             prompt=question,
             method=methode_recherche,
         )

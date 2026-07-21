@@ -208,17 +208,17 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
     assert contenus.count("Chunk commun") == 1
 
 
-def test_recherche_paragraphes_limite_a_20_candidats(un_reclasseur):
+def test_recherche_paragraphes_retourne_5_recherches_classique_et_5_recherches_jeopardy(
+    un_reclasseur,
+):
     client_albert_memoire = ClientAlbertMemoire()
-
-    resultats_classiques = [
+    resultats_classiques_totaux = [
         un_resultat_de_recherche()
         .ayant_pour_contenu(f"Chunk classique {i}")
         .construis()
         for i in range(15)
     ]
-
-    resultats_jeopardy = [
+    resultats_jeopardy_totaux = [
         ResultatRechercheJeopardy(
             chunk=RechercheChunkJeopardy(
                 content=f"Question {i}",
@@ -232,17 +232,16 @@ def test_recherche_paragraphes_limite_a_20_candidats(un_reclasseur):
         )
         for i in range(15)
     ]
-    client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
-
-    chunks_sources_jeopardy = [
+    client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy_totaux)
+    chunks_sources_jeopardy_totaux = [
         un_resultat_de_recherche()
         .ayant_pour_contenu(f"Chunk source jeopardy {i}")
         .construis()
         for i in range(15)
     ]
-
+    client_albert_memoire.avec_chunks_par_id(chunks_sources_jeopardy_totaux)
     client_albert_memoire.avec_les_resultats_par_appel(
-        [resultats_classiques, chunks_sources_jeopardy]
+        [resultats_classiques_totaux, chunks_sources_jeopardy_totaux]
     )
 
     configuration = Albert.Service(
@@ -268,4 +267,4 @@ def test_recherche_paragraphes_limite_a_20_candidats(un_reclasseur):
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
 
-    assert len(paragraphes) <= 20
+    assert len(paragraphes) == 10
