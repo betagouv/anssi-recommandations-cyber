@@ -239,7 +239,7 @@ class ServiceAlbert:
         messages = self.__genere_les_messages_de_completion(
             conversation, paragraphes_concatenes, prompt_systeme, question
         )
-        propositions_albert = self.client.recupere_propositions(messages)
+        propositions_albert = self.client.recupere_propositions(messages, temperature=0)
         return propositions_albert
 
     def __genere_les_messages_de_completion(
