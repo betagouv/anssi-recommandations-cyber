@@ -38,6 +38,6 @@ class ReformulateurDeQuestion:
                 )
         messages.append({"role": "user", "content": question})
         reponse = self.client_albert.recupere_propositions(
-            messages, modele=self.modele_reformulation
+            messages, modele=self.modele_reformulation, temperature=0
         )
         return reponse[0].message.content
