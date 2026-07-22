@@ -90,3 +90,59 @@ def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(
         "Une recommandation complémentaire utile."
         in client.messages_envoyes_pour_les_propositions[0][0]["content"]
     )
+
+
+def test_conserve_l_ordre_des_preuves_principales_pour_l_affichage_des_sources(
+    un_constructeur_de_paragraphe,
+):
+    client = ClientAlbertMemoire()
+    paragraphes = [
+        (
+            un_constructeur_de_paragraphe()
+            .dans_le_document("document-contextuel.pdf")
+            .avec_contenu("Preuve contextuelle")
+            .construis()
+        ),
+        (
+            un_constructeur_de_paragraphe()
+            .dans_le_document("guide-anssi.pdf")
+            .avec_contenu("Recommandation R50 du guide")
+            .construis()
+        ),
+        (
+            un_constructeur_de_paragraphe()
+            .dans_le_document("guide-anssi.pdf")
+            .avec_contenu("Explication complémentaire du guide")
+            .construis()
+        ),
+    ]
+    client.avec_les_propositions_par_appel(
+        [
+            [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(
+                    json.dumps(
+                        {
+                            "evaluations": [
+                                {"id": 1, "categorie": "preuve_principale"},
+                                {"id": 2, "categorie": "preuve_principale"},
+                                {"id": 3, "categorie": "preuve_principale"},
+                            ],
+                            "ids_retenus": [2, 3, 1],
+                        }
+                    )
+                )
+                .construis()
+            ]
+        ]
+    )
+
+    reponse = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}").reclasse(
+        "Une question ?", paragraphes
+    )
+
+    assert [p.nom_document for p in reponse.paragraphes_retenus] == [
+        "guide-anssi.pdf",
+        "guide-anssi.pdf",
+        "document-contextuel.pdf",
+    ]
