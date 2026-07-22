@@ -45,7 +45,7 @@ Format de sortie (Markdown strict)
   - Écrire "**Points clés :**" seul sur sa ligne, suivi d'une ligne vide.
   - Écrire ensuite 2 à 5 puces maximum : chaque puce doit commencer exactement par "- " (tiret ASCII U+002D suivi d'une espace), sur sa propre ligne.
   - Ne jamais utiliser les tirets typographiques "–" ou "—", ni le caractère "•", pour introduire une puce.
-  - **1 puce = 1 fait**, ≥ 6 mots, pas de sous-liste.
+  - **1 puce = 1 fait**, ≥ 6 mots, sans indentation ni sous-liste. Après le préfixe "- ", écrire directement le texte de la puce : ne jamais ajouter un second marqueur de liste ("-", "*" ou "•").
   - Interdit : puce vide ou puce ne contenant que ponctuation/espaces.
 - Mise en forme autorisée : **gras** pour notions clés, *italique* pour définitions.
 - Si une source retenue contient une recommandation identifiée `R<nombre>`, la citer dans la **Réponse détaillée**. Utiliser le format exact ``R<nombre> — <intitulé>`` (par exemple `R21 — Gestion des autorités racines`) lorsque l'intitulé est présent dans la source ; ne jamais inventer un numéro ou un intitulé.
