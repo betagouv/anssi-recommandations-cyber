@@ -2,14 +2,16 @@ from client_albert_de_test import (
     ClientAlbertMemoire,
     un_resultat_de_recherche,
 )
-from configuration import Albert
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import (
     RechercheMetadonneesJeopardy,
     RechercheChunkJeopardy,
     ResultatRechercheJeopardy,
 )
-from serveur_de_test import MappingReponsesMaitriseesDeTest
+from serveur_de_test import (
+    MappingReponsesMaitriseesDeTest,
+    AdaptateurExecuteurDeRequetesMemoire,
+)
 from services.service_albert import ServiceAlbert, Prompts
 
 
@@ -30,7 +32,9 @@ def test_recherche_chunk_par_id_utilise_api_documents():
     assert client_albert_memoire.id_chunk_recu == 73
 
 
-def test_recherche_jeopardy_utilise_recherche_chunk_par_id(un_reclasseur):
+def test_recherche_jeopardy_utilise_recherche_chunk_par_id(
+    un_reclasseur, une_configuration_de_service_albert
+):
     client_albert_memoire = ClientAlbertMemoire()
     resultats_jeopardy = [
         ResultatRechercheJeopardy(
@@ -70,16 +74,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id(un_reclasseur):
         prompt_systeme="Prompt système",
         prompt_reclassement="Prompt reclassement",
     )
-    configuration = Albert.Service(
-        collection_nom_anssi_lab="",
-        id_collection_anssi_lab=157814,
-        id_collection_anssi_lab_jeopardy=161155,
-        modele_reclassement="",
-        taille_fenetre_historique=2,
-        jeopardy_active=False,
-        seuil_reponse_maitrisee=0.5,
-        nombre_paragraphes=5,
-    )
+    configuration = une_configuration_de_service_albert()
     service_albert = ServiceAlbert(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
@@ -88,6 +83,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id(un_reclasseur):
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitriseesDeTest(),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     )
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
         "Ma question ?"

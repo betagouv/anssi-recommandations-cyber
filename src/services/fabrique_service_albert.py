@@ -3,6 +3,7 @@ from pathlib import Path
 
 import requests
 
+from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
 from configuration import TypeReclasseur, recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
@@ -77,6 +78,7 @@ def fabrique_service_albert() -> ServiceAlbert:
             requests.Session(),
         ),
         reclasseur=reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetes(),
     )
 
 

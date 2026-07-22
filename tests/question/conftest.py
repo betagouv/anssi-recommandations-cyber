@@ -6,7 +6,6 @@ from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import AdaptateurJournalMemoire
 from client_albert_de_test import ClientAlbertMemoire
-from configuration import Albert
 from question.question import ConfigurationQuestion
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import ReponseQuestion
@@ -113,27 +112,21 @@ def une_configuration_complete() -> Callable[
 @pytest.fixture()
 def un_service_albert_avec_un_client_memoire(
     un_reclasseur,
+    un_adaptateur_executeur_de_requetes,
+    une_configuration_de_service_albert,
 ) -> Callable[[ClientAlbertMemoire, Prompts], ServiceAlbert]:
     def _un_service_albert_avec_un_client_memoire(
         client_albert_memoire: ClientAlbertMemoire, prompts: Prompts
     ) -> ServiceAlbert:
         return ServiceAlbert(
-            configuration_service_albert=Albert.Service(  # type:ignore[attr-defined]
-                collection_nom_anssi_lab="",
-                id_collection_anssi_lab=42,
-                id_collection_anssi_lab_jeopardy=43,
-                modele_reclassement="Aucun",
-                taille_fenetre_historique=10,
-                jeopardy_active=False,
-                seuil_reponse_maitrisee=0.5,
-                nombre_paragraphes=5,
-            ),
+            configuration_service_albert=une_configuration_de_service_albert(),
             client=client_albert_memoire,
             utilise_recherche_hybride=False,
             prompts=prompts,
             reformulateur=ReformulateurDeQuestionDeTest(),
             mapping_reponses=MappingReponsesMaitriseesDeTest(),
             reclasseur=un_reclasseur,
+            executeur_de_requetes=un_adaptateur_executeur_de_requetes,
         )
 
     return _un_service_albert_avec_un_client_memoire

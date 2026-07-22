@@ -3,8 +3,10 @@ from openai.types.chat import (
     ChatCompletionUserMessageParam,
 )
 from openai.types.chat.chat_completion import Choice
-from typing import Optional, cast, NamedTuple, Union
+from pydantic import BaseModel
+from typing import Optional, cast, NamedTuple, Union, Any
 
+from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
 from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
@@ -30,6 +32,19 @@ from services.reclasseur import (
     Reclasseur,
     ResultatReclassement,
 )
+
+
+class DocumentGuideMSC(BaseModel):
+    libelle: str
+    nomFichier: str
+
+
+class ReponseGuideMSC(BaseModel):
+    id: str
+    nom: str
+    description: str
+    listeDocuments: list[DocumentGuideMSC]
+    dateMiseAJour: str
 
 
 def _filtre_reponses_maitrisees(
@@ -59,6 +74,7 @@ class ServiceAlbert:
         reformulateur: ReformulateurDeQuestion,
         mapping_reponses: MappingReponsesMaitrisees,
         reclasseur: Reclasseur,
+        executeur_de_requetes: Optional[AdaptateurExecuteurDeRequetes],
     ) -> None:
         self.id_collection = configuration_service_albert.id_collection_anssi_lab
         self.id_collection_jeopardy = (
@@ -78,6 +94,8 @@ class ServiceAlbert:
         self.reformulateur = reformulateur
         self.mapping_reponses = mapping_reponses
         self.reclasseur: Reclasseur = reclasseur
+        self.executeur_de_requetes = executeur_de_requetes
+        self.url_msc = configuration_service_albert.url_msc
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
@@ -213,14 +231,43 @@ class ServiceAlbert:
 
         return ReponseQuestion(
             reponse=reponse,
-            paragraphes=[
-                ParagrapheReponseQuestion.model_validate(p.model_dump())
-                for p in paragraphes
-            ],
+            paragraphes=(self._mappe_en_paragraphes_pour_la_reponse(paragraphes)),
             question=question,
             question_reformulee=question_reformulee,
             violation=violation_resultat,
         )
+
+    def _mappe_en_paragraphes_pour_la_reponse(
+        self, paragraphes_a_mapper: list[Paragraphe]
+    ) -> list[Any]:
+        guides_msc: list[ReponseGuideMSC] = (
+            self.executeur_de_requetes.recupere(
+                f"{self.url_msc}/api/guides", ReponseGuideMSC
+            )
+            if self.executeur_de_requetes
+            else []
+        )
+
+        paragraphes = []
+        for p in paragraphes_a_mapper:
+            titre = ""
+            date_mise_a_jour = ""
+            for guide in guides_msc:
+                doc = next(
+                    (x for x in guide.listeDocuments if x.nomFichier == p.nom_document),
+                    None,
+                )
+                if not doc:
+                    continue
+                titre = guide.nom
+                date_mise_a_jour = guide.dateMiseAJour
+                break
+            paragraphes.append(
+                ParagrapheReponseQuestion(
+                    **p.model_dump(), titre=titre, date_mise_a_jour=date_mise_a_jour
+                )
+            )
+        return paragraphes
 
     def __effectue_recuperation_propositions(
         self,

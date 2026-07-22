@@ -1,5 +1,4 @@
 from client_albert_de_test import ClientAlbertMemoire, un_resultat_de_recherche
-from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
@@ -7,6 +6,7 @@ from schemas.albert import (
     RechercheChunkJeopardy,
     ResultatRechercheJeopardy,
 )
+from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
 from services.service_albert import ServiceAlbert, Prompts
 
 PROMPTS = Prompts(
@@ -15,10 +15,10 @@ PROMPTS = Prompts(
 )
 
 
-def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
+def test_recherche_jeopardy_retourne_les_chunks_sources(
+    un_reclasseur, une_configuration_de_service_albert
+):
     client_albert_memoire = ClientAlbertMemoire()
-
-    # Résultats jeopardy (questions générées)
     resultats_jeopardy = [
         ResultatRechercheJeopardy(
             chunk=RechercheChunkJeopardy(
@@ -44,8 +44,6 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
         ),
     ]
     client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
-
-    # Chunks sources correspondants
     chunks_sources = [
         un_resultat_de_recherche()
         .ayant_pour_contenu("Contenu du chunk 73")
@@ -55,18 +53,9 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
         .construis(),
     ]
     client_albert_memoire.avec_chunks_par_id(chunks_sources)
-
-    configuration = Albert.Service(
-        collection_nom_anssi_lab="",
-        id_collection_anssi_lab=157814,
-        id_collection_anssi_lab_jeopardy=161155,
-        modele_reclassement="",
-        taille_fenetre_historique=2,
-        jeopardy_active=False,
-        seuil_reponse_maitrisee=0.5,
-        nombre_paragraphes=5,
+    configuration = une_configuration_de_service_albert(
+        id_collection_anssi_lab_jeopardy=161155
     )
-
     service_albert = ServiceAlbert(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
@@ -75,6 +64,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     )
 
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
@@ -87,16 +77,16 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(un_reclasseur):
     assert client_albert_memoire.payload_jeopardy_recu.collection_ids == [161155]
 
 
-def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(un_reclasseur):
+def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(
+    un_reclasseur, une_configuration_de_service_albert
+):
     client_albert_memoire = ClientAlbertMemoire()
-
     resultats_classiques = [
         un_resultat_de_recherche()
         .ayant_pour_contenu(f"Chunk classique {i}")
         .construis()
         for i in range(5)
     ]
-
     resultats_jeopardy = [
         ResultatRechercheJeopardy(
             chunk=RechercheChunkJeopardy(
@@ -112,28 +102,17 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(un_recla
         for i in range(5)
     ]
     client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
-
     chunks_sources_jeopardy = [
         un_resultat_de_recherche()
         .ayant_pour_contenu(f"Chunk source jeopardy {i}")
         .construis()
         for i in range(5)
     ]
-
     client_albert_memoire.avec_les_resultats(resultats_classiques)
     client_albert_memoire.avec_chunks_par_id(chunks_sources_jeopardy)
-
-    configuration = Albert.Service(
-        collection_nom_anssi_lab="",
-        id_collection_anssi_lab=157814,
-        id_collection_anssi_lab_jeopardy=161155,
-        modele_reclassement="",
-        taille_fenetre_historique=2,
-        jeopardy_active=True,
-        seuil_reponse_maitrisee=0.5,
-        nombre_paragraphes=10,
+    configuration = une_configuration_de_service_albert(
+        nombre_paragraphes=10, jeopardy_active=True
     )
-
     service_albert = ServiceAlbert(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
@@ -142,6 +121,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(un_recla
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -149,15 +129,15 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(un_recla
     assert len(paragraphes) == 10
 
 
-def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
+def test_recherche_paragraphes_dedoublonne_les_chunks_communs(
+    un_reclasseur, une_configuration_de_service_albert
+):
     client_albert_memoire = ClientAlbertMemoire()
-
     resultats_classiques = [
         un_resultat_de_recherche().ayant_pour_contenu("Chunk unique 1").construis(),
         un_resultat_de_recherche().ayant_pour_contenu("Chunk commun").construis(),
         un_resultat_de_recherche().ayant_pour_contenu("Chunk unique 2").construis(),
     ]
-
     resultats_jeopardy = [
         ResultatRechercheJeopardy(
             chunk=RechercheChunkJeopardy(
@@ -172,25 +152,12 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
         ),
     ]
     client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
-
     chunks_sources_jeopardy = [
         un_resultat_de_recherche().ayant_pour_contenu("Chunk commun").construis(),
     ]
-
     client_albert_memoire.avec_les_resultats(resultats_classiques)
     client_albert_memoire.avec_chunks_par_id(chunks_sources_jeopardy)
-
-    configuration = Albert.Service(
-        collection_nom_anssi_lab="",
-        id_collection_anssi_lab=157814,
-        id_collection_anssi_lab_jeopardy=161155,
-        modele_reclassement="",
-        taille_fenetre_historique=2,
-        jeopardy_active=True,
-        seuil_reponse_maitrisee=0.5,
-        nombre_paragraphes=5,
-    )
-
+    configuration = une_configuration_de_service_albert()
     service_albert = ServiceAlbert(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
@@ -199,6 +166,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -209,7 +177,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(un_reclasseur):
 
 
 def test_recherche_paragraphes_retourne_5_recherches_classique_et_5_recherches_jeopardy(
-    un_reclasseur,
+    un_reclasseur, une_configuration_de_service_albert
 ):
     client_albert_memoire = ClientAlbertMemoire()
     resultats_classiques_totaux = [
@@ -243,16 +211,8 @@ def test_recherche_paragraphes_retourne_5_recherches_classique_et_5_recherches_j
     client_albert_memoire.avec_les_resultats_par_appel(
         [resultats_classiques_totaux, chunks_sources_jeopardy_totaux]
     )
-
-    configuration = Albert.Service(
-        collection_nom_anssi_lab="",
-        id_collection_anssi_lab=157814,
-        id_collection_anssi_lab_jeopardy=161155,
-        modele_reclassement="",
-        taille_fenetre_historique=2,
-        jeopardy_active=True,
-        seuil_reponse_maitrisee=0.5,
-        nombre_paragraphes=5,
+    configuration = une_configuration_de_service_albert(
+        jeopardy_active=True, nombre_paragraphes=5
     )
 
     service_albert = ServiceAlbert(
@@ -263,6 +223,7 @@ def test_recherche_paragraphes_retourne_5_recherches_classique_et_5_recherches_j
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
