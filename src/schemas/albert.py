@@ -17,6 +17,10 @@ class Paragraphe(BaseModel):
         return self.contenu
 
 
+class ParagrapheReponseQuestion(Paragraphe):
+    pass
+
+
 class ParagrapheReponseMaitrisee(Paragraphe):
     reponse: str = ""
 
@@ -27,7 +31,7 @@ class ParagrapheReponseMaitrisee(Paragraphe):
 
 class ReponseQuestion(BaseModel):
     reponse: str
-    paragraphes: list[Paragraphe]
+    paragraphes: list[ParagrapheReponseQuestion]
     question: str
     question_reformulee: str | None
     violation: Optional[Violation]
