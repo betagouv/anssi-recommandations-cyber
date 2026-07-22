@@ -19,7 +19,7 @@ export type Paragraphe = {
   contenu: string;
   image?: Blob;
   titre: string;
-  date_mise_a_jour: Date;
+  date_mise_a_jour: Date | undefined;
 };
 
 export type Message = {
@@ -100,7 +100,11 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
         contenu: paragraphe.contenu,
         image: blob,
         titre: paragraphe.titre,
-        date_mise_a_jour: new Date(Date.parse(paragraphe.date_mise_a_jour)),
+        date_mise_a_jour:
+          paragraphe.date_mise_a_jour !== undefined &&
+          paragraphe.date_mise_a_jour !== ''
+            ? new Date(Date.parse(paragraphe.date_mise_a_jour))
+            : undefined,
       });
     }
   }

@@ -100,11 +100,20 @@
             <span class="nom-document"
               >{reference.titre || reference.nom_document}</span
             >
+            <span class="date-mise-a-jour">
+              Publié le {reference.date_mise_a_jour
+                ? Intl.DateTimeFormat('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  }).format(reference.date_mise_a_jour)
+                : 'N/A'}
+            </span>
             <dsfr-link
               label={titreDuLien}
               href={reference.url}
               blank
-              title={reference.nom_document}
+              title={reference.titre || reference.nom_document}
             ></dsfr-link>
             <div class="contenu-reference">
               <img src={imageUrl} alt="" />
@@ -245,9 +254,13 @@
     .source {
       display: flex;
       flex-direction: column;
-      //flex: 0 0 300px;
       gap: 4px;
 
+      .date-mise-a-jour {
+        font-size: 0.75rem;
+        font-style: italic;
+        color: #6b7280;
+      }
       .nom-document {
         font-weight: bold;
         overflow-wrap: anywhere;
