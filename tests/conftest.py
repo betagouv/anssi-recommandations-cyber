@@ -1,11 +1,12 @@
-import random
-import uuid
 from pathlib import Path
-from typing import Callable, Optional
 
 import pytest
+import random
+import uuid
 from fastapi import FastAPI, Response
 from mypy_extensions import DefaultNamedArg
+from pydantic import BaseModel
+from typing import Callable, Optional, Any
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees, AdaptateurBaseDeDonneesEnMemoire
@@ -13,6 +14,7 @@ from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRe
 from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
+from configuration import Albert, TypeReclasseur
 from configuration import Mode
 from schemas.albert import (
     Paragraphe,
@@ -143,7 +145,9 @@ class ConstructeurDeReponseQuestion:
         return ReponseQuestion(
             reponse=self.reponse,
             paragraphes=[
-                ParagrapheReponseQuestion.model_validate(p.model_dump())
+                ParagrapheReponseQuestion(
+                    **p.model_dump(), titre="", date_mise_a_jour=""
+                )
                 for p in self.paragraphes
             ],
             question=self.question,
@@ -230,10 +234,11 @@ def un_adaptateur_de_chiffrement() -> Callable[
 
 
 class AdaptateurExecuteurDeRequetesMemoire(AdaptateurExecuteurDeRequetes):
-    def __init__(self):
+    def __init__(self, reponse: list[dict] | None = []):
         super().__init__()
-        self.requete_get_appelee = None
+        self.requete_get_appelee: str | None = None
         self.status_code = 200
+        self.reponse = reponse
 
     async def get_asynchrone(self, url: str) -> Response:
         self.requete_get_appelee = url
@@ -242,6 +247,11 @@ class AdaptateurExecuteurDeRequetesMemoire(AdaptateurExecuteurDeRequetes):
             media_type="application/pdf",
             status_code=self.status_code,
         )
+
+    def recupere(self, url: str, klass: type[BaseModel]):
+        if isinstance(self.reponse, list):
+            return [klass.model_validate(item) for item in self.reponse]
+        return klass.model_validate(self.reponse)
 
     def retourne_erreur_http(self, erreur_http: int):
         self.status_code = erreur_http
@@ -305,6 +315,24 @@ def un_serveur_de_test(
 @pytest.fixture()
 def un_adaptateur_executeur_de_requetes() -> AdaptateurExecuteurDeRequetesMemoire:
     return AdaptateurExecuteurDeRequetesMemoire()
+
+
+class ConstructeurExecuteurDeRequetesMemoire:
+    def __init__(self):
+        super().__init__()
+        self.reponse: list[dict] | None = None
+
+    def avec_comme_reponse(self, reponse: list[dict]):
+        self.reponse = reponse
+        return self
+
+    def construis(self) -> AdaptateurExecuteurDeRequetesMemoire:
+        return AdaptateurExecuteurDeRequetesMemoire(self.reponse)
+
+
+@pytest.fixture()
+def un_constructeur_d_executeur_de_requetes() -> ConstructeurExecuteurDeRequetesMemoire:
+    return ConstructeurExecuteurDeRequetesMemoire()
 
 
 @pytest.fixture()
@@ -394,7 +422,9 @@ class ConstructeurDInteraction:
         self.reponse_question = ReponseQuestion(
             reponse="réponse",
             paragraphes=[
-                ParagrapheReponseQuestion.model_validate(p.model_dump())
+                ParagrapheReponseQuestion(
+                    **p.model_dump(), titre="", date_mise_a_jour=""
+                )
                 for p in paragraphes
             ],
             question="question",
@@ -492,3 +522,48 @@ def un_constructeur_de_reclasseur() -> Callable[[], ConstructeurReclasseurDeTest
         return ConstructeurReclasseurDeTest()
 
     return _un_constructeur_de_reclasseur
+
+
+@pytest.fixture()  # type:ignore[attr-defined, name-defined]
+def une_configuration_de_service_albert() -> Callable[
+    [
+        DefaultNamedArg(type=Optional[str], name="collection_nom_anssi_lab"),
+        DefaultNamedArg(type=Optional[int], name="id_collection_anssi_lab"),
+        DefaultNamedArg(type=Optional[int], name="id_collection_anssi_lab_jeopardy"),
+        DefaultNamedArg(type=Optional[str], name="modele_reclassement"),
+        DefaultNamedArg(type=Optional[int], name="taille_fenetre_historique"),
+        DefaultNamedArg(type=Optional[bool], name="jeopardy_active"),
+        DefaultNamedArg(type=Optional[float], name="seuil_reponse_maitrisee"),
+        DefaultNamedArg(type=Optional[int], name="nombre_paragraphes"),
+        DefaultNamedArg(type=Optional[str], name="url_msc"),
+        DefaultNamedArg(type=Optional[TypeReclasseur], name="type_reclasseur"),
+    ],
+    Any,
+]:
+    def _une_configuration_de_service_albert(  # type:ignore[name-defined]
+        *,
+        collection_nom_anssi_lab: Optional[str] = "",
+        id_collection_anssi_lab: Optional[int] = 42,
+        id_collection_anssi_lab_jeopardy: Optional[int] = 43,
+        modele_reclassement: Optional[str] = "un-modele",
+        taille_fenetre_historique: Optional[int] = 10,
+        jeopardy_active: Optional[bool] = False,
+        seuil_reponse_maitrisee: Optional[float] = 0.5,
+        nombre_paragraphes: Optional[int] = 5,
+        url_msc: Optional[str] = "",
+        type_reclasseur: Optional[TypeReclasseur] = TypeReclasseur.BGE,
+    ) -> Albert.Service:  # type:ignore[attr-defined, name-defined]
+        return Albert.Service(  # type:ignore[attr-defined, name-defined]
+            collection_nom_anssi_lab=collection_nom_anssi_lab,
+            id_collection_anssi_lab=id_collection_anssi_lab,
+            id_collection_anssi_lab_jeopardy=id_collection_anssi_lab_jeopardy,
+            modele_reclassement=modele_reclassement,
+            taille_fenetre_historique=taille_fenetre_historique,
+            jeopardy_active=jeopardy_active,
+            seuil_reponse_maitrisee=seuil_reponse_maitrisee,
+            nombre_paragraphes=nombre_paragraphes,
+            url_msc=url_msc,
+            type_reclasseur=type_reclasseur,
+        )
+
+    return _une_configuration_de_service_albert

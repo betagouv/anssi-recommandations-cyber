@@ -38,6 +38,14 @@ NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
 
 
+class AdaptateurExecuteurDeRequetesMemoire(AdaptateurExecuteurDeRequetes):
+    def __init__(self) -> None:
+        self.requetes_effectuees: list[str] = []
+
+    def recupere(self, url: str, klass):
+        return []
+
+
 class ReclasseurDeTest(Reclasseur):
     def reclasse(
         self, question: str, paragraphes: list[Paragraphe]
@@ -71,6 +79,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
                 jeopardy_active=False,
                 seuil_reponse_maitrisee=0.5,
                 nombre_paragraphes=5,
+                url_msc="",
             ),
             client_albert,
             False,
@@ -78,6 +87,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
             ReformulateurDeQuestion(client_albert, "", ""),
             MappingReponsesMaitriseesDeTest(),
             ReclasseurDeTest(),
+            AdaptateurExecuteurDeRequetesMemoire(),
         )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:

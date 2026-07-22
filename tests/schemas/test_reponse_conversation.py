@@ -18,6 +18,8 @@ def test_transforme_une_reponse_albert_en_reponse_conversation():
                 contenu="Contenu du paragraphe",
                 score_similarite=0.95,
                 score_reclassement=1.0,
+                titre="Un titre",
+                date_mise_a_jour="2023-01-01T12:43:25:000Z",
             )
         ],
         question_reformulee="Question reformulée",
@@ -44,6 +46,8 @@ def test_transforme_une_reponse_albert_en_reponse_conversation():
             nom_document="guide-anssi.pdf",
             numero_page=20,
             contenu="Contenu du paragraphe",
+            titre="Un titre",
+            date_mise_a_jour="2023-01-01T12:43:25:000Z",
         )
     ]
 
@@ -60,6 +64,8 @@ def test_transforme_une_reponse_albert_en_reponse_conversation_ajoute_interactio
                 contenu="Contenu du paragraphe",
                 score_similarite=0.95,
                 score_reclassement=1.0,
+                titre="Un titre",
+                date_mise_a_jour="2023-01-01T12:43:25:000Z",
             )
         ],
         question_reformulee="Question reformulée",
@@ -82,5 +88,7 @@ def test_transforme_une_reponse_albert_en_reponse_conversation_ajoute_interactio
             nom_document="guide-anssi.pdf",
             numero_page=20,
             contenu="Contenu du paragraphe",
+            titre="Un titre",
+            date_mise_a_jour="2023-01-01T12:43:25:000Z",
         )
     ]

@@ -53,6 +53,7 @@ class Albert(NamedTuple):
         jeopardy_active: bool
         seuil_reponse_maitrisee: float
         nombre_paragraphes: int
+        url_msc: str
         type_reclasseur: TypeReclasseur = TypeReclasseur.BGE
 
     client: Client
@@ -211,6 +212,7 @@ def recupere_configuration() -> Configuration:
             seuil_reponse_maitrisee=float(os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")),
             nombre_paragraphes=int(os.getenv("NOMBRE_PARAGRAPHES", 10)),
             type_reclasseur=TypeReclasseur(os.getenv("TYPE_RECLASSEUR", "bge")),
+            url_msc=os.getenv("URL_MSC", "https://messervices.cyber.gouv.fr"),
         ),
     )
     configuration_base_de_donnees = _recupere_configuration_postgres(

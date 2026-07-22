@@ -3,10 +3,10 @@ from client_albert_de_test import (
     un_resultat_de_recherche,
     un_choix_de_proposition,
 )
-from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import ReclasseReponse, ResultatReclasse
+from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
 from services.service_albert import ServiceAlbert, Prompts
 
 PROMPTS = Prompts(
@@ -14,19 +14,10 @@ PROMPTS = Prompts(
     prompt_reclassement="Prompt de reclassement : {QUESTION}",
 )
 
-FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL = Albert.Service(  # type: ignore [attr-defined]
-    collection_nom_anssi_lab="",
-    id_collection_anssi_lab=42,
-    id_collection_anssi_lab_jeopardy=43,
-    modele_reclassement="rerank-small",
-    taille_fenetre_historique=2,
-    jeopardy_active=False,
-    seuil_reponse_maitrisee=0.8,
-    nombre_paragraphes=5,
-)
 
-
-def test_retourne_uniquement_le_paragraphe_maitrise(un_reclasseur):
+def test_retourne_uniquement_le_paragraphe_maitrise(
+    un_reclasseur, une_configuration_de_service_albert
+):
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
         [
@@ -50,7 +41,7 @@ def test_retourne_uniquement_le_paragraphe_maitrise(un_reclasseur):
     )
 
     reponse = ServiceAlbert(
-        configuration_service_albert=FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL,
+        configuration_service_albert=une_configuration_de_service_albert(),
         client=client,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
@@ -59,6 +50,7 @@ def test_retourne_uniquement_le_paragraphe_maitrise(un_reclasseur):
             {"question-maitrisee": "Une réponse."}
         ),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     ).pose_question(question="Ma question ?")
 
     assert len(reponse.paragraphes) == 1
@@ -66,7 +58,7 @@ def test_retourne_uniquement_le_paragraphe_maitrise(un_reclasseur):
 
 
 def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au_seuil(
-    un_reclasseur,
+    un_reclasseur, une_configuration_de_service_albert
 ):
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
@@ -91,7 +83,7 @@ def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au
     )
 
     reponse = ServiceAlbert(
-        configuration_service_albert=FAUSSE_CONFIGURATION_AVEC_RECLASSEMENT_ET_SEUIL,
+        configuration_service_albert=une_configuration_de_service_albert(),
         client=client,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
@@ -100,6 +92,7 @@ def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au
             {"qui-est-le-directeur-de-lanssi": "Vincent Strubel."}
         ),
         reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
     ).pose_question(question="Qui est le directeur de l'ANSSI ?")
 
     assert len(reponse.paragraphes) == 1

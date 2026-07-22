@@ -18,7 +18,8 @@ class Paragraphe(BaseModel):
 
 
 class ParagrapheReponseQuestion(Paragraphe):
-    pass
+    titre: str
+    date_mise_a_jour: str
 
 
 class ParagrapheReponseMaitrisee(Paragraphe):

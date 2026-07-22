@@ -15,6 +15,8 @@ class ReponseParagraphe(BaseModel):
     contenu: str
     numero_page: int
     nom_document: str
+    titre: str
+    date_mise_a_jour: str
 
 
 def _mappe_une_reponse_albert(
@@ -29,6 +31,8 @@ def _mappe_une_reponse_albert(
                 nom_document=p.nom_document,
                 numero_page=p.numero_page,
                 contenu=p.contenu,
+                titre=p.titre,
+                date_mise_a_jour=p.date_mise_a_jour,
             ),
             reponse_question.paragraphes,
         )

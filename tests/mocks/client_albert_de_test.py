@@ -276,6 +276,7 @@ class ConstructeurResultatDeRecherche:
     def __init__(self):
         self.contenu = "Un contenu"
         self.id_reponse: Optional[str] = None
+        self.nom_document: str = ""
 
     def ayant_pour_contenu(self, contenu: str):
         self.contenu = contenu
@@ -285,12 +286,19 @@ class ConstructeurResultatDeRecherche:
         self.id_reponse = id_reponse
         return self
 
+    def ayant_pour_document(self, nom_document: str):
+        self.nom_document = nom_document
+        return self
+
     def construis(self) -> ResultatRecherche:
         return ResultatRecherche(
             RechercheChunk(
                 content=self.contenu,
                 metadata=RechercheMetadonnees(
-                    source_url="", page=1, nom_document="", id_reponse=self.id_reponse
+                    source_url="",
+                    page=1,
+                    nom_document=self.nom_document,
+                    id_reponse=self.id_reponse,
                 ),
             ),
             0.5,
