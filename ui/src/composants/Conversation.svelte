@@ -82,8 +82,10 @@
       transition:fade
     >
       {#if message.emetteur === 'systeme'}
-        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-        <p id={`reponse-mqc-${index}`}>{@html contenu}</p>
+        <div class="contenu-reponse" id={`reponse-mqc-${index}`}>
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html contenu}
+        </div>
       {:else}
         <p>{message.contenu}</p>
       {/if}
@@ -210,6 +212,32 @@
       display: flex;
       justify-content: flex-end;
     }
+  }
+
+  :global(.contenu-reponse > :first-child) {
+    margin-block-start: 0;
+  }
+
+  :global(.contenu-reponse > :last-child) {
+    margin-block-end: 0;
+  }
+
+  :global(.contenu-reponse p) {
+    margin-block: 0 1rem;
+  }
+
+  :global(.contenu-reponse h3) {
+    margin-block: 2rem 1rem;
+  }
+
+  :global(.contenu-reponse ul),
+  :global(.contenu-reponse ol) {
+    margin-block: 0 1rem;
+    padding-inline-start: 1.5rem;
+  }
+
+  :global(.contenu-reponse li + li) {
+    margin-block-start: 0.5rem;
   }
 
   .bouton-scroll-rapide {
