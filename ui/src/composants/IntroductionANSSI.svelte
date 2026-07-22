@@ -24,8 +24,12 @@
     Ces éléments nous permettront d’enrichir notre base d’évaluation.
   </p>
   <p>
-    👯 Rejoignez également notre groupe Tchap dédié à ce test afin d’échanger avec
-    l’équipe du Lab, poser vos questions et partager vos retours.
+    👯 Rejoignez également notre groupe <dsfr-link
+      label="Tchap"
+      href="https://www.tchap.gouv.fr/#/room/#MesQuestionsCyberinterneANSSIZTB8TiUd7CY:agent.ssi.tchap.gouv.fr?via=agent.dinum.tchap.gouv.fr&via=agent.ssi.tchap.gouv.fr"
+      blank
+    ></dsfr-link> dédié à ce test afin d’échanger avec l’équipe du Lab, poser vos questions
+    et partager vos retours.
   </p>
 </div>
 

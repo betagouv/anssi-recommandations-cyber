@@ -118,8 +118,12 @@
     <span class="titre-avis"><b>Votre avis est essentiel ! 🙌</b></span>
     <span class="texte-avis"
       >En laissant votre avis, vous nous aidez à mieux comprendre vos besoins et à
-      affiner nos réponses.</span
-    >
+      affiner nos réponses. N'hésitez pas à échanger avec le Lab sur <dsfr-link
+        label="Tchap"
+        href="https://www.tchap.gouv.fr/#/room/#MesQuestionsCyberinterneANSSIZTB8TiUd7CY:agent.ssi.tchap.gouv.fr?via=agent.dinum.tchap.gouv.fr&via=agent.ssi.tchap.gouv.fr"
+        blank
+      ></dsfr-link>.
+    </span>
   </div>
   {#if !afficheMessageSucces && !afficheMessageErreur}
     <div class="conteneur-avis-utilisateur-bis">
