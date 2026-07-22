@@ -1,4 +1,4 @@
-from schemas.albert import ReponseQuestion, Paragraphe
+from schemas.albert import ReponseQuestion, ParagrapheReponseQuestion
 from schemas.api import (
     ReponseDemandeConversationAPI,
     ReponseParagraphe,
@@ -11,7 +11,7 @@ def test_transforme_une_reponse_albert_en_reponse_conversation():
         reponse="Réponse de test",
         question="Question de test",
         paragraphes=[
-            Paragraphe(
+            ParagrapheReponseQuestion(
                 url="http://example.local",
                 nom_document="guide-anssi.pdf",
                 numero_page=20,
@@ -53,7 +53,7 @@ def test_transforme_une_reponse_albert_en_reponse_conversation_ajoute_interactio
         reponse="Réponse de test",
         question="Question de test",
         paragraphes=[
-            Paragraphe(
+            ParagrapheReponseQuestion(
                 url="http://example.local",
                 nom_document="guide-anssi.pdf",
                 numero_page=20,

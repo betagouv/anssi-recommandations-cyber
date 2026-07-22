@@ -3,11 +3,10 @@ from client_albert_de_test import (
     un_resultat_de_recherche,
     un_choix_de_proposition,
 )
-from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
-
 from configuration import Albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
-from schemas.albert import ParagrapheReponseMaitrisee, ReclasseReponse, ResultatReclasse
+from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
+from schemas.albert import ReclasseReponse, ResultatReclasse
 from services.service_albert import ServiceAlbert, Prompts
 
 PROMPTS = Prompts(
@@ -63,7 +62,7 @@ def test_retourne_uniquement_le_paragraphe_maitrise(un_reclasseur):
     ).pose_question(question="Ma question ?")
 
     assert len(reponse.paragraphes) == 1
-    assert isinstance(reponse.paragraphes[0], ParagrapheReponseMaitrisee)
+    assert reponse.paragraphes[0].contenu == "Question maîtrisée"
 
 
 def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au_seuil(

@@ -13,6 +13,7 @@ from schemas.albert import (
     RecherchePayload,
     ReponseQuestion,
     ParagrapheReponseMaitrisee,
+    ParagrapheReponseQuestion,
 )
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import (
@@ -212,7 +213,10 @@ class ServiceAlbert:
 
         return ReponseQuestion(
             reponse=reponse,
-            paragraphes=paragraphes,
+            paragraphes=[
+                ParagrapheReponseQuestion.model_validate(p.model_dump())
+                for p in paragraphes
+            ],
             question=question,
             question_reformulee=question_reformulee,
             violation=violation_resultat,

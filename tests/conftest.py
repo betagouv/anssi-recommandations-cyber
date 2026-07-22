@@ -14,7 +14,12 @@ from adaptateurs.chiffrement import AdaptateurChiffrement
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
 from configuration import Mode
-from schemas.albert import Paragraphe, ReponseQuestion, ParagrapheReponseMaitrisee
+from schemas.albert import (
+    Paragraphe,
+    ReponseQuestion,
+    ParagrapheReponseMaitrisee,
+    ParagrapheReponseQuestion,
+)
 from schemas.api import QuestionRequete
 from schemas.retour_utilisatrice import Interaction, Conversation, RetourUtilisatrice
 from schemas.type_utilisateur import TypeUtilisateur
@@ -137,7 +142,10 @@ class ConstructeurDeReponseQuestion:
     def construis(self) -> ReponseQuestion:
         return ReponseQuestion(
             reponse=self.reponse,
-            paragraphes=self.paragraphes,
+            paragraphes=[
+                ParagrapheReponseQuestion.model_validate(p.model_dump())
+                for p in self.paragraphes
+            ],
             question=self.question,
             question_reformulee=f"Question reformulée : {self.question}",
             violation=self.violation,
@@ -385,7 +393,10 @@ class ConstructeurDInteraction:
     def avec_une_reponse_contenant_les_paragraphes(self, paragraphes: list[Paragraphe]):
         self.reponse_question = ReponseQuestion(
             reponse="réponse",
-            paragraphes=paragraphes,
+            paragraphes=[
+                ParagrapheReponseQuestion.model_validate(p.model_dump())
+                for p in paragraphes
+            ],
             question="question",
             question_reformulee="Question reformulée",
             violation=None,
