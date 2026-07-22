@@ -13,10 +13,14 @@ Règles :
 - n'infère aucune recommandation ni obligation absente du passage ;
 - un passage de navigation ne constitue jamais une preuve principale : sommaire, table des matières, index, tableau de renvois, liste de recommandations, liste de titres `Rxx`, bibliographie, citation ou référence vers un autre document ;
 - classe ces passages de navigation en `dans_la_thematique_sans_apport`, même s'ils contiennent mot pour mot un intitulé pertinent ;
+- une page ou un passage intitulé « Liste des recommandations », y compris après un sommaire ou une table des matières, est toujours un passage de navigation : classe-le `dans_la_thematique_sans_apport` et ne l'ajoute jamais à `ids_retenus`, même s'il énumère des recommandations `R<nombre>` pertinentes ;
 - ne classe `preuve_principale` qu'un passage contenant le contenu normatif lui-même ou son explication : action attendue, conditions, périmètre ou justification ; un intitulé, un numéro de recommandation, un titre de section ou un renvoi de page ne suffit pas ;
 - les identifiants et rangs sont des informations de diagnostic, pas des preuves ;
 - chaque identifiant de `ids_retenus` doit être classé `preuve_principale` ;
-- `ids_retenus` peut être vide et doit être ordonné du passage le plus probant au moins probant ;
+- `ids_retenus` peut être vide. Son ordre est conservé tel quel pour l'affichage des sources : ce n'est ni l'ordre des identifiants ni le rang initial ;
+- ordonne les `preuve_principale` du plus important au moins important pour répondre à la question. À pertinence égale, privilégie le contenu d'un guide ANSSI, d'une recommandation `R<nombre>` et d'une instruction officielle concrète par rapport aux documents plus contextuels ;
+- lorsque plusieurs `preuve_principale` proviennent du même `document`, place leurs identifiants dans un même groupe adjacent. Ordonne les passages du groupe par importance décroissante et place le groupe selon son passage le plus important ;
+- ne conserve pas un passage uniquement pour compléter un groupe de document ;
 - un passage classé `element_de_reponse` apporte un complément, mais ne doit pas apparaître dans `ids_retenus`.
 
 Exemples :
