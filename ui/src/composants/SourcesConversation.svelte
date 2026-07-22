@@ -97,7 +97,9 @@
               : 'En savoir plus'}
           {@const imageUrl = URL.createObjectURL(reference.image ?? new Blob())}
           <div class="source">
-            <span class="nom-document">{reference.nom_document}</span>
+            <span class="nom-document"
+              >{reference.titre || reference.nom_document}</span
+            >
             <dsfr-link
               label={titreDuLien}
               href={reference.url}

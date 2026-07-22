@@ -18,6 +18,8 @@ export type Paragraphe = {
   nom_document: string;
   contenu: string;
   image?: Blob;
+  titre: string;
+  date_mise_a_jour: Date;
 };
 
 export type Message = {
@@ -97,6 +99,8 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
         nom_document: paragraphe.nom_document,
         contenu: paragraphe.contenu,
         image: blob,
+        titre: paragraphe.titre,
+        date_mise_a_jour: new Date(Date.parse(paragraphe.date_mise_a_jour)),
       });
     }
   }
