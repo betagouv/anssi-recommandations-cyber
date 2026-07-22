@@ -1,8 +1,7 @@
-import type { Paragraphe } from './stores/conversation.store';
 import type {
   AvisUtilisateurBis,
-  ValeurSourcesAdaptees,
   ValeurPertinence,
+  ValeurSourcesAdaptees,
 } from './stores/avisUtilisateurBis.store';
 
 const urlAPI = import.meta.env.VITE_URL_API;
@@ -52,9 +51,19 @@ export type MessageUtilisateurAPI = {
   question: string;
 };
 
+export type ReponseParagraphe = {
+  numero_page: number;
+  url: string;
+  nom_document: string;
+  contenu: string;
+  image?: Blob;
+  titre: string;
+  date_mise_a_jour: string;
+};
+
 export type ReponseCreationConversation = {
   reponse: string;
-  paragraphes: Paragraphe[];
+  paragraphes: ReponseParagraphe[];
   id_interaction: string;
   question: string;
   id_conversation: string;
