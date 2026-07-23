@@ -60,7 +60,7 @@
           <dsfr-button
             use:infobulle={{ contenu: 'Sources copiées', mode: 'click' }}
             label="Copier les sources de la réponse"
-            kind="secondary"
+            kind="tertiary"
             size="sm"
             id="copie-sources"
             title="Copier les sources de la réponse"
