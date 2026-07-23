@@ -73,16 +73,22 @@
         <div class="navigation-carrousel">
           {#if sourceCourante > 0}
             <dsfr-button
-              label="< Précédent"
+              label="Précédent"
               kind="secondary"
               size="sm"
+              has-icon={true}
+              icon="arrow-left-line"
+              icon-place="left"
               onclick={deplaceAGauche}
             ></dsfr-button>
           {/if}
           <dsfr-button
-            label="Suivant >"
+            label="Suivant"
             kind="secondary"
             size="sm"
+            has-icon={true}
+            icon="arrow-right-line"
+            icon-place="right"
             disabled={message.references === undefined ||
               sourceCourante === message.references.length - 1}
             onclick={deplaceADroite}
