@@ -27,7 +27,7 @@ def _mappe_une_reponse_albert(
     paragraphes: list[ReponseParagraphe] = list(
         map(
             lambda p: ReponseParagraphe(
-                url=f"/source/?document={p.nom_document}&page={p.numero_page}&interaction={str(id_interaction)}",
+                url=f"/source?document={p.nom_document}&page={p.numero_page}&interaction={str(id_interaction)}",
                 nom_document=p.nom_document,
                 numero_page=p.numero_page,
                 contenu=p.contenu,
