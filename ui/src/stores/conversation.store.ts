@@ -86,7 +86,9 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   const paragraphes: Paragraphe[] = [];
   if (estReponseConversation(reponseAPI)) {
     for await (const paragraphe of reponseAPI.paragraphes) {
-      const urlProxy = paragraphe.url.replace('/source/', '/source/proxy/');
+      const urlProxy = paragraphe.url
+        .replace('/source/', '/source')
+        .replace('/source', '/source/proxy');
       let blob: Blob = new Blob();
       try {
         blob = await adaptateurPDF.pagePDFenPNG(urlProxy, paragraphe.numero_page);

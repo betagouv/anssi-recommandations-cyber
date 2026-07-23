@@ -47,7 +47,7 @@ def _recupere_les_documents(
     return conversation_recuperee, documents_trouves[0]
 
 
-@document_source.get("/", status_code=301)
+@document_source.get("", status_code=301)
 async def route_document_source(
     document: str,
     page: int,
