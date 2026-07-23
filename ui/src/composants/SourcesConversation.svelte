@@ -100,15 +100,17 @@
             <span class="nom-document"
               >{reference.titre || reference.nom_document}</span
             >
-            <span class="date-mise-a-jour">
-              Publié le {reference.date_mise_a_jour
-                ? Intl.DateTimeFormat('fr-FR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  }).format(reference.date_mise_a_jour)
-                : 'N/A'}
-            </span>
+            {#if reference.date_mise_a_jour}
+              <span class="date-mise-a-jour">
+                Publié le {Intl.DateTimeFormat('fr-FR', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }).format(reference.date_mise_a_jour)}
+              </span>
+            {:else}
+              <span> &nbsp; </span>
+            {/if}
             <dsfr-link
               label={titreDuLien}
               href={reference.url}
