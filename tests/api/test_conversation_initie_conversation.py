@@ -84,7 +84,7 @@ def test_route_initie_conversation_retourne_donnees_correctes(
         "paragraphes": [
             {
                 "numero_page": 29,
-                "url": f"/source/?document=anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf&page=29&interaction={donnees_reponse['id_interaction']}",
+                "url": f"/source?document=anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf&page=29&interaction={donnees_reponse['id_interaction']}",
                 "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
                 "contenu": "Contenu du paragraphe 1",
                 "titre": "",
@@ -92,7 +92,7 @@ def test_route_initie_conversation_retourne_donnees_correctes(
             },
             {
                 "numero_page": 15,
-                "url": f"/source/?document=guide_hygiene_informatique_anssi.pdf&page=15&interaction={donnees_reponse['id_interaction']}",
+                "url": f"/source?document=guide_hygiene_informatique_anssi.pdf&page=15&interaction={donnees_reponse['id_interaction']}",
                 "nom_document": "guide_hygiene_informatique_anssi.pdf",
                 "contenu": "Contenu du paragraphe 2",
                 "titre": "",
