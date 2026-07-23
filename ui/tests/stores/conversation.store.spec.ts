@@ -3,7 +3,7 @@ import {
   nettoyeurDOM,
   storeConversation,
 } from '../../src/stores/conversation.store';
-import { clientAPI, estReponseConversation } from '../../src/client.api';
+import { clientAPI } from '../../src/client.api';
 import { get } from 'svelte/store';
 import { storeAffichage } from '../../src/stores/affichage.store';
 import { unConstructeurParagraphe } from './constructeurDeParagraphe';
@@ -267,61 +267,97 @@ describe('le store de conversation', () => {
     });
   });
 
-  it('continue la génération PDF en cas d’erreur', async () => {
-    let nombreAppel = 0;
-    adaptateurPDF.pagePDFenPNG = () => {
-      nombreAppel++;
-      if (nombreAppel === 3) {
-        throw new InvalidPDFException('PDF en erreur');
-      }
-      return Promise.resolve(new Blob());
-    };
-    clientAPI.ajouteInteraction = async () => ({
-      reponse: 'Une réponse',
-      question: 'Une question',
-      paragraphes: [
-        unConstructeurParagraphe().construis(),
-        unConstructeurParagraphe().construis(),
-        unConstructeurParagraphe().construis(),
-        unConstructeurParagraphe().construis(),
-      ],
-      id_interaction: 'id-interaction',
+  describe('pour la génération des PDF', () => {
+    it('continue la génération en cas d’erreur', async () => {
+      let nombreAppel = 0;
+      adaptateurPDF.pagePDFenPNG = () => {
+        nombreAppel++;
+        if (nombreAppel === 3) {
+          throw new InvalidPDFException('PDF en erreur');
+        }
+        return Promise.resolve(new Blob());
+      };
+      clientAPI.ajouteInteraction = async () => ({
+        reponse: 'Une réponse',
+        question: 'Une question',
+        paragraphes: [
+          unConstructeurParagraphe().construis(),
+          unConstructeurParagraphe().construis(),
+          unConstructeurParagraphe().construis(),
+          unConstructeurParagraphe().construis(),
+        ],
+        id_interaction: 'id-interaction',
+      });
+      storeConversation.initialise({
+        messages: [
+          { contenu: 'une question ?', emetteur: 'utilisateur' },
+          {
+            contenu: 'une réponse',
+            contenuMarkdown: 'une réponse',
+            emetteur: 'systeme',
+            references: [],
+            idInteraction: 'id-interaction',
+          },
+        ],
+        derniereQuestion: 'une question ?',
+        idConversation: 'id-conversation',
+      });
+
+      await storeConversation.ajouteMessageUtilisateur({
+        question: 'Une question ?',
+      });
+
+      const storeMisAJour = get(storeConversation);
+      const paragraphes = storeMisAJour.messages[3].references;
+      expect(paragraphes).toBeDefined();
+      expect(paragraphes!.every((p) => p.image !== undefined)).toBe(true);
+      expect(paragraphes).toHaveLength(4);
     });
-    storeConversation.initialise({
-      messages: [
-        { contenu: 'une question ?', emetteur: 'utilisateur' },
-        {
-          contenu: 'une réponse',
-          contenuMarkdown: 'une réponse',
-          emetteur: 'systeme',
-          references: [],
-          idInteraction: 'id-interaction',
-        },
-      ],
-      derniereQuestion: 'une question ?',
-      idConversation: 'id-conversation',
+
+    it('remplace correctement l‘url du document source', async () => {
+      const urlAppelees: string[] = [];
+      adaptateurPDF.pagePDFenPNG = (url: string) => {
+        urlAppelees.push(url);
+        return Promise.resolve(new Blob());
+      };
+      clientAPI.ajouteInteraction = async () => ({
+        reponse: 'Une réponse',
+        question: 'Une question',
+        paragraphes: [
+          unConstructeurParagraphe()
+            .avecURLDocument('http://demo.local/source/?document=mon-doc-1.pdf')
+            .construis(),
+          unConstructeurParagraphe()
+            .avecURLDocument('http://demo.local/source?document=mon-doc-2.pdf')
+            .construis(),
+        ],
+        id_interaction: 'id-interaction',
+      });
+      storeConversation.initialise({
+        messages: [
+          { contenu: 'une question ?', emetteur: 'utilisateur' },
+          {
+            contenu: 'une réponse',
+            contenuMarkdown: 'une réponse',
+            emetteur: 'systeme',
+            references: [],
+            idInteraction: 'id-interaction',
+          },
+        ],
+        derniereQuestion: 'une question ?',
+        idConversation: 'id-conversation',
+      });
+
+      await storeConversation.ajouteMessageUtilisateur({
+        question: 'Une question ?',
+      });
+
+      expect(urlAppelees[0]).toEqual(
+        'http://demo.local/source/proxy?document=mon-doc-1.pdf'
+      );
+      expect(urlAppelees[1]).toEqual(
+        'http://demo.local/source/proxy?document=mon-doc-2.pdf'
+      );
     });
-
-    await storeConversation.ajouteMessageUtilisateur({ question: 'Une question ?' });
-
-    const storeMisAJour = get(storeConversation);
-    const paragraphes = storeMisAJour.messages[3].references;
-    expect(paragraphes).toBeDefined();
-    expect(paragraphes!.every((p) => p.image !== undefined)).toBe(true);
-    expect(paragraphes).toHaveLength(4);
-  });
-});
-
-describe('la validation de réponse API', () => {
-  it('valide une réponse avec tous les champs requis incluant id de conversation', () => {
-    const reponse = {
-      reponse: 'une réponse',
-      paragraphes: [],
-      id_interaction: 'id1',
-      question: 'une question',
-      id_conversation: 'conv1',
-    };
-
-    expect(estReponseConversation(reponse)).toBe(true);
   });
 });

@@ -36,7 +36,7 @@ def test_redirige_vers_le_document_source(
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
-        f"/source/?document=anssi-guide-gestion_crise_cyber.pdf&page=30&interaction={str(une_interaction.id)}"
+        f"/source?document=anssi-guide-gestion_crise_cyber.pdf&page=30&interaction={str(une_interaction.id)}"
     )
 
     assert reponse.status_code == 301
@@ -85,7 +85,7 @@ def test_redirige_vers_le_bon_document_source(
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
-        f"/source/?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(une_interaction.id)}"
+        f"/source?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(une_interaction.id)}"
     )
 
     assert reponse.status_code == 301
@@ -106,7 +106,7 @@ def test_retourne_une_erreur_404_si_l_interaction_n_est_pas_trouvee(
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
-        f"/source/?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(uuid.uuid4())}"
+        f"/source?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(uuid.uuid4())}"
     )
 
     assert reponse.status_code == 404
@@ -143,7 +143,7 @@ def test_genere_une_erreur_404_si_le_document_n_est_pas_trouve(
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
-        f"/source/?document=un_document_inconnu.pdf&page=42&interaction={str(une_interaction.id)}"
+        f"/source?document=un_document_inconnu.pdf&page=42&interaction={str(une_interaction.id)}"
     )
 
     assert reponse.status_code == 404
@@ -180,7 +180,7 @@ def test_retourne_erreur_404_si_le_numero_de_page_ne_correspond_pas(
     client_http = TestClient(serveur, follow_redirects=False)
 
     reponse = client_http.get(
-        f"/source/?document=anssi-guide-gestion_crise_cyber.pdf&page=42&interaction={str(une_interaction.id)}"
+        f"/source?document=anssi-guide-gestion_crise_cyber.pdf&page=42&interaction={str(une_interaction.id)}"
     )
 
     assert reponse.status_code == 404
@@ -218,7 +218,7 @@ def test_journalise_le_document_source_demande(
     client_http = TestClient(serveur, follow_redirects=False)
 
     client_http.get(
-        f"/source/?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(une_interaction.id)}"
+        f"/source?document=anssi-guide-gestion_crise_cyber.pdf&page=25&interaction={str(une_interaction.id)}"
     )
 
     evenements = adaptateur_journal.les_evenements()
