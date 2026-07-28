@@ -74,7 +74,7 @@ def test_leve_une_erreur_recherche_documents_si_timeout(
     payload = RecherchePayload(
         collection_ids=[1],
         limit=5,
-        prompt="Question ?",
+        query="Question ?",
         method="methode",
     )
     mock_client_http = ConstructeurClientHttp().qui_timeout().construis()
@@ -250,7 +250,7 @@ def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():
     client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
 
     payload = RecherchePayload(
-        collection_ids=[161155], limit=10, prompt="Ma question ?", method="semantic"
+        collection_ids=[161155], limit=10, query="Ma question ?", method="semantic"
     )
     resultats = client_albert_memoire.recherche_jeopardy(payload)
 

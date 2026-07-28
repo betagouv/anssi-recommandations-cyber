@@ -102,7 +102,7 @@ class ServiceAlbert:
         payload_classique = RecherchePayload(
             collection_ids=[self.id_collection],
             limit=self.nombre_paragraphes,
-            prompt=question,
+            query=question,
             method=methode_recherche,
         )
 
@@ -156,7 +156,7 @@ class ServiceAlbert:
         payload = RecherchePayload(
             collection_ids=[self.id_collection_jeopardy],
             limit=self.nombre_paragraphes,
-            prompt=question,
+            query=question,
             method=methode_recherche,
         )
 

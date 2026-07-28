@@ -41,7 +41,7 @@ class ReponseQuestion(BaseModel):
 class RecherchePayload(NamedTuple):
     collection_ids: list[int]
     limit: int
-    prompt: str
+    query: str
     method: str
 
 

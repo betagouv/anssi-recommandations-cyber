@@ -815,7 +815,7 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
     ).pose_question(question="Ma question brute ?")
 
     assert (
-        client_albert_recherche.payload_recu.prompt
+        client_albert_recherche.payload_recu.query
         == "Question reformulee pour recherche"
     )
 
