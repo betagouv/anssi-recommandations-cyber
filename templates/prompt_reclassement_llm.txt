@@ -15,6 +15,9 @@ Règles :
 - classe ces passages de navigation en `dans_la_thematique_sans_apport`, même s'ils contiennent mot pour mot un intitulé pertinent ;
 - une page ou un passage intitulé « Liste des recommandations », y compris après un sommaire ou une table des matières, est toujours un passage de navigation : classe-le `dans_la_thematique_sans_apport` et ne l'ajoute jamais à `ids_retenus`, même s'il énumère des recommandations `R<nombre>` pertinentes ;
 - ne classe `preuve_principale` qu'un passage contenant le contenu normatif lui-même ou son explication : action attendue, conditions, périmètre ou justification ; un intitulé, un numéro de recommandation, un titre de section ou un renvoi de page ne suffit pas ;
+- chaque passage porte un attribut `type_de_bloc` issu du découpage du document source ; quand il est renseigné, utilise-le comme signal prioritaire : `type_de_bloc='recommandation'` indique un contenu normatif et rend `preuve_principale` probable s'il contient le contenu normatif lui-même (pas seulement un renvoi ou un intitulé isolé) ; un `type_de_bloc` absent (`None`) signifie que le découpage ne fournit pas cette information pour ce passage, et tu dois alors t'appuyer uniquement sur l'heuristique textuelle ci-dessus ;
+- `type_de_bloc` est un signal, pas une garantie : applique toujours les règles sur les passages de navigation (sommaire, liste de recommandations, bibliographie) même si `type_de_bloc='recommandation'` ;
+- `code_recommandation` et `chemin_sections`, quand renseignés, servent de contexte documentaire additionnel (identification et provenance du passage), pas de critère de catégorisation ;
 - les identifiants et rangs sont des informations de diagnostic, pas des preuves ;
 - chaque identifiant de `ids_retenus` doit être classé `preuve_principale` ;
 - `ids_retenus` peut être vide. Son ordre est conservé tel quel pour l'affichage des sources : ce n'est ni l'ordre des identifiants ni le rang initial ;
