@@ -1,3 +1,4 @@
+import json
 import requests
 from openai import APITimeoutError, APIConnectionError
 from openai import OpenAI
@@ -24,6 +25,15 @@ from services.exceptions import (
     ErreurRechercheDocuments,
     ErreurCommunicationAlbert,
 )
+
+
+def _parse_chemin_sections(brut) -> list[str]:
+    if not brut:
+        return []
+    try:
+        return json.loads(brut)
+    except (json.JSONDecodeError, TypeError):
+        return []
 
 
 class ClientAlbertHttp(requests.Session):
@@ -75,6 +85,13 @@ class ClientAlbertApi(ClientAlbert):
                 + self.decalage_index_Albert_et_numero_de_page_lecteur,
                 nom_document=meta_dict.get("nom_document", ""),
                 id_reponse=meta_dict.get("id_reponse"),
+                type_de_bloc=meta_dict.get("type_de_bloc"),
+                code_recommandation=meta_dict.get("code_recommandation"),
+                chemin_sections=_parse_chemin_sections(
+                    meta_dict.get("chemin_sections")
+                ),
+                position_page=meta_dict.get("position_page"),
+                derniere_page=meta_dict.get("derniere_page"),
             )
             chunk = RechercheChunk(
                 content=chunk_dict.get("content", ""),
@@ -152,6 +169,13 @@ class ClientAlbertApi(ClientAlbert):
                 page=meta_dict.get("page", 0)
                 + self.decalage_index_Albert_et_numero_de_page_lecteur,
                 nom_document=meta_dict.get("nom_document", ""),
+                type_de_bloc=meta_dict.get("type_de_bloc"),
+                code_recommandation=meta_dict.get("code_recommandation"),
+                chemin_sections=_parse_chemin_sections(
+                    meta_dict.get("chemin_sections")
+                ),
+                position_page=meta_dict.get("position_page"),
+                derniere_page=meta_dict.get("derniere_page"),
             )
             chunk = RechercheChunk(
                 content=brut.get("content", ""),

@@ -37,8 +37,22 @@ class ConstructeurRetourRouteSearch:
     def avec_contenu(self, contenu: str):
         self._retours.append(
             {
-                "chunk": {"content": contenu},
-                "metadata": {"source_url": "", "page": 0, "document_name": ""},
+                "chunk": {
+                    "content": contenu,
+                    "metadata": {"source_url": "", "page": 0, "document_name": ""},
+                },
+                "score": "0.9",
+            }
+        )
+        return self
+
+    def avec_contenu_et_metadonnees(self, contenu: str, metadonnees: dict):
+        self._retours.append(
+            {
+                "chunk": {
+                    "content": contenu,
+                    "metadata": metadonnees,
+                },
                 "score": "0.9",
             }
         )
@@ -277,6 +291,9 @@ class ConstructeurResultatDeRecherche:
         self.contenu = "Un contenu"
         self.id_reponse: Optional[str] = None
         self.nom_document: str = ""
+        self.type_de_bloc: Optional[str] = None
+        self.code_recommandation: Optional[str] = None
+        self.chemin_sections: list[str] = []
 
     def ayant_pour_contenu(self, contenu: str):
         self.contenu = contenu
@@ -290,6 +307,17 @@ class ConstructeurResultatDeRecherche:
         self.nom_document = nom_document
         return self
 
+    def ayant_pour_metadonnees_de_bloc(
+        self,
+        type_de_bloc: Optional[str] = None,
+        code_recommandation: Optional[str] = None,
+        chemin_sections: Optional[list[str]] = None,
+    ):
+        self.type_de_bloc = type_de_bloc
+        self.code_recommandation = code_recommandation
+        self.chemin_sections = chemin_sections or []
+        return self
+
     def construis(self) -> ResultatRecherche:
         return ResultatRecherche(
             RechercheChunk(
@@ -299,6 +327,9 @@ class ConstructeurResultatDeRecherche:
                     page=1,
                     nom_document=self.nom_document,
                     id_reponse=self.id_reponse,
+                    type_de_bloc=self.type_de_bloc,
+                    code_recommandation=self.code_recommandation,
+                    chemin_sections=self.chemin_sections,
                 ),
             ),
             0.5,

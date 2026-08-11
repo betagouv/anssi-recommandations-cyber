@@ -77,5 +77,10 @@ def test_route_recherche_retourne_la_bonne_structure_d_objet(
             "score_reclassement": 1.0,
             "numero_page": 29,
             "nom_document": "anssi-guide-authentification_multifacteur_et_mots_de_passe.pdf",
+            "type_de_bloc": None,
+            "code_recommandation": None,
+            "chemin_sections": [],
+            "position_page": None,
+            "derniere_page": None,
         }
     ]
