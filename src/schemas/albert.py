@@ -19,7 +19,19 @@ class Paragraphe(BaseModel):
 
     @property
     def contexte_dans_le_document(self):
-        return self.contenu
+        return f"{self._en_tete_structure()}{self.contenu}"
+
+    def _en_tete_structure(self) -> str:
+        if not (self.chemin_sections or self.code_recommandation):
+            return ""
+
+        champs = [f"Document: {self.nom_document}"]
+        if self.chemin_sections:
+            champs.append(f"Section: {' > '.join(self.chemin_sections[-2:])}")
+        if self.code_recommandation:
+            champs.append(f"Recommandation: {self.code_recommandation}")
+
+        return f"[{' | '.join(champs)}]\n"
 
 
 class ParagrapheReponseQuestion(Paragraphe):
@@ -32,7 +44,7 @@ class ParagrapheReponseMaitrisee(Paragraphe):
 
     @property
     def contexte_dans_le_document(self):
-        return f"{self.contenu}\n{self.reponse}"
+        return f"{self._en_tete_structure()}{self.contenu}\n{self.reponse}"
 
 
 class ReponseQuestion(BaseModel):
