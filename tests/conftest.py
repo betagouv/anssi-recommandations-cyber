@@ -43,9 +43,23 @@ class ConstructeurDeParagraphe:
         self.numero_page = random.randint(1, 100)
         self.nom_document = "Mon document"
         self.rang_initial = 0
+        self.type_de_bloc: Optional[str] = None
+        self.code_recommandation: Optional[str] = None
+        self.chemin_sections: list[str] = []
 
     def avec_contenu(self, contenu: str):
         self.contenu = contenu
+        return self
+
+    def ayant_pour_metadonnees_de_bloc(
+        self,
+        type_de_bloc: Optional[str] = None,
+        code_recommandation: Optional[str] = None,
+        chemin_sections: Optional[list[str]] = None,
+    ):
+        self.type_de_bloc = type_de_bloc
+        self.code_recommandation = code_recommandation
+        self.chemin_sections = chemin_sections or []
         return self
 
     def ayant_comme_score(self, score: float):
@@ -75,6 +89,9 @@ class ConstructeurDeParagraphe:
             score_reclassement=self.score_reclassement,
             url=self.url,
             rang_initial=self.rang_initial,
+            type_de_bloc=self.type_de_bloc,
+            code_recommandation=self.code_recommandation,
+            chemin_sections=self.chemin_sections,
         )
 
 

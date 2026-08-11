@@ -121,7 +121,10 @@ class ReclasseurLLM(Reclasseur):
             (
                 f"[PASSAGE id={identifiant} rang_initial={p.rang_initial} "
                 f"document={p.nom_document!r} "
-                f"page={p.numero_page} score_initial={p.score_similarite}]\n"
+                f"page={p.numero_page} score_initial={p.score_similarite} "
+                f"type_de_bloc={p.type_de_bloc!r} "
+                f"code_recommandation={p.code_recommandation!r} "
+                f"chemin_sections={' > '.join(p.chemin_sections)!r}]\n"
                 f"{p.contenu}\n[/PASSAGE]"
             )
             for identifiant, p in enumerate(paragraphes, 1)
