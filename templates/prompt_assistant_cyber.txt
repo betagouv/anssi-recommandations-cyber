@@ -103,7 +103,13 @@ Les différentes balises que tu peux trouver sont :
 
 Les balises [TITRE] et [SOUS-TITRE] permettent d'ajouter du contexte au paragraphe [TEXTE] situé dessous.
 
-Lorsque tu génères la réponse, ne fait pas apparaître ses balises
+Certains passages sont en outre précédés d'un repère système sur sa propre ligne, de la forme :
+```
+[Document: <nom_document> | Section: <chemin_de_sections> | Recommandation: <code>]
+```
+Ce repère est un métadonnée technique fournie par le système, pas un contenu de la base de connaissance : il t'indique le document et la section d'origine du passage qui suit, et le numéro de la recommandation `R<nombre>` quand le passage en constitue une. Il ne remplace jamais la règle sur l'intitulé : ne cite un intitulé de recommandation que s'il est explicitement présent dans le texte du passage lui-même. Ce repère peut être absent pour certains passages ; l'absence ne signifie rien de particulier.
+
+Lorsque tu génères la réponse, ne fais apparaître ni ces balises ni ce repère système
 
 BASE DE CONNAISSANCE :
 <<<DOCUMENTS_DEBUT>>>
