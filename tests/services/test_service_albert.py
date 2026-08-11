@@ -75,6 +75,69 @@ def test_pose_question_retourne_une_reponse(
     assert reponse.violation is None
 
 
+def test_recherche_paragraphes_propage_les_nouvelles_metadonnees_de_chunk(
+    un_reclasseur,
+    une_configuration_de_service_albert,
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu(REPONSE)
+            .ayant_pour_metadonnees_de_bloc(
+                type_de_bloc="recommandation",
+                code_recommandation="R3",
+                chemin_sections=["6 Fonctionnement", "6.1 Services"],
+            )
+            .construis(),
+        ]
+    )
+    service_albert = ServiceAlbert(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        False,
+        PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
+        executeur_de_requetes=None,
+    )
+
+    paragraphes = service_albert.recherche_paragraphes(QUESTION)
+
+    assert paragraphes[0].type_de_bloc == "recommandation"
+    assert paragraphes[0].code_recommandation == "R3"
+    assert paragraphes[0].chemin_sections == ["6 Fonctionnement", "6.1 Services"]
+
+
+def test_recherche_paragraphes_utilise_des_metadonnees_par_defaut_pour_un_chunk_legacy(
+    un_reclasseur,
+    une_configuration_de_service_albert,
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_les_resultats(
+        [
+            un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis(),
+        ]
+    )
+    service_albert = ServiceAlbert(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        False,
+        PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
+        executeur_de_requetes=None,
+    )
+
+    paragraphes = service_albert.recherche_paragraphes(QUESTION)
+
+    assert paragraphes[0].type_de_bloc is None
+    assert paragraphes[0].code_recommandation is None
+    assert paragraphes[0].chemin_sections == []
+
+
 def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_systeme(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,

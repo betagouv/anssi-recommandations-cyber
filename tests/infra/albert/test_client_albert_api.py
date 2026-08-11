@@ -7,7 +7,7 @@ from client_albert_de_test import (
     ClientAlbertMemoire,
 )
 
-from infra.albert.client_albert import ClientAlbertApi
+from infra.albert.client_albert import ClientAlbertApi, _parse_chemin_sections
 from schemas.albert import RechercheChunk, RechercheMetadonnees
 from schemas.albert import (
     RechercheMetadonneesJeopardy,
@@ -25,6 +25,25 @@ REPONSE = "Patates et reblochon"
 FAUX_RETOURS_ALBERT_API = (
     ConstructeurRetourRouteSearch().avec_contenu("contenu").construis()
 )
+
+
+def test_parse_chemin_sections_retourne_une_liste_vide_si_valeur_absente():
+    assert _parse_chemin_sections(None) == []
+
+
+def test_parse_chemin_sections_retourne_une_liste_vide_si_chaine_vide():
+    assert _parse_chemin_sections("") == []
+
+
+def test_parse_chemin_sections_parse_un_json_valide():
+    assert _parse_chemin_sections('["6 Fonctionnement", "6.1 Services"]') == [
+        "6 Fonctionnement",
+        "6.1 Services",
+    ]
+
+
+def test_parse_chemin_sections_retourne_une_liste_vide_si_json_malforme():
+    assert _parse_chemin_sections("{") == []
 
 
 def test_recupere_propositions(une_configuration_albert_client):
@@ -219,6 +238,136 @@ def test_leve_une_erreur_communication_avec_albert_en_cas_de_probleme_lors_du_re
     with pytest.raises(ErreurCommunicationAlbert):
         payload = ReclassePayload(query="", documents=[], model="modele")
         mock_client_albert_api.reclasse(payload)
+
+
+def test_recherche_propage_les_nouvelles_metadonnees_de_chunk(
+    une_configuration_albert_client,
+):
+    retour = (
+        ConstructeurRetourRouteSearch()
+        .avec_contenu_et_metadonnees(
+            "contenu",
+            {
+                "source_url": "https://exemple.fr/doc.pdf",
+                "page": 10,
+                "nom_document": "doc.pdf",
+                "type_de_bloc": "recommandation",
+                "code_recommandation": "R3",
+                "chemin_sections": '["6 Fonctionnement", "6.1 Services"]',
+                "position_page": 7,
+                "derniere_page": 10,
+            },
+        )
+        .construis()
+    )
+    mock_client_http = ConstructeurClientHttp().qui_retourne(retour).construis()
+    mock_client_openai_sans_reponse = (
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis()
+    )
+    mock_client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse,
+        mock_client_http,
+        une_configuration_albert_client,
+    )
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    retour_recherche = mock_client_albert_api.recherche(payload)
+
+    metadata = retour_recherche[0].chunk.metadata
+    assert metadata.type_de_bloc == "recommandation"
+    assert metadata.code_recommandation == "R3"
+    assert metadata.chemin_sections == ["6 Fonctionnement", "6.1 Services"]
+    assert metadata.position_page == 7
+    assert metadata.derniere_page == 10
+
+
+def test_recherche_ignore_un_chemin_de_sections_malforme(
+    une_configuration_albert_client,
+):
+    retour = (
+        ConstructeurRetourRouteSearch()
+        .avec_contenu_et_metadonnees(
+            "contenu",
+            {"source_url": "", "page": 0, "nom_document": "", "chemin_sections": "{"},
+        )
+        .construis()
+    )
+    mock_client_http = ConstructeurClientHttp().qui_retourne(retour).construis()
+    mock_client_openai_sans_reponse = (
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis()
+    )
+    mock_client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse,
+        mock_client_http,
+        une_configuration_albert_client,
+    )
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    retour_recherche = mock_client_albert_api.recherche(payload)
+
+    assert retour_recherche[0].chunk.metadata.chemin_sections == []
+
+
+def test_recherche_retourne_des_metadonnees_par_defaut_pour_un_chunk_legacy(
+    une_configuration_albert_client,
+):
+    mock_client_http = (
+        ConstructeurClientHttp().qui_retourne(FAUX_RETOURS_ALBERT_API).construis()
+    )
+    mock_client_openai_sans_reponse = (
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis()
+    )
+    mock_client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse,
+        mock_client_http,
+        une_configuration_albert_client,
+    )
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    retour_recherche = mock_client_albert_api.recherche(payload)
+
+    metadata = retour_recherche[0].chunk.metadata
+    assert metadata.type_de_bloc is None
+    assert metadata.code_recommandation is None
+    assert metadata.chemin_sections == []
+    assert metadata.position_page is None
+    assert metadata.derniere_page is None
+
+
+def test_recherche_jeopardy_n_expose_pas_les_metadonnees_enrichies_du_chunk_classique(
+    une_configuration_albert_client,
+):
+    retour = (
+        ConstructeurRetourRouteSearch()
+        .avec_contenu_et_metadonnees(
+            "Question générée",
+            {
+                "source_id_document": "4065642",
+                "source_id_chunk": 73,
+                "source_numero_page": 17,
+                "type_de_bloc": "recommandation",
+                "code_recommandation": "R3",
+            },
+        )
+        .construis()
+    )
+    mock_client_http = ConstructeurClientHttp().qui_retourne(retour).construis()
+    mock_client_openai_sans_reponse = (
+        ConstructeurClientOpenai().qui_ne_complete_pas().construis()
+    )
+    mock_client_albert_api = ClientAlbertApi(
+        mock_client_openai_sans_reponse,
+        mock_client_http,
+        une_configuration_albert_client,
+    )
+
+    payload = RecherchePayload([], 0, "un prompt", "semantic")
+    retour_recherche = mock_client_albert_api.recherche_jeopardy(payload)
+
+    metadata = retour_recherche[0].chunk.metadata
+    assert not hasattr(metadata, "type_de_bloc")
+    assert not hasattr(metadata, "code_recommandation")
+    assert metadata.source_id_chunk == 73
 
 
 def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():

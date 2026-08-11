@@ -77,6 +77,58 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(
     assert client_albert_memoire.payload_jeopardy_recu.collection_ids == [161155]
 
 
+def test_recherche_jeopardy_propage_les_nouvelles_metadonnees_du_chunk_source(
+    un_reclasseur, une_configuration_de_service_albert
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    resultats_jeopardy = [
+        ResultatRechercheJeopardy(
+            chunk=RechercheChunkJeopardy(
+                content="Question générée 1 ?",
+                metadata=RechercheMetadonneesJeopardy(
+                    source_id_document="4065642",
+                    source_id_chunk=73,
+                    source_numero_page=17,
+                ),
+            ),
+            score=0.9,
+        ),
+    ]
+    client_albert_memoire.avec_les_resultats_jeopardy(resultats_jeopardy)
+    chunks_sources = [
+        un_resultat_de_recherche()
+        .ayant_pour_contenu("Contenu du chunk 73")
+        .ayant_pour_metadonnees_de_bloc(
+            type_de_bloc="recommandation",
+            code_recommandation="R3",
+            chemin_sections=["6 Fonctionnement", "6.1 Services"],
+        )
+        .construis(),
+    ]
+    client_albert_memoire.avec_chunks_par_id(chunks_sources)
+    configuration = une_configuration_de_service_albert(
+        id_collection_anssi_lab_jeopardy=161155
+    )
+    service_albert = ServiceAlbert(
+        configuration_service_albert=configuration,
+        client=client_albert_memoire,
+        utilise_recherche_hybride=False,
+        prompts=PROMPTS,
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
+        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+    )
+
+    paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
+        "Ma question ?"
+    )
+
+    assert paragraphes[0].type_de_bloc == "recommandation"
+    assert paragraphes[0].code_recommandation == "R3"
+    assert paragraphes[0].chemin_sections == ["6 Fonctionnement", "6.1 Services"]
+
+
 def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(
     un_reclasseur, une_configuration_de_service_albert
 ):

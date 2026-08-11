@@ -11,6 +11,11 @@ class Paragraphe(BaseModel):
     nom_document: str
     contenu: str
     rang_initial: int = Field(default=0, exclude=True)
+    type_de_bloc: Optional[str] = None
+    code_recommandation: Optional[str] = None
+    chemin_sections: list[str] = []
+    position_page: Optional[int] = None
+    derniere_page: Optional[int] = None
 
     @property
     def contexte_dans_le_document(self):
@@ -56,6 +61,11 @@ class RechercheMetadonnees(NamedTuple):
     page: int
     nom_document: str
     id_reponse: Optional[str] = None
+    type_de_bloc: Optional[str] = None
+    code_recommandation: Optional[str] = None
+    chemin_sections: list[str] = []
+    position_page: Optional[int] = None
+    derniere_page: Optional[int] = None
 
 
 class RechercheMetadonneesJeopardy(NamedTuple):

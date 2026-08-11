@@ -119,6 +119,11 @@ class ServiceAlbert:
                     nom_document=donnee.chunk.metadata.nom_document,
                     reponse=reponse_texte,
                     rang_initial=1,
+                    type_de_bloc=donnee.chunk.metadata.type_de_bloc,
+                    code_recommandation=donnee.chunk.metadata.code_recommandation,
+                    chemin_sections=donnee.chunk.metadata.chemin_sections,
+                    position_page=donnee.chunk.metadata.position_page,
+                    derniere_page=donnee.chunk.metadata.derniere_page,
                 )
 
             return Paragraphe(
@@ -128,6 +133,11 @@ class ServiceAlbert:
                 numero_page=donnee.chunk.metadata.page,
                 nom_document=donnee.chunk.metadata.nom_document,
                 rang_initial=rang,
+                type_de_bloc=donnee.chunk.metadata.type_de_bloc,
+                code_recommandation=donnee.chunk.metadata.code_recommandation,
+                chemin_sections=donnee.chunk.metadata.chemin_sections,
+                position_page=donnee.chunk.metadata.position_page,
+                derniere_page=donnee.chunk.metadata.derniere_page,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
@@ -178,6 +188,11 @@ class ServiceAlbert:
                     numero_page=donnee.chunk.metadata.page,
                     nom_document=donnee.chunk.metadata.nom_document,
                     rang_initial=rang,
+                    type_de_bloc=donnee.chunk.metadata.type_de_bloc,
+                    code_recommandation=donnee.chunk.metadata.code_recommandation,
+                    chemin_sections=donnee.chunk.metadata.chemin_sections,
+                    position_page=donnee.chunk.metadata.position_page,
+                    derniere_page=donnee.chunk.metadata.derniere_page,
                 )
             )
         return paragraphes
