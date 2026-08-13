@@ -13,11 +13,12 @@ $ git config core.hooksPath .githooks
 
 ### Directement sur l'hôte
 
-Il faut installer deux dépendances systèmes, `python` et `uv`.
+Il faut installer les dépendances systèmes `python`, `uv`, `node` (la version à installer est spécifiée dans le fichier [`ui/.nvmrc`](./ui/.nvmrc)), `npm` et `pnpm`.
 Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv`.
 
 Dès lors, l'environnement est activable via `source .venv/bin/activate`.
 Les dépendances déclarées sont installables via `uv sync`.
+Les dépendances frontend sont installables depuis le dossier `ui/` via `pnpm install`, puis l'interface est construite avec `pnpm run build`.
 
 ### Dans un conteneur
 
@@ -31,8 +32,17 @@ A minima, ce fichier devra défnir les variables déclarées dans le fichier `.e
 ## 🧪 Comment valider ?
 
 Dans un environnement virtuel :
-* lancer `mypy` pour vérifier la validité des annotations de types,
-* et lancer `pytest` pour valider le comportement à l'exécution.
+
+* lancer `mypy` pour vérifier la validité des annotations de types ;
+* lancer `pytest` pour valider le comportement à l'exécution ;
+* lancer `ruff check` pour vérifier le code Python.
+
+Depuis le dossier `ui/` :
+
+* lancer `pnpm run test` pour exécuter les tests frontend ;
+* lancer `pnpm run check` pour vérifier les types et les composants Svelte ;
+* lancer `pnpm run lint:check` pour vérifier le linting ;
+* lancer `pnpm run format:check` pour vérifier le formatage.
 
 ## 🚀 Comment lancer l'application ?
 
@@ -84,13 +94,19 @@ Exemple en local (avec `HOST=127.0.0.1`, `PORT=8000`) :
 #### Rechercher les paragraphes en lien avec une question
 
 ```shell
-curl -X POST "${endpoint}/api/recherche" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+curl -X POST "${endpoint}/api/recherche/" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
 ```
 
 #### Poser une question
 
 ```shell
-curl -X POST "${endpoint}/api/pose_question" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+curl -X POST "${endpoint}/api/conversation/" -H "Content-Type: application/json" -d '{"question": "Quelles sont les bonnes pratiques de sécurité ?"}'
+```
+
+Pour poursuivre une conversation, utiliser l'identifiant `id_conversation` retourné par la requête précédente :
+
+```shell
+curl -X POST "${endpoint}/api/conversation/{id_conversation}" -H "Content-Type: application/json" -d '{"question": "Et pour les collectivités ?"}'
 ```
 
 ## 🤝 Contribuer
