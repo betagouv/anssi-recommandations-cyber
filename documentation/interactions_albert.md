@@ -1,18 +1,21 @@
 # MQC → Albert : parcours d'un appel
 
-Depuis les deux routes de `src/api/api_conversation.py` (`POST /conversation/` et
-`POST /conversation/{id_conversation}`)
+Depuis les deux routes de `src/api/api_conversation.py` (`POST /api/conversation/` et
+`POST /api/conversation/{id_conversation}`)
 jusqu'aux appels sortants vers Albert — via le SDK OpenAI d'un côté, l'API REST « classique » d'Albert de l'autre.
 Les deux routes convergent immédiatement vers la même logique, `ServiceAlbert.pose_question()`.
 
 ```mermaid
 flowchart LR
-    Client["Client<br/>front Svelte"] --> API["API FastAPI<br/><code>api_conversation.py</code><br/>POST /conversation/ · POST /conversation/{id}"]
+    Client["Client<br/>front Svelte"] --> API["API FastAPI<br/><code>api_conversation.py</code><br/>POST /api/conversation/ · POST /api/conversation/{id}"]
     API --> Metier["Couche métier<br/><code>question.py</code><br/>cree_conversation() · ajoute_interaction()"]
     Metier --> SA["ServiceAlbert<br/><code>service_albert.py</code><br/>pose_question()"]
 
     SA -->|"① reformule<br/>④ génère"| OpenAI["Canal SDK OpenAI<br/>client_openai.chat.completions.create(...)"]
-    SA -->|"② recherche<br/>③ reclasse"| REST["Canal REST classique<br/>client_http (Bearer)"]
+    SA -->|"② recherche"| REST["Canal REST classique<br/>client_http (Bearer)"]
+    SA -->|"③ reclasse"| Reclasseur["Reclasseur<br/>BGE ou LLM"]
+    Reclasseur -->|"TYPE_RECLASSEUR=bge<br/>POST /rerank"| REST
+    Reclasseur -->|"TYPE_RECLASSEUR=llm<br/>chat.completions.create(...)"| OpenAI
 
     OpenAI -->|"POST {base_url}/v1/chat/completions"| Albert[("Albert<br/>DINUM<br/>LLM + RAG")]
     REST -->|"/search · /rerank · /documents/{id}/chunks/{id}"| Albert
@@ -27,7 +30,7 @@ flowchart LR
     class Albert albert;
 ```
 
-## Le détail des 4 appels dans pose_question()
+## Le détail du flux dans pose_question()
 
 ### ① Reformulation de la question — SDK OpenAI
 
@@ -52,12 +55,13 @@ complet ; les résultats sont fusionnés et dédoublonnés avec ceux de l'étape
 
 `service_albert.py:137 → POST /search (collection jeopardy) · GET /documents/{id_document}/chunks/{id_chunk} (un appel par résultat)`
 
-### ③ Reclassement des paragraphes — REST 
+### ③ Reclassement des paragraphes — BGE ou LLM
 
-`reclasse()` envoie les paragraphes candidats au modèle de reclassement ; les résultats sont retriés par score, puis
-filtrés sur les « réponses maîtrisées » (FAQ) au-delà d'un seuil.
+Selon la configuration, `reclasse()` envoie les paragraphes candidats au modèle BGE via l'API REST `/rerank`, ou au
+modèle LLM via le SDK OpenAI. Les résultats sont retriés ou sélectionnés, puis filtrés sur les « réponses maîtrisées »
+(FAQ) au-delà d'un seuil.
 
-`service_albert.py:212, :286 → infra/albert/client_albert.py:179 · POST /rerank`
+`service_albert.py:212, :286 → services/reclasseur.py · infra/albert/client_albert.py:179 · POST /rerank ou chat.completions.create(...)`
 
 ### ④ Génération de la réponse — SDK OpenAI
 
@@ -85,7 +89,7 @@ une `200/201 JSON` — ou une `HTTPException` en cas d'erreur.
 | Exception                     | 	Déclenchée par	                                                             | Type d'erreur         | 	Code HTTP |
 |-------------------------------|------------------------------------------------------------------------------|-----------------------|------------|
 | ErreurRechercheDocuments	     | échec de POST /search (étape 2)	                                             | COMMUNICATION_ALBERT	 | **500**        |
-| ErreurCommunicationAlbert	    | échec de POST /rerank (étape 3)	                                             | COMMUNICATION_ALBERT	 | **500**        |
-| ErreurCommunicationModele	    | timeout / erreur de connexion sur chat.completions.create (étapes 1 et 4)	   | COMMUNICATION_ALBERT	 | **500**        |
+| ErreurCommunicationAlbert	    | échec de POST /rerank avec le reclasseur BGE (étape 3)	                       | COMMUNICATION_ALBERT	 | **500**        |
+| ErreurCommunicationModele	    | timeout / erreur de connexion sur chat.completions.create (étapes 1, 3 et 4) | COMMUNICATION_ALBERT	 | **500**        |
 | Exception générique	          | toute autre erreur imprévue dans le flux	                                    | INCONNU	              | **422**        |
-| ResultatConversationInconnue	 | id_conversation absent de la base (route POST /conversation/{id} uniquement)	 | —	                    | **404**        |/
+| ResultatConversationInconnue	 | id_conversation absent de la base (route POST /api/conversation/{id} uniquement)	 | —	                    | **404**        |/
