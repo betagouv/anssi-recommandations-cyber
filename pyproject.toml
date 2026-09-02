@@ -29,7 +29,7 @@ dev = [
     "types-psycopg2",
     "types-requests",
     "pytest-dotenv",
-    "python-dotenv==1.2.2",
+    "python-dotenv==1.2.3",
     "pipdeptree"
 ]
 
