@@ -2,7 +2,8 @@
 
 Ce document décrit l'architecture réelle du code du dépôt. Il complète
 [`AGENTS.md`](../AGENTS.md) (règles pour les assistants) et le [`README.md`](../README.md)
-(installation, lancement).
+(installation, lancement). Vue schématique en [modèle C4](https://c4model.com/) (niveaux
+1 à 3) : [`C4.puml`](./C4.puml).
 
 ## Vue d'ensemble
 
