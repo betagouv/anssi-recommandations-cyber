@@ -1,0 +1,162 @@
+' Modèle C4 — MesQuestionsCyber (niveaux 1 à 3 : Contexte, Conteneurs, Composants)
+' Le niveau 4 (code) correspond aux modules eux-mêmes, décrits dans docs/ARCHITECTURE.md.
+' Rendu : PlantUML avec la bibliothèque standard C4-PlantUML (aucun téléchargement requis).
+' Choix : les bases PostgreSQL (données applicatives et journal) sont modélisées comme des
+' systèmes externes — elles sont hébergées et exploitées hors du périmètre applicatif.
+' Les éléments identifiables portent le sprite (logo) de leur technologie via la collection
+' « logos » de la bibliothèque standard PlantUML.
+
+@startuml C4-1-Contexte
+!include <C4/C4_Context>
+!include <logos/postgresql>
+!include <logos/sentry-icon>
+!include <logos/matomo>
+
+LAYOUT_WITH_LEGEND()
+title Niveau 1 — Contexte : MesQuestionsCyber
+
+Person(utilisatrice, "Utilisatrice", "Agent public, RSSI, expert SSI… pose des questions de cybersécurité")
+Person(equipe, "Équipe MQC (lab ANSSI)", "Développe et exploite MQC et MQC-Data")
+
+System(mqc, "MesQuestionsCyber (MQC)", "Chatbot qui répond aux questions de cybersécurité à partir des guides de l'ANSSI")
+
+System_Ext(mqc_data, "MQC-Data", "Autre service de l'équipe : crée les collections ANSSI dans Albert et dialogue avec MQC pour mener les évaluations")
+System_Ext(albert, "Albert (DINUM)", "LLM + RAG : reformulation, recherche, reclassement, génération")
+System_Ext(msc, "MesServicesCyber", "Portail qui intègre MQC et expose les métadonnées des guides")
+System_Ext(guides, "Guides ANSSI (PDF)", "Documents sources cités dans les réponses")
+System_Ext(matomo, "Matomo (stats.beta.gouv.fr)", "Mesure d'audience", $sprite="matomo")
+System_Ext(sentry, "Sentry", "Supervision des erreurs", $sprite="sentry-icon")
+SystemDb_Ext(bdd, "Base de données PostgreSQL", "Conversations, interactions, retours utilisateurs (contenus chiffrés)", $sprite="postgresql")
+SystemDb_Ext(journal, "Base Journal PostgreSQL", "Journal d'événements analytique (production)", $sprite="postgresql")
+
+Rel(utilisatrice, mqc, "Pose des questions, consulte les sources", "HTTPS")
+Rel(utilisatrice, msc, "Accède à MQC depuis le portail", "HTTPS")
+Rel(equipe, mqc_data, "Développe et exploite")
+
+Rel(mqc_data, mqc, "Interroge pour évaluer les réponses", "HTTP /api/… (type_utilisateur=evaluation)")
+Rel(mqc_data, albert, "Crée et alimente les collections ANSSI", "HTTPS")
+
+Rel(mqc, albert, "Reformule / recherche / reclasse / génère", "SDK OpenAI + REST, HTTPS")
+Rel(mqc, msc, "Récupère les métadonnées des guides", "GET /api/guides")
+Rel(mqc, guides, "Redirige / proxifie les pages sources", "HTTPS")
+Rel(mqc, matomo, "Envoie les événements d'audience", "HTTPS")
+Rel(mqc, sentry, "Remonte les erreurs", "HTTPS")
+Rel(mqc, bdd, "Persiste les conversations", "psycopg2")
+Rel(mqc, journal, "Écrit le journal d'événements", "psycopg2")
+@enduml
+
+
+@startuml C4-2-Conteneurs
+!include <C4/C4_Container>
+!include <logos/postgresql>
+!include <logos/sentry-icon>
+!include <logos/matomo>
+!include <logos/svelte-icon>
+
+LAYOUT_WITH_LEGEND()
+title Niveau 2 — Conteneurs : MesQuestionsCyber
+
+Person(utilisatrice, "Utilisatrice", "Navigateur web")
+System_Ext(mqc_data, "MQC-Data", "Autre service de l'équipe : crée les collections ANSSI dans Albert et pilote les évaluations de MQC")
+
+System_Boundary(mqc, "MesQuestionsCyber") {
+    Container(front, "Interface web", "Svelte 5 / TypeScript (build Vite)", "SPA : conversation, affichage des sources, visionneuse PDF. Servie en statique par l'API.", $sprite="svelte-icon")
+    Container(api, "API", "Python 3.14 / FastAPI / uvicorn", "Logique métier, orchestration d'Albert, sécurité (CSP à nonce, rate limiting), service des fichiers statiques")
+}
+
+System_Ext(albert, "Albert (DINUM)", "LLM + RAG")
+System_Ext(msc, "MesServicesCyber", "Portail + API guides")
+System_Ext(guides, "Guides ANSSI (PDF)", "Documents sources")
+System_Ext(matomo, "Matomo", "Mesure d'audience", $sprite="matomo")
+System_Ext(sentry, "Sentry", "Supervision des erreurs", $sprite="sentry-icon")
+SystemDb_Ext(bdd, "Base de données PostgreSQL", "PostgreSQL 17 — conversations, interactions, retours utilisateurs (contenus chiffrés)", $sprite="postgresql")
+SystemDb_Ext(journal, "Base Journal PostgreSQL", "PostgreSQL — journal d'événements analytique (optionnel, production)", $sprite="postgresql")
+
+Rel(utilisatrice, front, "Utilise", "HTTPS")
+Rel(front, api, "Appelle", "JSON /api/… , HTTPS")
+Rel(front, matomo, "Événements d'audience", "HTTPS")
+Rel(api, front, "Sert index.html + assets (nonce CSP injecté)", "HTTPS")
+Rel(mqc_data, api, "Interroge pour les évaluations", "JSON /api/… , HTTPS")
+Rel(mqc_data, albert, "Crée / alimente les collections ANSSI", "HTTPS")
+
+Rel(api, bdd, "Lit / écrit", "psycopg2")
+Rel(api, journal, "Écrit les événements", "psycopg2")
+Rel(api, albert, "Reformulation, recherche, reclassement, génération", "SDK OpenAI /v1/chat/completions + REST /search /rerank")
+Rel(api, msc, "Métadonnées des guides", "GET /api/guides")
+Rel(api, guides, "Redirection /source, proxy /source/proxy", "HTTPS")
+Rel(api, sentry, "Erreurs", "HTTPS")
+@enduml
+
+
+@startuml C4-3-Composants
+!include <C4/C4_Component>
+!include <logos/postgresql>
+!include <logos/sentry-icon>
+!include <logos/svelte-icon>
+!include <logos/openai-icon>
+
+LAYOUT_WITH_LEGEND()
+title Niveau 3 — Composants : conteneur « API »
+
+Container(front, "Interface web", "Svelte 5 / TypeScript", $sprite="svelte-icon")
+System_Ext(mqc_data, "MQC-Data", "Autre service de l'équipe : collections Albert + évaluations")
+System_Ext(albert, "Albert (DINUM)", "LLM + RAG")
+System_Ext(msc, "MesServicesCyber", "API guides")
+System_Ext(guides, "Guides ANSSI (PDF)", "Documents sources")
+System_Ext(sentry, "Sentry", "Supervision", $sprite="sentry-icon")
+SystemDb_Ext(bdd, "Base de données PostgreSQL", "Conversations (chiffrées)", $sprite="postgresql")
+SystemDb_Ext(journal, "Base Journal PostgreSQL", "Journal d'événements", $sprite="postgresql")
+
+Container_Boundary(api, "API") {
+    Component(serveur, "Fabrique serveur", "serveur.py", "Middlewares (rate limiting, proxy headers), en-têtes de sécurité + CSP à nonce, service des pages statiques")
+    Component(routeurs, "Routeurs API", "api/api_conversation, api_recherche, api_retour, api_avis", "Points d'entrée HTTP /api/…")
+    Component(routeur_doc, "Routeur Document source", "api/route_document_source.py", "Redirection (/source) et proxy PDF (/source/proxy)")
+
+    Component(metier, "Couche métier Question", "question/question.py", "cree_conversation, ajoute_interaction, retours utilisateurs")
+    Component(reformulateur, "Reformulateur de question", "question/reformulateur_de_question.py", "Reconstruit la question à partir de l'historique")
+    Component(service_albert, "ServiceAlbert", "services/service_albert.py", "Orchestration : reformulation → recherche → reclassement → génération → analyse des violations")
+    Component(reclasseur, "Reclasseur", "services/reclasseur.py", "BGE (REST /rerank) ou LLM (SDK OpenAI)")
+    Component(mapping, "Mapping réponses maîtrisées", "infra/mapping_reponses_maitrisees.py", "Filtre FAQ au-delà d'un seuil")
+    Component(client_albert, "Client Albert", "infra/albert/client_albert.py", "SDK OpenAI + API REST d'Albert", $sprite="openai-icon")
+
+    Component(config, "Configuration", "configuration.py", "Variables d'environnement, modes DEV/TEST/PROD")
+    Component(adaptateur_bdd, "Adaptateur base de données", "adaptateurs/…postgres | …memoire", "Persistance des conversations")
+    Component(adaptateur_journal, "Adaptateur journal", "adaptateurs/journal.py", "Événements ; identifiants hachés")
+    Component(adaptateur_chiffrement, "Adaptateur chiffrement", "adaptateurs/chiffrement.py", "Chiffrement des contenus, hachage, nonce CSP")
+    Component(adaptateur_sentry, "Adaptateur Sentry", "adaptateurs/sentry.py", "mémoire | standard")
+    Component(adaptateur_http, "Adaptateur exécuteur de requêtes", "adaptateurs/adaptateur_executeur_de_requetes.py", "HTTP sortant : PDF sources, API MSC")
+}
+
+Rel(front, routeurs, "Appelle", "JSON, HTTPS")
+Rel(front, routeur_doc, "Ouvre les pages sources", "HTTPS")
+Rel(mqc_data, routeurs, "Interroge pour les évaluations", "JSON, HTTPS")
+Rel(mqc_data, albert, "Crée / alimente les collections ANSSI", "HTTPS")
+Rel(serveur, routeurs, "Monte")
+Rel(serveur, routeur_doc, "Monte")
+Rel(serveur, adaptateur_chiffrement, "Nonce CSP par requête")
+
+Rel(routeurs, metier, "Délègue")
+Rel(routeur_doc, adaptateur_bdd, "Retrouve la conversation")
+Rel(routeur_doc, adaptateur_journal, "Consigne DOCUMENT_SOURCE_VISIONNE")
+Rel(routeur_doc, adaptateur_http, "Proxifie le PDF")
+
+Rel(metier, service_albert, "pose_question()")
+Rel(metier, adaptateur_bdd, "Sauvegarde / récupère")
+Rel(metier, adaptateur_journal, "Consigne les événements")
+Rel(metier, adaptateur_chiffrement, "Hache les identifiants")
+
+Rel(service_albert, reformulateur, "Reformule")
+Rel(service_albert, reclasseur, "Reclasse")
+Rel(service_albert, mapping, "Filtre les réponses maîtrisées")
+Rel(service_albert, client_albert, "Recherche + génération")
+Rel(service_albert, adaptateur_http, "Métadonnées des guides")
+Rel(reformulateur, client_albert, "Modèle de reformulation")
+Rel(reclasseur, client_albert, "Rerank / LLM")
+
+Rel(client_albert, albert, "HTTPS")
+Rel(adaptateur_http, msc, "GET /api/guides")
+Rel(adaptateur_http, guides, "GET PDF")
+Rel(adaptateur_bdd, bdd, "SQL")
+Rel(adaptateur_journal, journal, "SQL")
+Rel(adaptateur_sentry, sentry, "HTTPS")
+@enduml
