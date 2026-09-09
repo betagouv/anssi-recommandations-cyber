@@ -1,6 +1,9 @@
 # Amazon Q
 .amazonq/
 
+# Agents / Claude Code (réglages locaux ; .agents/, .claude/skills, AGENTS.md restent suivis)
+.claude/settings.local.json
+
 # Python
 __pycache__/
 
