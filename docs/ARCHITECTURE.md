@@ -162,7 +162,14 @@ Tout passe par des variables d'environnement, centralisées dans `src/configurat
 ## Observabilité
 
 - **Sentry** via un adaptateur `memoire` (défaut / tests) ou `standard`
-  (`SENTRY_TYPE_ADAPTATEUR`).
+  (`SENTRY_TYPE_ADAPTATEUR`). Le domaine n'y touche jamais directement : quand une
+  `ErreurCommunicationModele*` est levée (reformulation, reclassement LLM, génération),
+  le composant fautif publie un `ErreurTechniqueSurvenue` sur le **bus d'événements**
+  (`src/adaptateurs/bus_evenements.py`, `publie_erreur_technique`). Le
+  `ConsommateurSentry` (`src/adaptateurs/consommateur_sentry.py`), abonné au bus par
+  `fabrique_serveur`, relaie l'exception à `AdaptateurSentry.capture_exception`. Le bus
+  (`BusEvenementsEnMemoire`, synchrone, en-process) est injecté dans le domaine par
+  `fabrique_service_albert`.
 - **Journal d'événements** (`src/adaptateurs/journal.py`) : `CONVERSATION_CREEE`,
   `INTERACTION_AJOUTEE`, `VIOLATION_DETECTEE` — avec longueurs et métadonnées, et le texte
   de la question uniquement en `ALPHA_TEST`.
