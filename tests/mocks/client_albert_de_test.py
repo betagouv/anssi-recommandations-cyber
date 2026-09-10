@@ -16,7 +16,7 @@ from schemas.albert import (
     ResultatReclasse,
 )
 from services.client_albert import ClientAlbert
-from services.exceptions import ErreurRechercheDocuments
+from services.exceptions import ErreurCommunicationModele, ErreurRechercheDocuments
 
 
 class RetourRouteSearch:
@@ -167,6 +167,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self.propositions_vides = False
         self.resultats_vides = False
         self.leve_une_erreur_sur_recherche = False
+        self.leve_une_erreur_de_communication_modele = False
         self.messages_recus = []
         self.payload_recu = None
         self.resultats = []
@@ -176,7 +177,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self.choix_par_appel = []
         self.appels_recupere_propositions = 0
         self.messages_envoyes_pour_les_propositions = []
-        self.contextes_recus = []
+        self.contextes_appels_llm_recus: list[str] = []
         self.temperatures_recues = []
         self.appels_recherche = 0
         self.resultats_par_appel = []
@@ -228,6 +229,10 @@ class ClientAlbertMemoire(ClientAlbert):
         self.messages_recus = messages
         self.messages_envoyes_pour_les_propositions.append(messages)
         self.temperatures_recues.append(temperature)
+        if self.leve_une_erreur_de_communication_modele:
+            raise ErreurCommunicationModele(
+                "Impossible de récupérer une réponse pour la question posée."
+            )
         if self.choix_par_appel:
             choix = self.choix_par_appel[self.appels_recupere_propositions]
             self.appels_recupere_propositions += 1
@@ -263,6 +268,10 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def qui_leve_une_erreur_sur_recherche(self):
         self.leve_une_erreur_sur_recherche = True
+
+    def qui_leve_une_erreur_de_communication_modele(self):
+        self.leve_une_erreur_de_communication_modele = True
+        return self
 
     def sans_resultats(self):
         self.resultats_vides = True
