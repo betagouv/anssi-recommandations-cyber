@@ -1,8 +1,13 @@
 from typing import Optional
 
 from openai.types.chat import ChatCompletionMessageParam
+from configuration import logging
 from schemas.retour_utilisatrice import Conversation
 from services.client_albert import ClientAlbert
+from services.exceptions import (
+    ErreurCommunicationModele,
+    ErreurCommunicationModeleReformulation,
+)
 
 
 class ReformulateurDeQuestion:
@@ -37,7 +42,15 @@ class ReformulateurDeQuestion:
                     ]
                 )
         messages.append({"role": "user", "content": question})
-        reponse = self.client_albert.recupere_propositions(
-            messages, modele=self.modele_reformulation, temperature=0
-        )
+        try:
+            reponse = self.client_albert.recupere_propositions(
+                messages, modele=self.modele_reformulation, temperature=0
+            )
+        except ErreurCommunicationModele as erreur:
+            logging.error(
+                f"Échec de communication avec le modèle lors de la reformulation : {erreur}"
+            )
+            raise ErreurCommunicationModeleReformulation(
+                "Impossible de reformuler la question posée."
+            ) from erreur
         return reponse[0].message.content
