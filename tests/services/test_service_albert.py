@@ -24,6 +24,7 @@ from schemas.violations import (
     ViolationQuestionNonComprise,
     ViolationMeconnaissance,
 )
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from services.exceptions import ErreurCommunicationModeleGeneration
 from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
 from services.service_albert import ServiceAlbert, Prompts
@@ -64,6 +65,40 @@ def test_pose_question_leve_une_erreur_de_generation_si_la_communication_avec_le
 
     with pytest.raises(ErreurCommunicationModeleGeneration):
         service_albert.pose_question(question=QUESTION)
+
+
+def test_pose_question_publie_une_erreur_technique_sur_le_bus_si_la_generation_echoue(
+    un_reclasseur,
+    un_adaptateur_executeur_de_requetes,
+    une_configuration_de_service_albert,
+):
+    bus = BusEvenementsEnMemoire()
+    erreurs_publiees: list[ErreurTechniqueSurvenue] = []
+    bus.souscris(ErreurTechniqueSurvenue, erreurs_publiees.append)
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_les_resultats(
+        [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
+    )
+    client_albert_memoire.qui_leve_une_erreur_de_communication_modele()
+    service_albert = ServiceAlbert(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        False,
+        PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
+        executeur_de_requetes=un_adaptateur_executeur_de_requetes,
+        bus_evenements=bus,
+    )
+
+    with pytest.raises(ErreurCommunicationModeleGeneration):
+        service_albert.pose_question(question=QUESTION)
+
+    assert len(erreurs_publiees) == 1
+    assert isinstance(
+        erreurs_publiees[0].exception, ErreurCommunicationModeleGeneration
+    )
 
 
 def test_pose_question_retourne_une_reponse(
