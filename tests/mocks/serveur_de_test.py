@@ -73,6 +73,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
         self.leve_une_erreur_quelconque = False
         self.question_recue: str | None = None
         client_albert = ClientAlbertMemoire()
+        bus_evenements_en_memoire = BusEvenementsEnMemoire()
         super().__init__(
             Albert.Service(  # type: ignore[attr-defined]
                 collection_nom_anssi_lab="",
@@ -88,10 +89,11 @@ class ServiceAlbertMemoire(ServiceAlbert):
             client_albert,
             False,
             Prompts(prompt_systeme="", prompt_reclassement=""),
-            ReformulateurDeQuestion(client_albert, "", ""),
+            ReformulateurDeQuestion(client_albert, "", "", bus_evenements_en_memoire),
             MappingReponsesMaitriseesDeTest(),
             ReclasseurDeTest(),
             AdaptateurExecuteurDeRequetesMemoire(),
+            bus_evenements_en_memoire
         )
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:

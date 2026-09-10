@@ -18,7 +18,7 @@ class ReformulateurDeQuestion:
         client_albert: ClientAlbert,
         prompt_de_reformulation: str,
         modele_reformulation: str,
-        bus_evenements: BusEvenements | None = None,
+        bus_evenements: BusEvenements,
     ):
         self.client_albert = client_albert
         self.prompt_de_reformulation = prompt_de_reformulation

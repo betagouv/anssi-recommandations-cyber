@@ -1,3 +1,4 @@
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from client_albert_de_test import (
     ClientAlbertMemoire,
 )
@@ -32,7 +33,7 @@ def construit_service(
         )
     else:
         prompt_reclassement = PROMPTS.prompt_reclassement
-        reclasseur = ReclasseurLLM(client, prompt_reclassement)
+        reclasseur = ReclasseurLLM(client, prompt_reclassement, BusEvenementsEnMemoire())
     return ServiceAlbert(
         configuration_service_albert=configuration,
         client=client,
@@ -45,6 +46,7 @@ def construit_service(
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
 

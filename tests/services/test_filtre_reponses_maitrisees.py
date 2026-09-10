@@ -1,3 +1,4 @@
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from client_albert_de_test import (
     ClientAlbertMemoire,
     un_resultat_de_recherche,
@@ -51,6 +52,7 @@ def test_retourne_uniquement_le_paragraphe_maitrise(
         ),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Ma question ?")
 
     assert len(reponse.paragraphes) == 1
@@ -93,6 +95,7 @@ def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au
         ),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Qui est le directeur de l'ANSSI ?")
 
     assert len(reponse.paragraphes) == 1

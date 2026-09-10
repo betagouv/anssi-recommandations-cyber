@@ -34,12 +34,11 @@ class BusEvenementsEnMemoire(BusEvenements):
 
 
 def publie_erreur_technique(
-    bus_evenements: BusEvenements | None, exception: Exception, contexte: str
+    bus_evenements: BusEvenements, exception: Exception, contexte: str
 ) -> None:
-    if bus_evenements is not None:
-        bus_evenements.publie(
-            ErreurTechniqueSurvenue(exception=exception, contexte=contexte)
-        )
+    bus_evenements.publie(
+        ErreurTechniqueSurvenue(exception=exception, contexte=contexte)
+    )
 
 
 _bus = BusEvenementsEnMemoire()
