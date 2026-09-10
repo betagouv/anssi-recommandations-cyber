@@ -1,6 +1,9 @@
+import pytest
+
 from configuration import Albert
 from infra.albert.client_albert import ClientAlbertApi
 from question.reformulateur_de_question import ReformulateurDeQuestion
+from services.exceptions import ErreurCommunicationModeleReformulation
 from client_albert_de_test import ClientAlbertMemoire, ConstructeurDeChoix
 
 from client_albert_de_test import (
@@ -26,6 +29,20 @@ def test_reformule_une_question():
 
     assert question_reformulee == "Ma question reformulee"
     assert client_albert.temperatures_recues == [0]
+
+
+def test_reformule_leve_une_erreur_de_reformulation_si_la_communication_avec_le_modele_echoue():
+    client_albert = ClientAlbertMemoire()
+    client_albert.qui_leve_une_erreur_de_communication_modele()
+
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
+    )
+
+    with pytest.raises(ErreurCommunicationModeleReformulation):
+        reformulateur.reformule("ma question ?")
 
 
 def test_reformule_la_question_avec_un_prompt_de_reformulation():
