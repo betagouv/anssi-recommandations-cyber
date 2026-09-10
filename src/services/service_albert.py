@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Optional, cast, NamedTuple, Union, Any
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
+from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
 from configuration import Albert, logging
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
@@ -79,6 +80,7 @@ class ServiceAlbert:
         mapping_reponses: MappingReponsesMaitrisees,
         reclasseur: Reclasseur,
         executeur_de_requetes: Optional[AdaptateurExecuteurDeRequetes],
+        bus_evenements: BusEvenements | None = None,
     ) -> None:
         self.id_collection = configuration_service_albert.id_collection_anssi_lab
         self.id_collection_jeopardy = (
@@ -100,6 +102,7 @@ class ServiceAlbert:
         self.reclasseur: Reclasseur = reclasseur
         self.executeur_de_requetes = executeur_de_requetes
         self.url_msc = configuration_service_albert.url_msc
+        self.bus_evenements = bus_evenements
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
@@ -315,9 +318,13 @@ class ServiceAlbert:
             logging.error(
                 f"Échec de communication avec le modèle lors de la génération : {erreur}"
             )
-            raise ErreurCommunicationModeleGeneration(
+            erreur_generation = ErreurCommunicationModeleGeneration(
                 "Impossible de générer la réponse à la question posée."
-            ) from erreur
+            )
+            publie_erreur_technique(
+                self.bus_evenements, erreur_generation, "génération"
+            )
+            raise erreur_generation from erreur
         return propositions_albert
 
     def __genere_les_messages_de_completion(
