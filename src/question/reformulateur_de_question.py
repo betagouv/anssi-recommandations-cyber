@@ -3,6 +3,7 @@ from openai.types.chat.chat_completion import Choice
 from typing import Optional
 
 from configuration import logging
+from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
 from schemas.retour_utilisatrice import Conversation
 from services.client_albert import ClientAlbert
 from services.exceptions import (
@@ -17,10 +18,12 @@ class ReformulateurDeQuestion:
         client_albert: ClientAlbert,
         prompt_de_reformulation: str,
         modele_reformulation: str,
+        bus_evenements: BusEvenements | None = None,
     ):
         self.client_albert = client_albert
         self.prompt_de_reformulation = prompt_de_reformulation
         self.modele_reformulation = modele_reformulation
+        self.bus_evenements = bus_evenements
 
     def reformule(
         self, question: str, conversation: Optional[Conversation] = None
@@ -55,7 +58,11 @@ class ReformulateurDeQuestion:
             logging.error(
                 f"Échec de communication avec le modèle lors de la reformulation : {erreur}"
             )
-            raise ErreurCommunicationModeleReformulation(
+            erreur_reformulation = ErreurCommunicationModeleReformulation(
                 "Impossible de reformuler la question posée."
-            ) from erreur
+            )
+            publie_erreur_technique(
+                self.bus_evenements, erreur_reformulation, "reformulation"
+            )
+            raise erreur_reformulation from erreur
         return reponse

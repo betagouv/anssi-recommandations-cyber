@@ -1,5 +1,6 @@
 import pytest
 
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from configuration import Albert
 from infra.albert.client_albert import ClientAlbertApi
 from question.reformulateur_de_question import ReformulateurDeQuestion
@@ -43,6 +44,29 @@ def test_reformule_leve_une_erreur_de_reformulation_si_la_communication_avec_le_
 
     with pytest.raises(ErreurCommunicationModeleReformulation):
         reformulateur.reformule("ma question ?")
+
+
+def test_reformule_publie_une_erreur_technique_sur_le_bus_si_la_communication_echoue():
+    bus = BusEvenementsEnMemoire()
+    erreurs_publiees: list[ErreurTechniqueSurvenue] = []
+    bus.souscris(ErreurTechniqueSurvenue, erreurs_publiees.append)
+    client_albert = ClientAlbertMemoire()
+    client_albert.qui_leve_une_erreur_de_communication_modele()
+
+    reformulateur = ReformulateurDeQuestion(
+        client_albert=client_albert,
+        prompt_de_reformulation="Mon prompt",
+        modele_reformulation="albert-small",
+        bus_evenements=bus,
+    )
+
+    with pytest.raises(ErreurCommunicationModeleReformulation):
+        reformulateur.reformule("ma question ?")
+
+    assert len(erreurs_publiees) == 1
+    assert isinstance(
+        erreurs_publiees[0].exception, ErreurCommunicationModeleReformulation
+    )
 
 
 def test_reformule_la_question_avec_un_prompt_de_reformulation():
