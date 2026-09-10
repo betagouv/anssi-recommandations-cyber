@@ -1,6 +1,7 @@
+from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat.chat_completion import Choice
 from typing import Optional
 
-from openai.types.chat import ChatCompletionMessageParam
 from configuration import logging
 from schemas.retour_utilisatrice import Conversation
 from services.client_albert import ClientAlbert
@@ -42,6 +43,10 @@ class ReformulateurDeQuestion:
                     ]
                 )
         messages.append({"role": "user", "content": question})
+        reponse = self.__interroge_le_modele_de_reformulation(messages)
+        return reponse[0].message.content
+
+    def __interroge_le_modele_de_reformulation(self, messages: list[ChatCompletionMessageParam]) -> list[Choice]:
         try:
             reponse = self.client_albert.recupere_propositions(
                 messages, modele=self.modele_reformulation, temperature=0
@@ -53,4 +58,4 @@ class ReformulateurDeQuestion:
             raise ErreurCommunicationModeleReformulation(
                 "Impossible de reformuler la question posée."
             ) from erreur
-        return reponse[0].message.content
+        return reponse
