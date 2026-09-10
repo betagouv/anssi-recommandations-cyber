@@ -1,5 +1,6 @@
 from client_albert_de_test import SessionDeTestQuiCompte
 
+from adaptateurs.bus_evenements import fabrique_bus_evenements
 from configuration import recupere_configuration
 from infra.albert.client_albert import ClientAlbertApi
 from question.reformulateur_de_question import ReformulateurDeQuestion
@@ -7,6 +8,14 @@ from services.fabrique_service_albert import (
     DepotMappingReponses,
     fabrique_service_albert,
 )
+
+
+def test_injecte_le_bus_d_evenements_partage_dans_le_domaine() -> None:
+    service_albert = fabrique_service_albert()
+
+    bus = fabrique_bus_evenements()
+    assert service_albert.bus_evenements is bus
+    assert service_albert.reformulateur.bus_evenements is bus
 
 
 def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() -> None:

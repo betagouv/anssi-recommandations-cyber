@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
+from adaptateurs.bus_evenements import fabrique_bus_evenements
 from configuration import TypeReclasseur, recupere_configuration
 from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
@@ -38,6 +39,7 @@ def fabrique_service_albert() -> ServiceAlbert:
     configuration = recupere_configuration()
 
     client_albert_api = fabrique_client_albert(configuration.albert.client)
+    bus_evenements = fabrique_bus_evenements()
     prompt_systeme = lis_fichier_prompt("prompt_assistant_cyber.txt")
     nom_fichier_prompt_reclassement = (
         "prompt_reclassement_llm.txt"
@@ -51,10 +53,11 @@ def fabrique_service_albert() -> ServiceAlbert:
         client_albert=client_albert_api,
         prompt_de_reformulation=prompt_reformulation,
         modele_reformulation=configuration.albert.client.modele_reformulation,
+        bus_evenements=bus_evenements,
     )
 
     reclasseur = (
-        ReclasseurLLM(client_albert_api, prompt_reclassement)
+        ReclasseurLLM(client_albert_api, prompt_reclassement, bus_evenements)
         if configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
         else ReclasseurBGE(
             client_albert_api,
@@ -79,6 +82,7 @@ def fabrique_service_albert() -> ServiceAlbert:
         ),
         reclasseur=reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetes(),
+        bus_evenements=bus_evenements,
     )
 
 

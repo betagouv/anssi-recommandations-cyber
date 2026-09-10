@@ -17,6 +17,10 @@ from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
 )
+from adaptateurs.bus_evenements import (
+    BusEvenementsEnMemoire,
+    fabrique_bus_evenements,
+)
 from adaptateurs.sentry import AdaptateurSentryMemoire
 from client_albert_de_test import ClientAlbertMemoire
 from configuration import Mode, Albert
@@ -151,11 +155,23 @@ class ConstructeurServeur:
         self._max_requetes_par_minute = max_requetes_par_minute
         self._mode = mode
         self._mode_maintenance = mode_maintenance
+        self._bus_evenements = BusEvenementsEnMemoire()
+        self._adaptateur_sentry = AdaptateurSentryMemoire()
         self._dependances: Dict[Callable, Callable] = {}
         self._dependances[fabrique_adaptateur_chiffrement] = (
             lambda: adaptateur_chiffrement
         )
+        self._dependances[fabrique_bus_evenements] = lambda: self._bus_evenements
         self.pages_statiques: Path = Path()
+
+    def avec_bus_evenements(self, bus_evenements: BusEvenementsEnMemoire):
+        self._bus_evenements = bus_evenements
+        self._dependances[fabrique_bus_evenements] = lambda: bus_evenements
+        return self
+
+    def avec_adaptateur_sentry(self, adaptateur_sentry: AdaptateurSentryMemoire):
+        self._adaptateur_sentry = adaptateur_sentry
+        return self
 
     def avec_service_albert(self, service_albert: ServiceAlbert):
         self._dependances[fabrique_service_albert] = lambda: service_albert
@@ -199,8 +215,9 @@ class ConstructeurServeur:
             self._mode,
             f"{self.pages_statiques}/ui/dist/",
             lambda: "1",
-            AdaptateurSentryMemoire,
+            lambda: self._adaptateur_sentry,
             self._mode_maintenance,
+            bus_evenements=self._bus_evenements,
         )
         for clef, dependance in self._dependances.items():
             self._serveur.dependency_overrides[clef] = dependance
