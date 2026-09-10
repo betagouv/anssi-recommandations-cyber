@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from typing import Optional, cast, NamedTuple, Union, Any
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
-from configuration import Albert
+from configuration import Albert, logging
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
@@ -28,6 +28,10 @@ from schemas.violations import (
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
+from services.exceptions import (
+    ErreurCommunicationModele,
+    ErreurCommunicationModeleGeneration,
+)
 from services.reclasseur import (
     Reclasseur,
     ResultatReclassement,
@@ -303,7 +307,17 @@ class ServiceAlbert:
         messages = self.__genere_les_messages_de_completion(
             conversation, paragraphes_concatenes, prompt_systeme, question
         )
-        propositions_albert = self.client.recupere_propositions(messages, temperature=0)
+        try:
+            propositions_albert = self.client.recupere_propositions(
+                messages, temperature=0
+            )
+        except ErreurCommunicationModele as erreur:
+            logging.error(
+                f"Échec de communication avec le modèle lors de la génération : {erreur}"
+            )
+            raise ErreurCommunicationModeleGeneration(
+                "Impossible de générer la réponse à la question posée."
+            ) from erreur
         return propositions_albert
 
     def __genere_les_messages_de_completion(

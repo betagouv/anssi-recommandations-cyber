@@ -24,6 +24,7 @@ from schemas.violations import (
     ViolationQuestionNonComprise,
     ViolationMeconnaissance,
 )
+from services.exceptions import ErreurCommunicationModeleGeneration
 from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
 from services.service_albert import ServiceAlbert, Prompts
 from tests.conftest import AdaptateurExecuteurDeRequetesMemoire
@@ -38,6 +39,31 @@ PROMPTS = Prompts(
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
+
+
+def test_pose_question_leve_une_erreur_de_generation_si_la_communication_avec_le_modele_echoue(
+    un_reclasseur,
+    un_adaptateur_executeur_de_requetes,
+    une_configuration_de_service_albert,
+):
+    client_albert_memoire = ClientAlbertMemoire()
+    client_albert_memoire.avec_les_resultats(
+        [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
+    )
+    client_albert_memoire.qui_leve_une_erreur_de_communication_modele()
+    service_albert = ServiceAlbert(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        False,
+        PROMPTS,
+        reformulateur=ReformulateurDeQuestionDeTest(),
+        mapping_reponses=MappingReponsesMaitrisees({}),
+        reclasseur=un_reclasseur,
+        executeur_de_requetes=un_adaptateur_executeur_de_requetes,
+    )
+
+    with pytest.raises(ErreurCommunicationModeleGeneration):
+        service_albert.pose_question(question=QUESTION)
 
 
 def test_pose_question_retourne_une_reponse(
