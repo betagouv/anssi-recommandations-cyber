@@ -1,10 +1,28 @@
 import json
 
+import pytest
+
 from client_albert_de_test import (
     ClientAlbertMemoire,
     un_choix_de_proposition,
 )
+from services.exceptions import ErreurCommunicationModeleReclassement
 from services.reclasseur import ReclasseurLLM
+
+
+def test_reclasse_leve_une_erreur_de_reclassement_si_la_communication_avec_le_modele_echoue(
+    un_constructeur_de_paragraphe,
+):
+    client = ClientAlbertMemoire()
+    client.qui_leve_une_erreur_de_communication_modele()
+
+    reclasseur = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}")
+
+    with pytest.raises(ErreurCommunicationModeleReclassement):
+        reclasseur.reclasse(
+            "Une question ?",
+            [un_constructeur_de_paragraphe().avec_contenu("Un passage").construis()],
+        )
 
 
 def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(
