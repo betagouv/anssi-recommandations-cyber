@@ -3,8 +3,14 @@ from abc import ABC, abstractmethod
 from openai.types.chat import ChatCompletionMessageParam
 from typing import NamedTuple, cast
 
+from configuration import logging
+
 from schemas.albert import Paragraphe, ReclassePayload
 from services.client_albert import ClientAlbert
+from services.exceptions import (
+    ErreurCommunicationModele,
+    ErreurCommunicationModeleReclassement,
+)
 
 
 class ResultatReclassement(NamedTuple):
@@ -92,7 +98,15 @@ class ReclasseurLLM(Reclasseur):
                 ),
             }
         ]
-        propositions = self.client.recupere_propositions(messages, temperature=0)
+        try:
+            propositions = self.client.recupere_propositions(messages, temperature=0)
+        except ErreurCommunicationModele as erreur:
+            logging.error(
+                f"Échec de communication avec le modèle lors du reclassement : {erreur}"
+            )
+            raise ErreurCommunicationModeleReclassement(
+                "Impossible de reclasser les paragraphes de la question posée."
+            ) from erreur
         contenu = cast(str, propositions[0].message.content)
         resultat = json.loads(contenu)
         categories = {
