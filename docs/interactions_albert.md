@@ -90,6 +90,9 @@ une `200/201 JSON` — ou une `HTTPException` en cas d'erreur.
 |-------------------------------|------------------------------------------------------------------------------|-----------------------|------------|
 | ErreurRechercheDocuments	     | échec de POST /search (étape 2)	                                             | COMMUNICATION_ALBERT	 | **500**        |
 | ErreurCommunicationAlbert	    | échec de POST /rerank avec le reclasseur BGE (étape 3)	                       | COMMUNICATION_ALBERT	 | **500**        |
-| ErreurCommunicationModele	    | timeout / erreur de connexion sur chat.completions.create (étapes 1, 3 et 4) | COMMUNICATION_ALBERT	 | **500**        |
+| ErreurCommunicationModele	    | classe de base — timeout / erreur de connexion sur `chat.completions.create` | COMMUNICATION_ALBERT	 | **500**        |
+| ErreurCommunicationModeleReformulation	 | échec de `chat.completions.create` à l'étape ① reformulation (`reformulateur_de_question.py`) | COMMUNICATION_ALBERT	 | **500**        |
+| ErreurCommunicationModeleReclassement	 | échec de `chat.completions.create` à l'étape ③ reclassement `TYPE_RECLASSEUR=llm` (`ReclasseurLLM`) | COMMUNICATION_ALBERT	 | **500**        |
+| ErreurCommunicationModeleGeneration	 | échec de `chat.completions.create` à l'étape ④ génération (`service_albert.py`) | COMMUNICATION_ALBERT	 | **500**        |
 | Exception générique	          | toute autre erreur imprévue dans le flux	                                    | INCONNU	              | **422**        |
 | ResultatConversationInconnue	 | id_conversation absent de la base (route POST /api/conversation/{id} uniquement)	 | —	                    | **404**        |/
