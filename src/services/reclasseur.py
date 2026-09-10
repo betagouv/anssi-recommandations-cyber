@@ -87,7 +87,7 @@ class ReclasseurLLM(Reclasseur):
         self,
         client: ClientAlbert,
         prompt: str,
-        bus_evenements: BusEvenements | None = None,
+        bus_evenements: BusEvenements,
     ) -> None:
         self.client = client
         self.prompt = prompt

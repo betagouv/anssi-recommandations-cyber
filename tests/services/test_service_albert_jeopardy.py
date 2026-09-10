@@ -1,3 +1,4 @@
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from client_albert_de_test import ClientAlbertMemoire, un_resultat_de_recherche
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
@@ -61,10 +62,11 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
@@ -114,10 +116,11 @@ def test_recherche_jeopardy_propage_les_nouvelles_metadonnees_du_chunk_source(
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
@@ -170,10 +173,11 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -215,10 +219,11 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -272,10 +277,11 @@ def test_recherche_paragraphes_retourne_5_recherches_classique_et_5_recherches_j
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
         prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", ""),
+        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")

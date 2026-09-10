@@ -80,7 +80,7 @@ class ServiceAlbert:
         mapping_reponses: MappingReponsesMaitrisees,
         reclasseur: Reclasseur,
         executeur_de_requetes: Optional[AdaptateurExecuteurDeRequetes],
-        bus_evenements: BusEvenements | None = None,
+        bus_evenements: BusEvenements,
     ) -> None:
         self.id_collection = configuration_service_albert.id_collection_anssi_lab
         self.id_collection_jeopardy = (

@@ -1,3 +1,4 @@
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from client_albert_de_test import (
     ClientAlbertMemoire,
     un_resultat_de_recherche,
@@ -84,6 +85,7 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id(
         mapping_reponses=MappingReponsesMaitriseesDeTest(),
         reclasseur=un_reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
+        bus_evenements=BusEvenementsEnMemoire(),
     )
     paragraphes = service_albert._ServiceAlbert__recherche_dans_collection_jeopardy(
         "Ma question ?"

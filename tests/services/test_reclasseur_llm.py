@@ -17,7 +17,7 @@ def test_reclasse_leve_une_erreur_de_reclassement_si_la_communication_avec_le_mo
     client = ClientAlbertMemoire()
     client.qui_leve_une_erreur_de_communication_modele()
 
-    reclasseur = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}")
+    reclasseur = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}", BusEvenementsEnMemoire())
 
     with pytest.raises(ErreurCommunicationModeleReclassement):
         reclasseur.reclasse(
@@ -97,7 +97,7 @@ def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(
         ]
     )
 
-    reponse = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}").reclasse(
+    reponse = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}", BusEvenementsEnMemoire()).reclasse(
         "Une question ?",
         [
             paragraphe_sans_reponse,
@@ -202,7 +202,7 @@ def test_conserve_l_ordre_des_preuves_principales_pour_l_affichage_des_sources(
         ]
     )
 
-    reponse = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}").reclasse(
+    reponse = ReclasseurLLM(client, "Un prompt {QUESTION} {CANDIDATS}", BusEvenementsEnMemoire()).reclasse(
         "Une question ?", paragraphes
     )
 

@@ -26,6 +26,7 @@ def test_reformule_une_question():
         client_albert=client_albert,
         prompt_de_reformulation="Mon prompt",
         modele_reformulation="albert-small",
+        bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question)
 
     assert question_reformulee == "Ma question reformulee"
@@ -40,6 +41,7 @@ def test_reformule_leve_une_erreur_de_reformulation_si_la_communication_avec_le_
         client_albert=client_albert,
         prompt_de_reformulation="Mon prompt",
         modele_reformulation="albert-small",
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     with pytest.raises(ErreurCommunicationModeleReformulation):
@@ -82,6 +84,7 @@ def test_reformule_la_question_avec_un_prompt_de_reformulation():
         client_albert=client_albert,
         prompt_de_reformulation=le_prompt,
         modele_reformulation="albert-small",
+        bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question)
 
     assert len(client_albert.messages_recus) == 2
@@ -117,6 +120,7 @@ def test_reformule_la_question_avec_l_historique_de_conversation(
         client_albert=client_albert,
         prompt_de_reformulation="Mon prompt",
         modele_reformulation="albert-small",
+        bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question="Comment s'en protéger ?", conversation=conversation)
 
     assert len(client_albert.messages_recus) == 4
@@ -155,6 +159,7 @@ def test_reformulateur_utilise_le_modele_de_reformulation_de_la_configuration():
         client_albert=client_albert,
         prompt_de_reformulation="Mon prompt",
         modele_reformulation="modele-reformulation",
+        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     reformulateur.reformule("Ma question ?")
@@ -191,6 +196,7 @@ def test_reformule_la_question_avec_l_historique_dans_l_ordre_inverse(
         client_albert=client_albert,
         prompt_de_reformulation="Mon prompt",
         modele_reformulation="albert-small",
+        bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question="Question 3 ?", conversation=conversation)
 
     assert len(client_albert.messages_recus) == 6

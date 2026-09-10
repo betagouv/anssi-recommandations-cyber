@@ -7,6 +7,7 @@ from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.journal import AdaptateurJournalMemoire
 from client_albert_de_test import ClientAlbertMemoire
 from question.question import ConfigurationQuestion
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import Conversation, Interaction
@@ -40,7 +41,7 @@ class ConstructeurDeConversation:
 
 class ReformulateurDeQuestionDeTest(ReformulateurDeQuestion):
     def __init__(self):
-        super().__init__(ClientAlbertMemoire(), "", "")
+        super().__init__(ClientAlbertMemoire(), "", "", BusEvenementsEnMemoire())
 
     def reformule(
         self, question: str, conversation: Optional[Conversation] = None
@@ -127,6 +128,7 @@ def un_service_albert_avec_un_client_memoire(
             mapping_reponses=MappingReponsesMaitriseesDeTest(),
             reclasseur=un_reclasseur,
             executeur_de_requetes=un_adaptateur_executeur_de_requetes,
+            bus_evenements=BusEvenementsEnMemoire(),
         )
 
     return _un_service_albert_avec_un_client_memoire
