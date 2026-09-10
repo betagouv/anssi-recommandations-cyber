@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from client_albert_de_test import (
     ClientAlbertMemoire,
     un_choix_de_proposition,
@@ -23,6 +24,31 @@ def test_reclasse_leve_une_erreur_de_reclassement_si_la_communication_avec_le_mo
             "Une question ?",
             [un_constructeur_de_paragraphe().avec_contenu("Un passage").construis()],
         )
+
+
+def test_reclasse_publie_une_erreur_technique_sur_le_bus_si_la_communication_echoue(
+    un_constructeur_de_paragraphe,
+):
+    bus = BusEvenementsEnMemoire()
+    erreurs_publiees: list[ErreurTechniqueSurvenue] = []
+    bus.souscris(ErreurTechniqueSurvenue, erreurs_publiees.append)
+    client = ClientAlbertMemoire()
+    client.qui_leve_une_erreur_de_communication_modele()
+
+    reclasseur = ReclasseurLLM(
+        client, "Un prompt {QUESTION} {CANDIDATS}", bus_evenements=bus
+    )
+
+    with pytest.raises(ErreurCommunicationModeleReclassement):
+        reclasseur.reclasse(
+            "Une question ?",
+            [un_constructeur_de_paragraphe().avec_contenu("Un passage").construis()],
+        )
+
+    assert len(erreurs_publiees) == 1
+    assert isinstance(
+        erreurs_publiees[0].exception, ErreurCommunicationModeleReclassement
+    )
 
 
 def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(

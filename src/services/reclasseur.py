@@ -5,6 +5,7 @@ from openai.types.chat.chat_completion import Choice
 from typing import NamedTuple, cast
 
 from configuration import logging
+from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
 from schemas.albert import Paragraphe, ReclassePayload
 from services.client_albert import ClientAlbert
 from services.exceptions import (
@@ -82,9 +83,15 @@ class ReclasseurLLM(Reclasseur):
     _CATEGORIE_RETENUE = "preuve_principale"
     _SCORE_PREUVE_PRINCIPALE = 1.0
 
-    def __init__(self, client: ClientAlbert, prompt: str) -> None:
+    def __init__(
+        self,
+        client: ClientAlbert,
+        prompt: str,
+        bus_evenements: BusEvenements | None = None,
+    ) -> None:
         self.client = client
         self.prompt = prompt
+        self.bus_evenements = bus_evenements
 
     def reclasse(
         self, question: str, paragraphes: list[Paragraphe]
@@ -128,9 +135,13 @@ class ReclasseurLLM(Reclasseur):
             logging.error(
                 f"Échec de communication avec le modèle lors du reclassement : {erreur}"
             )
-            raise ErreurCommunicationModeleReclassement(
+            erreur_reclassement = ErreurCommunicationModeleReclassement(
                 "Impossible de reclasser les paragraphes de la question posée."
-            ) from erreur
+            )
+            publie_erreur_technique(
+                self.bus_evenements, erreur_reclassement, "reclassement"
+            )
+            raise erreur_reclassement from erreur
         return propositions
 
     @staticmethod
