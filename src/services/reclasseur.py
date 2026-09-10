@@ -1,10 +1,10 @@
 import json
 from abc import ABC, abstractmethod
 from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat.chat_completion import Choice
 from typing import NamedTuple, cast
 
 from configuration import logging
-
 from schemas.albert import Paragraphe, ReclassePayload
 from services.client_albert import ClientAlbert
 from services.exceptions import (
@@ -98,15 +98,7 @@ class ReclasseurLLM(Reclasseur):
                 ),
             }
         ]
-        try:
-            propositions = self.client.recupere_propositions(messages, temperature=0)
-        except ErreurCommunicationModele as erreur:
-            logging.error(
-                f"Échec de communication avec le modèle lors du reclassement : {erreur}"
-            )
-            raise ErreurCommunicationModeleReclassement(
-                "Impossible de reclasser les paragraphes de la question posée."
-            ) from erreur
+        propositions = self.__interroge_le_modele_de_reclassement(messages)
         contenu = cast(str, propositions[0].message.content)
         resultat = json.loads(contenu)
         categories = {
@@ -128,6 +120,18 @@ class ReclasseurLLM(Reclasseur):
             tous_les_candidats=paragraphes,
             aucune_source_utile=not paragraphes_retenus,
         )
+
+    def __interroge_le_modele_de_reclassement(self, messages: list[ChatCompletionMessageParam]) -> list[Choice]:
+        try:
+            propositions = self.client.recupere_propositions(messages, temperature=0)
+        except ErreurCommunicationModele as erreur:
+            logging.error(
+                f"Échec de communication avec le modèle lors du reclassement : {erreur}"
+            )
+            raise ErreurCommunicationModeleReclassement(
+                "Impossible de reclasser les paragraphes de la question posée."
+            ) from erreur
+        return propositions
 
     @staticmethod
     def _formate_candidats(paragraphes: list[Paragraphe]) -> str:
