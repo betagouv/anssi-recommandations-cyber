@@ -30,8 +30,7 @@ class AdaptateurSentryStandard(AdaptateurSentry):
         sentry_sdk.init(dsn=configuration.dsn, environment=configuration.environnement)
 
     def capture_exception(self, exception: Exception) -> None:
-        pass
-        # sentry_sdk.capture_message("Hello Sentry!")
+        sentry_sdk.capture_exception(exception)
 
 
 def fabrique_adaptateur_sentry() -> AdaptateurSentry:
