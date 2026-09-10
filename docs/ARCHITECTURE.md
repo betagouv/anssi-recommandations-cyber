@@ -113,6 +113,12 @@ Les deux routes de `api_conversation.py` convergent vers `ServiceAlbert.pose_que
    JSON (ou `HTTPException` en cas d'erreur : `500` communication Albert, `404` conversation
    inconnue, `422` erreur imprévue).
 
+Une panne de communication avec le modèle est tracée selon l'étape fautive :
+`ErreurCommunicationModeleReformulation` (①), `ErreurCommunicationModeleReclassement`
+(③, `TYPE_RECLASSEUR=llm`), `ErreurCommunicationModeleGeneration` (④) — toutes sous-classes
+de `ErreurCommunicationModele` (`COMMUNICATION_ALBERT` → `500`). Voir
+[`interactions_albert.md`](./interactions_albert.md).
+
 Les prompts sont dans `templates/` (`prompt_assistant_cyber.txt`,
 `prompt_reformulation.txt`, `prompt_reclassement*.txt`).
 
