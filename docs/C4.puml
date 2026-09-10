@@ -124,6 +124,8 @@ Container_Boundary(api, "API") {
     Component(adaptateur_journal, "Adaptateur journal", "adaptateurs/journal.py", "Événements ; identifiants hachés")
     Component(adaptateur_chiffrement, "Adaptateur chiffrement", "adaptateurs/chiffrement.py", "Chiffrement des contenus, hachage, nonce CSP")
     Component(adaptateur_sentry, "Adaptateur Sentry", "adaptateurs/sentry.py", "mémoire | standard")
+    Component(bus_evenements, "Bus d'événements", "adaptateurs/bus_evenements.py", "En-process, synchrone — publie/souscris `ErreurTechniqueSurvenue`")
+    Component(consommateur_sentry, "Consommateur Sentry", "adaptateurs/consommateur_sentry.py", "Abonné au bus, relaie l'exception à l'adaptateur Sentry")
     Component(adaptateur_http, "Adaptateur exécuteur de requêtes", "adaptateurs/adaptateur_executeur_de_requetes.py", "HTTP sortant : PDF sources, API MSC")
 }
 
@@ -152,6 +154,13 @@ Rel(service_albert, client_albert, "Recherche + génération")
 Rel(service_albert, adaptateur_http, "Métadonnées des guides")
 Rel(reformulateur, client_albert, "Modèle de reformulation")
 Rel(reclasseur, client_albert, "Rerank / LLM")
+
+Rel(reformulateur, bus_evenements, "publie ErreurTechniqueSurvenue (échec reformulation)")
+Rel(reclasseur, bus_evenements, "publie ErreurTechniqueSurvenue (échec reclassement LLM)")
+Rel(service_albert, bus_evenements, "publie ErreurTechniqueSurvenue (échec génération)")
+Rel(serveur, consommateur_sentry, "Abonne au bus")
+Rel(bus_evenements, consommateur_sentry, "ErreurTechniqueSurvenue")
+Rel(consommateur_sentry, adaptateur_sentry, "capture_exception")
 
 Rel(client_albert, albert, "HTTPS")
 Rel(adaptateur_http, msc, "GET /api/guides")
