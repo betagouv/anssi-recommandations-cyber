@@ -9,10 +9,12 @@ from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
+from adaptateurs.bus_evenements import BusEvenements, fabrique_bus_evenements
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
     fabrique_adaptateur_chiffrement,
 )
+from adaptateurs.consommateur_sentry import enregistre_consommateur_sentry
 from adaptateurs.sentry import fabrique_adaptateur_sentry
 from api.api import api, api_developpement
 from api.route_document_source import document_source
@@ -39,8 +41,10 @@ def fabrique_serveur(
     la_version_ui_kit=version_ui_kit,
     adaptateur_sentry=fabrique_adaptateur_sentry,
     mode_maintenance: bool = False,
+    bus_evenements: BusEvenements | None = None,
 ) -> FastAPI:
-    adaptateur_sentry()
+    bus = bus_evenements if bus_evenements is not None else fabrique_bus_evenements()
+    enregistre_consommateur_sentry(bus, adaptateur_sentry())
     serveur = FastAPI()
 
     limiteur = Limiter(
