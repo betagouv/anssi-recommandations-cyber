@@ -37,6 +37,9 @@ from services.reclasseur import (
     Reclasseur,
     ResultatReclassement,
 )
+from services.strategie_enrichissement_paragraphes import (
+    StrategieEnrichissementParagraphes,
+)
 
 
 class DocumentGuideMSC(BaseModel):
@@ -81,6 +84,7 @@ class ServiceAlbert:
         reclasseur: Reclasseur,
         executeur_de_requetes: Optional[AdaptateurExecuteurDeRequetes],
         bus_evenements: BusEvenements,
+        strategie_enrichissement: StrategieEnrichissementParagraphes | None = None,
     ) -> None:
         self.id_collection = configuration_service_albert.id_collection_anssi_lab
         self.id_collection_jeopardy = (
@@ -103,6 +107,7 @@ class ServiceAlbert:
         self.executeur_de_requetes = executeur_de_requetes
         self.url_msc = configuration_service_albert.url_msc
         self.bus_evenements = bus_evenements
+        self.strategie_enrichissement = strategie_enrichissement
 
     def recherche_paragraphes(self, question: str) -> list[Paragraphe]:
         methode_recherche = "hybrid" if self.utilise_recherche_hybride else "semantic"
@@ -231,6 +236,10 @@ class ServiceAlbert:
             question_reformulee if question_reformulee else question
         )
         recherche_paragraphes = self.recherche_paragraphes(question_pour_recherche)
+        if self.strategie_enrichissement:
+            recherche_paragraphes = self.strategie_enrichissement.enrichis(
+                recherche_paragraphes
+            )
         resultat_reclassement = self.__effectue_reclassement(
             recherche_paragraphes, question_pour_recherche
         )
