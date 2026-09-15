@@ -5,6 +5,7 @@ from openai.types.chat.chat_completion import Choice
 
 from schemas.albert import (
     RecherchePayload,
+    RechercheChunk,
     ResultatRecherche,
     ResultatRechercheJeopardy,
     ReclassePayload,
@@ -27,6 +28,10 @@ class ClientAlbert(ABC):
     def recherche_chunk_par_id(
         self, id_document: str, id_chunk: int
     ) -> ResultatRecherche:
+        pass
+
+    @abstractmethod
+    def recupere_chunks_document(self, id_document: int) -> list[RechercheChunk]:
         pass
 
     @abstractmethod

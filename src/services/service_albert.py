@@ -131,6 +131,7 @@ class ServiceAlbert:
                     chemin_sections=donnee.chunk.metadata.chemin_sections,
                     position_page=donnee.chunk.metadata.position_page,
                     derniere_page=donnee.chunk.metadata.derniere_page,
+                    identifiant_document=donnee.chunk.metadata.identifiant_document,
                 )
 
             return Paragraphe(
@@ -145,6 +146,7 @@ class ServiceAlbert:
                 chemin_sections=donnee.chunk.metadata.chemin_sections,
                 position_page=donnee.chunk.metadata.position_page,
                 derniere_page=donnee.chunk.metadata.derniere_page,
+                identifiant_document=donnee.chunk.metadata.identifiant_document,
             )
 
         donnees_classiques = self.client.recherche(payload_classique)
@@ -200,6 +202,7 @@ class ServiceAlbert:
                     chemin_sections=donnee.chunk.metadata.chemin_sections,
                     position_page=donnee.chunk.metadata.position_page,
                     derniere_page=donnee.chunk.metadata.derniere_page,
+                    identifiant_document=donnee.chunk.metadata.identifiant_document,
                 )
             )
         return paragraphes
