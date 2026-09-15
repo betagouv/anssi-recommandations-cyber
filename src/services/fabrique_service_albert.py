@@ -11,6 +11,7 @@ from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from services.reclasseur import ReclasseurBGE, ReclasseurLLM
 from services.service_albert import ServiceAlbert, Prompts
+from services.strategie_enrichissement_paragraphes import ParPagePrecedenteEtSuivante
 
 URL_MAPPING_PAR_DEFAUT = "https://raw.githubusercontent.com/betagouv/anssi-recommandations-cyber-data/refs/heads/main/donnees/collection_reponses_maitrisees/faq_reponses_maitrisees.mapping.json"
 
@@ -83,6 +84,7 @@ def fabrique_service_albert() -> ServiceAlbert:
         reclasseur=reclasseur,
         executeur_de_requetes=AdaptateurExecuteurDeRequetes(),
         bus_evenements=bus_evenements,
+        strategie_enrichissement=ParPagePrecedenteEtSuivante(client_albert_api),
     )
 
 
