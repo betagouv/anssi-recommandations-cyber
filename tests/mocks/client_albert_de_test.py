@@ -220,6 +220,9 @@ class ClientAlbertMemoire(ClientAlbert):
             return self.chunks_par_id.pop(0)
         return un_resultat_de_recherche().construis()
 
+    def recupere_chunks_document(self, id_document: int) -> list[RechercheChunk]:
+        return []
+
     def recupere_propositions(
         self,
         messages: list[ChatCompletionMessageParam],

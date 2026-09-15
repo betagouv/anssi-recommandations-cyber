@@ -1,4 +1,5 @@
 import json
+from math import ceil
 import requests
 from openai import APITimeoutError, APIConnectionError
 from openai import OpenAI
@@ -92,6 +93,7 @@ class ClientAlbertApi(ClientAlbert):
                 ),
                 position_page=meta_dict.get("position_page"),
                 derniere_page=meta_dict.get("derniere_page"),
+                identifiant_document=chunk_dict.get("document_id"),
             )
             chunk = RechercheChunk(
                 content=chunk_dict.get("content", ""),
@@ -176,6 +178,7 @@ class ClientAlbertApi(ClientAlbert):
                 ),
                 position_page=meta_dict.get("position_page"),
                 derniere_page=meta_dict.get("derniere_page"),
+                identifiant_document=brut.get("document_id"),
             )
             chunk = RechercheChunk(
                 content=brut.get("content", ""),
@@ -199,6 +202,56 @@ class ClientAlbertApi(ClientAlbert):
                 ),
                 score=0.0,
             )
+
+    def recupere_chunks_document(self, id_document: int) -> list[RechercheChunk]:
+        def _mappe_chunk(chunk: dict) -> RechercheChunk:
+            metadonnees = chunk.get("metadata") or {}
+            return RechercheChunk(
+                content=chunk.get("content", ""),
+                metadata=RechercheMetadonnees(
+                    source_url=metadonnees.get("source_url", ""),
+                    page=metadonnees.get("page", 0)
+                    + self.decalage_index_Albert_et_numero_de_page_lecteur,
+                    nom_document=metadonnees.get("nom_document", ""),
+                    id_reponse=metadonnees.get("id_reponse"),
+                    type_de_bloc=metadonnees.get("type_de_bloc"),
+                    code_recommandation=metadonnees.get("code_recommandation"),
+                    chemin_sections=_parse_chemin_sections(
+                        metadonnees.get("chemin_sections")
+                    ),
+                    position_page=metadonnees.get("position_page"),
+                    derniere_page=metadonnees.get("derniere_page"),
+                    identifiant_document=chunk.get("document_id"),
+                ),
+            )
+
+        try:
+            reponse_document: requests.Response = self.client_http.get(
+                f"/documents/{id_document}",
+                timeout=self.temps_reponse_maximum_recherche_paragraphes,
+            )
+            reponse_document.raise_for_status()
+            nombre_chunks = reponse_document.json().get("chunks", 0)
+            limite = 100
+            chunks: list[RechercheChunk] = []
+
+            for numero_page in range(ceil(nombre_chunks / limite)):
+                reponse: requests.Response = self.client_http.get(
+                    f"/documents/{id_document}/chunks",
+                    params={"limit": limite, "offset": numero_page * limite},
+                    timeout=self.temps_reponse_maximum_recherche_paragraphes,
+                )
+                reponse.raise_for_status()
+                donnees = reponse.json().get("data", [])
+                chunks.extend(_mappe_chunk(chunk) for chunk in donnees)
+            return chunks
+        except (requests.HTTPError, requests.Timeout) as erreur:
+            logging.error(
+                f"Route `/documents/{id_document}/chunks` de l'API Albert retourne une erreur: {erreur}"
+            )
+            raise ErreurRechercheDocuments(
+                "Impossible de récupérer les éléments documentaires relatifs à la question posée."
+            ) from erreur
 
     def reclasse(self, payload: ReclassePayload) -> ReclasseReponse:
         try:

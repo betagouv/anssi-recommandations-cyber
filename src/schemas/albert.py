@@ -16,6 +16,7 @@ class Paragraphe(BaseModel):
     chemin_sections: list[str] = []
     position_page: Optional[int] = None
     derniere_page: Optional[int] = None
+    identifiant_document: Optional[int] = Field(default=None, exclude=True)
 
     @property
     def contexte_dans_le_document(self):
@@ -78,6 +79,7 @@ class RechercheMetadonnees(NamedTuple):
     chemin_sections: list[str] = []
     position_page: Optional[int] = None
     derniere_page: Optional[int] = None
+    identifiant_document: Optional[int] = None
 
 
 class RechercheMetadonneesJeopardy(NamedTuple):
