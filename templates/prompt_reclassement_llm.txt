@@ -18,11 +18,15 @@ Règles :
 - chaque passage porte un attribut `type_de_bloc` issu du découpage du document source ; quand il est renseigné, utilise-le comme signal prioritaire : `type_de_bloc='recommandation'` indique un contenu normatif et rend `preuve_principale` probable s'il contient le contenu normatif lui-même (pas seulement un renvoi ou un intitulé isolé) ; un `type_de_bloc` absent (`None`) signifie que le découpage ne fournit pas cette information pour ce passage, et tu dois alors t'appuyer uniquement sur l'heuristique textuelle ci-dessus ;
 - `type_de_bloc` est un signal, pas une garantie : applique toujours les règles sur les passages de navigation (sommaire, liste de recommandations, bibliographie) même si `type_de_bloc='recommandation'` ;
 - `code_recommandation` et `chemin_sections`, quand renseignés, servent de contexte documentaire additionnel (identification et provenance du passage), pas de critère de catégorisation ;
+- pour chaque document, estime son sujet principal et son périmètre à partir de son nom et de ses sections lorsqu'elles sont disponibles. Détermine s'il est consacré au sujet de la question ou s'il l'aborde dans un guide plus général ou dans un autre contexte. Le nom et les sections sont des indices, jamais une preuve suffisante : vérifie toujours dans le contenu du passage qu'il répond à la question. Les sections peuvent être absentes ou ne décrire qu'une partie d'un passage enrichi ;
 - les identifiants et rangs sont des informations de diagnostic, pas des preuves ;
 - chaque identifiant de `ids_retenus` doit être classé `preuve_principale` ;
+- inclus toutes les `preuve_principale` dans `ids_retenus`, y compris celles d'un guide contextuel : la priorité de source change leur ordre, pas leur catégorie ni leur présence ;
 - `ids_retenus` peut être vide. Son ordre est conservé tel quel pour l'affichage des sources : ce n'est ni l'ordre des identifiants ni le rang initial ;
-- ordonne les `preuve_principale` du plus important au moins important pour répondre à la question. À pertinence égale, privilégie le contenu d'un guide ANSSI, d'une recommandation `R<nombre>` et d'une instruction officielle concrète par rapport aux documents plus contextuels ;
-- lorsque plusieurs `preuve_principale` proviennent du même `document`, place leurs identifiants dans un même groupe adjacent. Ordonne les passages du groupe par importance décroissante et place le groupe selon son passage le plus important ;
+- ordonne les `preuve_principale` du plus important au moins important pour répondre à la question. Parmi les preuves répondant directement, place d'abord celles d'un guide consacré au sujet de la question, puis celles d'un guide qui n'en traite que dans un autre contexte. Le rang initial et la répétition des mots de la question ne priment pas sur cette adéquation documentaire. À pertinence égale, privilégie le contenu d'un guide ANSSI, d'une recommandation `R<nombre>` et d'une instruction officielle concrète par rapport aux documents plus contextuels ;
+- pour une question sans périmètre explicite, place toutes les preuves principales du guide consacré au sujet avant les preuves principales d'un guide contextuel. Cette priorité s'applique à tous les passages de chaque guide : ne place aucun passage contextuel entre deux passages du guide consacré au sujet ;
+- si un périmètre est explicitement demandé par la question, place d'abord les preuves qui répondent dans ce périmètre. Ne déduis pas ce périmètre de la seule présence d'un document parmi les candidats ;
+- lorsque plusieurs `preuve_principale` proviennent du même `document`, place leurs identifiants dans un même groupe adjacent. Ordonne les passages du groupe par importance décroissante et place le groupe selon son passage le plus important, sans déroger à la priorité entre guide consacré au sujet et guide contextuel ;
 - ne conserve pas un passage uniquement pour compléter un groupe de document ;
 - un passage classé `element_de_reponse` apporte un complément, mais ne doit pas apparaître dans `ids_retenus`.
 
@@ -47,6 +51,29 @@ Catégorie : `dans_la_thematique_sans_apport`.
 Question : « Quelles sont les recommandations de l'ANSSI concernant le stockage des mots de passe ? »
 Passage : « Bibliographie : ANSSI, Recommandations relatives à l'authentification multifacteur et aux mots de passe. »
 Catégorie : `dans_la_thematique_sans_apport`.
+
+Exemple d'ordre des preuves :
+Question : « Comment gérer les accès ? »
+Passage 1, document=guide-securite-des-usines.pdf : « Les accès des administrateurs de l'usine doivent être protégés. »
+Passage 2, document=guide-gestion-des-acces.pdf : « La gestion des accès définit les règles d'attribution, de revue et de retrait des habilitations. »
+Les deux passages répondent directement et sont `preuve_principale`. Le modèle estime, à partir des noms de document, que le passage 2 provient d'un guide consacré à la gestion des accès et que le passage 1 provient d'un guide plus général. ids_retenus : `[2, 1]`.
+
+Question : « Comment gérer les accès ? »
+Passage 1, document=guide-securite-des-usines.pdf : « Les accès des administrateurs de l'usine doivent être protégés. »
+Passage 2, document=guide-gestion-des-acces.pdf : « La gestion des accès définit les règles d'attribution des habilitations. »
+Passage 3, document=guide-gestion-des-acces.pdf : « Les habilitations sont revues régulièrement et retirées quand elles ne sont plus nécessaires. »
+Les trois passages sont `preuve_principale`. Les passages 2 et 3 proviennent du guide consacré au sujet et doivent tous précéder le passage 1, qui provient d'un guide contextuel. ids_retenus : `[2, 3, 1]`.
+
+Question : « Comment gérer les accès dans une usine ? »
+Avec les mêmes passages, le périmètre de la question est explicite : place d'abord les preuves qui répondent au contexte de l'usine. ids_retenus : `[1, 2]`.
+
+Question : « Comment gérer les accès ? »
+Seul le passage 1 du guide contextuel est disponible et répond directement. Aucune preuve principale d'un guide consacré au sujet n'est présente : conserve le passage 1 dans `ids_retenus`, sans inventer de source préférée absente.
+
+Question : « Comment gérer les accès ? »
+Passage 1, document=guide-gestion-des-acces.pdf : « Sommaire — Gestion des accès … 20 ».
+Passage 2, document=guide-securite-des-usines.pdf : « Les accès doivent être revus régulièrement. »
+Le seul titre du guide consacré au sujet ne rend pas son passage 1 probant : classe-le `dans_la_thematique_sans_apport`. Le passage 2 répond directement et reste `preuve_principale` ; `ids_retenus` contient seulement 2.
 
 Question :
 {QUESTION}
