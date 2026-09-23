@@ -1,6 +1,12 @@
+import re
 from typing import Protocol
 
 from schemas.albert import Paragraphe, RechercheChunk
+
+
+BALISE_CONTEXTE_DOCUMENTAIRE = re.compile(
+    r"\[Contexte documentaire\].*?\[/Contexte documentaire\]", re.DOTALL
+)
 
 
 class RecuperateurChunksDocument(Protocol):
@@ -51,6 +57,17 @@ class ParPagePrecedenteEtSuivante:
                 ),
             )
             contenu = "\n\n".join(chunk.content for _, chunk in chunks_ordonnes)
+            contenu = _conserve_premier_contexte_documentaire(contenu)
             return paragraphe.model_copy(update={"contenu": contenu})
 
         return [_enrichis(paragraphe) for paragraphe in paragraphes]
+
+
+def _conserve_premier_contexte_documentaire(contenu: str) -> str:
+    contextes = list(BALISE_CONTEXTE_DOCUMENTAIRE.finditer(contenu))
+    if len(contextes) <= 1:
+        return contenu
+
+    return contenu[: contextes[1].start()] + BALISE_CONTEXTE_DOCUMENTAIRE.sub(
+        "", contenu[contextes[1].start() :]
+    )
