@@ -137,3 +137,94 @@ def test_ne_lit_qu_une_fois_un_document_partage_par_plusieurs_paragraphes():
     ParPagePrecedenteEtSuivante(recuperateur).enrichis(paragraphes)
 
     assert recuperateur.identifiants_documents_recus == [4777455]
+
+
+def test_repartit_les_chunks_partages_entre_deux_paragraphes_de_pages_adjacentes():
+    recuperateur = RecuperateurChunksDocumentMemoire(
+        [
+            RechercheChunk(
+                content="Page 19",
+                metadata=RechercheMetadonnees(source_url="", page=19, nom_document=""),
+            ),
+            RechercheChunk(
+                content="Page 20",
+                metadata=RechercheMetadonnees(source_url="", page=20, nom_document=""),
+            ),
+            RechercheChunk(
+                content="Page 21",
+                metadata=RechercheMetadonnees(source_url="", page=21, nom_document=""),
+            ),
+            RechercheChunk(
+                content="Page 22",
+                metadata=RechercheMetadonnees(source_url="", page=22, nom_document=""),
+            ),
+        ]
+    )
+    paragraphes = [
+        Paragraphe(
+            contenu="Source page 20",
+            url="https://exemple.fr/document.pdf",
+            score_similarite=0.9,
+            numero_page=20,
+            nom_document="document.pdf",
+            identifiant_document=4777455,
+        ),
+        Paragraphe(
+            contenu="Source page 21",
+            url="https://exemple.fr/document.pdf",
+            score_similarite=0.8,
+            numero_page=21,
+            nom_document="document.pdf",
+            identifiant_document=4777455,
+        ),
+    ]
+
+    resultat = ParPagePrecedenteEtSuivante(recuperateur).enrichis(paragraphes)
+
+    assert [paragraphe.contenu for paragraphe in resultat] == [
+        "Page 19\n\nPage 20\n\nPage 21",
+        "Page 22",
+    ]
+
+
+def test_retire_un_paragraphe_dont_la_page_est_deja_couverte():
+    recuperateur = RecuperateurChunksDocumentMemoire(
+        [
+            RechercheChunk(
+                content="Page 19",
+                metadata=RechercheMetadonnees(source_url="", page=19, nom_document=""),
+            ),
+            RechercheChunk(
+                content="Page 20",
+                metadata=RechercheMetadonnees(source_url="", page=20, nom_document=""),
+            ),
+            RechercheChunk(
+                content="Page 21",
+                metadata=RechercheMetadonnees(source_url="", page=21, nom_document=""),
+            ),
+        ]
+    )
+    paragraphes = [
+        Paragraphe(
+            contenu="Premier résultat",
+            url="https://exemple.fr/document.pdf",
+            score_similarite=0.9,
+            numero_page=20,
+            nom_document="document.pdf",
+            identifiant_document=4777455,
+        ),
+        Paragraphe(
+            contenu="Second résultat",
+            url="https://exemple.fr/document.pdf",
+            score_similarite=0.8,
+            numero_page=20,
+            nom_document="document.pdf",
+            identifiant_document=4777455,
+        ),
+    ]
+
+    resultat = ParPagePrecedenteEtSuivante(recuperateur).enrichis(paragraphes)
+
+    assert [paragraphe.contenu for paragraphe in resultat] == [
+        "Page 19\n\nPage 20\n\nPage 21"
+    ]
