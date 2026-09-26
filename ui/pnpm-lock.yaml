@@ -38,13 +38,13 @@ importers:
         version: 10.0.1(eslint@10.3.0)
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.0.0
-        version: 7.3.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
+        version: 7.3.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
       '@tsconfig/svelte':
         specifier: ^5.0.8
         version: 5.0.8
       '@types/node':
         specifier: ^25.0.0
-        version: 25.9.5
+        version: 25.9.8
       eslint:
         specifier: ^10.0.0
         version: 10.3.0
@@ -83,10 +83,10 @@ importers:
         version: 8.59.2(eslint@10.3.0)(typescript@6.0.3)
       vite:
         specifier: ^8.0.0
-        version: 8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
+        version: 8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
       vitest:
         specifier: ^4.0.0
-        version: 4.1.11(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
+        version: 4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
 
 packages:
 
@@ -109,15 +109,15 @@ packages:
     resolution: {integrity: sha512-gLNsunvwf3mCi5u5o46/Z/JcJMnhbHSaZ69rkgPzNM3J4s8hWwpPUQB6/tt0EDFyCiWzxANlx+2LJwpYj4zS1w==}
     engines: {node: '>=20.19.0'}
 
-  '@csstools/css-calc@3.3.0':
-    resolution: {integrity: sha512-c5ihYsPkdG6JCkU2zTMm4+k6r7RXuGxtWYhu5DHMIiF1FHzrfmHL5so11AoFpUv/tu61xfcmT4AmKoFfMPoqdQ==}
+  '@csstools/css-calc@3.4.0':
+    resolution: {integrity: sha512-XQKj5B7QiZcHiegCOCAzcAOJdhGgWOHbbu62h5e5mkHnn8lWcfiJhllkqWmxu5zWR9jucPHuo1iTB56P033hcg==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@csstools/css-parser-algorithms': ^4.0.0
       '@csstools/css-tokenizer': ^4.0.0
 
-  '@csstools/css-color-parser@4.2.2':
-    resolution: {integrity: sha512-3QKjR/vxyjcSXBLgb6lP0S3MGdvwbmqSsvLPbYdVORqPDc8FX1HAJ0Spk38bxaRXgvENTA47tlhhbb5Z2e8hEg==}
+  '@csstools/css-color-parser@4.2.3':
+    resolution: {integrity: sha512-y4LpL+lmpuyKDiEFq2PnZUVFdAjsoB/qQJod79yLNokXyW7jewi+/WJ69EfItj8A2unWtxXnGjw6LYXgXu5ZjA==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@csstools/css-parser-algorithms': ^4.0.0
@@ -129,16 +129,16 @@ packages:
     peerDependencies:
       '@csstools/css-tokenizer': ^4.0.0
 
-  '@csstools/css-syntax-patches-for-csstree@1.1.12':
-    resolution: {integrity: sha512-3vLQK+dXxhBMR2Wx99PTCifE+vHtW2ndZWyla8yK813ev6oGhyn8Lja8jCyGAWTJ+LEYZK7EVtJxrDj8ztevJw==}
+  '@csstools/css-syntax-patches-for-csstree@1.1.14':
+    resolution: {integrity: sha512-HpbVXyrofRXpHpgkNIjU/3EWR4WJvOkO3emNK/L6X/mTJU7bGUI3AkkpoTNXznQLp0KRjLHELTGeKI5dIkI9JQ==}
     peerDependencies:
       css-tree: ^3.2.1
     peerDependenciesMeta:
       css-tree:
         optional: true
 
-  '@csstools/css-tokenizer@4.0.0':
-    resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
+  '@csstools/css-tokenizer@4.0.1':
+    resolution: {integrity: sha512-bPlN9S9O1A0euCpEWE4qnvB5YDuyYVsUTrxSgmAM1Is0j4tICHoVyOVAXfWMP/kS9ZrjvyIXWV2PmomiAXXqOw==}
     engines: {node: '>=20.19.0'}
 
   '@emnapi/core@1.10.0':
@@ -717,8 +717,8 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/node@25.9.5':
-    resolution: {integrity: sha512-OScDchr2fwuUmWdf4kZ9h7PcJiYDVInhJizG/biAq3cAvqwYktuy/TYGGdZNMtNTFUP7rnb0NU4TUdm82kt4Rg==}
+  '@types/node@25.9.8':
+    resolution: {integrity: sha512-VfMrScDmMhUJQmd5hArdQnFvK0OIeD36uN2Va1FcpYaLB/BgkgM8Ulc50XtYISPMz7APJ30+N0T5EM0jlcdfRw==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -1292,8 +1292,8 @@ packages:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
     engines: {node: '>=18'}
 
-  lru-cache@11.5.2:
-    resolution: {integrity: sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g==}
+  lru-cache@11.5.3:
+    resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==}
     engines: {node: 20 || >=22}
 
   magic-string@0.30.21:
@@ -1702,11 +1702,11 @@ packages:
     resolution: {integrity: sha512-yau8yJdTt989Mm0Bd/236QnzEiPf2xLLTqUZRUJOo/3CB078LSwzei343DgtJVmfJKJE3TMINY1u42SQsP6mXw==}
     engines: {node: '>=14.0.0'}
 
-  tldts-core@7.4.12:
-    resolution: {integrity: sha512-nYNzS2WRf4QJmjzFFgAxLOBjyBxAGRbCy9PVBPaglcYyYajh40VBn+v5Ngr96ZMc7oM0+aCJdtQnNejvdBnXMQ==}
+  tldts-core@7.4.13:
+    resolution: {integrity: sha512-mbYsrih5FRtGxs3Usvl/PqwJsNpp+jsmrdFviiK02teHDG0/HebBG/pqCylje3kzgXYzuLoHJF/0mz9W53t8Xg==}
 
-  tldts@7.4.12:
-    resolution: {integrity: sha512-WylhSDKVeYnWXL3a+vKTaOxjnOeEGw938hImY8zoRWJjRRK/Jp1K+IihBzIONpUmW4e3WmXT6q5FW6vlESVZCA==}
+  tldts@7.4.13:
+    resolution: {integrity: sha512-iHtaIWWIbMDkCeJdTBzZFGgbluE5J+oHlb2g7+oAz1S1gpuVpabRZdQyd471Vl8UUkcz2vXSL8xZH2kyCe8tfA==}
     hasBin: true
 
   tough-cookie@6.0.2:
@@ -1929,11 +1929,11 @@ snapshots:
 
   '@asamuzakjp/css-color@4.1.2':
     dependencies:
-      '@csstools/css-calc': 3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-color-parser': 4.2.2(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-tokenizer': 4.0.0
-      lru-cache: 11.5.2
+      '@csstools/css-calc': 3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)
+      '@csstools/css-color-parser': 4.2.3(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.1)
+      '@csstools/css-tokenizer': 4.0.1
+      lru-cache: 11.5.3
     optional: true
 
   '@asamuzakjp/dom-selector@6.8.1':
@@ -1942,7 +1942,7 @@ snapshots:
       bidi-js: 1.1.0
       css-tree: 3.2.1
       is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
     optional: true
 
   '@asamuzakjp/nwsapi@2.3.9':
@@ -1953,31 +1953,31 @@ snapshots:
   '@csstools/color-helpers@6.1.1':
     optional: true
 
-  '@csstools/css-calc@3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
+  '@csstools/css-calc@3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)':
     dependencies:
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-tokenizer': 4.0.0
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.1)
+      '@csstools/css-tokenizer': 4.0.1
     optional: true
 
-  '@csstools/css-color-parser@4.2.2(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
+  '@csstools/css-color-parser@4.2.3(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)':
     dependencies:
       '@csstools/color-helpers': 6.1.1
-      '@csstools/css-calc': 3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-tokenizer': 4.0.0
+      '@csstools/css-calc': 3.4.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.1)
+      '@csstools/css-tokenizer': 4.0.1
     optional: true
 
-  '@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0)':
+  '@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1)':
     dependencies:
-      '@csstools/css-tokenizer': 4.0.0
+      '@csstools/css-tokenizer': 4.0.1
     optional: true
 
-  '@csstools/css-syntax-patches-for-csstree@1.1.12(css-tree@3.2.1)':
+  '@csstools/css-syntax-patches-for-csstree@1.1.14(css-tree@3.2.1)':
     optionalDependencies:
       css-tree: 3.2.1
     optional: true
 
-  '@csstools/css-tokenizer@4.0.0':
+  '@csstools/css-tokenizer@4.0.1':
     optional: true
 
   '@emnapi/core@1.10.0':
@@ -2333,14 +2333,14 @@ snapshots:
     dependencies:
       acorn: 8.17.0
 
-  '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))':
+  '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.55.7(@typescript-eslint/types@8.59.2))(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))':
     dependencies:
       deepmerge: 4.3.1
       magic-string: 1.2.3
       obug: 2.1.4
       svelte: 5.55.7(@typescript-eslint/types@8.59.2)
-      vite: 8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
-      vitefu: 1.1.3(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
+      vite: 8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
+      vitefu: 1.1.3(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
 
   '@tsconfig/svelte@5.0.8': {}
 
@@ -2364,7 +2364,7 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/node@25.9.5':
+  '@types/node@25.9.8':
     dependencies:
       undici-types: 7.24.6
 
@@ -2470,13 +2470,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.1
 
-  '@vitest/mocker@4.1.11(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))':
+  '@vitest/mocker@4.1.11(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
+      vite: 8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
 
   '@vitest/pretty-format@4.1.11':
     dependencies:
@@ -2585,9 +2585,9 @@ snapshots:
   cssstyle@5.3.7:
     dependencies:
       '@asamuzakjp/css-color': 4.1.2
-      '@csstools/css-syntax-patches-for-csstree': 1.1.12(css-tree@3.2.1)
+      '@csstools/css-syntax-patches-for-csstree': 1.1.14(css-tree@3.2.1)
       css-tree: 3.2.1
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
     optional: true
 
   data-urls@6.0.1:
@@ -2991,7 +2991,7 @@ snapshots:
       strip-ansi: 7.2.0
       wrap-ansi: 9.0.2
 
-  lru-cache@11.5.2:
+  lru-cache@11.5.3:
     optional: true
 
   magic-string@0.30.21:
@@ -3369,17 +3369,17 @@ snapshots:
 
   tinyrainbow@3.1.1: {}
 
-  tldts-core@7.4.12:
+  tldts-core@7.4.13:
     optional: true
 
-  tldts@7.4.12:
+  tldts@7.4.13:
     dependencies:
-      tldts-core: 7.4.12
+      tldts-core: 7.4.13
     optional: true
 
   tough-cookie@6.0.2:
     dependencies:
-      tldts: 7.4.12
+      tldts: 7.4.13
     optional: true
 
   tr46@6.0.0:
@@ -3420,7 +3420,7 @@ snapshots:
 
   varint@6.0.0: {}
 
-  vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3):
+  vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -3428,21 +3428,21 @@ snapshots:
       rolldown: 1.0.3
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 25.9.5
+      '@types/node': 25.9.8
       esbuild: 0.27.7
       fsevents: 2.3.3
       sass: 1.99.0
       sass-embedded: 1.99.0
       yaml: 2.8.3
 
-  vitefu@1.1.3(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)):
+  vitefu@1.1.3(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)):
     optionalDependencies:
-      vite: 8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
+      vite: 8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
 
-  vitest@4.1.11(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)):
+  vitest@4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
+      '@vitest/mocker': 4.1.11(vite@8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -3459,10 +3459,10 @@ snapshots:
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 8.0.16(@types/node@25.9.5)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
+      vite: 8.0.16(@types/node@25.9.8)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 25.9.5
+      '@types/node': 25.9.8
       jsdom: 27.4.0
     transitivePeerDependencies:
       - msw
