@@ -10,3 +10,5 @@ minimumReleaseAgeExclude:
   - '@lab-anssi/ui-kit@1.55.0'
   # Renovate security update: pdfjs-dist@6.2.108
   - pdfjs-dist@6.2.108
+  # Renovate security update: devalue@5.9.3
+  - devalue@5.9.3
