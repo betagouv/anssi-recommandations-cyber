@@ -15,7 +15,7 @@ dependencies = [
     "slowapi",
     "starlette>1.0.1",
     "typing",
-    "urllib3==2.7.0",
+    "urllib3==2.8.0",
     "uvicorn",
 ]
 
