@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from fastapi import FastAPI, Depends, Request
@@ -18,7 +20,10 @@ from adaptateurs.consommateur_sentry import enregistre_consommateur_sentry
 from adaptateurs.sentry import fabrique_adaptateur_sentry
 from api.api import api, api_developpement
 from api.route_document_source import document_source
-from configuration import Mode
+from configuration import CapaciteReclassementParallele, Mode
+from services.coordinateur_reclassement_parallele import (
+    CoordinateurReclassementParallele,
+)
 from infra.ui_kit.version_ui_kit import version_ui_kit
 
 HEADERS_SECURITE = {
@@ -42,10 +47,44 @@ def fabrique_serveur(
     adaptateur_sentry=fabrique_adaptateur_sentry,
     mode_maintenance: bool = False,
     bus_evenements: BusEvenements | None = None,
+    capacite_reclassement: CapaciteReclassementParallele | None = None,
 ) -> FastAPI:
     bus = bus_evenements if bus_evenements is not None else fabrique_bus_evenements()
     enregistre_consommateur_sentry(bus, adaptateur_sentry())
-    serveur = FastAPI()
+
+    @asynccontextmanager
+    async def cycle_de_vie(serveur: FastAPI):
+        nombre_threads = (
+            capacite_reclassement.nombre_threads
+            if capacite_reclassement is not None
+            else 5
+        )
+        serveur.state.coordinateur_reclassement = CoordinateurReclassementParallele(
+            ThreadPoolExecutor(
+                max_workers=nombre_threads, thread_name_prefix="reclassement"
+            ),
+            nombre_maximum_de_workflows=(
+                capacite_reclassement.nombre_maximum_de_workflows
+                if capacite_reclassement is not None
+                else 2
+            ),
+            nombre_maximum_d_appels_par_workflow=(
+                capacite_reclassement.nombre_maximum_d_appels_par_workflow
+                if capacite_reclassement is not None
+                else 5
+            ),
+            nombre_maximum_de_candidats=(
+                capacite_reclassement.nombre_maximum_candidats
+                if capacite_reclassement is not None
+                else None
+            ),
+        )
+        try:
+            yield
+        finally:
+            serveur.state.coordinateur_reclassement.ferme()
+
+    serveur = FastAPI(lifespan=cycle_de_vie)
 
     limiteur = Limiter(
         key_func=get_remote_address,

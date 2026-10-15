@@ -248,9 +248,9 @@ def test_un_candidat_sans_unite_substantielle_ne_peut_pas_etre_une_preuve(
     ]
 
 
-def test_schema_force_l_adequation_indetermine_si_le_document_n_est_pas_qualifie(
-    un_constructeur_de_paragraphe,
-) -> None:
+def test_schema_force_l_adequation_indetermine_si_le_document_n_est_pas_qualifie() -> (
+    None
+):
     schema = ReclasseurLLMEnParallele._schema_qualification_documents(
         {"D1": {"nom_fichier": "guide.pdf", "nom": "", "description": ""}}
     )
@@ -633,22 +633,8 @@ def test_qualifie_chaque_guide_une_fois_hors_des_lots_de_passages(
 def test_qualification_associe_directement_chaque_identifiant_a_son_label(
     un_coordinateur_reclassement,
 ):
-    class ClientQuiRetourneUneQualificationCompacte(ClientAlbertMemoire):
-        def __init__(self):
-            super().__init__()
-            self.schema_qualification = None
-
-        def recupere_propositions(
-            self, messages, modele=None, temperature=None, format_reponse=None
-        ):
-            self.schema_qualification = format_reponse["json_schema"]["schema"]
-            return [
-                un_choix_de_proposition()
-                .ayant_pour_contenu(json.dumps({"D1": "consacre_au_sujet"}))
-                .construis()
-            ]
-
-    client = ClientQuiRetourneUneQualificationCompacte()
+    client = ClientAlbertCaptureFormats()
+    client.avec_une_qualification_de_documents(json.dumps({"D1": "consacre_au_sujet"}))
     reclasseur = cree_reclasseur_llm_en_parallele(
         client,
         un_coordinateur_reclassement,
@@ -667,29 +653,16 @@ def test_qualification_associe_directement_chaque_identifiant_a_son_label(
     )
 
     assert qualifications == {"D1": "consacre_au_sujet"}
-    assert client.schema_qualification["required"] == ["D1"]
-    assert "documents" not in client.schema_qualification["properties"]
+    schema = client.formats_reponse_recus[0]["json_schema"]["schema"]
+    assert schema["required"] == ["D1"]
+    assert "documents" not in schema["properties"]
 
 
 def test_description_html_sans_texte_visible_force_une_qualification_indeterminee(
     un_coordinateur_reclassement,
 ):
-    class ClientQuiObserveLaQualification(ClientAlbertMemoire):
-        def __init__(self):
-            super().__init__()
-            self.schema_qualification = None
-
-        def recupere_propositions(
-            self, messages, modele=None, temperature=None, format_reponse=None
-        ):
-            self.schema_qualification = format_reponse["json_schema"]["schema"]
-            return [
-                un_choix_de_proposition()
-                .ayant_pour_contenu(json.dumps({"D1": "indetermine"}))
-                .construis()
-            ]
-
-    client = ClientQuiObserveLaQualification()
+    client = ClientAlbertCaptureFormats()
+    client.avec_une_qualification_de_documents(json.dumps({"D1": "indetermine"}))
     reclasseur = cree_reclasseur_llm_en_parallele(
         client,
         un_coordinateur_reclassement,
@@ -708,7 +681,8 @@ def test_description_html_sans_texte_visible_force_une_qualification_indetermine
     )
 
     assert qualifications == {"D1": "indetermine"}
-    assert client.schema_qualification["properties"]["D1"]["enum"] == ["indetermine"]
+    schema = client.formats_reponse_recus[0]["json_schema"]["schema"]
+    assert schema["properties"]["D1"]["enum"] == ["indetermine"]
 
 
 def test_lit_une_classification_racine_par_identifiant_global(

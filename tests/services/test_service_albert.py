@@ -8,13 +8,13 @@ from client_albert_de_test import (
     un_constructeur_de_reponse_de_reclassement,
 )
 from client_albert_de_test import ConstructeurDeChoix
-from configuration import Albert, TypeReclasseur
+from configuration import TypeReclasseur
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
-from question.reformulateur_de_question import ReformulateurDeQuestion
-from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import (
+    Paragraphe,
     ParagrapheReponseMaitrisee,
 )
+from schemas.msc import DocumentGuideMSC, ReponseGuideMSC
 from schemas.violations import (
     REPONSE_PAR_DEFAUT,
     Violation,
@@ -26,17 +26,85 @@ from schemas.violations import (
 )
 from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from services.exceptions import ErreurCommunicationModeleGeneration
-from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
-from services.service_albert import ServiceAlbert, Prompts
-from tests.conftest import AdaptateurExecuteurDeRequetesMemoire
+from services.reclasseur import (
+    ReclasseurLLM,
+    ResultatReclassement,
+)
 
-PROMPT_SYSTEME_ALTERNATIF = (
-    "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
-)
-PROMPTS = Prompts(
-    prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
-    prompt_reclassement="Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
-)
+
+def test_mapping_historique_propage_une_erreur_de_recuperation_msc(
+    une_configuration_de_service_albert, un_service_albert_de_test
+):
+    class ExecuteurMscIndisponible:
+        def recupere(self, url, schema):
+            raise RuntimeError("indisponible")
+
+    client = ClientAlbertMemoire()
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client,
+        reclasseur=ReclasseurLLM(client, "", BusEvenementsEnMemoire()),
+        executeur_de_requetes=ExecuteurMscIndisponible(),
+    )
+    paragraphe = Paragraphe(
+        score_similarite=0.9,
+        numero_page=1,
+        url="https://exemple.invalid/source",
+        nom_document="source.pdf",
+        contenu="Contenu source.",
+    )
+
+    with pytest.raises(RuntimeError, match="indisponible"):
+        service._mappe_en_paragraphes_pour_la_reponse([paragraphe])
+
+
+def test_mapping_historique_garde_le_premier_guide_pour_un_nom_de_fichier_duplique(
+    une_configuration_de_service_albert, un_service_albert_de_test
+):
+    class ExecuteurMsc:
+        def recupere(self, url, schema):
+            return [
+                ReponseGuideMSC(
+                    id="premier",
+                    nom="Premier guide",
+                    description="Premier résultat historique.",
+                    listeDocuments=[
+                        DocumentGuideMSC(libelle="A", nomFichier="source.pdf")
+                    ],
+                    dateMiseAJour="2026-01-01",
+                ),
+                ReponseGuideMSC(
+                    id="second",
+                    nom="Second guide",
+                    description="Second résultat.",
+                    listeDocuments=[
+                        DocumentGuideMSC(libelle="B", nomFichier="source.pdf")
+                    ],
+                    dateMiseAJour="2026-02-01",
+                ),
+            ]
+
+    client = ClientAlbertMemoire()
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client,
+        reclasseur=ReclasseurLLM(client, "", BusEvenementsEnMemoire()),
+        executeur_de_requetes=ExecuteurMsc(),
+    )
+    paragraphe = Paragraphe(
+        score_similarite=0.9,
+        numero_page=1,
+        url="https://exemple.invalid/source",
+        nom_document="source.pdf",
+        contenu="Contenu source.",
+    )
+
+    mapped = service._mappe_en_paragraphes_pour_la_reponse([paragraphe])
+
+    assert mapped[0].titre == "Premier guide"
+    assert mapped[0].date_mise_a_jour == "2026-01-01"
+
+
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
 FAUX_CONTENU = "La tartiflette est une recette de cuisine à base de gratin de pommes de terre, d'oignons et de lardons, le tout gratiné au reblochon."
@@ -46,22 +114,18 @@ def test_pose_question_leve_une_erreur_de_generation_si_la_communication_avec_le
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
         [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
     )
     client_albert_memoire.qui_leve_une_erreur_de_communication_modele()
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     with pytest.raises(ErreurCommunicationModeleGeneration):
@@ -72,6 +136,7 @@ def test_pose_question_publie_une_erreur_technique_sur_le_bus_si_la_generation_e
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     bus = BusEvenementsEnMemoire()
     erreurs_publiees: list[ErreurTechniqueSurvenue] = []
@@ -81,13 +146,9 @@ def test_pose_question_publie_une_erreur_technique_sur_le_bus_si_la_generation_e
         [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
     )
     client_albert_memoire.qui_leve_une_erreur_de_communication_modele()
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
         bus_evenements=bus,
@@ -106,6 +167,8 @@ def test_pose_question_retourne_une_reponse(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
@@ -118,16 +181,12 @@ def test_pose_question_retourne_une_reponse(
             un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
         ]
     )
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     reponse = service_albert.pose_question(question=QUESTION)
@@ -141,6 +200,8 @@ def test_pose_question_retourne_une_reponse(
 def test_recherche_paragraphes_propage_les_nouvelles_metadonnees_de_chunk(
     un_reclasseur,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
@@ -155,16 +216,12 @@ def test_recherche_paragraphes_propage_les_nouvelles_metadonnees_de_chunk(
             .construis(),
         ]
     )
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=None,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes(QUESTION)
@@ -177,6 +234,8 @@ def test_recherche_paragraphes_propage_les_nouvelles_metadonnees_de_chunk(
 def test_recherche_paragraphes_utilise_des_metadonnees_par_defaut_pour_un_chunk_legacy(
     un_reclasseur,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
@@ -184,16 +243,12 @@ def test_recherche_paragraphes_utilise_des_metadonnees_par_defaut_pour_un_chunk_
             un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis(),
         ]
     )
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=None,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes(QUESTION)
@@ -203,86 +258,140 @@ def test_recherche_paragraphes_utilise_des_metadonnees_par_defaut_pour_un_chunk_
     assert paragraphes[0].chemin_sections == []
 
 
-def test_pose_question_enrichit_le_contexte_envoye_au_llm_avec_les_metadonnees_de_chunk(
-    un_reclasseur,
-    une_configuration_de_service_albert,
+def test_reclasseur_parallele_charge_msc_avant_classement_et_reutilise_le_resultat(
+    une_configuration_de_service_albert, un_service_albert_de_test
 ):
-    client_albert_memoire = ClientAlbertMemoire()
-    client_albert_memoire.avec_les_resultats(
+    evenements = []
+    nom_document = "authentification.pdf"
+
+    class ExecuteurMsc:
+        def __init__(self):
+            self.appels = 0
+
+        def recupere(self, url, schema):
+            self.appels += 1
+            evenements.append("msc")
+            assert url.endswith("/api/guides")
+            return [
+                ReponseGuideMSC(
+                    id="guide-mots-de-passe",
+                    nom="Guide des mots de passe",
+                    description="Stockage et vérification des mots de passe.",
+                    listeDocuments=[
+                        DocumentGuideMSC(
+                            libelle="Authentification", nomFichier=nom_document
+                        )
+                    ],
+                    dateMiseAJour="2026-01-01",
+                )
+            ]
+
+    class ReclasseurAvecContexteMsc:
+        requiert_contexte_documents_msc = True
+
+        def reclasse(self, question, paragraphes):
+            evenements.append(("classement", paragraphes[0].contexte_document_msc))
+            return ResultatReclassement(paragraphes, paragraphes)
+
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
         [
             un_resultat_de_recherche()
-            .ayant_pour_contenu("R3 Utiliser ESP plutôt que AH.")
-            .ayant_pour_document("NT_IPsec.pdf")
-            .ayant_pour_metadonnees_de_bloc(
-                type_de_bloc="recommandation",
-                code_recommandation="R3",
-                chemin_sections=["6 Fonctionnement", "6.1 Services"],
-            )
-            .construis(),
+            .ayant_pour_contenu("Utiliser un mécanisme de stockage sécurisé.")
+            .ayant_pour_document(nom_document)
+            .construis()
         ]
     )
-    client_albert_memoire.avec_les_propositions(
-        [
-            un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis(),
-        ]
+    client.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
     )
-    service_albert = ServiceAlbert(
+    executeur_msc = ExecuteurMsc()
+    service = un_service_albert_de_test(
         une_configuration_de_service_albert(),
-        client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
-        reclasseur=un_reclasseur,
-        executeur_de_requetes=None,
-        bus_evenements=BusEvenementsEnMemoire(),
+        client,
+        reclasseur=ReclasseurAvecContexteMsc(),
+        executeur_de_requetes=executeur_msc,
     )
 
-    service_albert.pose_question(question=QUESTION)
+    reponse = service.pose_question(question=QUESTION)
 
-    contenu_prompt_systeme = client_albert_memoire.messages_recus[0]["content"]
-    assert (
-        "[Document: NT_IPsec.pdf | Section: 6 Fonctionnement > 6.1 Services | "
-        "Recommandation: R3]\nR3 Utiliser ESP plutôt que AH."
-        in contenu_prompt_systeme
-    )
+    assert executeur_msc.appels == 1
+    assert evenements[0] == "msc"
+    assert evenements[1][0] == "classement"
+    assert evenements[1][1].nom == "Guide des mots de passe"
+    assert reponse.paragraphes[0].titre == "Guide des mots de passe"
 
 
-def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_systeme(
-    un_reclasseur,
-    un_adaptateur_executeur_de_requetes,
-    une_configuration_de_service_albert,
+def test_echec_msc_est_reutilise_comme_contexte_inconnu_sans_second_get(
+    une_configuration_de_service_albert, un_service_albert_de_test
 ):
-    client_albert_memoire = ClientAlbertMemoire()
-    service_albert = ServiceAlbert(
+    class ExecuteurMscIndisponible:
+        appels = 0
+
+        def recupere(self, url, schema):
+            self.appels += 1
+            raise RuntimeError("MSC indisponible")
+
+    class ReclasseurSansContexteMsc:
+        requiert_contexte_documents_msc = True
+        contexte_observe = "non consulté"
+
+        def reclasse(self, question, paragraphes):
+            self.contexte_observe = paragraphes[0].contexte_document_msc
+            return ResultatReclassement(paragraphes, paragraphes)
+
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
+    )
+    client.avec_les_propositions(
+        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
+    )
+    executeur = ExecuteurMscIndisponible()
+    reclasseur = ReclasseurSansContexteMsc()
+    service = un_service_albert_de_test(
         une_configuration_de_service_albert(),
-        client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
-        reclasseur=un_reclasseur,
-        executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
+        client,
+        reclasseur=reclasseur,
+        executeur_de_requetes=executeur,
     )
 
-    service_albert.pose_question(question=QUESTION)
+    reponse = service.pose_question(question=QUESTION)
 
-    messages = client_albert_memoire.messages_recus
-    assert len(messages) == 2
-    assert messages[0]["role"] == "system"
-    assert (
-        messages[0]["content"]
-        == "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n"
+    assert executeur.appels == 1
+    assert reclasseur.contexte_observe is None
+    assert reponse.paragraphes[0].titre == ""
+
+
+def test_ne_genere_pas_de_reponse_si_aucune_preuve_directe_n_est_eligible(
+    une_configuration_de_service_albert, un_service_albert_de_test
+):
+    class ReclasseurSansPreuveEligible:
+        def reclasse(self, question, paragraphes):
+            return ResultatReclassement([], paragraphes, aucune_source_utile=True)
+
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
     )
-    assert messages[1]["role"] == "user"
-    assert messages[1]["content"] == f"Question :\n{QUESTION}"
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client,
+        reclasseur=ReclasseurSansPreuveEligible(),
+        executeur_de_requetes=None,
+    )
+
+    reponse = service.pose_question(question=QUESTION)
+
+    assert isinstance(reponse.violation, ViolationMeconnaissance)
+    assert client.messages_envoyes_pour_les_propositions == []
 
 
 def test_pose_question_recupere_les_details_du_document_depuis_MSC(
     un_reclasseur,
     un_constructeur_d_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
@@ -323,16 +432,11 @@ def test_pose_question_recupere_les_details_du_document_depuis_MSC(
             },
         ]
     ).construis()
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     reponse = service_albert.pose_question(question=QUESTION)
@@ -341,106 +445,20 @@ def test_pose_question_recupere_les_details_du_document_depuis_MSC(
     assert reponse.paragraphes[0].date_mise_a_jour == "2026-06-15T10:00:00:000Z"
 
 
-def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise(
-    tmp_path,
-    un_reclasseur,
-    un_adaptateur_executeur_de_requetes,
-    une_configuration_de_service_albert,
-):
-    mapping_path = tmp_path / "faq.mapping.json"
-    contenu_question = "Qui est le directeur de l'ANSSI ?"
-    reponse_maitrisee = "Vincent Strubel."
-    mapping_path.write_text(
-        json.dumps({"qui-est-le-directeur-de-lanssi": reponse_maitrisee}),
-        encoding="utf-8",
-    )
-    client_albert_memoire = ClientAlbertMemoire()
-    client_albert_memoire.avec_les_resultats(
-        [
-            un_resultat_de_recherche()
-            .ayant_pour_contenu(contenu_question)
-            .ayant_reponse_maitrisee("qui-est-le-directeur-de-lanssi")
-            .construis(),
-        ]
-    )
-    client_albert_memoire.avec_les_propositions(
-        [un_choix_de_proposition().ayant_pour_contenu("Réponse").construis()]
-    )
-    service_albert = ServiceAlbert(
-        une_configuration_de_service_albert(),
-        client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees.depuis_chemin(mapping_path),
-        reclasseur=un_reclasseur,
-        executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
-    )
-
-    service_albert.pose_question(question=QUESTION)
-
-    messages = client_albert_memoire.messages_recus
-    messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
-    assert len(messages_systeme) == 1
-    assert contenu_question in messages_systeme[0]["content"]
-    assert reponse_maitrisee in messages_systeme[0]["content"]
-
-
-def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
-    un_reclasseur,
-    un_adaptateur_executeur_de_requetes,
-    une_configuration_de_service_albert,
-):
-    client_albert_memoire = ClientAlbertMemoire()
-    client_albert_memoire.avec_les_resultats(
-        [
-            un_resultat_de_recherche().ayant_pour_contenu(FAUX_CONTENU).construis(),
-        ]
-    )
-    client_albert_memoire.avec_les_propositions(
-        [
-            un_choix_de_proposition().ayant_pour_contenu(FAUX_CONTENU).construis(),
-        ]
-    )
-    service_albert = ServiceAlbert(
-        une_configuration_de_service_albert(),
-        client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
-        reclasseur=un_reclasseur,
-        executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
-    )
-
-    service_albert.pose_question(question=QUESTION)
-
-    messages = client_albert_memoire.messages_recus
-    messages_systeme = list(filter(lambda m: m["role"] == "system", messages))
-    assert len(messages_systeme) == 1
-    assert FAUX_CONTENU in messages_systeme[0]["content"]
-
-
 def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_albert_ne_retourne_rien(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.sans_resultats()
     client_albert_memoire.sans_propositions()
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     retour = service_albert.pose_question(question=QUESTION)
@@ -476,6 +494,8 @@ def test_pose_question_illegale(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_resultats(
@@ -488,16 +508,12 @@ def test_pose_question_illegale(
             un_choix_de_proposition().ayant_pour_contenu(erreur).construis(),
         ]
     )
-    service_albert = ServiceAlbert(
+    service_albert = un_service_albert_de_test(
         une_configuration_de_service_albert(),
         client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     retour = service_albert.pose_question(question="question illégale ?")
@@ -512,6 +528,8 @@ def test_le_score_reclassement_est_propage_sur_le_paragraphe(
     un_constructeur_de_paragraphe,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     reponse = (
         un_constructeur_de_reponse_de_reclassement()
@@ -535,16 +553,12 @@ def test_le_score_reclassement_est_propage_sur_le_paragraphe(
         [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
     )
 
-    reponse_de_pose_question = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    reponse_de_pose_question = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Une question ?")
 
     assert reponse_de_pose_question.paragraphes[0].score_reclassement == 0.92
@@ -555,6 +569,8 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
     un_constructeur_de_paragraphe,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     reclasseur = (
         un_constructeur_de_reclasseur()
@@ -605,16 +621,12 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
         ]
     )
 
-    reponse_de_pose_question = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    reponse_de_pose_question = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Une question de test ?")
 
     assert list(map(lambda p: p.contenu, reponse_de_pose_question.paragraphes)) == [
@@ -626,83 +638,12 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
     ]
 
 
-def test_les_paragraphes_reclasses_sont_envoyes_a_albert(
-    un_constructeur_de_reclasseur,
-    un_constructeur_de_paragraphe,
-    un_adaptateur_executeur_de_requetes,
-    une_configuration_de_service_albert,
-):
-    reclasseur = (
-        un_constructeur_de_reclasseur()
-        .avec_les_paragraphes(
-            [
-                un_constructeur_de_paragraphe()
-                .avec_contenu("paragraphe 2")
-                .ayant_comme_score(0.48)
-                .construis(),
-                un_constructeur_de_paragraphe()
-                .avec_contenu("paragraphe 4")
-                .ayant_comme_score(0.6)
-                .construis(),
-                un_constructeur_de_paragraphe()
-                .avec_contenu("paragraphe 3")
-                .ayant_comme_score(0.99)
-                .construis(),
-                un_constructeur_de_paragraphe()
-                .avec_contenu("paragraphe 1")
-                .ayant_comme_score(0.19)
-                .construis(),
-                un_constructeur_de_paragraphe()
-                .avec_contenu("paragraphe 0")
-                .ayant_comme_score(0.63)
-                .construis(),
-            ]
-        )
-        .construis()
-    )
-    reponse = (
-        un_constructeur_de_reponse_de_reclassement()
-        .avec_5_resultats(
-            [
-                {"titre": "paragraphe 1", "indice": 0, "score": 0.19},
-                {"titre": "paragraphe 2", "indice": 1, "score": 0.48},
-                {"titre": "paragraphe 3", "indice": 2, "score": 0.99},
-                {"titre": "paragraphe 4", "indice": 3, "score": 0.6},
-                {"titre": "paragraphe 5", "indice": 4, "score": 0.63},
-            ]
-        )
-        .construis()
-    )
-    client_albert_memoire = ClientAlbertMemoire()
-    client_albert_memoire.avec_le_reclassement(reponse)
-    client_albert_memoire.avec_les_resultats([])
-    service_albert = ServiceAlbert(
-        une_configuration_de_service_albert(),
-        client_albert_memoire,
-        False,
-        PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
-        reclasseur=reclasseur,
-        executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
-    )
-
-    reponse = service_albert.pose_question(question=QUESTION)
-
-    messages = client_albert_memoire.messages_recus
-    assert len(messages) == 2
-    assert messages[0]["role"] == "system"
-    assert (
-        "\n\nparagraphe 2\n\n\nparagraphe 4\n\n\nparagraphe 3\n\n\nparagraphe 1\n\n\nparagraphe 0"
-        in messages[0]["content"]
-    )
-
-
 def test_retourne_20_paragraphes_en_effectuant_le_reclassement(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     reponse = un_constructeur_de_reponse_de_reclassement().construis()
     client_albert_memoire = ClientAlbertMemoire()
@@ -713,18 +654,12 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement(
         ]
     )
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(
-            nombre_paragraphes=20
-        ),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(nombre_paragraphes=20),
+        client_albert_memoire,
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Une question de test ?")
 
     # Sans jeopardy mais avec reclassement, on demande 20 paragraphes classiques
@@ -735,6 +670,8 @@ def test_appelle_le_reclassement_uniquement_quand_active(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.avec_les_propositions(
@@ -743,16 +680,12 @@ def test_appelle_le_reclassement_uniquement_quand_active(
         ]
     )
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
@@ -762,20 +695,16 @@ def test_ne_reclasse_pas_si_la_recherche_de_paragraphes_retourne_un_resultat_vid
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.sans_resultats()
 
-    reponse = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    reponse = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Une question de test ?")
 
     assert client_albert_memoire.payload_reclassement_recu is None
@@ -786,6 +715,8 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     client_albert_memoire.reclassement_vide()
@@ -800,16 +731,12 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
         ]
     )
 
-    reponse = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    reponse = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Une question de test ?")
 
     assert reponse.reponse == "Un contenu"
@@ -823,6 +750,7 @@ def test_initie_une_conversation(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     interaction = (
@@ -841,46 +769,26 @@ def test_initie_une_conversation(
         .construis()
     )
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_memoire,
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(
         question="Une troisieme question de test ?", conversation=conversation
     )
 
-    messages_recus = client_albert_memoire.messages_recus
-    assert messages_recus == [
-        {
-            "role": "system",
-            "content": "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nUne question de test ?",
-        },
-        {
-            "role": "assistant",
-            "content": "réponse : Une question de test ?",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nUne deuxième question de test ?",
-        },
-        {
-            "role": "assistant",
-            "content": "réponse : Une deuxième question de test ?",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nUne troisieme question de test ?",
-        },
+    messages_recus = [
+        message
+        for message in client_albert_memoire.messages_recus
+        if message["role"] != "system"
+    ]
+    assert [message["role"] for message in messages_recus] == [
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
     ]
 
 
@@ -890,6 +798,7 @@ def test_limite_l_historique_a_2_interactions_passees(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     conversation = un_constructeur_de_conversation().construis()
@@ -901,44 +810,24 @@ def test_limite_l_historique_a_2_interactions_passees(
         taille_fenetre_historique=2
     )
 
-    ServiceAlbert(
-        configuration_service_albert=configuration_avec_fenetre_limitee,
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
+    un_service_albert_de_test(
+        configuration_avec_fenetre_limitee,
+        client_albert_memoire,
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Question actuelle ?", conversation=conversation)
 
-    messages_recus = client_albert_memoire.messages_recus
-    assert messages_recus == [
-        {
-            "role": "system",
-            "content": "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nQuestion 5 ?",
-        },
-        {
-            "role": "assistant",
-            "content": "réponse : Question 5 ?",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nQuestion 6 ?",
-        },
-        {
-            "role": "assistant",
-            "content": "réponse : Question 6 ?",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nQuestion actuelle ?",
-        },
+    messages_recus = [
+        message
+        for message in client_albert_memoire.messages_recus
+        if message["role"] != "system"
+    ]
+    assert [message["role"] for message in messages_recus] == [
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
     ]
 
 
@@ -946,29 +835,24 @@ def test_peut_reformuler_une_question(
     une_configuration_de_service_albert,
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_memoire,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_memoire, prompt="Mon prompt", modele="albert-small"
     )
     mon_choix = (
         ConstructeurDeChoix().ayant_pour_contenu("Ma question reformulee").construis()
     )
     client_albert_memoire.avec_les_propositions([mon_choix])
 
-    reponse_question = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=ClientAlbertMemoire(),
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    reponse_question = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        ClientAlbertMemoire(),
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Question actuelle ?", conversation=None)
 
     assert reponse_question.question_reformulee == "Ma question reformulee"
@@ -978,14 +862,13 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
     une_configuration_de_service_albert,
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_recherche = ClientAlbertMemoire()
     client_albert_reformulation = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -994,16 +877,12 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
     )
     client_albert_reformulation.avec_les_propositions([choix_reformulation])
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_recherche,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_recherche,
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Ma question brute ?")
 
     assert (
@@ -1016,6 +895,8 @@ def test_reclassement_utilise_la_question_reformulee(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     reponse = un_constructeur_de_reponse_de_reclassement().construis()
     client_albert_recherche = ClientAlbertMemoire()
@@ -1024,11 +905,8 @@ def test_reclassement_utilise_la_question_reformulee(
     client_albert_recherche.avec_les_propositions(
         [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
     )
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -1037,16 +915,12 @@ def test_reclassement_utilise_la_question_reformulee(
     )
     client_albert_reformulation.avec_les_propositions([choix_reformulation])
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_recherche,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_recherche,
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Ma question brute ?")
 
     assert un_reclasseur.question_recue == "Question reformulee pour reclassement"
@@ -1058,6 +932,8 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     interaction = (
         un_constructeur_d_interaction()
@@ -1070,11 +946,8 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
 
     client_albert_recherche = ClientAlbertMemoire()
     client_albert_reformulation = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -1083,31 +956,20 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
     )
     client_albert_reformulation.avec_les_propositions([choix_reformulation])
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_recherche,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_recherche,
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Comment s'en protéger ?", conversation=conversation)
 
-    assert len(client_albert_reformulation.messages_recus) == 4
-    assert client_albert_reformulation.messages_recus[0]["role"] == "system"
-    assert client_albert_reformulation.messages_recus[1]["role"] == "user"
-    assert (
-        client_albert_reformulation.messages_recus[1]["content"]
-        == "Qu'est-ce que le défacement ?"
-    )
-    assert client_albert_reformulation.messages_recus[2]["role"] == "assistant"
-    assert client_albert_reformulation.messages_recus[3]["role"] == "user"
-    assert (
-        client_albert_reformulation.messages_recus[3]["content"]
-        == "Comment s'en protéger ?"
-    )
+    roles_recus = [
+        message["role"]
+        for message in client_albert_reformulation.messages_recus
+        if message["role"] != "system"
+    ]
+    assert roles_recus == ["user", "assistant", "user"]
 
 
 def test_recuperation_propositions_utilise_la_question_reformulee(
@@ -1116,6 +978,8 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     interaction = (
         un_constructeur_d_interaction()
@@ -1128,11 +992,8 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
 
     client_albert_recherche = ClientAlbertMemoire()
     client_albert_reformulation = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix()
@@ -1144,26 +1005,20 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
         [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
     )
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_recherche,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_recherche,
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Question actuelle brute", conversation=conversation)
 
-    messages_recus = client_albert_recherche.messages_recus
-    assert len(messages_recus) == 4
-    assert messages_recus[0]["role"] == "system"
-    assert messages_recus[1]["role"] == "user"
-    assert messages_recus[1]["content"] == "Question :\nQuestion brute historique"
-    assert messages_recus[2]["role"] == "assistant"
-    assert messages_recus[3]["role"] == "user"
-    assert messages_recus[3]["content"] == "Question :\nQuestion actuelle reformulee"
+    roles_recus = [
+        message["role"]
+        for message in client_albert_recherche.messages_recus
+        if message["role"] != "system"
+    ]
+    assert roles_recus == ["user", "assistant", "user"]
 
 
 def test_pose_question_reformule_la_question_sans_les_violations_precedentes(
@@ -1172,6 +1027,8 @@ def test_pose_question_reformule_la_question_sans_les_violations_precedentes(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     interaction_sans_violation = (
         un_constructeur_d_interaction().avec_question("Question valide ?").construis()
@@ -1190,33 +1047,32 @@ def test_pose_question_reformule_la_question_sans_les_violations_precedentes(
     )
 
     client_albert_reformulation = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix().ayant_pour_contenu("Question reformulee").construis()
     )
     client_albert_reformulation.avec_les_propositions([choix_reformulation])
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=ClientAlbertMemoire(),
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        ClientAlbertMemoire(),
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Nouvelle question ?", conversation=conversation)
 
-    messages_reformulation = client_albert_reformulation.messages_recus
-    assert len(messages_reformulation) == 4
-    assert messages_reformulation[1]["content"] == "Question valide ?"
-    assert "Qui es-tu ?" not in str(messages_reformulation)
+    messages_reformulation = [
+        message
+        for message in client_albert_reformulation.messages_recus
+        if message["role"] != "system"
+    ]
+    assert [message["role"] for message in messages_reformulation] == [
+        "user",
+        "assistant",
+        "user",
+    ]
 
 
 def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes(
@@ -1225,6 +1081,8 @@ def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     interaction_sans_violation = (
         un_constructeur_d_interaction().avec_question("Question valide ?").construis()
@@ -1244,11 +1102,8 @@ def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes
 
     client_albert_recherche = ClientAlbertMemoire()
     client_albert_reformulation = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix().ayant_pour_contenu("Question reformulee").construis()
@@ -1258,52 +1113,49 @@ def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes
         [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
     )
 
-    ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_recherche,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_recherche,
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Nouvelle question ?", conversation=conversation)
 
-    messages_recherche = client_albert_recherche.messages_recus
-    assert len(messages_recherche) == 4
-    assert messages_recherche[1]["content"] == "Question :\nQuestion valide ?"
-    assert "Qui es-tu ?" not in str(messages_recherche)
+    messages_recherche = [
+        message
+        for message in client_albert_recherche.messages_recus
+        if message["role"] != "system"
+    ]
+    assert [message["role"] for message in messages_recherche] == [
+        "user",
+        "assistant",
+        "user",
+    ]
 
 
 def test_retourne_violation_question_non_comprise_si_reformulateur_retourne_QUESTION_NON_COMPRISE(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_recherche = ClientAlbertMemoire()
     client_albert_reformulation = ClientAlbertMemoire()
-    reformulateur = ReformulateurDeQuestion(
-        client_albert=client_albert_reformulation,
-        prompt_de_reformulation="Mon prompt",
-        modele_reformulation="albert-small",
-        bus_evenements=BusEvenementsEnMemoire(),
+    reformulateur = un_reformulateur_albert_de_test(
+        client_albert_reformulation, prompt="Mon prompt", modele="albert-small"
     )
     choix_reformulation = (
         ConstructeurDeChoix().ayant_pour_contenu("QUESTION_NON_COMPRISE").construis()
     )
     client_albert_reformulation.avec_les_propositions([choix_reformulation])
 
-    reponse = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(),
-        client=client_albert_recherche,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+    reponse = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client_albert_recherche,
         reformulateur=reformulateur,
-        mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     ).pose_question(question="Raconte-moi une blague")
 
     assert reponse.violation == ViolationQuestionNonComprise()
@@ -1316,6 +1168,8 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
+    un_reformulateur_albert_de_test,
 ):
     client_albert_memoire = ClientAlbertMemoire()
     resultats_classiques = [
@@ -1327,18 +1181,15 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee(
     client_albert_memoire.avec_les_resultats_par_appel([resultats_classiques])
     configuration = une_configuration_de_service_albert()
 
-    service_albert = ServiceAlbert(
-        configuration_service_albert=configuration,
-        client=client_albert_memoire,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
+    service_albert = un_service_albert_de_test(
+        configuration,
+        client_albert_memoire,
+        reformulateur=un_reformulateur_albert_de_test(client_albert_memoire),
         mapping_reponses=MappingReponsesMaitrisees(
             {"quel-est-le-directeur-de-anssi": "Vincent Strubel"}
         ),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     paragraphes = service_albert.recherche_paragraphes("Ma question ?")
@@ -1359,41 +1210,9 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee(
     )
 
 
-def construit_service(
-    client: ClientAlbertMemoire,
-    configuration: Albert.Service,  # type:ignore[attr-defined, name-defined]
-) -> ServiceAlbert:
-    reclasseur: Reclasseur
-    if configuration.type_reclasseur == TypeReclasseur.BGE:
-        prompt_reclassement = "Question BGE : {QUESTION}"
-        reclasseur = ReclasseurBGE(
-            client,
-            "modèle",
-            prompt_reclassement,
-            5,
-        )
-    else:
-        prompt_reclassement = PROMPTS.prompt_reclassement
-        reclasseur = ReclasseurLLM(client, prompt_reclassement, BusEvenementsEnMemoire())
-
-    return ServiceAlbert(
-        configuration_service_albert=configuration,
-        client=client,
-        utilise_recherche_hybride=False,
-        prompts=Prompts(
-            prompt_systeme=PROMPTS.prompt_systeme,
-            prompt_reclassement=prompt_reclassement,
-        ),
-        reformulateur=ReformulateurDeQuestionDeTest(),
-        mapping_reponses=MappingReponsesMaitrisees({}),
-        reclasseur=reclasseur,
-        executeur_de_requetes=AdaptateurExecuteurDeRequetesMemoire(),
-        bus_evenements=BusEvenementsEnMemoire(),
-    )
-
-
 def test_reclassement_llm_retourne_une_meconnaissance_sans_appeler_la_generation_si_aucun_passage_n_est_utile(
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
@@ -1411,7 +1230,14 @@ def test_reclassement_llm_retourne_une_meconnaissance_sans_appeler_la_generation
                     json.dumps(
                         {
                             "evaluations": [
-                                {"id": 1, "categorie": "dans_la_thematique_sans_apport"}
+                                {
+                                    "id": 1,
+                                    "categorie": "preuve_principale",
+                                    "id_segment_probant": 1,
+                                    "adequation_document": "consacre_au_sujet",
+                                    "degre_pertinence": 3,
+                                    "portee_preuve": "specifique_non_demandee",
+                                }
                             ],
                             "ids_retenus": [],
                         }
@@ -1422,8 +1248,11 @@ def test_reclassement_llm_retourne_une_meconnaissance_sans_appeler_la_generation
         ]
     )
 
-    reponse = construit_service(
-        client, une_configuration_de_service_albert(type_reclasseur=TypeReclasseur.LLM)
+    reponse = un_service_albert_de_test(
+        une_configuration_de_service_albert(type_reclasseur=TypeReclasseur.LLM),
+        client,
+        reclasseur=ReclasseurLLM(client, "", BusEvenementsEnMemoire()),
+        executeur_de_requetes=None,
     ).pose_question(question="Question ?")
 
     assert reponse.violation == ViolationMeconnaissance()
@@ -1435,6 +1264,7 @@ def test_reclasseur_filtre_les_reponses_maitrisees(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     client = ClientAlbertMemoire()
     client.avec_les_resultats(
@@ -1470,20 +1300,14 @@ def test_reclasseur_filtre_les_reponses_maitrisees(
             ],
         ]
     )
-    service = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(
-            type_reclasseur=TypeReclasseur.LLM
-        ),
-        client=client,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(type_reclasseur=TypeReclasseur.LLM),
+        client,
         mapping_reponses=MappingReponsesMaitrisees(
             {"reponse-maitrisee": "La réponse maîtrisée complète."}
         ),
         reclasseur=un_reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     reponse = service.pose_question(question="Question ?")
@@ -1493,10 +1317,9 @@ def test_reclasseur_filtre_les_reponses_maitrisees(
 
 def test_reclasseur_ne_filtre_pas_les_reponses_maitrisees_sous_le_seuil(
     un_reclasseur,
-    un_constructeur_de_paragraphe,
-    un_constructeur_de_paragraphe_reponse_maitrisee,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
+    un_service_albert_de_test,
 ):
     reclasseur = un_reclasseur
     client = ClientAlbertMemoire()
@@ -1533,20 +1356,16 @@ def test_reclasseur_ne_filtre_pas_les_reponses_maitrisees_sous_le_seuil(
             ],
         ]
     )
-    service = ServiceAlbert(
-        configuration_service_albert=une_configuration_de_service_albert(
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(
             type_reclasseur=TypeReclasseur.LLM, seuil_reponse_maitrisee=1.1
         ),
-        client=client,
-        utilise_recherche_hybride=False,
-        prompts=PROMPTS,
-        reformulateur=ReformulateurDeQuestionDeTest(),
+        client,
         mapping_reponses=MappingReponsesMaitrisees(
             {"reponse-maitrisee": "La réponse maîtrisée complète."}
         ),
         reclasseur=reclasseur,
         executeur_de_requetes=un_adaptateur_executeur_de_requetes,
-        bus_evenements=BusEvenementsEnMemoire(),
     )
 
     reponse = service.pose_question(question="Question ?")

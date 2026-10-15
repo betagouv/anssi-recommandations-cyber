@@ -31,6 +31,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 class TypeReclasseur(StrEnum):
     BGE = "bge"
     LLM = "llm"
+    LLM_PARALLELE = "llm_parallele"
 
 
 class Albert(NamedTuple):
@@ -104,6 +105,13 @@ class Configuration(NamedTuple):
     mode_maintenance: bool
 
 
+class CapaciteReclassementParallele(NamedTuple):
+    nombre_maximum_candidats: int
+    nombre_maximum_d_appels_par_workflow: int
+    nombre_maximum_de_workflows: int
+    nombre_threads: int
+
+
 def _recupere_configuration_postgres(
     variables_environnement: VariablesEnvironnementNecessaires,
 ) -> BaseDeDonnees:
@@ -169,6 +177,48 @@ def _les_variables_d_environnement() -> VariablesEnvironnementNecessaires:
     return variables_environnement  # type: ignore
 
 
+def taille_lot_reclassement(valeur: str | None = None) -> int:
+    valeur = (
+        os.getenv("ALBERT_RECLASSEMENT_TAILLE_LOT", "5") if valeur is None else valeur
+    )
+    try:
+        taille = int(valeur)
+    except ValueError as erreur:
+        raise ValueError(
+            "ALBERT_RECLASSEMENT_TAILLE_LOT doit être un entier strictement positif."
+        ) from erreur
+    if taille < 1:
+        raise ValueError(
+            "ALBERT_RECLASSEMENT_TAILLE_LOT doit être strictement positif."
+        )
+    return taille
+
+
+def calcule_capacite_reclassement_parallele(
+    nombre_paragraphes: int, taille_lot: int, jeopardy_active: bool
+) -> CapaciteReclassementParallele:
+    if type(nombre_paragraphes) is not int or nombre_paragraphes < 1:
+        raise ValueError("Le nombre de paragraphes doit être un entier positif.")
+    if type(taille_lot) is not int or taille_lot < 1:
+        raise ValueError("La taille de lot doit être un entier positif.")
+    if type(jeopardy_active) is not bool:
+        raise ValueError("L'état de Jeopardy doit être un booléen.")
+
+    nombre_maximum_candidats = nombre_paragraphes * (2 if jeopardy_active else 1)
+    nombre_maximum_d_appels_par_workflow = (
+        nombre_maximum_candidats + taille_lot - 1
+    ) // taille_lot + 1
+    nombre_maximum_de_workflows = 2
+    return CapaciteReclassementParallele(
+        nombre_maximum_candidats=nombre_maximum_candidats,
+        nombre_maximum_d_appels_par_workflow=nombre_maximum_d_appels_par_workflow,
+        nombre_maximum_de_workflows=nombre_maximum_de_workflows,
+        nombre_threads=(
+            nombre_maximum_de_workflows * nombre_maximum_d_appels_par_workflow
+        ),
+    )
+
+
 def recupere_configuration() -> Configuration:
     mode = Mode(os.getenv("MODE", "production"))
     variables_environnement = (
@@ -176,6 +226,10 @@ def recupere_configuration() -> Configuration:
         if mode != Mode.TEST and mode != Mode.DEVELOPPEMENT
         else _les_variables_d_environnement()
     )
+    type_reclasseur = TypeReclasseur(os.getenv("TYPE_RECLASSEUR", "bge"))
+    if type_reclasseur is TypeReclasseur.LLM_PARALLELE:
+        taille_lot_reclassement()
+
     configuration_albert = Albert(
         client=Albert.Client(
             base_url="https://albert.api.etalab.gouv.fr/v1",
@@ -211,7 +265,7 @@ def recupere_configuration() -> Configuration:
             jeopardy_active=os.getenv("JEOPARDY_ACTIVE", "false").lower() == "true",
             seuil_reponse_maitrisee=float(os.getenv("SEUIL_REPONSE_MAITRISEE", "0.8")),
             nombre_paragraphes=int(os.getenv("NOMBRE_PARAGRAPHES", 10)),
-            type_reclasseur=TypeReclasseur(os.getenv("TYPE_RECLASSEUR", "bge")),
+            type_reclasseur=type_reclasseur,
             url_msc=os.getenv("URL_MSC", "https://messervices.cyber.gouv.fr"),
         ),
     )

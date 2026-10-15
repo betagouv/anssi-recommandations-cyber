@@ -3,7 +3,12 @@ import logging
 import uvicorn
 
 from adaptateurs.chiffrement import fabrique_adaptateur_chiffrement
-from configuration import recupere_configuration
+from configuration import (
+    TypeReclasseur,
+    calcule_capacite_reclassement_parallele,
+    recupere_configuration,
+    taille_lot_reclassement,
+)
 from infra.logger import log
 from serveur import fabrique_serveur
 
@@ -14,10 +19,18 @@ except Exception as e:
     exit(1)
 
 adaptateur_chiffrement = fabrique_adaptateur_chiffrement()
+capacite_reclassement = None
+if configuration.albert.service.type_reclasseur is TypeReclasseur.LLM_PARALLELE:
+    capacite_reclassement = calcule_capacite_reclassement_parallele(
+        configuration.albert.service.nombre_paragraphes,
+        taille_lot_reclassement(),
+        configuration.albert.service.jeopardy_active,
+    )
 serveur = fabrique_serveur(
     configuration.max_requetes_par_minute,
     configuration.mode,
     mode_maintenance=configuration.mode_maintenance,
+    capacite_reclassement=capacite_reclassement,
 )
 
 log(
