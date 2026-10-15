@@ -1,10 +1,12 @@
 import random
-from typing import NamedTuple, Optional
+import json
+from typing import Any, NamedTuple, Optional, cast
 from unittest.mock import Mock
 import requests
 from openai import APITimeoutError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice, ChatCompletionMessage
+from openai.types.chat.completion_create_params import ResponseFormat
 from schemas.albert import (
     RecherchePayload,
     ResultatRecherche,
@@ -177,7 +179,9 @@ class ClientAlbertMemoire(ClientAlbert):
         self.choix_par_appel = []
         self.appels_recupere_propositions = 0
         self.messages_envoyes_pour_les_propositions = []
+        self.noms_schemas_propositions: list[str | None] = []
         self.contextes_appels_llm_recus: list[str] = []
+        self.reponse_qualification_documents: str | None = None
         self.temperatures_recues = []
         self.appels_recherche = 0
         self.resultats_par_appel = []
@@ -228,6 +232,7 @@ class ClientAlbertMemoire(ClientAlbert):
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
         temperature: float | None = None,
+        format_reponse: ResponseFormat | None = None,
     ) -> list[Choice]:
         self.messages_recus = messages
         self.messages_envoyes_pour_les_propositions.append(messages)
@@ -236,6 +241,32 @@ class ClientAlbertMemoire(ClientAlbert):
             raise ErreurCommunicationModele(
                 "Impossible de récupérer une réponse pour la question posée."
             )
+        schema = (
+            cast(dict[str, Any], format_reponse).get("json_schema", {})
+            if isinstance(format_reponse, dict)
+            else {}
+        )
+        nom_schema = schema.get("name")
+        self.noms_schemas_propositions.append(nom_schema)
+        if nom_schema == "qualification_guides":
+            if self.reponse_qualification_documents is not None:
+                return [
+                    un_choix_de_proposition()
+                    .ayant_pour_contenu(self.reponse_qualification_documents)
+                    .construis()
+                ]
+            proprietes = schema["schema"]["properties"]
+            contenu = json.dumps(
+                {
+                    identifiant: (
+                        "indetermine"
+                        if definition["enum"] == ["indetermine"]
+                        else "consacre_au_sujet"
+                    )
+                    for identifiant, definition in proprietes.items()
+                }
+            )
+            return [un_choix_de_proposition().ayant_pour_contenu(contenu).construis()]
         if self.choix_par_appel:
             choix = self.choix_par_appel[self.appels_recupere_propositions]
             self.appels_recupere_propositions += 1
@@ -268,6 +299,9 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_propositions_par_appel(self, choix_par_appel: list[list[Choice]]):
         self.choix_par_appel = choix_par_appel
+
+    def avec_une_qualification_de_documents(self, reponse: str):
+        self.reponse_qualification_documents = reponse
 
     def qui_leve_une_erreur_sur_recherche(self):
         self.leve_une_erreur_sur_recherche = True
