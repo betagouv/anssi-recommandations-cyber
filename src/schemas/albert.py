@@ -1,6 +1,21 @@
 from pydantic import BaseModel, Field
 from typing import NamedTuple, Optional
+from schemas.msc import ContexteDocumentMSC
 from schemas.violations import Violation
+
+
+class UniteSource(BaseModel):
+    contenu: str
+    url: str
+    numero_page: int
+    nom_document: str
+    id_reponse: Optional[str] = None
+    type_de_bloc: Optional[str] = None
+    code_recommandation: Optional[str] = None
+    chemin_sections: list[str] = Field(default_factory=list)
+    position_page: Optional[int] = None
+    derniere_page: Optional[int] = None
+    identifiant_document: Optional[int] = None
 
 
 class Paragraphe(BaseModel):
@@ -17,6 +32,10 @@ class Paragraphe(BaseModel):
     position_page: Optional[int] = None
     derniere_page: Optional[int] = None
     identifiant_document: Optional[int] = Field(default=None, exclude=True)
+    unites_source: list[UniteSource] = Field(default_factory=list, exclude=True)
+    contexte_document_msc: Optional[ContexteDocumentMSC] = Field(
+        default=None, exclude=True
+    )
 
     @property
     def contexte_dans_le_document(self):
