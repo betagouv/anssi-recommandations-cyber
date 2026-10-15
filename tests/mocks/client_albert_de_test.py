@@ -177,6 +177,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self.resultats_jeopardy = []
         self.payload_jeopardy_recu = None
         self.choix_par_appel = []
+        self.choix_par_identifiants_candidats: dict[tuple[int, ...], list[Choice]] = {}
         self.appels_recupere_propositions = 0
         self.messages_envoyes_pour_les_propositions = []
         self.noms_schemas_propositions: list[str | None] = []
@@ -267,6 +268,21 @@ class ClientAlbertMemoire(ClientAlbert):
                 }
             )
             return [un_choix_de_proposition().ayant_pour_contenu(contenu).construis()]
+        if nom_schema == "classification_passages" and self.choix_par_identifiants_candidats:
+            identifiants = tuple(
+                sorted(
+                    int(identifiant)
+                    for identifiant in schema["schema"]["properties"]["candidats"][
+                        "properties"
+                    ]
+                )
+            )
+            try:
+                return self.choix_par_identifiants_candidats[identifiants]
+            except KeyError as erreur:
+                raise AssertionError(
+                    f"Aucune réponse configurée pour les candidats {identifiants}."
+                ) from erreur
         if self.choix_par_appel:
             choix = self.choix_par_appel[self.appels_recupere_propositions]
             self.appels_recupere_propositions += 1
@@ -299,6 +315,11 @@ class ClientAlbertMemoire(ClientAlbert):
 
     def avec_les_propositions_par_appel(self, choix_par_appel: list[list[Choice]]):
         self.choix_par_appel = choix_par_appel
+
+    def avec_les_propositions_par_identifiants(
+        self, choix_par_identifiants: dict[tuple[int, ...], list[Choice]]
+    ):
+        self.choix_par_identifiants_candidats = choix_par_identifiants
 
     def avec_une_qualification_de_documents(self, reponse: str):
         self.reponse_qualification_documents = reponse

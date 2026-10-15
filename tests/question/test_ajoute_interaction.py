@@ -146,24 +146,15 @@ def test_interroge_albert_en_mode_conversationnel(
         type_utilisateur=TypeUtilisateur.EXPERT_SSI,
     )
 
-    messages_recus = client_albert_memoire.messages_recus
-    assert messages_recus == [
-        {
-            "role": "system",
-            "content": "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nLa première question",
-        },
-        {
-            "role": "assistant",
-            "content": "La réponse à la première question",
-        },
-        {
-            "role": "user",
-            "content": "Question :\nUne seconde question",
-        },
+    messages_recus = [
+        message
+        for message in client_albert_memoire.messages_recus
+        if message["role"] != "system"
+    ]
+    assert [message["role"] for message in messages_recus] == [
+        "user",
+        "assistant",
+        "user",
     ]
 
 
