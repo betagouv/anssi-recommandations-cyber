@@ -3,6 +3,13 @@ from services.unites_source import premiere_unite_substantielle, unites_du_parag
 
 
 def fusionne_preuves(paragraphes: list[Paragraphe], preuves: list[dict]) -> list[int]:
+    priorites_document = {
+        "perimetre_demande": 0,
+        "consacre_au_sujet": 1,
+        "general_ou_contextuel": 2,
+        "indetermine": 2,
+    }
+    paragraphes_par_id = dict(enumerate(paragraphes, 1))
     eligibles = [
         preuve
         for preuve in preuves
@@ -13,12 +20,35 @@ def fusionne_preuves(paragraphes: list[Paragraphe], preuves: list[dict]) -> list
     ]
     if not eligibles:
         return []
-    degre_maximal = max(preuve["degre_pertinence"] for preuve in eligibles)
-    return sorted(
-        preuve["id"]
-        for preuve in eligibles
-        if preuve["degre_pertinence"] == degre_maximal
+    priorite_documentale = min(
+        priorites_document[preuve["adequation_document"]] for preuve in eligibles
     )
+    eligibles = [
+        preuve
+        for preuve in eligibles
+        if priorites_document[preuve["adequation_document"]] == priorite_documentale
+    ]
+    degre_maximal = max(preuve["degre_pertinence"] for preuve in eligibles)
+    preuves_retenues = [
+        preuve for preuve in eligibles if preuve["degre_pertinence"] == degre_maximal
+    ]
+    groupes_retenus: dict[str, list[dict]] = {}
+    for preuve in preuves_retenues:
+        document = paragraphes_par_id[preuve["id"]].nom_document
+        groupes_retenus.setdefault(document, []).append(preuve)
+
+    def cle_document(document: str) -> tuple[int, int]:
+        evaluations = groupes_retenus[document]
+        premier_id = min(evaluation["id"] for evaluation in evaluations)
+        return 0, premier_id
+
+    return [
+        evaluation["id"]
+        for document in sorted(groupes_retenus, key=cle_document)
+        for evaluation in sorted(
+            groupes_retenus[document], key=lambda element: element["id"]
+        )
+    ]
 
 
 def applique_plage_probante(paragraphe: Paragraphe, evaluation: dict) -> Paragraphe:

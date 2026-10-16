@@ -36,5 +36,5 @@ def test_lifespan_utilise_la_capacite_derivee_des_collections_et_des_lots(
     with TestClient(serveur):
         coordinateur = serveur.state.coordinateur_reclassement
         assert coordinateur.nombre_maximum_de_candidats == 40
-        assert coordinateur.nombre_maximum_d_appels_par_workflow == 8
+        assert coordinateur.nombre_maximum_d_appels_par_workflow == 9
         assert coordinateur.nombre_maximum_de_workflows == 2

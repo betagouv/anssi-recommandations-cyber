@@ -66,6 +66,7 @@ def cree_reclasseur_llm_en_parallele(
     coordinateur: CoordinateurReclassementParallele,
     *,
     prompt_classification: str = "classification",
+    prompt_qualification: str = "{QUESTION}\n{DOCUMENTS}",
     taille_lot: int = 5,
     bus: BusEvenementsEnMemoire | None = None,
 ) -> ReclasseurLLMEnParallele:
@@ -75,6 +76,7 @@ def cree_reclasseur_llm_en_parallele(
         bus if bus is not None else BusEvenementsEnMemoire(),
         coordinateur,
         taille_lot=taille_lot,
+        prompt_qualification=prompt_qualification,
     )
 
 
@@ -87,6 +89,19 @@ def configure_reponses_par_appel(
             for contenu in contenus
         ]
     )
+
+
+def reponse_qualification_standard(format_reponse) -> str:
+    proprietes = format_reponse["json_schema"]["schema"]["properties"]
+    documents = {
+        identifiant: (
+            "indetermine"
+            if specification["enum"] == ["indetermine"]
+            else "consacre_au_sujet"
+        )
+        for identifiant, specification in proprietes.items()
+    }
+    return json.dumps(documents)
 
 
 def identifiants_candidats(format_reponse) -> list[int]:
@@ -127,6 +142,16 @@ class ClientAlbertQuiEchoueAuDeuxiemeLot(ClientAlbertMemoire):
         temperature=None,
         format_reponse=None,
     ):
+        if (
+            format_reponse
+            and format_reponse.get("json_schema", {}).get("name")
+            == "qualification_guides"
+        ):
+            return [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(reponse_qualification_standard(format_reponse))
+                .construis()
+            ]
         identifiant = identifiants_candidats(format_reponse)[0]
         with self._verrou:
             self._appels.append(identifiant)
@@ -196,6 +221,16 @@ class ClientAlbertLotsEnOrdreControle(ClientAlbertMemoire):
         temperature=None,
         format_reponse=None,
     ):
+        if (
+            format_reponse
+            and format_reponse.get("json_schema", {}).get("name")
+            == "qualification_guides"
+        ):
+            return [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(reponse_qualification_standard(format_reponse))
+                .construis()
+            ]
         ids = identifiants_candidats(format_reponse)
         if ids:
             premier_id = ids[0]
@@ -219,10 +254,72 @@ class ClientAlbertLotsEnOrdreControle(ClientAlbertMemoire):
         ]
 
 
+class ClientAlbertQualificationDocumentRetardee(ClientAlbertMemoire):
+    def __init__(self) -> None:
+        super().__init__()
+        self.lot_suivant_termine = threading.Event()
+        self.ordre_fin_lots: list[int] = []
+
+    def recupere_propositions(
+        self,
+        messages,
+        modele=None,
+        temperature=None,
+        format_reponse=None,
+    ):
+        if (
+            format_reponse
+            and format_reponse.get("json_schema", {}).get("name")
+            == "qualification_guides"
+        ):
+            assert self.lot_suivant_termine.wait(timeout=5)
+            return [
+                un_choix_de_proposition()
+                .ayant_pour_contenu(json.dumps({"D1": "consacre_au_sujet"}))
+                .construis()
+            ]
+        identifiant = identifiants_candidats(format_reponse)[0]
+        if identifiant == 1:
+            assert self.lot_suivant_termine.wait(timeout=5)
+            classification = {
+                "candidats": {
+                    "1": {
+                        "categorie": "preuve_principale",
+                        "relation": "directe",
+                        "portee": "generale",
+                        "apport": "principe_direct",
+                        "debut_unite": 1,
+                        "fin_unite": 1,
+                    }
+                },
+            }
+        else:
+            classification = {
+                "candidats": {
+                    "2": {
+                        "categorie": "preuve_principale",
+                        "relation": "directe",
+                        "portee": "generale",
+                        "apport": "reponse_centrale",
+                        "debut_unite": 1,
+                        "fin_unite": 1,
+                    }
+                },
+            }
+        self.ordre_fin_lots.append(identifiant)
+        if identifiant == 2:
+            self.lot_suivant_termine.set()
+        return [
+            un_choix_de_proposition()
+            .ayant_pour_contenu(json.dumps(classification))
+            .construis()
+        ]
+
+
 class ClientAlbertFenetreQuatreLots(ClientAlbertMemoire):
     def __init__(self) -> None:
         super().__init__()
-        self.barriere = threading.Barrier(5)
+        self.barriere = threading.Barrier(6)
         self._verrou_fenetre = threading.Lock()
         self._appels_actifs = 0
         self.maximum_appels_actifs = 0
@@ -236,6 +333,27 @@ class ClientAlbertFenetreQuatreLots(ClientAlbertMemoire):
         temperature=None,
         format_reponse=None,
     ):
+        if (
+            format_reponse
+            and format_reponse.get("json_schema", {}).get("name")
+            == "qualification_guides"
+        ):
+            with self._verrou_fenetre:
+                self.nombre_appels += 1
+                self._appels_actifs += 1
+                self.maximum_appels_actifs = max(
+                    self.maximum_appels_actifs, self._appels_actifs
+                )
+            try:
+                self.barriere.wait(timeout=5)
+                return [
+                    un_choix_de_proposition()
+                    .ayant_pour_contenu(reponse_qualification_standard(format_reponse))
+                    .construis()
+                ]
+            finally:
+                with self._verrou_fenetre:
+                    self._appels_actifs -= 1
         ids = identifiants_candidats(format_reponse)
         with self._verrou_fenetre:
             self.nombre_appels += 1

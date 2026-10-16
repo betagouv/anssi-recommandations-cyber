@@ -1,4 +1,6 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 import threading
 
 import pytest
@@ -14,13 +16,18 @@ from client_albert_de_test import (
 )
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
+from services.coordinateur_reclassement_parallele import (
+    ErreurSaturationReclassement,
+)
 from services.reclasseur import ReclasseurLLMEnParallele
 from services.selection_reclassement import fusionne_preuves
 from schemas.albert import ParagrapheReponseMaitrisee, UniteSource
+from schemas.msc import ContexteDocumentMSC
 from services.exceptions import ErreurCommunicationModeleReclassement
 from services.service_albert import Prompts, ServiceAlbert
 from reclassement_parallele_support import (
     ClientAlbertCaptureFormats,
+    ClientAlbertQualificationDocumentRetardee,
     classification_element_de_reponse,
     classification_preuve_principale,
     configure_reponses_par_appel,
@@ -50,6 +57,17 @@ def test_exige_un_coordinateur_partage_pour_le_mode_parallele() -> None:
     with pytest.raises(ValueError, match="coordinateur"):
         ReclasseurLLMEnParallele(
             ClientAlbertMemoire(), "classification", BusEvenementsEnMemoire()
+        )
+
+
+def test_exige_un_prompt_de_qualification_non_vide(
+    un_coordinateur_reclassement,
+) -> None:
+    with pytest.raises(ValueError, match="prompt de qualification"):
+        cree_reclasseur_llm_en_parallele(
+            ClientAlbertMemoire(),
+            un_coordinateur_reclassement,
+            prompt_qualification="  ",
         )
 
 
@@ -230,6 +248,139 @@ def test_un_candidat_sans_unite_substantielle_ne_peut_pas_etre_une_preuve(
     ]
 
 
+def test_schema_force_l_adequation_indetermine_si_le_document_n_est_pas_qualifie() -> (
+    None
+):
+    schema = ReclasseurLLMEnParallele._schema_qualification_documents(
+        {"D1": {"nom_fichier": "guide.pdf", "nom": "", "description": ""}}
+    )
+
+    assert schema["properties"]["D1"]["enum"] == ["indetermine"]
+
+
+@pytest.mark.parametrize(
+    "qualification",
+    [
+        {},
+        {"D2": "indetermine"},
+        {"D1": "valeur_inconnue"},
+        {"D1": {"adequation_document": "indetermine"}},
+    ],
+)
+def test_rejette_une_qualification_de_document_incomplete_ou_invalide(
+    un_constructeur_de_paragraphe,
+    un_coordinateur_reclassement,
+    qualification: dict,
+) -> None:
+    classification_prete = threading.Event()
+
+    class ClientAvecQualificationInvalide(ClientAlbertMemoire):
+        def recupere_propositions(
+            self, messages, modele=None, temperature=None, format_reponse=None
+        ):
+            nom_schema = format_reponse["json_schema"]["name"]
+            if nom_schema == "qualification_guides":
+                assert classification_prete.wait(timeout=5)
+                self.reponse_qualification_documents = json.dumps(qualification)
+                return super().recupere_propositions(
+                    messages, modele, temperature, format_reponse
+                )
+            classification_prete.set()
+            return super().recupere_propositions(
+                messages, modele, temperature, format_reponse
+            )
+
+    client = ClientAvecQualificationInvalide()
+    configure_reponses_par_appel(
+        client,
+        [
+            json.dumps(
+                {
+                    "candidats": {
+                        "1": {
+                            "categorie": "element_de_reponse",
+                            "relation": "directe",
+                            "portee": "generale",
+                            "apport": "principe_direct",
+                        }
+                    },
+                }
+            ),
+        ],
+    )
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        client, un_coordinateur_reclassement, prompt_classification="classification"
+    )
+
+    with pytest.raises(ErreurCommunicationModeleReclassement) as erreur:
+        reclasseur.reclasse(
+            "Question ?",
+            [un_constructeur_de_paragraphe().avec_contenu("Contenu").construis()],
+        )
+
+    assert isinstance(erreur.value.__cause__, ValueError)
+    assert "qualification" in str(erreur.value.__cause__)
+    assert nombre_appels_par_schema(client, "qualification_guides") == 1
+
+
+def test_echec_de_qualification_garde_l_admission_jusqu_a_la_fin_du_lot_en_cours(
+    un_constructeur_de_paragraphe, un_coordinateur_reclassement
+) -> None:
+    lot_demarre = threading.Event()
+    terminer_lot = threading.Event()
+
+    class ClientAvecQualificationInvalide(ClientAlbertMemoire):
+        def recupere_propositions(
+            self, messages, modele=None, temperature=None, format_reponse=None
+        ):
+            nom_schema = format_reponse["json_schema"]["name"]
+            self.noms_schemas_propositions.append(nom_schema)
+            if nom_schema == "qualification_guides":
+                assert lot_demarre.wait(timeout=5)
+                contenu = json.dumps({})
+            else:
+                lot_demarre.set()
+                assert terminer_lot.wait(timeout=5)
+                contenu = json.dumps(
+                    {
+                        "candidats": {
+                            "1": {
+                                "categorie": "element_de_reponse",
+                                "relation": "indirecte",
+                                "portee": "generale",
+                                "apport": "principe_direct",
+                            }
+                        }
+                    }
+                )
+            return [un_choix_de_proposition().ayant_pour_contenu(contenu).construis()]
+
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        ClientAvecQualificationInvalide(),
+        un_coordinateur_reclassement,
+        prompt_classification="{QUESTION}\n{CANDIDATS}",
+        taille_lot=1,
+    )
+
+    with ThreadPoolExecutor(max_workers=1) as executeur_appel:
+        appel = executeur_appel.submit(
+            reclasseur.reclasse,
+            "Question ?",
+            [un_constructeur_de_paragraphe().avec_contenu("Passage").construis()],
+        )
+        assert lot_demarre.wait(timeout=5)
+        with pytest.raises(ErreurCommunicationModeleReclassement):
+            appel.result(timeout=5)
+
+        workflow_concurrent = un_coordinateur_reclassement.ouvre_workflow()
+        try:
+            with pytest.raises(ErreurSaturationReclassement):
+                un_coordinateur_reclassement.ouvre_workflow()
+        finally:
+            terminer_lot.set()
+            workflow_concurrent.termine()
+
+
 def test_retient_le_premier_page_substantiel_de_la_plage_sans_reduire_la_source(
     un_coordinateur_reclassement,
 ) -> None:
@@ -380,6 +531,160 @@ def test_rejette_une_borne_de_preuve_placee_sur_une_table_des_matieres(
     assert "plage" in str(erreur.value.__cause__)
 
 
+def test_applique_la_adequation_du_document_proprietaire_aux_lots_suivants(
+    un_constructeur_de_paragraphe, un_coordinateur_reclassement
+) -> None:
+    client = ClientAlbertQualificationDocumentRetardee()
+    contexte = ContexteDocumentMSC(
+        nom="Guide spécialisé",
+        description="Guide consacré au sujet.",
+        nom_fichier="Guide spécialisé",
+    )
+    paragraphes = [
+        un_constructeur_de_paragraphe()
+        .avec_contenu(f"Passage {identifiant}")
+        .dans_le_document("Guide spécialisé")
+        .construis()
+        .model_copy(update={"contexte_document_msc": contexte})
+        for identifiant in (1, 2)
+    ]
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        client,
+        un_coordinateur_reclassement,
+        prompt_classification=Path(
+            "templates/prompt_reclassement_llm_parallele_classification.txt"
+        ).read_text(encoding="utf-8"),
+        taille_lot=1,
+        prompt_qualification=Path(
+            "templates/prompt_reclassement_llm_parallele_qualification.txt"
+        ).read_text(encoding="utf-8"),
+    )
+
+    resultat = reclasseur.reclasse("Question ?", paragraphes)
+
+    assert client.ordre_fin_lots == [2, 1]
+    assert [p.contenu for p in resultat.paragraphes_retenus] == ["Passage 2"]
+
+
+def test_qualifie_chaque_guide_une_fois_hors_des_lots_de_passages(
+    un_constructeur_de_paragraphe, un_coordinateur_reclassement
+):
+    class ClientQuiRepondSelonLeSchema(ClientAlbertMemoire):
+        def __init__(self):
+            super().__init__()
+            self.noms_schemas = []
+
+        def recupere_propositions(
+            self, messages, modele=None, temperature=None, format_reponse=None
+        ):
+            nom_schema = format_reponse["json_schema"]["name"]
+            self.noms_schemas.append(nom_schema)
+            proprietes = format_reponse["json_schema"]["schema"]["properties"]
+            if nom_schema == "qualification_guides":
+                contenu = json.dumps(
+                    {identifiant: "consacre_au_sujet" for identifiant in proprietes}
+                )
+            else:
+                identifiants = proprietes["candidats"]["properties"]
+                contenu = json.dumps(
+                    {
+                        "candidats": {
+                            identifiant: {
+                                "categorie": "element_de_reponse",
+                                "relation": "indirecte",
+                                "portee": "generale",
+                                "apport": "principe_direct",
+                            }
+                            for identifiant in identifiants
+                        }
+                    }
+                )
+            return [un_choix_de_proposition().ayant_pour_contenu(contenu).construis()]
+
+    client = ClientQuiRepondSelonLeSchema()
+    guide = "Guide spécialisé"
+    contexte = ContexteDocumentMSC(
+        nom="Guide sur les mots de passe",
+        description="Recommandations d'authentification et de stockage.",
+        nom_fichier=guide,
+    )
+    paragraphes = [
+        un_constructeur_de_paragraphe()
+        .avec_contenu(f"Passage {identifiant}")
+        .dans_le_document(guide)
+        .construis()
+        .model_copy(update={"contexte_document_msc": contexte})
+        for identifiant in (1, 2)
+    ]
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        client,
+        un_coordinateur_reclassement,
+        prompt_classification="{QUESTION}\n{CANDIDATS}",
+        taille_lot=1,
+    )
+
+    reclasseur.reclasse("Comment stocker un mot de passe ?", paragraphes)
+
+    assert len(client.noms_schemas) == 3
+    assert client.noms_schemas.count("qualification_guides") == 1
+    assert client.noms_schemas.count("classification_passages") == 2
+
+
+def test_qualification_associe_directement_chaque_identifiant_a_son_label(
+    un_coordinateur_reclassement,
+):
+    client = ClientAlbertCaptureFormats()
+    client.avec_une_qualification_de_documents(json.dumps({"D1": "consacre_au_sujet"}))
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        client,
+        un_coordinateur_reclassement,
+        prompt_classification="{QUESTION}\n{CANDIDATS}",
+    )
+
+    qualifications = reclasseur._qualifie_documents(
+        "Question ?",
+        {
+            "D1": {
+                "nom_fichier": "guide.pdf",
+                "nom": "Guide spécialisé",
+                "description": "Description lisible.",
+            }
+        },
+    )
+
+    assert qualifications == {"D1": "consacre_au_sujet"}
+    schema = client.formats_reponse_recus[0]["json_schema"]["schema"]
+    assert schema["required"] == ["D1"]
+    assert "documents" not in schema["properties"]
+
+
+def test_description_html_sans_texte_visible_force_une_qualification_indeterminee(
+    un_coordinateur_reclassement,
+):
+    client = ClientAlbertCaptureFormats()
+    client.avec_une_qualification_de_documents(json.dumps({"D1": "indetermine"}))
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        client,
+        un_coordinateur_reclassement,
+        prompt_classification="{QUESTION}\n{CANDIDATS}",
+    )
+
+    qualifications = reclasseur._qualifie_documents(
+        "Question ?",
+        {
+            "D1": {
+                "nom_fichier": "guide.pdf",
+                "nom": "Guide spécialisé",
+                "description": "<p> &nbsp; </p><script>contenu caché</script>",
+            }
+        },
+    )
+
+    assert qualifications == {"D1": "indetermine"}
+    schema = client.formats_reponse_recus[0]["json_schema"]["schema"]
+    assert schema["properties"]["D1"]["enum"] == ["indetermine"]
+
+
 def test_lit_une_classification_racine_par_identifiant_global(
     un_constructeur_de_paragraphe, un_coordinateur_reclassement
 ) -> None:
@@ -407,7 +712,7 @@ def test_lit_une_classification_racine_par_identifiant_global(
     assert resultat.aucune_source_utile is True
 
 
-def test_selectionne_le_degre_maximal_sans_qualification_de_document(
+def test_selectionne_le_degre_maximal_entre_documents_de_meme_adequation(
     un_constructeur_de_paragraphe,
 ) -> None:
     paragraphes = [
@@ -425,6 +730,7 @@ def test_selectionne_le_degre_maximal_sans_qualification_de_document(
             "portee_preuve": "generale",
             "apport": "principe_direct",
             "degre_pertinence": 1,
+            "adequation_document": "consacre_au_sujet",
         },
         {
             "id": 2,
@@ -433,12 +739,130 @@ def test_selectionne_le_degre_maximal_sans_qualification_de_document(
             "portee_preuve": "generale",
             "apport": "reponse_centrale",
             "degre_pertinence": 3,
+            "adequation_document": "consacre_au_sujet",
         },
     ]
 
     ids_retenus = fusionne_preuves(paragraphes, evaluations)
 
     assert ids_retenus == [2]
+
+
+def test_ne_garde_que_les_preuves_du_degre_maximal_et_les_ordonner_par_document(
+    un_constructeur_de_paragraphe, un_coordinateur_reclassement
+) -> None:
+    client = ClientAlbertMemoire()
+    classifications = {
+        1: classification_preuve_principale(apport="principe_direct"),
+        2: classification_preuve_principale(apport="explication_directe"),
+        3: classification_preuve_principale(apport="explication_directe"),
+        4: classification_preuve_principale(apport="explication_directe"),
+        5: classification_preuve_principale(apport="explication_directe"),
+    }
+    client.avec_une_qualification_de_documents(
+        json.dumps(
+            {
+                "D1": "consacre_au_sujet",
+                "D2": "consacre_au_sujet",
+                "D3": "consacre_au_sujet",
+            }
+        )
+    )
+    configure_reponses_par_appel(
+        client,
+        [
+            reponse_classification_avec_identifiants_globaux(classifications),
+        ],
+    )
+    contextes = {
+        document: ContexteDocumentMSC(
+            nom=document,
+            description="Guide consacré à son sujet.",
+            nom_fichier=document,
+        )
+        for document in ("Guide A", "Guide B", "Guide C")
+    }
+    paragraphes = [
+        un_constructeur_de_paragraphe()
+        .avec_contenu(f"Passage {identifiant}")
+        .dans_le_document(document)
+        .construis()
+        .model_copy(update={"contexte_document_msc": contextes[document]})
+        for identifiant, document in enumerate(
+            ("Guide A", "Guide B", "Guide A", "Guide C", "Guide A"), 1
+        )
+    ]
+    reclasseur = cree_reclasseur_llm_en_parallele(
+        client,
+        un_coordinateur_reclassement,
+    )
+
+    resultat = reclasseur.reclasse("Question ?", paragraphes)
+
+    assert [paragraphe.contenu for paragraphe in resultat.paragraphes_retenus] == [
+        "Passage 2",
+        "Passage 3",
+        "Passage 5",
+        "Passage 4",
+    ]
+    assert nombre_appels_par_schema(client, "classification_passages") == 1
+    assert resultat.tous_les_candidats == paragraphes
+    assert all(
+        paragraphe.score_reclassement == 1.0
+        for paragraphe in resultat.paragraphes_retenus
+    )
+
+
+def test_un_guide_contextuel_ne_downgrade_pas_les_preuves_d_un_guide_specialise(
+    un_constructeur_de_paragraphe,
+) -> None:
+    paragraphes = [
+        un_constructeur_de_paragraphe()
+        .avec_contenu(f"Passage {identifiant}")
+        .dans_le_document(document)
+        .construis()
+        for identifiant, document in (
+            (1, "Guide specialise"),
+            (2, "Guide specialise"),
+            (3, "Guide general"),
+        )
+    ]
+    evaluations = [
+        {
+            "id": 1,
+            "id_document": "D1",
+            "categorie": "preuve_principale",
+            "relation": "directe",
+            "portee_preuve": "generale",
+            "apport": "explication_directe",
+            "degre_pertinence": 2,
+            "adequation_document": "consacre_au_sujet",
+        },
+        {
+            "id": 2,
+            "id_document": "D1",
+            "categorie": "preuve_principale",
+            "relation": "directe",
+            "portee_preuve": "generale",
+            "apport": "explication_directe",
+            "degre_pertinence": 2,
+            "adequation_document": "consacre_au_sujet",
+        },
+        {
+            "id": 3,
+            "id_document": "D2",
+            "categorie": "preuve_principale",
+            "relation": "directe",
+            "portee_preuve": "generale",
+            "apport": "explication_directe",
+            "degre_pertinence": 2,
+            "adequation_document": "general_ou_contextuel",
+        },
+    ]
+
+    ids_retenus = fusionne_preuves(paragraphes, evaluations)
+
+    assert ids_retenus == [1, 2]
 
 
 def test_un_degre_superieur_ecarte_une_preuve_degre_inferieur(
@@ -748,6 +1172,7 @@ def test_rejette_un_identifiant_inconnu_et_emet_une_seule_erreur_technique(
 
     assert isinstance(erreur.value.__cause__, ValueError)
     assert len(erreurs) == 1
+    assert nombre_appels_par_schema(client, "qualification_guides") == 1
     assert nombre_appels_par_schema(client, "classification_passages") == 1
 
 
@@ -896,6 +1321,7 @@ def test_ne_genere_pas_de_reponse_apres_un_echec_de_reclassement_parallele(
         service.pose_question(question="Question ?")
 
     assert client.payload_recu is not None
+    assert nombre_appels_par_schema(client, "qualification_guides") == 1
     assert nombre_appels_par_schema(client, "classification_passages") == 1
 
 
