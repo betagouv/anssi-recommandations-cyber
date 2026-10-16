@@ -30,6 +30,13 @@ from services.reclasseur import (
     ReclasseurLLM,
     ResultatReclassement,
 )
+from reclassement_parallele_support import (
+    classification_element_de_reponse,
+    classification_preuve_principale,
+    configure_reponses_par_appel,
+    cree_reclasseur_llm_en_parallele,
+    reponse_classification_avec_identifiants_globaux,
+)
 
 
 def test_mapping_historique_propage_une_erreur_de_recuperation_msc(
@@ -258,111 +265,6 @@ def test_recherche_paragraphes_utilise_des_metadonnees_par_defaut_pour_un_chunk_
     assert paragraphes[0].chemin_sections == []
 
 
-def test_reclasseur_parallele_charge_msc_avant_classement_et_reutilise_le_resultat(
-    une_configuration_de_service_albert, un_service_albert_de_test
-):
-    evenements = []
-    nom_document = "authentification.pdf"
-
-    class ExecuteurMsc:
-        def __init__(self):
-            self.appels = 0
-
-        def recupere(self, url, schema):
-            self.appels += 1
-            evenements.append("msc")
-            assert url.endswith("/api/guides")
-            return [
-                ReponseGuideMSC(
-                    id="guide-mots-de-passe",
-                    nom="Guide des mots de passe",
-                    description="Stockage et vérification des mots de passe.",
-                    listeDocuments=[
-                        DocumentGuideMSC(
-                            libelle="Authentification", nomFichier=nom_document
-                        )
-                    ],
-                    dateMiseAJour="2026-01-01",
-                )
-            ]
-
-    class ReclasseurAvecContexteMsc:
-        requiert_contexte_documents_msc = True
-
-        def reclasse(self, question, paragraphes):
-            evenements.append(("classement", paragraphes[0].contexte_document_msc))
-            return ResultatReclassement(paragraphes, paragraphes)
-
-    client = ClientAlbertMemoire()
-    client.avec_les_resultats(
-        [
-            un_resultat_de_recherche()
-            .ayant_pour_contenu("Utiliser un mécanisme de stockage sécurisé.")
-            .ayant_pour_document(nom_document)
-            .construis()
-        ]
-    )
-    client.avec_les_propositions(
-        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
-    )
-    executeur_msc = ExecuteurMsc()
-    service = un_service_albert_de_test(
-        une_configuration_de_service_albert(),
-        client,
-        reclasseur=ReclasseurAvecContexteMsc(),
-        executeur_de_requetes=executeur_msc,
-    )
-
-    reponse = service.pose_question(question=QUESTION)
-
-    assert executeur_msc.appels == 1
-    assert evenements[0] == "msc"
-    assert evenements[1][0] == "classement"
-    assert evenements[1][1].nom == "Guide des mots de passe"
-    assert reponse.paragraphes[0].titre == "Guide des mots de passe"
-
-
-def test_echec_msc_est_reutilise_comme_contexte_inconnu_sans_second_get(
-    une_configuration_de_service_albert, un_service_albert_de_test
-):
-    class ExecuteurMscIndisponible:
-        appels = 0
-
-        def recupere(self, url, schema):
-            self.appels += 1
-            raise RuntimeError("MSC indisponible")
-
-    class ReclasseurSansContexteMsc:
-        requiert_contexte_documents_msc = True
-        contexte_observe = "non consulté"
-
-        def reclasse(self, question, paragraphes):
-            self.contexte_observe = paragraphes[0].contexte_document_msc
-            return ResultatReclassement(paragraphes, paragraphes)
-
-    client = ClientAlbertMemoire()
-    client.avec_les_resultats(
-        [un_resultat_de_recherche().ayant_pour_contenu(REPONSE).construis()]
-    )
-    client.avec_les_propositions(
-        [un_choix_de_proposition().ayant_pour_contenu(REPONSE).construis()]
-    )
-    executeur = ExecuteurMscIndisponible()
-    reclasseur = ReclasseurSansContexteMsc()
-    service = un_service_albert_de_test(
-        une_configuration_de_service_albert(),
-        client,
-        reclasseur=reclasseur,
-        executeur_de_requetes=executeur,
-    )
-
-    reponse = service.pose_question(question=QUESTION)
-
-    assert executeur.appels == 1
-    assert reclasseur.contexte_observe is None
-    assert reponse.paragraphes[0].titre == ""
-
-
 def test_ne_genere_pas_de_reponse_si_aucune_preuve_directe_n_est_eligible(
     une_configuration_de_service_albert, un_service_albert_de_test
 ):
@@ -385,6 +287,74 @@ def test_ne_genere_pas_de_reponse_si_aucune_preuve_directe_n_est_eligible(
 
     assert isinstance(reponse.violation, ViolationMeconnaissance)
     assert client.messages_envoyes_pour_les_propositions == []
+
+
+def test_le_reclassement_parallele_transmet_une_preuve_a_la_generation(
+    un_coordinateur_reclassement,
+    une_configuration_de_service_albert,
+    un_service_albert_de_test,
+):
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [
+            un_resultat_de_recherche()
+            .ayant_pour_contenu("La source établit la mesure demandée.")
+            .construis()
+        ]
+    )
+    configure_reponses_par_appel(
+        client,
+        [
+            reponse_classification_avec_identifiants_globaux(
+                {1: classification_preuve_principale()}
+            ),
+            REPONSE,
+        ],
+    )
+    reclasseur = cree_reclasseur_llm_en_parallele(client, un_coordinateur_reclassement)
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client,
+        reclasseur=reclasseur,
+        executeur_de_requetes=None,
+    )
+
+    reponse = service.pose_question(question=QUESTION)
+
+    assert reponse.reponse == REPONSE
+    assert reponse.paragraphes[0].contenu == "La source établit la mesure demandée."
+    assert client.noms_schemas_propositions == ["classification_passages", None]
+
+
+def test_le_reclassement_parallele_emet_une_meconnaissance_sans_preuve_eligible(
+    un_coordinateur_reclassement,
+    une_configuration_de_service_albert,
+    un_service_albert_de_test,
+):
+    client = ClientAlbertMemoire()
+    client.avec_les_resultats(
+        [un_resultat_de_recherche().ayant_pour_contenu("Passage indirect.").construis()]
+    )
+    configure_reponses_par_appel(
+        client,
+        [
+            reponse_classification_avec_identifiants_globaux(
+                {1: classification_element_de_reponse(relation="indirecte")}
+            ),
+        ],
+    )
+    reclasseur = cree_reclasseur_llm_en_parallele(client, un_coordinateur_reclassement)
+    service = un_service_albert_de_test(
+        une_configuration_de_service_albert(),
+        client,
+        reclasseur=reclasseur,
+        executeur_de_requetes=None,
+    )
+
+    reponse = service.pose_question(question=QUESTION)
+
+    assert isinstance(reponse.violation, ViolationMeconnaissance)
+    assert client.noms_schemas_propositions == ["classification_passages"]
 
 
 def test_pose_question_recupere_les_details_du_document_depuis_MSC(

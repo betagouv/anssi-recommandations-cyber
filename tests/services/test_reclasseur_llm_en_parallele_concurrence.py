@@ -17,7 +17,6 @@ from reclassement_parallele_support import (
     ClientAlbertLotsEnOrdreControle,
     ClientAlbertQuiEchoueAuDeuxiemeLot,
     cree_reclasseur_llm_en_parallele,
-    reponse_qualification_standard,
 )
 
 
@@ -67,7 +66,7 @@ def test_soumet_tous_les_lots_de_plus_de_vingt_candidats_simultanement(
     client = ClientAlbertFenetreQuatreLots()
     coordinateur = CoordinateurReclassementParallele(
         ThreadPoolExecutor(max_workers=6),
-        nombre_maximum_d_appels_par_workflow=6,
+        nombre_maximum_d_appels_par_workflow=5,
         nombre_maximum_de_candidats=21,
     )
     paragraphes = [
@@ -90,67 +89,10 @@ def test_soumet_tous_les_lots_de_plus_de_vingt_candidats_simultanement(
     finally:
         coordinateur.ferme()
 
-    assert client.nombre_appels == 6
-    assert client.maximum_appels_actifs == 6
+    assert client.nombre_appels == 5
+    assert client.maximum_appels_actifs == 5
     assert sorted(client.ids_observes) == list(range(1, 22))
     assert len(resultat.paragraphes_retenus) == 21
-
-
-def test_soumet_la_qualification_et_tous_les_lots_avant_leurs_reponses(
-    un_constructeur_de_paragraphe,
-) -> None:
-    barriere = threading.Barrier(7)
-
-    class ClientAvecBarriereSurChaqueAppel(ClientAlbertMemoire):
-        def recupere_propositions(
-            self, messages, modele=None, temperature=None, format_reponse=None
-        ):
-            nom_schema = format_reponse["json_schema"]["name"]
-            self.noms_schemas_propositions.append(nom_schema)
-            barriere.wait(timeout=3)
-            if nom_schema == "qualification_guides":
-                contenu = reponse_qualification_standard(format_reponse)
-            else:
-                candidats = format_reponse["json_schema"]["schema"]["properties"][
-                    "candidats"
-                ]["properties"]
-                contenu = json.dumps(
-                    {
-                        "candidats": {
-                            identifiant: {
-                                "categorie": "element_de_reponse",
-                                "relation": "indirecte",
-                                "portee": "generale",
-                                "apport": "explication_directe",
-                            }
-                            for identifiant in candidats
-                        }
-                    }
-                )
-            return [un_choix_de_proposition().ayant_pour_contenu(contenu).construis()]
-
-    coordinateur = CoordinateurReclassementParallele(
-        ThreadPoolExecutor(max_workers=7),
-        nombre_maximum_d_appels_par_workflow=7,
-    )
-    client = ClientAvecBarriereSurChaqueAppel()
-    reclasseur = cree_reclasseur_llm_en_parallele(
-        client, coordinateur, prompt_classification="{CANDIDATS}", taille_lot=5
-    )
-    paragraphes = [
-        un_constructeur_de_paragraphe().avec_contenu(f"passage {index}").construis()
-        for index in range(28)
-    ]
-
-    try:
-        resultat = reclasseur.reclasse("Question ?", paragraphes)
-    finally:
-        coordinateur.ferme()
-
-    assert len(client.noms_schemas_propositions) == 7
-    assert client.noms_schemas_propositions.count("qualification_guides") == 1
-    assert client.noms_schemas_propositions.count("classification_passages") == 6
-    assert resultat.aucune_source_utile is True
 
 
 def test_refuse_un_depassement_de_candidats_avant_tout_appel_modele(
@@ -184,8 +126,8 @@ def test_refuse_un_depassement_du_plafond_d_appels_avant_tout_appel_modele(
     un_constructeur_de_paragraphe,
 ) -> None:
     coordinateur = CoordinateurReclassementParallele(
-        ThreadPoolExecutor(max_workers=5),
-        nombre_maximum_d_appels_par_workflow=5,
+        ThreadPoolExecutor(max_workers=4),
+        nombre_maximum_d_appels_par_workflow=4,
     )
     client = ClientAlbertMemoire()
     reclasseur = cree_reclasseur_llm_en_parallele(
@@ -231,29 +173,26 @@ def test_admet_deux_workflows_complets_et_refuse_le_troisieme(
                     self.maximum_appels_actifs, self.appels_actifs
                 )
                 self.noms_schemas_propositions.append(nom_schema)
-                if self.nombre_appels == 14:
+                if self.nombre_appels == 12:
                     appels_demarrés.set()
             try:
                 assert liberer_appels.wait(timeout=5)
-                if nom_schema == "qualification_guides":
-                    contenu = reponse_qualification_standard(format_reponse)
-                else:
-                    candidats = format_reponse["json_schema"]["schema"]["properties"][
-                        "candidats"
-                    ]["properties"]
-                    contenu = json.dumps(
-                        {
-                            "candidats": {
-                                identifiant: {
-                                    "categorie": "element_de_reponse",
-                                    "relation": "indirecte",
-                                    "portee": "generale",
-                                    "apport": "explication_directe",
-                                }
-                                for identifiant in candidats
+                candidats = format_reponse["json_schema"]["schema"]["properties"][
+                    "candidats"
+                ]["properties"]
+                contenu = json.dumps(
+                    {
+                        "candidats": {
+                            identifiant: {
+                                "categorie": "element_de_reponse",
+                                "relation": "indirecte",
+                                "portee": "generale",
+                                "apport": "explication_directe",
                             }
+                            for identifiant in candidats
                         }
-                    )
+                    }
+                )
                 return [
                     un_choix_de_proposition().ayant_pour_contenu(contenu).construis()
                 ]
@@ -262,9 +201,9 @@ def test_admet_deux_workflows_complets_et_refuse_le_troisieme(
                     self.appels_actifs -= 1
 
     coordinateur = CoordinateurReclassementParallele(
-        ThreadPoolExecutor(max_workers=14),
+        ThreadPoolExecutor(max_workers=12),
         nombre_maximum_de_workflows=2,
-        nombre_maximum_d_appels_par_workflow=7,
+        nombre_maximum_d_appels_par_workflow=6,
         nombre_maximum_de_candidats=28,
     )
     client = ClientAvecBarriereSurDeuxWorkflows()
@@ -293,8 +232,8 @@ def test_admet_deux_workflows_complets_et_refuse_le_troisieme(
         liberer_appels.set()
         coordinateur.ferme()
 
-    assert client.nombre_appels == 14
-    assert client.maximum_appels_actifs == 14
+    assert client.nombre_appels == 12
+    assert client.maximum_appels_actifs == 12
     assert all(resultat.aucune_source_utile for resultat in resultats)
 
 

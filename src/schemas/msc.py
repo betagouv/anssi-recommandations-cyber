@@ -12,9 +12,3 @@ class ReponseGuideMSC(BaseModel):
     description: str
     listeDocuments: list[DocumentGuideMSC]
     dateMiseAJour: str
-
-
-class ContexteDocumentMSC(BaseModel):
-    nom: str
-    description: str
-    nom_fichier: str

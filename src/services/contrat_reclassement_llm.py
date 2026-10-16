@@ -22,12 +22,6 @@ CATEGORIES_SANS_PREUVE = (
     "dans_la_thematique_sans_apport",
     "element_de_reponse",
 )
-ADEQUATIONS_DOCUMENT = (
-    "perimetre_demande",
-    "consacre_au_sujet",
-    "general_ou_contextuel",
-    "indetermine",
-)
 DEGRES_PERTINENCE = (1, 2, 3)
 PORTEES_PREUVE = ("generale", "specifique_demandee", "specifique_non_demandee")
 RELATIONS = ("directe", "indirecte")
@@ -37,27 +31,6 @@ APPORTS = (
     "principe_direct",
     "navigation_ou_simple_illustration",
 )
-
-
-def schema_qualification_documents(documents: dict[str, dict[str, str]]) -> dict:
-    ids_documents = list(documents)
-    proprietes = {
-        identifiant: {
-            "type": "string",
-            "enum": (
-                list(ADEQUATIONS_DOCUMENT)
-                if document["nom"] and document["description"]
-                else ["indetermine"]
-            ),
-        }
-        for identifiant, document in documents.items()
-    }
-    return {
-        "type": "object",
-        "properties": proprietes,
-        "required": ids_documents,
-        "additionalProperties": False,
-    }
 
 
 def schema_classification(paragraphes: list[Paragraphe], premier_id: int) -> dict:
@@ -156,7 +129,6 @@ def valide_classification(
     resultat: dict,
     paragraphes: list[Paragraphe],
     premier_id: int,
-    identifiants_documents: dict[str, str],
 ) -> list[dict]:
     if set(resultat) != {"candidats"}:
         raise ValueError("Les champs de la classification sont invalides.")
@@ -195,7 +167,6 @@ def valide_classification(
         paragraphe = paragraphes[identifiant - premier_id]
         evaluation = {
             "id": identifiant,
-            "id_document": identifiants_documents[paragraphe.nom_document],
             "categorie": categorie,
             "relation": classification["relation"],
             "portee_preuve": classification["portee"],

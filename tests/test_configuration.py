@@ -96,8 +96,8 @@ def test_calcul_capacite_reclassement_couvre_les_deux_collections_et_tous_les_lo
     )
 
     assert capacite.nombre_maximum_candidats == 40
-    assert capacite.nombre_maximum_d_appels_par_workflow == 9
-    assert capacite.nombre_threads == 18
+    assert capacite.nombre_maximum_d_appels_par_workflow == 8
+    assert capacite.nombre_threads == 16
 
 
 def test_calcul_capacite_reclassement_tient_compte_du_dernier_lot_partiel():
@@ -106,8 +106,17 @@ def test_calcul_capacite_reclassement_tient_compte_du_dernier_lot_partiel():
     )
 
     assert capacite.nombre_maximum_candidats == 20
-    assert capacite.nombre_maximum_d_appels_par_workflow == 5
-    assert capacite.nombre_threads == 10
+    assert capacite.nombre_maximum_d_appels_par_workflow == 4
+    assert capacite.nombre_threads == 8
+
+
+def test_calcul_capacite_reclassement_compte_uniquement_les_lots_de_classification():
+    capacite = calcule_capacite_reclassement_parallele(
+        nombre_paragraphes=20, taille_lot=5, jeopardy_active=False
+    )
+
+    assert capacite.nombre_maximum_d_appels_par_workflow == 4
+    assert capacite.nombre_threads == 8
 
 
 @pytest.mark.parametrize(
