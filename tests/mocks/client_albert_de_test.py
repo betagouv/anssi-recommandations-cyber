@@ -1,4 +1,5 @@
 import random
+import json
 from typing import Any, NamedTuple, Optional, cast
 from unittest.mock import Mock
 import requests
@@ -181,6 +182,7 @@ class ClientAlbertMemoire(ClientAlbert):
         self.messages_envoyes_pour_les_propositions = []
         self.noms_schemas_propositions: list[str | None] = []
         self.contextes_appels_llm_recus: list[str] = []
+        self.reponse_qualification_documents: str | None = None
         self.temperatures_recues = []
         self.appels_recherche = 0
         self.resultats_par_appel = []
@@ -247,6 +249,25 @@ class ClientAlbertMemoire(ClientAlbert):
         )
         nom_schema = schema.get("name")
         self.noms_schemas_propositions.append(nom_schema)
+        if nom_schema == "qualification_guides":
+            if self.reponse_qualification_documents is not None:
+                return [
+                    un_choix_de_proposition()
+                    .ayant_pour_contenu(self.reponse_qualification_documents)
+                    .construis()
+                ]
+            proprietes = schema["schema"]["properties"]
+            contenu = json.dumps(
+                {
+                    identifiant: (
+                        "indetermine"
+                        if definition["enum"] == ["indetermine"]
+                        else "consacre_au_sujet"
+                    )
+                    for identifiant, definition in proprietes.items()
+                }
+            )
+            return [un_choix_de_proposition().ayant_pour_contenu(contenu).construis()]
         if (
             nom_schema == "classification_passages"
             and self.choix_par_identifiants_candidats
@@ -302,6 +323,9 @@ class ClientAlbertMemoire(ClientAlbert):
         self, choix_par_identifiants: dict[tuple[int, ...], list[Choice]]
     ):
         self.choix_par_identifiants_candidats = choix_par_identifiants
+
+    def avec_une_qualification_de_documents(self, reponse: str):
+        self.reponse_qualification_documents = reponse
 
     def qui_leve_une_erreur_sur_recherche(self):
         self.leve_une_erreur_sur_recherche = True

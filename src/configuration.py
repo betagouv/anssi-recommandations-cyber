@@ -207,7 +207,7 @@ def calcule_capacite_reclassement_parallele(
     nombre_maximum_candidats = nombre_paragraphes * (2 if jeopardy_active else 1)
     nombre_maximum_d_appels_par_workflow = (
         nombre_maximum_candidats + taille_lot - 1
-    ) // taille_lot
+    ) // taille_lot + 1
     nombre_maximum_de_workflows = 2
     return CapaciteReclassementParallele(
         nombre_maximum_candidats=nombre_maximum_candidats,

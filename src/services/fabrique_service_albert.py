@@ -76,6 +76,9 @@ def fabrique_service_albert(request: Request = None) -> ServiceAlbert:  # type: 
         prompt_classification = lis_fichier_prompt(
             "prompt_reclassement_llm_parallele_classification.txt"
         )
+        prompt_qualification = lis_fichier_prompt(
+            "prompt_reclassement_llm_parallele_qualification.txt"
+        )
         client_reclassement = fabrique_client_albert(
             configuration.albert.client, max_retries=0
         )
@@ -94,6 +97,7 @@ def fabrique_service_albert(request: Request = None) -> ServiceAlbert:  # type: 
             bus_evenements,
             coordinateur=coordinateur,
             taille_lot=taille_lot_reclassement(),
+            prompt_qualification=prompt_qualification,
         )
     else:
         reclasseur = ReclasseurBGE(
