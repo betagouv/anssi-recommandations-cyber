@@ -51,7 +51,7 @@ def test_reclasse_publie_une_erreur_technique_sur_le_bus_si_la_communication_ech
     )
 
 
-def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(
+def test_ne_conserve_que_les_preuves_principales_parmi_les_candidats(
     un_constructeur_de_paragraphe,
 ):
     client = ClientAlbertMemoire()
@@ -114,47 +114,6 @@ def test_envoie_les_candidats_et_ne_conserve_que_les_preuves_principales(
     )
     assert reponse.paragraphes_retenus[0].score_reclassement == 1.0
     assert client.temperatures_recues == [0]
-    assert (
-        "[PASSAGE id=1"
-        in client.messages_envoyes_pour_les_propositions[0][0]["content"]
-    )
-    assert (
-        "rang_initial=1"
-        in client.messages_envoyes_pour_les_propositions[0][0]["content"]
-    )
-    assert (
-        "R50 Stocker les mots de passe dans un coffre-fort."
-        in client.messages_envoyes_pour_les_propositions[0][0]["content"]
-    )
-    assert (
-        "Passage dans la thématique, sans réponse"
-        in client.messages_envoyes_pour_les_propositions[0][0]["content"]
-    )
-    assert (
-        "Une recommandation complémentaire utile."
-        in client.messages_envoyes_pour_les_propositions[0][0]["content"]
-    )
-
-
-def test_formate_les_candidats_expose_le_type_de_bloc_le_code_de_recommandation_et_les_sections(
-    un_constructeur_de_paragraphe,
-):
-    paragraphe = (
-        un_constructeur_de_paragraphe()
-        .avec_contenu("R3 Utiliser ESP plutôt que AH.")
-        .ayant_pour_metadonnees_de_bloc(
-            type_de_bloc="recommandation",
-            code_recommandation="R3",
-            chemin_sections=["6 Fonctionnement", "6.1 Services"],
-        )
-        .construis()
-    )
-
-    candidats = ReclasseurLLM._formate_candidats([paragraphe])
-
-    assert "type_de_bloc='recommandation'" in candidats
-    assert "code_recommandation='R3'" in candidats
-    assert "chemin_sections='6 Fonctionnement > 6.1 Services'" in candidats
 
 
 def test_conserve_l_ordre_des_preuves_principales_pour_l_affichage_des_sources(

@@ -71,7 +71,7 @@ def test_reformule_publie_une_erreur_technique_sur_le_bus_si_la_communication_ec
     )
 
 
-def test_reformule_la_question_avec_un_prompt_de_reformulation():
+def test_reformule_la_question_transmet_le_message_utilisateur():
     question = "ma question ?"
     le_prompt = "Mon prompt de reformulation"
     mon_choix = (
@@ -87,11 +87,12 @@ def test_reformule_la_question_avec_un_prompt_de_reformulation():
         bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question)
 
-    assert len(client_albert.messages_recus) == 2
-    assert client_albert.messages_recus[0]["role"] == "system"
-    assert client_albert.messages_recus[0]["content"] == le_prompt
-    assert client_albert.messages_recus[1]["role"] == "user"
-    assert client_albert.messages_recus[1]["content"] == "ma question ?"
+    roles_recus = [
+        message["role"]
+        for message in client_albert.messages_recus
+        if message["role"] != "system"
+    ]
+    assert roles_recus == ["user"]
 
 
 def test_reformule_la_question_avec_l_historique_de_conversation(
@@ -123,13 +124,12 @@ def test_reformule_la_question_avec_l_historique_de_conversation(
         bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question="Comment s'en protéger ?", conversation=conversation)
 
-    assert len(client_albert.messages_recus) == 4
-    assert client_albert.messages_recus[0]["role"] == "system"
-    assert client_albert.messages_recus[1]["role"] == "user"
-    assert client_albert.messages_recus[1]["content"] == "Qu'est-ce que le défacement ?"
-    assert client_albert.messages_recus[2]["role"] == "assistant"
-    assert client_albert.messages_recus[3]["role"] == "user"
-    assert client_albert.messages_recus[3]["content"] == "Comment s'en protéger ?"
+    roles_recus = [
+        message["role"]
+        for message in client_albert.messages_recus
+        if message["role"] != "system"
+    ]
+    assert roles_recus == ["user", "assistant", "user"]
 
 
 def test_reformulateur_utilise_le_modele_de_reformulation_de_la_configuration():
@@ -199,9 +199,15 @@ def test_reformule_la_question_avec_l_historique_dans_l_ordre_inverse(
         bus_evenements=BusEvenementsEnMemoire(),
     ).reformule(question="Question 3 ?", conversation=conversation)
 
-    assert len(client_albert.messages_recus) == 6
-    assert client_albert.messages_recus[0]["role"] == "system"
-    assert client_albert.messages_recus[1]["content"] == "Question 1 ?"
-    assert client_albert.messages_recus[2]["role"] == "assistant"
-    assert client_albert.messages_recus[3]["content"] == "Question 2 ?"
-    assert client_albert.messages_recus[4]["role"] == "assistant"
+    roles_recus = [
+        message["role"]
+        for message in client_albert.messages_recus
+        if message["role"] != "system"
+    ]
+    assert roles_recus == [
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+    ]

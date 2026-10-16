@@ -1,31 +1,27 @@
 import json
-from abc import ABC, abstractmethod
+from typing import cast
+
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
-from typing import NamedTuple, cast
 
-from configuration import logging
 from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
+from configuration import logging
 from schemas.albert import Paragraphe, ReclassePayload
 from services.client_albert import ClientAlbert
 from services.exceptions import (
     ErreurCommunicationModele,
     ErreurCommunicationModeleReclassement,
 )
+from services.reclassement import Reclasseur, ResultatReclassement
+from services.reclasseur_llm_en_parallele import ReclasseurLLMEnParallele
 
-
-class ResultatReclassement(NamedTuple):
-    paragraphes_retenus: list[Paragraphe]
-    tous_les_candidats: list[Paragraphe]
-    aucune_source_utile: bool = False
-
-
-class Reclasseur(ABC):
-    @abstractmethod
-    def reclasse(
-        self, question: str, paragraphes: list[Paragraphe]
-    ) -> ResultatReclassement:
-        pass
+__all__ = [
+    "Reclasseur",
+    "ReclasseurBGE",
+    "ReclasseurLLM",
+    "ReclasseurLLMEnParallele",
+    "ResultatReclassement",
+]
 
 
 class ReclasseurBGE(Reclasseur):
@@ -128,7 +124,9 @@ class ReclasseurLLM(Reclasseur):
             aucune_source_utile=not paragraphes_retenus,
         )
 
-    def __interroge_le_modele_de_reclassement(self, messages: list[ChatCompletionMessageParam]) -> list[Choice]:
+    def __interroge_le_modele_de_reclassement(
+        self, messages: list[ChatCompletionMessageParam]
+    ) -> list[Choice]:
         try:
             propositions = self.client.recupere_propositions(messages, temperature=0)
         except ErreurCommunicationModele as erreur:
@@ -145,7 +143,7 @@ class ReclasseurLLM(Reclasseur):
         return propositions
 
     @staticmethod
-    def _formate_candidats(paragraphes: list[Paragraphe]) -> str:
+    def _formate_candidats(paragraphes: list[Paragraphe], premier_id: int = 1) -> str:
         return "\n\n".join(
             (
                 f"[PASSAGE id={identifiant} rang_initial={p.rang_initial} "
@@ -156,5 +154,5 @@ class ReclasseurLLM(Reclasseur):
                 f"chemin_sections={' > '.join(p.chemin_sections)!r}]\n"
                 f"{p.contenu}\n[/PASSAGE]"
             )
-            for identifiant, p in enumerate(paragraphes, 1)
+            for identifiant, p in enumerate(paragraphes, premier_id)
         )

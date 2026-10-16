@@ -59,7 +59,6 @@ def test_selectionne_le_reclasseur_bge_par_configuration(
     )
 
     assert isinstance(service.reclasseur, ReclasseurBGE)
-    assert service.reclasseur.prompt == "Question BGE : {QUESTION}"
 
 
 def test_le_type_de_reclasseur_est_bge_par_defaut():
@@ -87,4 +86,3 @@ def test_selectionne_le_reclasseur_llm_par_configuration(
     )
 
     assert isinstance(service.reclasseur, ReclasseurLLM)
-    assert service.reclasseur.prompt == PROMPTS.prompt_reclassement

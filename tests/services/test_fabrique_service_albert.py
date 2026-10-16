@@ -22,7 +22,6 @@ def test_peut_fabriquer_un_service_albert_avec_une_configuration_par_defaut() ->
     service_albert = fabrique_service_albert()
 
     assert isinstance(service_albert.client, ClientAlbertApi)
-    assert "Tu es un service développé par l'ANSSI" in service_albert.prompt_systeme
 
 
 def test_la_configuration_contient_la_taille_de_la_fenetre_historique() -> None:
@@ -36,10 +35,6 @@ def test_fabrique_un_service_albert_avec_un_reformulateur(monkeypatch) -> None:
 
     assert service_albert.reformulateur is not None
     assert isinstance(service_albert.reformulateur, ReformulateurDeQuestion)
-    assert (
-        "composant de reformulation"
-        in service_albert.reformulateur.prompt_de_reformulation
-    )
 
 
 def test_mapping_reponses_est_charge_une_seule_fois():

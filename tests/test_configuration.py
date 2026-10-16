@@ -1,5 +1,10 @@
 from unittest.mock import patch
-from configuration import TypeReclasseur, recupere_configuration
+import pytest
+from configuration import (
+    TypeReclasseur,
+    calcule_capacite_reclassement_parallele,
+    recupere_configuration,
+)
 
 
 @patch("os.getenv")
@@ -83,3 +88,53 @@ def test_configuration_selectionne_le_type_de_reclasseur_depuis_l_environnement(
     configuration = recupere_configuration()
 
     assert configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
+
+
+def test_calcul_capacite_reclassement_couvre_les_deux_collections_et_tous_les_lots():
+    capacite = calcule_capacite_reclassement_parallele(
+        nombre_paragraphes=20, taille_lot=5, jeopardy_active=True
+    )
+
+    assert capacite.nombre_maximum_candidats == 40
+    assert capacite.nombre_maximum_d_appels_par_workflow == 8
+    assert capacite.nombre_threads == 16
+
+
+def test_calcul_capacite_reclassement_tient_compte_du_dernier_lot_partiel():
+    capacite = calcule_capacite_reclassement_parallele(
+        nombre_paragraphes=20, taille_lot=6, jeopardy_active=False
+    )
+
+    assert capacite.nombre_maximum_candidats == 20
+    assert capacite.nombre_maximum_d_appels_par_workflow == 4
+    assert capacite.nombre_threads == 8
+
+
+def test_calcul_capacite_reclassement_compte_uniquement_les_lots_de_classification():
+    capacite = calcule_capacite_reclassement_parallele(
+        nombre_paragraphes=20, taille_lot=5, jeopardy_active=False
+    )
+
+    assert capacite.nombre_maximum_d_appels_par_workflow == 4
+    assert capacite.nombre_threads == 8
+
+
+@pytest.mark.parametrize(
+    ("nombre_paragraphes", "taille_lot", "jeopardy_active"),
+    [
+        (0, 5, False),
+        (20, 0, False),
+        (-1, 5, False),
+        (20, -1, False),
+        (True, 5, False),
+        (20, True, False),
+        (20, 5, 1),
+    ],
+)
+def test_calcul_capacite_reclassement_refuse_les_limites_invalides(
+    nombre_paragraphes, taille_lot, jeopardy_active
+):
+    with pytest.raises(ValueError):
+        calcule_capacite_reclassement_parallele(
+            nombre_paragraphes, taille_lot, jeopardy_active
+        )

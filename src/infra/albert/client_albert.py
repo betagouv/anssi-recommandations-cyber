@@ -5,6 +5,7 @@ from openai import APITimeoutError, APIConnectionError
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
+from openai.types.chat.completion_create_params import ResponseFormat
 from typing import Callable
 
 from configuration import logging, Albert
@@ -236,9 +237,10 @@ class ClientAlbertApi(ClientAlbert):
             chunks: list[RechercheChunk] = []
 
             for numero_page in range(ceil(nombre_chunks / limite)):
+                offset = numero_page * limite
                 reponse: requests.Response = self.client_http.get(
                     f"/documents/{id_document}/chunks",
-                    params={"limit": limite, "offset": numero_page * limite},
+                    params={"limit": limite, "offset": offset},
                     timeout=self.temps_reponse_maximum_recherche_paragraphes,
                 )
                 reponse.raise_for_status()
@@ -291,30 +293,51 @@ class ClientAlbertApi(ClientAlbert):
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
         temperature: float | None = None,
+        format_reponse: ResponseFormat | None = None,
     ) -> list[Choice]:
         modele_a_utiliser = modele if modele else self.modele_reponse
         try:
-            propositions_albert = self.client_openai.chat.completions.create(
-                messages=messages,
-                model=modele_a_utiliser,
-                stream=False,
-                temperature=temperature,
-            ).choices
-            return propositions_albert
+            if format_reponse is None:
+                reponse = self.client_openai.chat.completions.create(
+                    messages=messages,
+                    model=modele_a_utiliser,
+                    stream=False,
+                    temperature=temperature,
+                )
+            else:
+                reponse = self.client_openai.chat.completions.create(
+                    messages=messages,
+                    model=modele_a_utiliser,
+                    stream=False,
+                    temperature=temperature,
+                    response_format=format_reponse,
+                )
+            return reponse.choices
 
-        except (APITimeoutError, APIConnectionError) as erreur:
-            logging.error(f"le chat completion d’Albert retourne une erreur: {erreur}")
+        except (APITimeoutError, APIConnectionError):
+            logging.error("Échec technique du chat completion d’Albert.")
             raise ErreurCommunicationModele(
                 "Impossible de récupérer une réponse pour la question posée."
             )
 
 
-def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]
-    client_openai = OpenAI(
-        base_url=configuration.base_url,
-        api_key=configuration.api_key,
-        timeout=configuration.temps_reponse_maximum_pose_question,
-    )
+def fabrique_client_albert(
+    configuration: Albert.Client,  # type: ignore [name-defined]
+    max_retries: int | None = None,
+) -> ClientAlbertApi:  # type: ignore [name-defined]
+    if max_retries is None:
+        client_openai = OpenAI(
+            base_url=configuration.base_url,
+            api_key=configuration.api_key,
+            timeout=configuration.temps_reponse_maximum_pose_question,
+        )
+    else:
+        client_openai = OpenAI(
+            base_url=configuration.base_url,
+            api_key=configuration.api_key,
+            timeout=configuration.temps_reponse_maximum_pose_question,
+            max_retries=max_retries,
+        )
     client_http = ClientAlbertHttp(
         base_url=configuration.base_url,
         token=configuration.api_key,

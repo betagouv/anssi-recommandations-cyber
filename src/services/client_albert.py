@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
+from openai.types.chat.completion_create_params import ResponseFormat
 
 from schemas.albert import (
     RecherchePayload,
@@ -40,6 +41,7 @@ class ClientAlbert(ABC):
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
         temperature: float | None = None,
+        format_reponse: ResponseFormat | None = None,
     ) -> list[Choice]:
         pass
 

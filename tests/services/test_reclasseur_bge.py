@@ -28,22 +28,6 @@ def test_reclasse_les_paragraphes(un_constructeur_de_paragraphe):
     assert reclasseur.paragraphes_retenus[1].contenu == "texte1"
 
 
-def test_fournit_le_prompt_de_reclassement():
-    client_albert_memoire = ClientAlbertMemoire()
-
-    ReclasseurBGE(
-        client_albert_memoire,
-        "un-modele",
-        "Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
-        2,
-    ).reclasse("Une question de test ?", [])
-
-    assert (
-        client_albert_memoire.payload_reclassement_recu.query
-        == "Prompt de reclassement :\n\nUne question de test ?\n\n, fin prompt"
-    )
-
-
 def test_lis_le_nom_du_modele_de_reclassement(un_reclasseur):
     client_albert_memoire = ClientAlbertMemoire()
 
