@@ -12,3 +12,5 @@ minimumReleaseAgeExclude:
   - pdfjs-dist@6.2.108
   # Renovate security update: devalue@5.9.3
   - devalue@5.9.3
+  # Renovate security update: vite@8.1.6
+  - vite@8.1.6
