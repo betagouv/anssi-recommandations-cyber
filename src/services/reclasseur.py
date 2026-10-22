@@ -1,11 +1,12 @@
 import json
 from abc import ABC, abstractmethod
-from openai.types.chat import ChatCompletionMessageParam
-from openai.types.chat.chat_completion import Choice
 from typing import NamedTuple, cast
 
-from configuration import logging
+from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat.chat_completion import Choice
+
 from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
+from configuration import logging
 from schemas.albert import Paragraphe, ReclassePayload
 from services.client_albert import ClientAlbert
 from services.exceptions import (
@@ -128,7 +129,9 @@ class ReclasseurLLM(Reclasseur):
             aucune_source_utile=not paragraphes_retenus,
         )
 
-    def __interroge_le_modele_de_reclassement(self, messages: list[ChatCompletionMessageParam]) -> list[Choice]:
+    def __interroge_le_modele_de_reclassement(
+        self, messages: list[ChatCompletionMessageParam]
+    ) -> list[Choice]:
         try:
             propositions = self.client.recupere_propositions(messages, temperature=0)
         except ErreurCommunicationModele as erreur:
