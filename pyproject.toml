@@ -24,7 +24,7 @@ dev = [
     "ipython",
     "mypy",
     "pandas",
-    "pytest==9.0.3",
+    "pytest==9.1.1",
     "ruff",
     "types-psycopg2",
     "types-requests",
