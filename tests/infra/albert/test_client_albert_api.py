@@ -1,4 +1,7 @@
 import pytest
+from openai.types.chat.completion_create_params import ResponseFormat
+from typing import cast
+
 from client_albert_de_test import (
     ConstructeurClientOpenai,
     ConstructeurClientHttp,
@@ -407,3 +410,21 @@ def test_recherche_jeopardy_retourne_des_resultats_avec_source_id_chunk():
     assert resultats[0].chunk.content == "Question générée 1 ?"
     assert resultats[0].chunk.metadata.source_id_chunk == 73
     assert resultats[1].chunk.metadata.source_id_chunk == 74
+
+def test_transmet_le_format_de_reponse_demande_a_albert(
+        une_configuration_albert_client,
+) -> None:
+    completion = ConstructeurClientOpenai().construis()
+    client = ClientAlbertApi(
+        completion,
+        ConstructeurClientHttp().construis(),
+        une_configuration_albert_client,
+    )
+    format_reponse = cast(
+        ResponseFormat, {"type": "json_schema", "json_schema": {"name": "rangs"}}
+    )
+
+    client.recupere_propositions([], format_reponse=format_reponse)
+
+    _, call_kwargs = completion.chat.completions.create.call_args
+    assert call_kwargs["response_format"] == format_reponse

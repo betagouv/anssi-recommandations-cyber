@@ -1,10 +1,11 @@
 import random
-from typing import NamedTuple, Optional
+from typing import Any, NamedTuple, Optional, cast
 from unittest.mock import Mock
 import requests
 from openai import APITimeoutError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice, ChatCompletionMessage
+from openai.types.chat.completion_create_params import ResponseFormat
 from schemas.albert import (
     RecherchePayload,
     ResultatRecherche,
@@ -177,6 +178,8 @@ class ClientAlbertMemoire(ClientAlbert):
         self.choix_par_appel = []
         self.appels_recupere_propositions = 0
         self.messages_envoyes_pour_les_propositions = []
+        self.noms_schemas_propositions: list[str | None] = []
+        self.formats_reponse_recus: list[ResponseFormat | None] = []
         self.contextes_appels_llm_recus: list[str] = []
         self.temperatures_recues = []
         self.appels_recherche = 0
@@ -228,14 +231,23 @@ class ClientAlbertMemoire(ClientAlbert):
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
         temperature: float | None = None,
+        format_reponse: ResponseFormat | None = None,
     ) -> list[Choice]:
         self.messages_recus = messages
+        self.formats_reponse_recus.append(format_reponse)
         self.messages_envoyes_pour_les_propositions.append(messages)
         self.temperatures_recues.append(temperature)
         if self.leve_une_erreur_de_communication_modele:
             raise ErreurCommunicationModele(
                 "Impossible de récupérer une réponse pour la question posée."
             )
+        schema = (
+            cast(dict[str, Any], format_reponse).get("json_schema", {})
+            if format_reponse
+            else {}
+        )
+        nom_schema = schema.get("name")
+        self.noms_schemas_propositions.append(nom_schema)
         if self.choix_par_appel:
             choix = self.choix_par_appel[self.appels_recupere_propositions]
             self.appels_recupere_propositions += 1
