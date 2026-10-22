@@ -1,7 +1,7 @@
 import re
 from typing import Protocol
 
-from schemas.albert import Paragraphe, RechercheChunk
+from schemas.albert import Paragraphe, RechercheChunk, UniteSource
 
 
 BALISE_CONTEXTE_DOCUMENTAIRE = re.compile(
@@ -76,7 +76,12 @@ class ParPagePrecedenteEtSuivante:
             )
             contenu = "\n\n".join(chunk.content for _, chunk in chunks_ordonnes)
             contenu = _conserve_premier_contexte_documentaire(contenu)
-            return paragraphe.model_copy(update={"contenu": contenu})
+            unites_source = [
+                UniteSource.depuis_chunk(chunk) for _, chunk in chunks_ordonnes
+            ]
+            return paragraphe.model_copy(
+                update={"contenu": contenu, "unites_source": unites_source}
+            )
 
         return [
             paragraphe_enrichi

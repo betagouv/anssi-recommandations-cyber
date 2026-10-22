@@ -1,8 +1,27 @@
+from typing import Any
+
+from schemas.albert import (
+    Paragraphe,
+    RechercheChunk,
+    RechercheMetadonnees,
+    UniteSource,
+)
+
+URL = "https://example.com/guide.pdf"
+METADONNEES: dict[str, Any] = {
+    "type_de_bloc": "recommandation",
+    "code_recommandation": "R42",
+    "chemin_sections": ["1 Introduction", "1.2 Périmètre"],
+}
+
+
 def test_contexte_dans_le_document_reste_le_texte_brut_pour_un_paragraphe_legacy(
     un_constructeur_de_paragraphe,
 ):
     paragraphe = (
-        un_constructeur_de_paragraphe().avec_contenu("Un contenu sans métadonnée").construis()
+        un_constructeur_de_paragraphe()
+        .avec_contenu("Un contenu sans métadonnée")
+        .construis()
     )
 
     assert paragraphe.contexte_dans_le_document == "Un contenu sans métadonnée"
@@ -68,6 +87,31 @@ def test_contexte_dans_le_document_de_reponse_maitrisee_conserve_la_reponse_asso
     paragraphe = paragraphe.model_copy(update={"reponse": "Réponse maîtrisée"})
 
     assert (
-        paragraphe.contexte_dans_le_document
-        == "Question fréquente\nRéponse maîtrisée"
+        paragraphe.contexte_dans_le_document == "Question fréquente\nRéponse maîtrisée"
+    )
+
+
+def test_une_unite_source_depuis_un_chunk_reprend_son_contenu_et_ses_metadonnees():
+    metadonnees = RechercheMetadonnees(
+        source_url=URL, page=12, nom_document="Guide", **METADONNEES
+    )
+    chunk = RechercheChunk(content="Contenu du chunk", metadata=metadonnees)
+
+    assert UniteSource.depuis_chunk(chunk) == UniteSource(
+        contenu="Contenu du chunk", url=URL, numero_page=12, **METADONNEES
+    )
+
+
+def test_une_unite_source_depuis_un_paragraphe_reprend_ses_metadonnees():
+    paragraphe = Paragraphe(
+        score_similarite=0.8,
+        contenu="Contenu complet",
+        url=URL,
+        numero_page=12,
+        nom_document="Guide",
+        **METADONNEES,
+    )
+
+    assert UniteSource.depuis_paragraphe(paragraphe, "Un extrait") == UniteSource(
+        contenu="Un extrait", url=URL, numero_page=12, **METADONNEES
     )
