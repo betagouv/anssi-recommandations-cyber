@@ -1,14 +1,9 @@
 import { writable } from 'svelte/store';
 
 export type ValeurPertinence =
-  | 'Très pertinente'
-  | 'Pertinente'
-  | 'Correcte'
-  | 'Erronée';
+  'Très pertinente' | 'Pertinente' | 'Correcte' | 'Erronée';
 export type ValeurSourcesAdaptees =
-  | 'Oui, tout à fait'
-  | 'Oui, partiellement'
-  | 'Non';
+  'Oui, tout à fait' | 'Oui, partiellement' | 'Non';
 
 export type Pertinence = {
   valeur: ValeurPertinence;
@@ -18,8 +13,7 @@ export type Pertinence = {
 };
 
 export type RaisonSourcesNonAdaptees =
-  | 'Sources peu pertinentes'
-  | 'Sources manquantes';
+  'Sources peu pertinentes' | 'Sources manquantes';
 type RaisonsSourcesNonAdaptees = RaisonSourcesNonAdaptees[];
 
 export type ErreursPotentiellesSourcesAdaptees = Partial<
