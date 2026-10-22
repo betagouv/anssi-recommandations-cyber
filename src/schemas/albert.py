@@ -3,6 +3,37 @@ from typing import NamedTuple, Optional
 from schemas.violations import Violation
 
 
+class UniteSource(BaseModel):
+    contenu: str
+    url: str
+    numero_page: int
+    type_de_bloc: Optional[str] = None
+    code_recommandation: Optional[str] = None
+    chemin_sections: list[str] = Field(default_factory=list)
+
+    @classmethod
+    def depuis_paragraphe(cls, paragraphe: "Paragraphe", contenu: str) -> "UniteSource":
+        return cls(
+            contenu=contenu,
+            url=paragraphe.url,
+            numero_page=paragraphe.numero_page,
+            type_de_bloc=paragraphe.type_de_bloc,
+            code_recommandation=paragraphe.code_recommandation,
+            chemin_sections=paragraphe.chemin_sections,
+        )
+
+    @classmethod
+    def depuis_chunk(cls, chunk: "RechercheChunk") -> "UniteSource":
+        return cls(
+            contenu=chunk.content,
+            url=chunk.metadata.source_url,
+            numero_page=chunk.metadata.page,
+            type_de_bloc=chunk.metadata.type_de_bloc,
+            code_recommandation=chunk.metadata.code_recommandation,
+            chemin_sections=chunk.metadata.chemin_sections,
+        )
+
+
 class Paragraphe(BaseModel):
     score_similarite: float
     score_reclassement: float = 1.0
@@ -17,6 +48,7 @@ class Paragraphe(BaseModel):
     position_page: Optional[int] = None
     derniere_page: Optional[int] = None
     identifiant_document: Optional[int] = Field(default=None, exclude=True)
+    unites_source: list[UniteSource] = Field(default_factory=list, exclude=True)
 
     @property
     def contexte_dans_le_document(self):
