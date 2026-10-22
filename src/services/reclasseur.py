@@ -1,6 +1,5 @@
 import json
-from abc import ABC, abstractmethod
-from typing import NamedTuple, cast
+from typing import cast
 
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
@@ -13,20 +12,14 @@ from services.exceptions import (
     ErreurCommunicationModele,
     ErreurCommunicationModeleReclassement,
 )
+from services.reclassement import Reclasseur, ResultatReclassement
 
-
-class ResultatReclassement(NamedTuple):
-    paragraphes_retenus: list[Paragraphe]
-    tous_les_candidats: list[Paragraphe]
-    aucune_source_utile: bool = False
-
-
-class Reclasseur(ABC):
-    @abstractmethod
-    def reclasse(
-        self, question: str, paragraphes: list[Paragraphe]
-    ) -> ResultatReclassement:
-        pass
+__all__ = [
+    "Reclasseur",
+    "ReclasseurBGE",
+    "ReclasseurLLM",
+    "ResultatReclassement",
+]
 
 
 class ReclasseurBGE(Reclasseur):
