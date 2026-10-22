@@ -11,6 +11,10 @@ class UniteSource(BaseModel):
     code_recommandation: Optional[str] = None
     chemin_sections: list[str] = Field(default_factory=list)
 
+    @property
+    def est_substantielle(self) -> bool:
+        return self.type_de_bloc != "table_des_matieres"
+
     @classmethod
     def depuis_paragraphe(cls, paragraphe: "Paragraphe", contenu: str) -> "UniteSource":
         return cls(
