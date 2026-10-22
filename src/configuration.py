@@ -31,6 +31,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 class TypeReclasseur(StrEnum):
     BGE = "bge"
     LLM = "llm"
+    LLM_PAR_LOTS = "llm_par_lots"
 
 
 class Albert(NamedTuple):
@@ -167,6 +168,10 @@ def _les_variables_d_environnement() -> VariablesEnvironnementNecessaires:
         "PORT": (int(env_app_port) if env_app_port else None),
     }
     return variables_environnement  # type: ignore
+
+
+def taille_lot_reclassement() -> int:
+    return int(os.getenv("ALBERT_RECLASSEMENT_TAILLE_LOT", "5"))
 
 
 def recupere_configuration() -> Configuration:
