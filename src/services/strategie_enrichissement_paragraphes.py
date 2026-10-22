@@ -25,7 +25,9 @@ class ParPagePrecedenteEtSuivante:
 
     def enrichis(self, paragraphes: list[Paragraphe]) -> list[Paragraphe]:
         chunks_par_document: dict[int, list[RechercheChunk]] = {}
-        chunks_deja_inclus_par_document: dict[int, set[tuple[str, int, int | None]]] = {}
+        chunks_deja_inclus_par_document: dict[
+            int, set[tuple[str, int, int | None]]
+        ] = {}
 
         def _enrichis(paragraphe: Paragraphe) -> Paragraphe | None:
             if paragraphe.identifiant_document is None:

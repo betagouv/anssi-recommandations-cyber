@@ -1,5 +1,8 @@
 from unittest.mock import patch
-from configuration import TypeReclasseur, recupere_configuration
+from configuration import (
+    TypeReclasseur,
+    recupere_configuration,
+)
 
 
 @patch("os.getenv")
