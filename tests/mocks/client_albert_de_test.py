@@ -285,9 +285,11 @@ class ClientAlbertMemoire(ClientAlbert):
     def avec_le_reclassement(self, reclassement: ReclasseReponse):
         resultats_recherche = list(
             map(
-                lambda r: un_resultat_de_recherche()
-                .ayant_pour_contenu(f"paragraphe {r.index}")
-                .construis(),
+                lambda r: (
+                    un_resultat_de_recherche()
+                    .ayant_pour_contenu(f"paragraphe {r.index}")
+                    .construis()
+                ),
                 reclassement.data,
             )
         )

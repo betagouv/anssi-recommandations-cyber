@@ -309,7 +309,9 @@ class ClientAlbertApi(ClientAlbert):
             )
 
 
-def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]
+def fabrique_client_albert(
+    configuration: Albert.Client,  # type: ignore [name-defined]
+) -> ClientAlbertApi:  # type: ignore [name-defined]
     client_openai = OpenAI(
         base_url=configuration.base_url,
         api_key=configuration.api_key,
