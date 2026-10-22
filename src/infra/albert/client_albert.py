@@ -305,8 +305,8 @@ class ClientAlbertApi(ClientAlbert):
             )
             return reponse.choices
 
-        except (APITimeoutError, APIConnectionError) as erreur:
-            logging.error(f"le chat completion d’Albert retourne une erreur: {erreur}")
+        except (APITimeoutError, APIConnectionError):
+            logging.error("Échec technique du chat completion d’Albert.")
             raise ErreurCommunicationModele(
                 "Impossible de récupérer une réponse pour la question posée."
             )
