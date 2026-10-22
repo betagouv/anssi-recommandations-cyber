@@ -34,10 +34,7 @@
   });
 
   type ValeurOptionPertinence =
-    | 'tres-pertinente'
-    | 'pertinente'
-    | 'correcte'
-    | 'erronee';
+    'tres-pertinente' | 'pertinente' | 'correcte' | 'erronee';
   type ValeurOptionSourcesAdaptees = 'oui-tout-a-fait' | 'oui-partiellement' | 'non';
   const mappeOptionsPertinenceValeurPertinence: Map<
     ValeurOptionPertinence,

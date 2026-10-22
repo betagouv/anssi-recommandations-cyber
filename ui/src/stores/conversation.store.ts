@@ -67,9 +67,7 @@ const ajouteMessageUtilisateur = async (question: QuestionUtilisateur) => {
   };
   storeAffichage.estEnAttenteDeReponse(true);
   let reponseAPI:
-    | ReponseCreationConversation
-    | ReponseAjoutInteraction
-    | ReponseEnErreur;
+    ReponseCreationConversation | ReponseAjoutInteraction | ReponseEnErreur;
   if (sauvegarde.idConversation === null || sauvegarde.idConversation === '') {
     reponseAPI = await clientAPI.creeUneConversation({
       question: question.question,
