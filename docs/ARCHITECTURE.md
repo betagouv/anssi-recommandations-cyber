@@ -102,8 +102,9 @@ Les deux routes de `api_conversation.py` convergent vers `ServiceAlbert.pose_que
 2. **Recherche** (REST `/search`) — paragraphes pertinents dans la collection ANSSI
    (recherche `hybrid` ou `semantic` selon la configuration). Étape « jeopardy »
    optionnelle sur une seconde collection.
-3. **Reclassement** — `TYPE_RECLASSEUR=bge` (REST `/rerank`) ou `llm` (SDK OpenAI), puis
-   filtrage des « réponses maîtrisées » (FAQ) au-delà d'un seuil.
+3. **Reclassement** — `TYPE_RECLASSEUR=bge` (REST `/rerank`), `llm` (SDK OpenAI historique) ou
+   `llm_par_lots` (classification structurée séquentielle), puis filtrage des « réponses
+   maîtrisées » (FAQ).
 4. **Génération** (SDK OpenAI) — paragraphes retenus injectés dans le prompt système, avec
    l'historique limité à `taille_fenetre_historique` échanges.
 5. **Analyse locale** — détection de marqueurs texte (`ERREUR_IDENTITÉ`,
@@ -115,7 +116,7 @@ Les deux routes de `api_conversation.py` convergent vers `ServiceAlbert.pose_que
 
 Une panne de communication avec le modèle est tracée selon l'étape fautive :
 `ErreurCommunicationModeleReformulation` (①), `ErreurCommunicationModeleReclassement`
-(③, `TYPE_RECLASSEUR=llm`), `ErreurCommunicationModeleGeneration` (④) — toutes sous-classes
+(③, tous les modes `llm`), `ErreurCommunicationModeleGeneration` (④) — toutes sous-classes
 de `ErreurCommunicationModele` (`COMMUNICATION_ALBERT` → `500`). Voir
 [`interactions_albert.md`](./interactions_albert.md).
 
