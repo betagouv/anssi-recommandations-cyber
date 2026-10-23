@@ -1,6 +1,10 @@
 from unittest.mock import patch
+
+import pytest
+
 from configuration import (
     TypeReclasseur,
+    calcule_capacite_reclassement_parallele,
     recupere_configuration,
 )
 
@@ -86,3 +90,19 @@ def test_configuration_selectionne_le_type_de_reclasseur_depuis_l_environnement(
     configuration = recupere_configuration()
 
     assert configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
+
+
+@pytest.mark.parametrize(
+    ("nombre_paragraphes", "taille_lot", "jeopardy_active", "nombre_appels"),
+    [(20, 5, True, 8), (20, 6, False, 4)],
+    ids=["les_deux_collections", "dernier_lot_partiel"],
+)
+def test_calcul_capacite_reclassement_couvre_tous_les_lots(
+    nombre_paragraphes, taille_lot, jeopardy_active, nombre_appels
+):
+    capacite = calcule_capacite_reclassement_parallele(
+        nombre_paragraphes, taille_lot, jeopardy_active
+    )
+
+    assert capacite.nombre_maximum_d_appels_par_workflow == nombre_appels
+    assert capacite.nombre_threads == 2 * nombre_appels
