@@ -4,6 +4,11 @@ from adaptateurs.bus_evenements import fabrique_bus_evenements
 from configuration import recupere_configuration
 from infra.albert.client_albert import ClientAlbertApi
 from question.reformulateur_de_question import ReformulateurDeQuestion
+from services.coordinateur_reclassement_parallele import (
+    fabrique_coordinateur_reclassement,
+    ferme_coordinateur_reclassement,
+)
+from services.reclasseur_llm_en_parallele import ReclasseurLLMEnParallele
 from services.fabrique_service_albert import (
     DepotMappingReponses,
     fabrique_service_albert,
@@ -40,6 +45,27 @@ def test_fabrique_un_service_albert_avec_un_reformulateur(monkeypatch) -> None:
         "composant de reformulation"
         in service_albert.reformulateur.prompt_de_reformulation
     )
+
+
+def test_fabrique_un_reclasseur_llm_parallele_avec_le_coordinateur_partage(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("MODE", "test")
+    monkeypatch.setenv("TYPE_RECLASSEUR", "llm_parallele")
+    monkeypatch.setenv("OPENAI_API_KEY", "cle-factice-pour-tests")
+    monkeypatch.setenv("ALBERT_RECLASSEMENT_TAILLE_LOT", "3")
+    ferme_coordinateur_reclassement()
+
+    try:
+        service_albert = fabrique_service_albert()
+        reclasseur = service_albert.reclasseur
+        assert isinstance(reclasseur, ReclasseurLLMEnParallele)
+        assert reclasseur.coordinateur is fabrique_coordinateur_reclassement()
+        assert reclasseur.taille_lot == 3
+        assert isinstance(reclasseur.client, ClientAlbertApi)
+        assert reclasseur.client.client_openai.max_retries == 0
+    finally:
+        ferme_coordinateur_reclassement()
 
 
 def test_mapping_reponses_est_charge_une_seule_fois():

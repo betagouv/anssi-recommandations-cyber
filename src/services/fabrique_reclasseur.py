@@ -1,14 +1,19 @@
 from adaptateurs.bus_evenements import BusEvenements
 from configuration import TypeReclasseur, taille_lot_reclassement, recupere_configuration
-from infra.albert.client_albert import ClientAlbertApi
+from infra.albert.client_albert import ClientAlbertApi, fabrique_client_albert
 from question.reclassement.reclassement import Reclasseur
 from question.reclassement.reclasseur_bge import ReclasseurBGE
 from question.reclassement.reclasseur_llm import ReclasseurLLM
-from question.reclassement.reclasseur_llm_par_lots import ReclasseurLLMParLots
+from services.coordinateur_reclassement_parallele import (
+    fabrique_coordinateur_reclassement,
+)
 from services.fichier_prompt import lis_fichier_prompt
+from services.reclasseur_llm_en_parallele import ReclasseurLLMEnParallele
 
 
-def fabrique_reclasseur(bus_evenements: BusEvenements, client_albert_api: ClientAlbertApi) -> Reclasseur:
+def fabrique_reclasseur(
+    bus_evenements: BusEvenements, client_albert_api: ClientAlbertApi
+) -> Reclasseur:
     configuration = recupere_configuration()
     mode_reclassement = configuration.albert.service.type_reclasseur
     prompt_reclassement = lis_fichier_prompt(
@@ -20,14 +25,15 @@ def fabrique_reclasseur(bus_evenements: BusEvenements, client_albert_api: Client
         return ReclasseurLLM(
             client_albert_api, prompt_reclassement, bus_evenements
         )
-    elif mode_reclassement is TypeReclasseur.LLM_PAR_LOTS:
-        prompt_classification = lis_fichier_prompt(
-            "prompt_reclassement_llm_classification.txt"
+    elif mode_reclassement is TypeReclasseur.LLM_PARALLELE:
+        client_reclassement = fabrique_client_albert(
+            configuration.albert.client, max_retries=0
         )
-        return ReclasseurLLMParLots(
-            client_albert_api,
-            prompt_classification,
+        return ReclasseurLLMEnParallele(
+            client_reclassement,
+            lis_fichier_prompt("prompt_reclassement_llm_classification.txt"),
             bus_evenements,
+            coordinateur=fabrique_coordinateur_reclassement(),
             taille_lot=taille_lot_reclassement(),
         )
     else:

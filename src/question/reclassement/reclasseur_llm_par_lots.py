@@ -1,4 +1,5 @@
 import json
+from abc import abstractmethod
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.completion_create_params import ResponseFormat
 from typing import cast
@@ -105,19 +106,11 @@ class ReclasseurLLMParLots(Reclasseur):
         ]
         return ResultatReclassement(paragraphes_tries, paragraphes, not ids_retenus)
 
+    @abstractmethod
     def _classifie_lots(
         self, question: str, paragraphes: list[Paragraphe]
     ) -> list[dict]:
-        evaluations: list[dict] = []
-        for debut in range(0, len(paragraphes), self.taille_lot):
-            evaluations.extend(
-                self._classifie_lot(
-                    question,
-                    paragraphes[debut : debut + self.taille_lot],
-                    debut + 1,
-                )
-            )
-        return evaluations
+        pass
 
     def _classifie_lot(
         self,

@@ -16,7 +16,7 @@ flowchart LR
     SA -->|"③ reclasse"| Reclasseur["Reclasseur<br/>BGE ou LLM"]
     Reclasseur -->|"TYPE_RECLASSEUR=bge<br/>POST /rerank"| REST
     Reclasseur -->|"TYPE_RECLASSEUR=llm<br/>chat.completions.create(...)"| OpenAI
-    Reclasseur -->|"TYPE_RECLASSEUR=llm_par_lots<br/>classification séquentielle"| OpenAI
+    Reclasseur -->|"TYPE_RECLASSEUR=llm_parallele<br/>classification parallèle"| OpenAI
 
     OpenAI -->|"POST {base_url}/v1/chat/completions"| Albert[("Albert<br/>DINUM<br/>LLM + RAG")]
     REST -->|"/search · /rerank · /documents/{id}/chunks/{id}"| Albert
