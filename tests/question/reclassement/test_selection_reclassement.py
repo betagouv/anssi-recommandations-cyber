@@ -48,6 +48,21 @@ CAS_DE_FUSION = {
         [une_preuve(1, **NAVIGATION), une_preuve(2, 1)],
         [2],
     ),
+    "le_document_le_plus_adequat_ecarte_les_autres": (
+        [
+            une_preuve(1, adequation_document="general_ou_contextuel"),
+            une_preuve(2, 1, adequation_document="consacre_au_sujet"),
+            une_preuve(3, 2, adequation_document="perimetre_demande"),
+        ],
+        [3],
+    ),
+    "un_document_consacre_passe_avant_un_document_indetermine": (
+        [
+            une_preuve(1, adequation_document="indetermine"),
+            une_preuve(2, 1, adequation_document="consacre_au_sujet"),
+        ],
+        [2],
+    ),
     "aucune_preuve_admissible": ([une_preuve(1, **NON_DEMANDEE)], []),
     "aucune_preuve": ([], []),
 }
@@ -61,7 +76,18 @@ CAS_DE_FUSION = {
 def test_fusionne_les_preuves_admissibles_du_degre_maximal(
     des_paragraphes, preuves, ids_retenus
 ):
-    assert fusionne_preuves(preuves) == ids_retenus
+    assert fusionne_preuves(des_paragraphes(3), preuves) == ids_retenus
+
+
+def test_regroupe_les_preuves_retenues_par_document(un_constructeur_de_paragraphe):
+    paragraphes = [
+        un_constructeur_de_paragraphe().dans_le_document(document).construis()
+        for document in ("a.pdf", "b.pdf", "a.pdf")
+    ]
+
+    ids = fusionne_preuves(paragraphes, [une_preuve(1), une_preuve(2), une_preuve(3)])
+
+    assert ids == [1, 3, 2]
 
 
 @pytest.fixture

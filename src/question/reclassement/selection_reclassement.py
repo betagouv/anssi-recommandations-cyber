@@ -2,7 +2,14 @@ from schemas.albert import Paragraphe
 from question.reclassement.unites_source import unites_du_paragraphe
 
 
-def fusionne_preuves(preuves: list[dict]) -> list[int]:
+PRIORITES_ADEQUATION_DOCUMENT = {"perimetre_demande": 0, "consacre_au_sujet": 1}
+
+
+def _priorite_document(preuve: dict) -> int:
+    return PRIORITES_ADEQUATION_DOCUMENT.get(preuve.get("adequation_document", ""), 2)
+
+
+def fusionne_preuves(paragraphes: list[Paragraphe], preuves: list[dict]) -> list[int]:
     eligibles = [
         preuve
         for preuve in preuves
@@ -13,11 +20,29 @@ def fusionne_preuves(preuves: list[dict]) -> list[int]:
     ]
     if not eligibles:
         return []
+    meilleure_priorite = min(_priorite_document(preuve) for preuve in eligibles)
+    eligibles = [
+        preuve
+        for preuve in eligibles
+        if _priorite_document(preuve) == meilleure_priorite
+    ]
     degre_maximal = max(preuve["degre_pertinence"] for preuve in eligibles)
-    return sorted(
+    retenues = sorted(
         preuve["id"]
         for preuve in eligibles
         if preuve["degre_pertinence"] == degre_maximal
+    )
+    premier_id_du_document: dict[str, int] = {}
+    for identifiant in retenues:
+        premier_id_du_document.setdefault(
+            paragraphes[identifiant - 1].nom_document, identifiant
+        )
+    return sorted(
+        retenues,
+        key=lambda identifiant: (
+            premier_id_du_document[paragraphes[identifiant - 1].nom_document],
+            identifiant,
+        ),
     )
 
 

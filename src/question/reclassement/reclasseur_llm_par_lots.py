@@ -95,7 +95,7 @@ class ReclasseurLLMParLots(Reclasseur):
         if not preuves:
             return ResultatReclassement([], paragraphes, aucune_source_utile=True)
 
-        ids_retenus = fusionne_preuves(preuves)
+        ids_retenus = fusionne_preuves(paragraphes, preuves)
         paragraphes_par_id = dict(enumerate(paragraphes, 1))
         evaluations_par_id = {evaluation["id"]: evaluation for evaluation in preuves}
         paragraphes_tries = [
