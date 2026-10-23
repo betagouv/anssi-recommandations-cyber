@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from fastapi import FastAPI, Depends, Request
@@ -18,7 +20,10 @@ from adaptateurs.consommateur_sentry import enregistre_consommateur_sentry
 from adaptateurs.sentry import fabrique_adaptateur_sentry
 from api.api import api, api_developpement
 from api.route_document_source import document_source
-from configuration import Mode
+from configuration import CapaciteReclassementParallele, Mode
+from services.coordinateur_reclassement_parallele import (
+    CoordinateurReclassementParallele,
+)
 from infra.ui_kit.version_ui_kit import version_ui_kit
 
 HEADERS_SECURITE = {
@@ -42,10 +47,27 @@ def fabrique_serveur(
     adaptateur_sentry=fabrique_adaptateur_sentry,
     mode_maintenance: bool = False,
     bus_evenements: BusEvenements | None = None,
+    capacite_reclassement: CapaciteReclassementParallele = CapaciteReclassementParallele(),
 ) -> FastAPI:
     bus = bus_evenements if bus_evenements is not None else fabrique_bus_evenements()
     enregistre_consommateur_sentry(bus, adaptateur_sentry())
-    serveur = FastAPI()
+
+    @asynccontextmanager
+    async def cycle_de_vie(serveur: FastAPI):
+        coordinateur = CoordinateurReclassementParallele(
+            ThreadPoolExecutor(
+                max_workers=capacite_reclassement.nombre_threads,
+                thread_name_prefix="reclassement",
+            ),
+            capacite_reclassement,
+        )
+        serveur.state.coordinateur_reclassement = coordinateur
+        try:
+            yield
+        finally:
+            coordinateur.ferme()
+
+    serveur = FastAPI(lifespan=cycle_de_vie)
 
     limiteur = Limiter(
         key_func=get_remote_address,

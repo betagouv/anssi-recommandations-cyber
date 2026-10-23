@@ -2,6 +2,7 @@ import threading
 from pathlib import Path
 
 import requests
+from fastapi import Request
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
 from adaptateurs.bus_evenements import fabrique_bus_evenements
@@ -14,7 +15,7 @@ from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
-from services.reclasseur_llm_par_lots import ReclasseurLLMParLots
+from services.reclasseur_llm_en_parallele import ReclasseurLLMEnParallele
 from services.service_albert import ServiceAlbert, Prompts
 from services.strategie_enrichissement_paragraphes import ParPagePrecedenteEtSuivante
 
@@ -41,18 +42,19 @@ class DepotMappingReponses:
             DepotMappingReponses._mapping = None
 
 
-def fabrique_service_albert() -> ServiceAlbert:
+def fabrique_service_albert(request: Request = None) -> ServiceAlbert:  # type: ignore[assignment]
     configuration = recupere_configuration()
 
     client_albert_api = fabrique_client_albert(configuration.albert.client)
     bus_evenements = fabrique_bus_evenements()
     prompt_systeme = lis_fichier_prompt("prompt_assistant_cyber.txt")
     mode_reclassement = configuration.albert.service.type_reclasseur
-    prompt_reclassement = lis_fichier_prompt(
+    nom_fichier_prompt_reclassement = (
         "prompt_reclassement_llm.txt"
         if mode_reclassement is TypeReclasseur.LLM
         else "prompt_reclassement.txt"
     )
+    prompt_reclassement = lis_fichier_prompt(nom_fichier_prompt_reclassement)
     prompt_reformulation = lis_fichier_prompt("prompt_reformulation.txt")
 
     reformulateur = ReformulateurDeQuestion(
@@ -67,14 +69,15 @@ def fabrique_service_albert() -> ServiceAlbert:
         reclasseur = ReclasseurLLM(
             client_albert_api, prompt_reclassement, bus_evenements
         )
-    elif mode_reclassement is TypeReclasseur.LLM_PAR_LOTS:
-        prompt_classification = lis_fichier_prompt(
-            "prompt_reclassement_llm_classification.txt"
+    elif mode_reclassement is TypeReclasseur.LLM_PARALLELE:
+        client_reclassement = fabrique_client_albert(
+            configuration.albert.client, max_retries=0
         )
-        reclasseur = ReclasseurLLMParLots(
-            client_albert_api,
-            prompt_classification,
+        reclasseur = ReclasseurLLMEnParallele(
+            client_reclassement,
+            lis_fichier_prompt("prompt_reclassement_llm_classification.txt"),
             bus_evenements,
+            coordinateur=request.app.state.coordinateur_reclassement,
             taille_lot=taille_lot_reclassement(),
         )
     else:

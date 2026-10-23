@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 class TypeReclasseur(StrEnum):
     BGE = "bge"
     LLM = "llm"
-    LLM_PAR_LOTS = "llm_par_lots"
+    LLM_PARALLELE = "llm_parallele"
 
 
 class Albert(NamedTuple):
@@ -105,6 +105,17 @@ class Configuration(NamedTuple):
     mode_maintenance: bool
 
 
+class CapaciteReclassementParallele(NamedTuple):
+    nombre_maximum_d_appels_par_workflow: int = 5
+    nombre_maximum_de_workflows: int = 2
+
+    @property
+    def nombre_threads(self) -> int:
+        return (
+            self.nombre_maximum_de_workflows * self.nombre_maximum_d_appels_par_workflow
+        )
+
+
 def _recupere_configuration_postgres(
     variables_environnement: VariablesEnvironnementNecessaires,
 ) -> BaseDeDonnees:
@@ -172,6 +183,15 @@ def _les_variables_d_environnement() -> VariablesEnvironnementNecessaires:
 
 def taille_lot_reclassement() -> int:
     return int(os.getenv("ALBERT_RECLASSEMENT_TAILLE_LOT", "5"))
+
+
+def calcule_capacite_reclassement_parallele(
+    nombre_paragraphes: int, taille_lot: int, jeopardy_active: bool
+) -> CapaciteReclassementParallele:
+    nombre_candidats = nombre_paragraphes * (2 if jeopardy_active else 1)
+    return CapaciteReclassementParallele(
+        nombre_maximum_d_appels_par_workflow=-(-nombre_candidats // taille_lot)
+    )
 
 
 def recupere_configuration() -> Configuration:
