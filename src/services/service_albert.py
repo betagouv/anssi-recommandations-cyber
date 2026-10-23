@@ -3,7 +3,6 @@ from openai.types.chat import (
     ChatCompletionUserMessageParam,
 )
 from openai.types.chat.chat_completion import Choice
-from pydantic import BaseModel
 from typing import Optional, cast, NamedTuple, Union, Any
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
@@ -18,6 +17,7 @@ from schemas.albert import (
     ParagrapheReponseMaitrisee,
     ParagrapheReponseQuestion,
 )
+from schemas.msc import ReponseGuideMSC
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import (
     Violation,
@@ -40,19 +40,6 @@ from services.reclasseur import (
 from services.strategie_enrichissement_paragraphes import (
     StrategieEnrichissementParagraphes,
 )
-
-
-class DocumentGuideMSC(BaseModel):
-    libelle: str
-    nomFichier: str
-
-
-class ReponseGuideMSC(BaseModel):
-    id: str
-    nom: str
-    description: str
-    listeDocuments: list[DocumentGuideMSC]
-    dateMiseAJour: str
 
 
 def _filtre_reponses_maitrisees(
