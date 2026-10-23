@@ -35,6 +35,9 @@ def fabrique_reclasseur(
             bus_evenements,
             coordinateur=fabrique_coordinateur_reclassement(),
             taille_lot=taille_lot_reclassement(),
+            prompt_qualification=lis_fichier_prompt(
+                "prompt_reclassement_llm_parallele_qualification.txt"
+            ),
         )
     else:
         return ReclasseurBGE(
