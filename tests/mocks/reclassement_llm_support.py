@@ -30,6 +30,7 @@ def un_reclasseur_qui_repond(
         prompt_classification,
         bus or BusEvenementsEnMemoire(),
         taille_lot=taille_lot,
-        coordinateur=coordinateur
+        coordinateur=coordinateur,
+        prompt_qualification="",
     )
     return reclasseur, client
