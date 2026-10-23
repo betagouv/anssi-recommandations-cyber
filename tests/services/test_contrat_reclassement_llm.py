@@ -6,6 +6,7 @@ from classification_de_test import (
 from services.contrat_reclassement_llm import (
     evaluations_de_classification,
     schema_classification,
+    schema_qualification_documents,
 )
 from services.fabrique_service_albert import lis_fichier_prompt
 from unites_source_de_test import une_table_des_matieres, une_unite_source
@@ -83,6 +84,26 @@ def test_un_candidat_sans_unite_substantielle_ne_peut_pas_etre_une_preuve(
     paragraphe = un_constructeur_de_paragraphe().avec_contenu(" \n\t ").construis()
 
     assert len(_branches(schema_classification([paragraphe], premier_id=1))) == 1
+
+
+def test_un_document_sans_metadonnees_ne_peut_etre_qu_indetermine():
+    schema = schema_qualification_documents(
+        {
+            "D1": {"nom": "Guide", "description": "Description"},
+            "D2": {"nom": "Guide", "description": ""},
+            "D3": {"nom": "", "description": "Description"},
+        }
+    )
+
+    assert schema["required"] == ["D1", "D2", "D3"]
+    assert schema["properties"]["D1"]["enum"] == [
+        "perimetre_demande",
+        "consacre_au_sujet",
+        "general_ou_contextuel",
+        "indetermine",
+    ]
+    assert schema["properties"]["D2"]["enum"] == ["indetermine"]
+    assert schema["properties"]["D3"]["enum"] == ["indetermine"]
 
 
 def test_extrait_une_evaluation_par_candidat_avec_le_degre_de_son_apport(

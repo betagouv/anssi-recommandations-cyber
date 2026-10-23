@@ -8,6 +8,12 @@ CATEGORIES_SANS_PREUVE = (
     "dans_la_thematique_sans_apport",
     "element_de_reponse",
 )
+ADEQUATIONS_DOCUMENT = (
+    "perimetre_demande",
+    "consacre_au_sujet",
+    "general_ou_contextuel",
+    "indetermine",
+)
 PORTEES_PREUVE = ("generale", "specifique_demandee", "specifique_non_demandee")
 RELATIONS = ("directe", "indirecte")
 APPORTS = (
@@ -35,6 +41,19 @@ def _objet_ferme(proprietes: dict[str, dict]) -> dict:
         "required": list(proprietes),
         "additionalProperties": False,
     }
+
+
+def schema_qualification_documents(documents: dict[str, dict[str, str]]) -> dict:
+    return _objet_ferme(
+        {
+            identifiant: _chaine_parmi(
+                ADEQUATIONS_DOCUMENT
+                if document["nom"] and document["description"]
+                else ["indetermine"]
+            )
+            for identifiant, document in documents.items()
+        }
+    )
 
 
 def _schema_candidat_sans_preuve() -> dict:
