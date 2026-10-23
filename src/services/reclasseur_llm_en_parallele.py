@@ -1,12 +1,12 @@
 from concurrent.futures import as_completed
 
 from adaptateurs.bus_evenements import BusEvenements
+from question.reclassement.reclasseur_llm_par_lots import ReclasseurLLMParLots
 from schemas.albert import Paragraphe
 from services.client_albert import ClientAlbert
 from services.coordinateur_reclassement_parallele import (
     CoordinateurReclassementParallele,
 )
-from services.reclasseur_llm_par_lots import ReclasseurLLMParLots
 
 
 class ReclasseurLLMEnParallele(ReclasseurLLMParLots):
