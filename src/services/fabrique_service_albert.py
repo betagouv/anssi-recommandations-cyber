@@ -79,6 +79,9 @@ def fabrique_service_albert(request: Request = None) -> ServiceAlbert:  # type: 
             bus_evenements,
             coordinateur=request.app.state.coordinateur_reclassement,
             taille_lot=taille_lot_reclassement(),
+            prompt_qualification=lis_fichier_prompt(
+                "prompt_reclassement_llm_parallele_qualification.txt"
+            ),
         )
     else:
         reclasseur = ReclasseurBGE(

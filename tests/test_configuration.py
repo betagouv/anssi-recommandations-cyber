@@ -94,10 +94,10 @@ def test_configuration_selectionne_le_type_de_reclasseur_depuis_l_environnement(
 
 @pytest.mark.parametrize(
     ("nombre_paragraphes", "taille_lot", "jeopardy_active", "nombre_appels"),
-    [(20, 5, True, 8), (20, 6, False, 4)],
+    [(20, 5, True, 9), (20, 6, False, 5)],
     ids=["les_deux_collections", "dernier_lot_partiel"],
 )
-def test_calcul_capacite_reclassement_couvre_tous_les_lots(
+def test_calcul_capacite_reclassement_couvre_tous_les_lots_et_la_qualification(
     nombre_paragraphes, taille_lot, jeopardy_active, nombre_appels
 ):
     capacite = calcule_capacite_reclassement_parallele(
