@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 class TypeReclasseur(StrEnum):
     BGE = "bge"
     LLM = "llm"
-    LLM_PAR_LOTS = "llm_par_lots"
+    LLM_PARALLELE = "llm_parallele"
 
 
 class Albert(NamedTuple):

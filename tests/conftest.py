@@ -418,6 +418,14 @@ def reset_horloge_apres_test():
     Horloge.reinitialise()
 
 
+@pytest.fixture(autouse=True)
+def environnement_isole_du_poste(monkeypatch):
+    monkeypatch.setenv("MODE", "test")
+    monkeypatch.setenv("ALBERT_API_KEY", "une-fausse-clef")
+    monkeypatch.delenv("TYPE_RECLASSEUR", raising=False)
+    monkeypatch.delenv("ALBERT_RECLASSEMENT_TAILLE_LOT", raising=False)
+
+
 class ConstructeurDInteraction:
     def __init__(self):
         super().__init__()

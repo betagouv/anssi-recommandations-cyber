@@ -1,9 +1,17 @@
+from concurrent.futures import ThreadPoolExecutor
+
+from fastapi import FastAPI, Request
+
 from client_albert_de_test import SessionDeTestQuiCompte
 
 from adaptateurs.bus_evenements import fabrique_bus_evenements
 from configuration import recupere_configuration
 from infra.albert.client_albert import ClientAlbertApi
 from question.reformulateur_de_question import ReformulateurDeQuestion
+from services.coordinateur_reclassement_parallele import (
+    CoordinateurReclassementParallele,
+)
+from services.reclasseur_llm_en_parallele import ReclasseurLLMEnParallele
 from services.fabrique_service_albert import (
     DepotMappingReponses,
     fabrique_service_albert,
@@ -40,6 +48,30 @@ def test_fabrique_un_service_albert_avec_un_reformulateur(monkeypatch) -> None:
         "composant de reformulation"
         in service_albert.reformulateur.prompt_de_reformulation
     )
+
+
+def test_fabrique_un_reclasseur_llm_parallele_avec_le_coordinateur_du_serveur(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("MODE", "test")
+    monkeypatch.setenv("TYPE_RECLASSEUR", "llm_parallele")
+    monkeypatch.setenv("OPENAI_API_KEY", "cle-factice-pour-tests")
+    monkeypatch.setenv("ALBERT_RECLASSEMENT_TAILLE_LOT", "3")
+    coordinateur = CoordinateurReclassementParallele(ThreadPoolExecutor(max_workers=1))
+    application = FastAPI()
+    application.state.coordinateur_reclassement = coordinateur
+    requete = Request({"type": "http", "app": application})
+
+    try:
+        service_albert = fabrique_service_albert(requete)
+        reclasseur = service_albert.reclasseur
+        assert isinstance(reclasseur, ReclasseurLLMEnParallele)
+        assert reclasseur.coordinateur is coordinateur
+        assert reclasseur.taille_lot == 3
+        assert isinstance(reclasseur.client, ClientAlbertApi)
+        assert reclasseur.client.client_openai.max_retries == 0
+    finally:
+        coordinateur.ferme()
 
 
 def test_mapping_reponses_est_charge_une_seule_fois():
