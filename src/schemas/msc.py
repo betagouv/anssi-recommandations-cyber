@@ -13,3 +13,7 @@ class ReponseGuideMSC(BaseModel):
     listeDocuments: list[DocumentGuideMSC]
     dateMiseAJour: str
 
+
+class ContexteDocumentMSC(BaseModel):
+    nom: str
+    description: str

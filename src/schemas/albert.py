@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import NamedTuple, Optional
+from schemas.msc import ContexteDocumentMSC
 from schemas.violations import Violation
 
 
@@ -53,6 +54,9 @@ class Paragraphe(BaseModel):
     derniere_page: Optional[int] = None
     identifiant_document: Optional[int] = Field(default=None, exclude=True)
     unites_source: list[UniteSource] = Field(default_factory=list, exclude=True)
+    contexte_document_msc: Optional[ContexteDocumentMSC] = Field(
+        default=None, exclude=True
+    )
 
     @property
     def contexte_dans_le_document(self):
