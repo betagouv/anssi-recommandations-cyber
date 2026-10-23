@@ -6,11 +6,10 @@ from client_albert_de_test import (
 from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from configuration import TypeReclasseur
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
+from question.reclassement.reclassement import Reclasseur, ResultatReclassement
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import ParagrapheReponseMaitrisee
-from services.reclasseur import Reclasseur, ResultatReclassement
-from services.service_albert import Prompts, ServiceAlbert
-
+from services.service_albert import ServiceAlbert
 
 QUESTION = "Comment choisir un mot de passe ?"
 REPONSE = "Utiliser un mot de passe long et unique."
@@ -62,7 +61,7 @@ def test_service_albert_charge_et_transmet_le_contexte_msc_au_reclassement(
         configuration,
         client,
         False,
-        Prompts("{chunks}", ""),
+        "{chunks}",
         ReformulateurDeQuestionDeTest(),
         MappingReponsesMaitrisees({}),
         reclasseur,
