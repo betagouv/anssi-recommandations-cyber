@@ -1,4 +1,4 @@
-from concurrent.futures import Executor, Future
+from concurrent.futures import Executor, Future, ThreadPoolExecutor
 import threading
 from typing import Callable, TypeVar
 
@@ -74,3 +74,32 @@ class WorkflowReclassement:
     def _libere_si_possible(self) -> None:
         if self._termine and not self._futures:
             self._coordinateur._libere(self)
+
+
+_verrou_singleton = threading.Lock()
+_coordinateur_partage: CoordinateurReclassementParallele | None = None
+
+
+def fabrique_coordinateur_reclassement(
+    capacite: CapaciteReclassementParallele = CapaciteReclassementParallele(),
+) -> CoordinateurReclassementParallele:
+    global _coordinateur_partage
+    if _coordinateur_partage is None:
+        with _verrou_singleton:
+            if _coordinateur_partage is None:
+                _coordinateur_partage = CoordinateurReclassementParallele(
+                    ThreadPoolExecutor(
+                        max_workers=capacite.nombre_threads,
+                        thread_name_prefix="reclassement",
+                    ),
+                    capacite,
+                )
+    return _coordinateur_partage
+
+
+def ferme_coordinateur_reclassement() -> None:
+    global _coordinateur_partage
+    with _verrou_singleton:
+        if _coordinateur_partage is not None:
+            _coordinateur_partage.ferme()
+            _coordinateur_partage = None
