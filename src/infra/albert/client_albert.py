@@ -1,10 +1,11 @@
 import json
 from math import ceil
 import requests
-from openai import APITimeoutError, APIConnectionError
+from openai import APITimeoutError, APIConnectionError, omit
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
+from openai.types.chat.completion_create_params import ResponseFormat
 from typing import Callable
 
 from configuration import logging, Albert
@@ -291,25 +292,29 @@ class ClientAlbertApi(ClientAlbert):
         messages: list[ChatCompletionMessageParam],
         modele: str | None = None,
         temperature: float | None = None,
+        format_reponse: ResponseFormat | None = None,
     ) -> list[Choice]:
         modele_a_utiliser = modele if modele else self.modele_reponse
         try:
-            propositions_albert = self.client_openai.chat.completions.create(
+            reponse = self.client_openai.chat.completions.create(
                 messages=messages,
                 model=modele_a_utiliser,
                 stream=False,
                 temperature=temperature,
-            ).choices
-            return propositions_albert
+                response_format=format_reponse if format_reponse else omit,
+            )
+            return reponse.choices
 
-        except (APITimeoutError, APIConnectionError) as erreur:
-            logging.error(f"le chat completion d’Albert retourne une erreur: {erreur}")
+        except (APITimeoutError, APIConnectionError):
+            logging.error("Échec technique du chat completion d’Albert.")
             raise ErreurCommunicationModele(
                 "Impossible de récupérer une réponse pour la question posée."
             )
 
 
-def fabrique_client_albert(configuration: Albert.Client) -> ClientAlbertApi:  # type: ignore [name-defined]
+def fabrique_client_albert(
+    configuration: Albert.Client,  # type: ignore [name-defined]
+) -> ClientAlbertApi:  # type: ignore [name-defined]
     client_openai = OpenAI(
         base_url=configuration.base_url,
         api_key=configuration.api_key,

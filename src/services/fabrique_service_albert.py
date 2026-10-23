@@ -5,11 +5,16 @@ import requests
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
 from adaptateurs.bus_evenements import fabrique_bus_evenements
-from configuration import TypeReclasseur, recupere_configuration
+from configuration import (
+    TypeReclasseur,
+    recupere_configuration,
+    taille_lot_reclassement,
+)
 from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from question.reformulateur_de_question import ReformulateurDeQuestion
-from services.reclasseur import ReclasseurBGE, ReclasseurLLM
+from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
+from services.reclasseur_llm_par_lots import ReclasseurLLMParLots
 from services.service_albert import ServiceAlbert, Prompts
 from services.strategie_enrichissement_paragraphes import ParPagePrecedenteEtSuivante
 
@@ -42,12 +47,12 @@ def fabrique_service_albert() -> ServiceAlbert:
     client_albert_api = fabrique_client_albert(configuration.albert.client)
     bus_evenements = fabrique_bus_evenements()
     prompt_systeme = lis_fichier_prompt("prompt_assistant_cyber.txt")
-    nom_fichier_prompt_reclassement = (
+    mode_reclassement = configuration.albert.service.type_reclasseur
+    prompt_reclassement = lis_fichier_prompt(
         "prompt_reclassement_llm.txt"
-        if configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
+        if mode_reclassement is TypeReclasseur.LLM
         else "prompt_reclassement.txt"
     )
-    prompt_reclassement = lis_fichier_prompt(nom_fichier_prompt_reclassement)
     prompt_reformulation = lis_fichier_prompt("prompt_reformulation.txt")
 
     reformulateur = ReformulateurDeQuestion(
@@ -57,16 +62,28 @@ def fabrique_service_albert() -> ServiceAlbert:
         bus_evenements=bus_evenements,
     )
 
-    reclasseur = (
-        ReclasseurLLM(client_albert_api, prompt_reclassement, bus_evenements)
-        if configuration.albert.service.type_reclasseur is TypeReclasseur.LLM
-        else ReclasseurBGE(
+    reclasseur: Reclasseur
+    if mode_reclassement is TypeReclasseur.LLM:
+        reclasseur = ReclasseurLLM(
+            client_albert_api, prompt_reclassement, bus_evenements
+        )
+    elif mode_reclassement is TypeReclasseur.LLM_PAR_LOTS:
+        prompt_classification = lis_fichier_prompt(
+            "prompt_reclassement_llm_classification.txt"
+        )
+        reclasseur = ReclasseurLLMParLots(
+            client_albert_api,
+            prompt_classification,
+            bus_evenements,
+            taille_lot=taille_lot_reclassement(),
+        )
+    else:
+        reclasseur = ReclasseurBGE(
             client_albert_api,
             configuration.albert.service.modele_reclassement,
             prompt_reclassement,
             configuration.albert.service.nombre_paragraphes,
         )
-    )
 
     return ServiceAlbert(
         configuration_service_albert=configuration.albert.service,

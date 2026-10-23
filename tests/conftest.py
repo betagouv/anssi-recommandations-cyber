@@ -21,6 +21,7 @@ from schemas.albert import (
     ReponseQuestion,
     ParagrapheReponseMaitrisee,
     ParagrapheReponseQuestion,
+    UniteSource,
 )
 from schemas.api import QuestionRequete
 from schemas.retour_utilisatrice import Interaction, Conversation, RetourUtilisatrice
@@ -46,9 +47,14 @@ class ConstructeurDeParagraphe:
         self.type_de_bloc: Optional[str] = None
         self.code_recommandation: Optional[str] = None
         self.chemin_sections: list[str] = []
+        self.unites_source: list[UniteSource] = []
 
     def avec_contenu(self, contenu: str):
         self.contenu = contenu
+        return self
+
+    def avec_les_unites_source(self, unites_source: list[UniteSource]):
+        self.unites_source = unites_source
         return self
 
     def ayant_pour_metadonnees_de_bloc(
@@ -92,6 +98,7 @@ class ConstructeurDeParagraphe:
             type_de_bloc=self.type_de_bloc,
             code_recommandation=self.code_recommandation,
             chemin_sections=self.chemin_sections,
+            unites_source=self.unites_source,
         )
 
 
@@ -104,6 +111,21 @@ def un_constructeur_de_paragraphe() -> Callable[
         return ConstructeurDeParagraphe()
 
     return _un_constructeur_de_paragraphe
+
+
+@pytest.fixture()
+def des_paragraphes(
+    un_constructeur_de_paragraphe,
+) -> Callable[[int], list[Paragraphe]]:
+    def _des_paragraphes(nombre: int) -> list[Paragraphe]:
+        return [
+            un_constructeur_de_paragraphe()
+            .avec_contenu(f"Passage {identifiant}")
+            .construis()
+            for identifiant in range(1, nombre + 1)
+        ]
+
+    return _des_paragraphes
 
 
 class ConstructeurDeParagrapheReponseMaitrisee(ConstructeurDeParagraphe):
