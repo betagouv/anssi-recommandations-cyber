@@ -29,6 +29,7 @@ from schemas.violations import (
     REPONSE_PAR_DEFAUT,
 )
 from services.client_albert import ClientAlbert
+from services.contexte_documents import associe_contexte_msc
 from services.exceptions import (
     ErreurCommunicationModele,
     ErreurCommunicationModeleGeneration,
@@ -227,6 +228,14 @@ class ServiceAlbert:
             recherche_paragraphes = self.strategie_enrichissement.enrichis(
                 recherche_paragraphes
             )
+        guides_msc: list[ReponseGuideMSC] = (
+            self.executeur_de_requetes.recupere(
+                f"{self.url_msc}/api/guides", ReponseGuideMSC
+            )
+            if self.executeur_de_requetes
+            else []
+        )
+        recherche_paragraphes = associe_contexte_msc(recherche_paragraphes, guides_msc)
         resultat_reclassement = self.__effectue_reclassement(
             recherche_paragraphes, question_pour_recherche
         )
@@ -252,23 +261,19 @@ class ServiceAlbert:
 
         return ReponseQuestion(
             reponse=reponse,
-            paragraphes=(self._mappe_en_paragraphes_pour_la_reponse(paragraphes)),
+            paragraphes=(
+                self._mappe_en_paragraphes_pour_la_reponse(paragraphes, guides_msc)
+            ),
             question=question,
             question_reformulee=question_reformulee,
             violation=violation_resultat,
         )
 
     def _mappe_en_paragraphes_pour_la_reponse(
-        self, paragraphes_a_mapper: list[Paragraphe]
+        self,
+        paragraphes_a_mapper: list[Paragraphe],
+        guides_msc: list[ReponseGuideMSC],
     ) -> list[Any]:
-        guides_msc: list[ReponseGuideMSC] = (
-            self.executeur_de_requetes.recupere(
-                f"{self.url_msc}/api/guides", ReponseGuideMSC
-            )
-            if self.executeur_de_requetes
-            else []
-        )
-
         paragraphes = []
         for p in paragraphes_a_mapper:
             titre = ""
