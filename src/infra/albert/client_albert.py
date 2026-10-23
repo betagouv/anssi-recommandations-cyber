@@ -1,7 +1,7 @@
 import json
 from math import ceil
 import requests
-from openai import APITimeoutError, APIConnectionError, omit
+from openai import DEFAULT_MAX_RETRIES, APITimeoutError, APIConnectionError, omit
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat.chat_completion import Choice
@@ -314,11 +314,13 @@ class ClientAlbertApi(ClientAlbert):
 
 def fabrique_client_albert(
     configuration: Albert.Client,  # type: ignore [name-defined]
+    max_retries: int = DEFAULT_MAX_RETRIES,
 ) -> ClientAlbertApi:  # type: ignore [name-defined]
     client_openai = OpenAI(
         base_url=configuration.base_url,
         api_key=configuration.api_key,
         timeout=configuration.temps_reponse_maximum_pose_question,
+        max_retries=max_retries,
     )
     client_http = ClientAlbertHttp(
         base_url=configuration.base_url,
