@@ -10,6 +10,9 @@ from client_albert_de_test import (
 from client_albert_de_test import ConstructeurDeChoix
 from configuration import Albert, TypeReclasseur
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
+from question.reclassement.reclassement import Reclasseur
+from question.reclassement.reclasseur_bge import ReclasseurBGE
+from question.reclassement.reclasseur_llm import ReclasseurLLM
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import (
@@ -26,7 +29,6 @@ from schemas.violations import (
 )
 from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from services.exceptions import ErreurCommunicationModeleGeneration
-from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
 from services.service_albert import ServiceAlbert, Prompts
 from tests.conftest import AdaptateurExecuteurDeRequetesMemoire
 

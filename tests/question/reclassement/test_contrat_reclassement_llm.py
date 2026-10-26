@@ -3,7 +3,7 @@ from classification_de_test import (
     classification_preuve_principale,
     resultat_de_classification,
 )
-from services.contrat_reclassement_llm import (
+from question.reclassement.contrat_reclassement_llm import (
     evaluations_de_classification,
     schema_classification,
 )

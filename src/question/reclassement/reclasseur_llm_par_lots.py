@@ -4,16 +4,16 @@ from openai.types.chat.completion_create_params import ResponseFormat
 from typing import cast
 
 from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
+from question.reclassement.reclassement import Reclasseur, ResultatReclassement
 from schemas.albert import Paragraphe, UniteSource
 from services.client_albert import ClientAlbert
-from services.contrat_reclassement_llm import (
+from question.reclassement.contrat_reclassement_llm import (
     evaluations_de_classification,
     schema_classification,
 )
 from services.exceptions import ErreurCommunicationModeleReclassement
-from services.reclassement import Reclasseur, ResultatReclassement
-from services.selection_reclassement import applique_unite_probante, fusionne_preuves
-from services.unites_source import unites_du_paragraphe
+from question.reclassement.selection_reclassement import applique_unite_probante, fusionne_preuves
+from question.reclassement.unites_source import unites_du_paragraphe
 
 
 def _formate_unite(id_unite: int, unite: UniteSource) -> str:
@@ -94,7 +94,7 @@ class ReclasseurLLMParLots(Reclasseur):
         if not preuves:
             return ResultatReclassement([], paragraphes, aucune_source_utile=True)
 
-        ids_retenus = fusionne_preuves(paragraphes, preuves)
+        ids_retenus = fusionne_preuves(preuves)
         paragraphes_par_id = dict(enumerate(paragraphes, 1))
         evaluations_par_id = {evaluation["id"]: evaluation for evaluation in preuves}
         paragraphes_tries = [

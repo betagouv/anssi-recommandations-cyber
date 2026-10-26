@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
 from schemas.albert import Paragraphe
-from services.unites_source import unites_du_paragraphe
+from question.reclassement.unites_source import unites_du_paragraphe
 
 CATEGORIES_SANS_PREUVE = (
     "hors_sujet",

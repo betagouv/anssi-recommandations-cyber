@@ -12,9 +12,11 @@ from configuration import (
 )
 from infra.albert.client_albert import fabrique_client_albert
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
+from question.reclassement.reclassement import Reclasseur
+from question.reclassement.reclasseur_bge import ReclasseurBGE
+from question.reclassement.reclasseur_llm import ReclasseurLLM
+from question.reclassement.reclasseur_llm_par_lots import ReclasseurLLMParLots
 from question.reformulateur_de_question import ReformulateurDeQuestion
-from services.reclasseur import ReclasseurBGE, ReclasseurLLM, Reclasseur
-from services.reclasseur_llm_par_lots import ReclasseurLLMParLots
 from services.service_albert import ServiceAlbert, Prompts
 from services.strategie_enrichissement_paragraphes import ParPagePrecedenteEtSuivante
 

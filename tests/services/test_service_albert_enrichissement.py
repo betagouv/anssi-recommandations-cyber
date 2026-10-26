@@ -1,5 +1,3 @@
-import pytest
-
 from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from client_albert_de_test import (
     ClientAlbertMemoire,
@@ -7,20 +5,18 @@ from client_albert_de_test import (
     un_resultat_de_recherche,
 )
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
+from question.reclassement.reclassement import Reclasseur, ResultatReclassement
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
-from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
 from schemas.albert import (
     Paragraphe,
     RechercheChunk,
     RechercheMetadonnees,
-    UniteSource,
 )
-from services.reclasseur import Reclasseur, ResultatReclassement
+from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
 from services.service_albert import Prompts, ServiceAlbert
 from services.strategie_enrichissement_paragraphes import (
     ParPagePrecedenteEtSuivante,
 )
-from services.unites_source import unites_du_paragraphe
 
 
 class StrategieEnrichissementDeTest:
@@ -139,28 +135,3 @@ def test_enrichit_conserve_chaque_chunk_et_ses_metadonnees_pour_le_reclassement(
         ["Chapitre", "Recommandations"],
     ]
     assert "unites_source" not in enrichis.model_dump()
-
-
-@pytest.mark.parametrize(
-    ("contenu", "contenus_attendus"),
-    [("Texte.\n\nSuite.", ["Texte.\n\nSuite."]), (" \n\t ", [])],
-)
-def test_sans_chunks_enrichis_un_paragraphe_forme_une_seule_unite_source(
-    un_constructeur_de_paragraphe, contenu, contenus_attendus
-):
-    paragraphe = un_constructeur_de_paragraphe().avec_contenu(contenu).construis()
-
-    unites = unites_du_paragraphe(paragraphe)
-
-    assert [unite.contenu for unite in unites] == contenus_attendus
-
-
-def test_un_paragraphe_enrichi_garde_ses_unites_source(un_constructeur_de_paragraphe):
-    unites = [
-        UniteSource(contenu=contenu, url="https://exemple.test", numero_page=1)
-        for contenu in ("Première unité", "Seconde unité")
-    ]
-    paragraphe = un_constructeur_de_paragraphe().construis()
-    paragraphe = paragraphe.model_copy(update={"unites_source": unites})
-
-    assert unites_du_paragraphe(paragraphe) == unites
