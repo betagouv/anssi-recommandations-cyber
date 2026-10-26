@@ -13,7 +13,7 @@ from classification_de_test import (
 )
 from reclassement_llm_support import un_reclasseur_qui_repond
 from schemas.albert import ParagrapheReponseMaitrisee
-from services.contrat_reclassement_llm import schema_classification
+from question.reclassement.contrat_reclassement_llm import schema_classification
 from services.exceptions import ErreurCommunicationModeleReclassement
 from unites_source_de_test import une_table_des_matieres, une_unite_source
 

@@ -16,6 +16,7 @@ from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournal, AdaptateurJournalMemoire
 from configuration import Albert, TypeReclasseur
 from configuration import Mode
+from question.reclassement.reclassement import Reclasseur, ResultatReclassement
 from schemas.albert import (
     Paragraphe,
     ReponseQuestion,
@@ -31,7 +32,6 @@ from serveur_de_test import (
     ConstructeurServeur,
     ServiceAlbertMemoire,
 )
-from services.reclasseur import Reclasseur, ResultatReclassement
 from services.service_albert import ServiceAlbert
 
 

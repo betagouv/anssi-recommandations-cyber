@@ -1,6 +1,6 @@
 from client_albert_de_test import ClientAlbertMemoire
+from question.reclassement.reclasseur_bge import ReclasseurBGE
 from schemas.albert import ReclasseReponse, ResultatReclasse
-from services.reclasseur import ReclasseurBGE
 
 
 def test_reclasse_les_paragraphes(un_constructeur_de_paragraphe):

@@ -1,6 +1,6 @@
 from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from client_albert_de_test import ClientAlbertMemoire, un_choix_de_proposition
-from services.reclasseur_llm_par_lots import ReclasseurLLMParLots
+from question.reclassement.reclasseur_llm_par_lots import ReclasseurLLMParLots
 
 
 def un_reclasseur_qui_repond(

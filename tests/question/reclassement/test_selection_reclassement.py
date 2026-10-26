@@ -1,7 +1,7 @@
 import pytest
 
 from schemas.albert import ParagrapheReponseMaitrisee
-from services.selection_reclassement import (
+from question.reclassement.selection_reclassement import (
     applique_unite_probante,
     fusionne_preuves,
 )
@@ -61,7 +61,7 @@ CAS_DE_FUSION = {
 def test_fusionne_les_preuves_admissibles_du_degre_maximal(
     des_paragraphes, preuves, ids_retenus
 ):
-    assert fusionne_preuves(des_paragraphes(3), preuves) == ids_retenus
+    assert fusionne_preuves(preuves) == ids_retenus
 
 
 @pytest.fixture

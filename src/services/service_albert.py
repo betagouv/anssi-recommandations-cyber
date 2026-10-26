@@ -10,6 +10,7 @@ from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRe
 from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
 from configuration import Albert, logging
 from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
+from question.reclassement.reclassement import Reclasseur, ResultatReclassement
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import (
     Paragraphe,
@@ -32,10 +33,6 @@ from services.client_albert import ClientAlbert
 from services.exceptions import (
     ErreurCommunicationModele,
     ErreurCommunicationModeleGeneration,
-)
-from services.reclasseur import (
-    Reclasseur,
-    ResultatReclassement,
 )
 from services.strategie_enrichissement_paragraphes import (
     StrategieEnrichissementParagraphes,

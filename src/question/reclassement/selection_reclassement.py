@@ -1,8 +1,8 @@
 from schemas.albert import Paragraphe
-from services.unites_source import unites_du_paragraphe
+from question.reclassement.unites_source import unites_du_paragraphe
 
 
-def fusionne_preuves(paragraphes: list[Paragraphe], preuves: list[dict]) -> list[int]:
+def fusionne_preuves(preuves: list[dict]) -> list[int]:
     eligibles = [
         preuve
         for preuve in preuves

@@ -130,7 +130,7 @@ def test_ne_conserve_pas_les_paragraphes_en_cas_de_violation(
   `fastapi.testclient.TestClient`, et vérifient le comportement HTTP **et** les effets sur
   les fakes injectés (`service_albert.question_recue`, `adaptateur_journal.les_evenements()`).
 - **Inside-out** — on part d'un collaborateur isolé et on remonte.
-  `tests/services/test_reclasseur_bge.py`, `tests/adaptateurs/*` instancient directement la
+  `question/reclassement/test_reclasseur_bge.py`, `tests/adaptateurs/*` instancient directement la
   classe sous test avec un client mémoire et assertent sur sa sortie.
 
 On choisit selon ce qui exprime le mieux l'intention métier ; les deux styles cohabitent

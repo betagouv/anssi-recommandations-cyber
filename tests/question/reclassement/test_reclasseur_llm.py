@@ -7,8 +7,8 @@ from client_albert_de_test import (
     ClientAlbertMemoire,
     un_choix_de_proposition,
 )
+from question.reclassement.reclasseur_llm import ReclasseurLLM
 from services.exceptions import ErreurCommunicationModeleReclassement
-from services.reclasseur import ReclasseurLLM
 
 
 def test_reclasse_leve_une_erreur_de_reclassement_si_la_communication_avec_le_modele_echoue(
