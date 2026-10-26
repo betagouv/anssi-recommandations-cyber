@@ -76,7 +76,7 @@ def fabrique_serveur(
                 fabrique_adaptateur_chiffrement(),
                 f"{static_root_directory}/pages/mode-maintenance.html",
             )
-            reponse.status_code = 503
+            reponse.status_code = 200
             return reponse
 
     serveur.include_router(api)
