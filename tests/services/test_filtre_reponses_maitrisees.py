@@ -8,12 +8,7 @@ from infra.mapping_reponses_maitrisees import MappingReponsesMaitrisees
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from schemas.albert import ReclasseReponse, ResultatReclasse
 from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
-from services.service_albert import ServiceAlbert, Prompts
-
-PROMPTS = Prompts(
-    prompt_systeme="Prompt système : {chunks}",
-    prompt_reclassement="Prompt de reclassement : {QUESTION}",
-)
+from services.service_albert import ServiceAlbert
 
 
 def test_retourne_uniquement_le_paragraphe_maitrise(
@@ -45,7 +40,7 @@ def test_retourne_uniquement_le_paragraphe_maitrise(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système : {chunks}",
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees(
             {"question-maitrisee": "Une réponse."}
@@ -88,7 +83,7 @@ def test_retourne_uniquement_les_chunks_maitrisees_si_score_combine_superieur_au
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système : {chunks}",
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees(
             {"qui-est-le-directeur-de-lanssi": "Vincent Strubel."}

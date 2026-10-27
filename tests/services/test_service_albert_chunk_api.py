@@ -13,7 +13,7 @@ from serveur_de_test import (
     MappingReponsesMaitriseesDeTest,
     AdaptateurExecuteurDeRequetesMemoire,
 )
-from services.service_albert import ServiceAlbert, Prompts
+from services.service_albert import ServiceAlbert
 
 
 def test_recherche_chunk_par_id_utilise_api_documents():
@@ -71,16 +71,12 @@ def test_recherche_jeopardy_utilise_recherche_chunk_par_id(
         .construis(),
     ]
     client_albert_memoire.avec_chunks_par_id(chunks_sources)
-    PROMPTS = Prompts(
-        prompt_systeme="Prompt système",
-        prompt_reclassement="Prompt reclassement",
-    )
     configuration = une_configuration_de_service_albert()
     service_albert = ServiceAlbert(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système",
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitriseesDeTest(),
         reclasseur=un_reclasseur,

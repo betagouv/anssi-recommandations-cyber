@@ -4,15 +4,15 @@ from typing import Callable, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from adaptateurs.journal import AdaptateurJournalMemoire
 from client_albert_de_test import ClientAlbertMemoire
 from question.question import ConfigurationQuestion
-from adaptateurs.bus_evenements import BusEvenementsEnMemoire
 from question.reformulateur_de_question import ReformulateurDeQuestion
 from schemas.albert import ReponseQuestion
 from schemas.retour_utilisatrice import Conversation, Interaction
 from serveur_de_test import ServiceAlbertMemoire, MappingReponsesMaitriseesDeTest
-from services.service_albert import ServiceAlbert, Prompts
+from services.service_albert import ServiceAlbert
 from tests.conftest import ConstructeurDeReponseQuestion
 
 
@@ -115,15 +115,15 @@ def un_service_albert_avec_un_client_memoire(
     un_reclasseur,
     un_adaptateur_executeur_de_requetes,
     une_configuration_de_service_albert,
-) -> Callable[[ClientAlbertMemoire, Prompts], ServiceAlbert]:
+) -> Callable[[ClientAlbertMemoire, str], ServiceAlbert]:
     def _un_service_albert_avec_un_client_memoire(
-        client_albert_memoire: ClientAlbertMemoire, prompts: Prompts
+        client_albert_memoire: ClientAlbertMemoire, prompt_syteme: str
     ) -> ServiceAlbert:
         return ServiceAlbert(
             configuration_service_albert=une_configuration_de_service_albert(),
             client=client_albert_memoire,
             utilise_recherche_hybride=False,
-            prompts=prompts,
+            prompt_syteme=prompt_syteme,
             reformulateur=ReformulateurDeQuestionDeTest(),
             mapping_reponses=MappingReponsesMaitriseesDeTest(),
             reclasseur=un_reclasseur,

@@ -9,15 +9,7 @@ from question.reclassement.reclasseur_bge import ReclasseurBGE
 from question.reclassement.reclasseur_llm import ReclasseurLLM
 from reformulateur_de_question_de_test import ReformulateurDeQuestionDeTest
 from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
-from services.service_albert import Prompts, ServiceAlbert
-
-
-PROMPTS = Prompts(
-    prompt_systeme="Documents : {chunks}",
-    prompt_reclassement=(
-        "Question : {QUESTION}\n\nCandidats :\n{CANDIDATS}\n\nRetourne du JSON."
-    ),
-)
+from services.service_albert import ServiceAlbert
 
 
 def construit_service(
@@ -26,24 +18,19 @@ def construit_service(
 ) -> ServiceAlbert:
     reclasseur: Reclasseur
     if configuration.type_reclasseur == TypeReclasseur.BGE:
-        prompt_reclassement = "Question BGE : {QUESTION}"
         reclasseur = ReclasseurBGE(
             client,
             "modèle",
-            prompt_reclassement,
+            "Question BGE : {QUESTION}",
             5,
         )
     else:
-        prompt_reclassement = PROMPTS.prompt_reclassement
-        reclasseur = ReclasseurLLM(client, prompt_reclassement, BusEvenementsEnMemoire())
+        reclasseur = ReclasseurLLM(client, "Question : {QUESTION}\n\nCandidats :\n{CANDIDATS}\n\nRetourne du JSON.", BusEvenementsEnMemoire())
     return ServiceAlbert(
         configuration_service_albert=configuration,
         client=client,
         utilise_recherche_hybride=False,
-        prompts=Prompts(
-            prompt_systeme=PROMPTS.prompt_systeme,
-            prompt_reclassement=prompt_reclassement,
-        ),
+        prompt_syteme="Documents : {chunks}",
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,
@@ -89,4 +76,4 @@ def test_selectionne_le_reclasseur_llm_par_configuration(
     )
 
     assert isinstance(service.reclasseur, ReclasseurLLM)
-    assert service.reclasseur.prompt == PROMPTS.prompt_reclassement
+    assert service.reclasseur.prompt == "Question : {QUESTION}\n\nCandidats :\n{CANDIDATS}\n\nRetourne du JSON."

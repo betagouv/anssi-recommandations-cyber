@@ -1,5 +1,4 @@
 import datetime as dt
-
 import pytest
 from typing import cast
 
@@ -21,7 +20,6 @@ from schemas.violations import (
     ViolationThematique,
     ViolationMeconnaissance,
 )
-from services.service_albert import Prompts
 
 
 def test_retourne_none_si_la_conversation_n_existe_pas(une_configuration_complete):
@@ -121,12 +119,7 @@ def test_interroge_albert_en_mode_conversationnel(
     client_albert_memoire = ClientAlbertMemoire()
     service_albert = un_service_albert_avec_un_client_memoire(
         client_albert_memoire,
-        Prompts(
-            prompt_systeme=(
-                "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
-            ),
-            prompt_reclassement="Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
-        ),
+        "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
     )
     la_configuration, service_albert, adaptateur_base_de_donnees, _, _ = (
         une_configuration_complete(service_albert)

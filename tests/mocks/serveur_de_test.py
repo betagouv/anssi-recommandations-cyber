@@ -1,13 +1,17 @@
 from pathlib import Path
-from typing import Callable, Dict, Optional
 
 from openai.types.chat.chat_completion import Choice
+from typing import Callable, Dict, Optional
 
 from adaptateur_chiffrement import AdaptateurChiffrementDeTest
 from adaptateurs import AdaptateurBaseDeDonnees
 from adaptateurs.adaptateur_executeur_de_requetes import (
     AdaptateurExecuteurDeRequetes,
     fabrique_adaptateur_executeur_de_requetes,
+)
+from adaptateurs.bus_evenements import (
+    BusEvenementsEnMemoire,
+    fabrique_bus_evenements,
 )
 from adaptateurs.chiffrement import (
     AdaptateurChiffrement,
@@ -16,10 +20,6 @@ from adaptateurs.chiffrement import (
 from adaptateurs.journal import (
     AdaptateurJournal,
     fabrique_adaptateur_journal,
-)
-from adaptateurs.bus_evenements import (
-    BusEvenementsEnMemoire,
-    fabrique_bus_evenements,
 )
 from adaptateurs.sentry import AdaptateurSentryMemoire
 from client_albert_de_test import ClientAlbertMemoire
@@ -34,9 +34,9 @@ from schemas.albert import Paragraphe, ReponseQuestion, ReclassePayload, Reclass
 from schemas.retour_utilisatrice import Conversation
 from schemas.violations import Violation
 from serveur import fabrique_serveur
-from services.fabrique_service_albert import fabrique_service_albert
-from services.service_albert import ServiceAlbert, Prompts
 from services.exceptions import ErreurCommunicationModele
+from services.fabrique_service_albert import fabrique_service_albert
+from services.service_albert import ServiceAlbert
 
 NONCE = "un-nonce"
 adaptateur_chiffrement = AdaptateurChiffrementDeTest().qui_retourne_nonce(NONCE)
@@ -88,7 +88,7 @@ class ServiceAlbertMemoire(ServiceAlbert):
             ),
             client_albert,
             False,
-            Prompts(prompt_systeme="", prompt_reclassement=""),
+            "",
             ReformulateurDeQuestion(client_albert, "", "", bus_evenements_en_memoire),
             MappingReponsesMaitriseesDeTest(),
             ReclasseurDeTest(),

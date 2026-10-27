@@ -4,7 +4,7 @@ from openai.types.chat import (
 )
 from openai.types.chat.chat_completion import Choice
 from pydantic import BaseModel
-from typing import Optional, cast, NamedTuple, Union, Any
+from typing import Optional, cast, Union, Any
 
 from adaptateurs.adaptateur_executeur_de_requetes import AdaptateurExecuteurDeRequetes
 from adaptateurs.bus_evenements import BusEvenements, publie_erreur_technique
@@ -64,18 +64,13 @@ def _filtre_reponses_maitrisees(
     return maitrisees if maitrisees else paragraphes
 
 
-class Prompts(NamedTuple):
-    prompt_systeme: str
-    prompt_reclassement: str
-
-
 class ServiceAlbert:
     def __init__(
         self,
         configuration_service_albert: Albert.Service,  # type: ignore [name-defined]
         client: ClientAlbert,
         utilise_recherche_hybride: bool,
-        prompts: Prompts,
+        prompt_syteme: str,
         reformulateur: ReformulateurDeQuestion,
         mapping_reponses: MappingReponsesMaitrisees,
         reclasseur: Reclasseur,
@@ -95,7 +90,7 @@ class ServiceAlbert:
             configuration_service_albert.taille_fenetre_historique
         )
         self.nombre_paragraphes = configuration_service_albert.nombre_paragraphes
-        self.prompt_systeme = prompts.prompt_systeme
+        self.prompt_systeme = prompt_syteme
         self.client = client
         self.utilise_recherche_hybride = utilise_recherche_hybride
         self.reformulateur = reformulateur
