@@ -13,7 +13,7 @@ from schemas.albert import (
     RechercheMetadonnees,
 )
 from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
-from services.service_albert import Prompts, ServiceAlbert
+from services.service_albert import ServiceAlbert
 from services.strategie_enrichissement_paragraphes import (
     ParPagePrecedenteEtSuivante,
 )
@@ -53,7 +53,7 @@ def test_pose_question_enrichit_les_paragraphes_avant_le_reclassement(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert,
         utilise_recherche_hybride=False,
-        prompts=Prompts(prompt_systeme="Sources : {chunks}", prompt_reclassement=""),
+        prompt_syteme="Sources : {chunks}",
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,

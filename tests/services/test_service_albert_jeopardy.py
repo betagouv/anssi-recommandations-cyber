@@ -8,12 +8,7 @@ from schemas.albert import (
     ResultatRechercheJeopardy,
 )
 from serveur_de_test import AdaptateurExecuteurDeRequetesMemoire
-from services.service_albert import ServiceAlbert, Prompts
-
-PROMPTS = Prompts(
-    prompt_systeme="Prompt système",
-    prompt_reclassement="Prompt reclassement",
-)
+from services.service_albert import ServiceAlbert
 
 
 def test_recherche_jeopardy_retourne_les_chunks_sources(
@@ -61,7 +56,7 @@ def test_recherche_jeopardy_retourne_les_chunks_sources(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système",
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -115,7 +110,7 @@ def test_recherche_jeopardy_propage_les_nouvelles_metadonnees_du_chunk_source(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système",
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -172,7 +167,7 @@ def test_recherche_paragraphes_fusionne_resultats_classique_et_jeopardy(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système",
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -218,7 +213,7 @@ def test_recherche_paragraphes_dedoublonne_les_chunks_communs(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système",
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -276,7 +271,7 @@ def test_recherche_paragraphes_retourne_5_recherches_classique_et_5_recherches_j
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme="Prompt système",
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,

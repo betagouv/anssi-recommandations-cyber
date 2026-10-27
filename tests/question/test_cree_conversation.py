@@ -1,14 +1,12 @@
 import datetime as dt
+import pytest
 import uuid
 from typing import cast
-
-import pytest
-from serveur_de_test import ServiceAlbertMemoire
-from client_albert_de_test import ClientAlbertMemoire
 
 from adaptateurs import AdaptateurBaseDeDonneesEnMemoire
 from adaptateurs.horloge import Horloge
 from adaptateurs.journal import AdaptateurJournalMemoire, TypeEvenement
+from client_albert_de_test import ClientAlbertMemoire
 from question.question import (
     cree_conversation,
     ConfigurationQuestion,
@@ -24,7 +22,7 @@ from schemas.violations import (
     ViolationThematique,
     ViolationMeconnaissance,
 )
-from services.service_albert import Prompts
+from serveur_de_test import ServiceAlbertMemoire
 
 
 def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur(
@@ -50,7 +48,7 @@ def test_cree_conversation_retourne_un_resultat_de_conversation_en_erreur_si_rec
     client_albert_memoire.qui_leve_une_erreur_sur_recherche()
     service_albert = un_service_albert_avec_un_client_memoire(
         client_albert_memoire,
-        Prompts(prompt_systeme="", prompt_reclassement=""),
+        "",
     )
     la_configuration, _, _, _, _ = une_configuration_complete(service_albert)
 

@@ -7,7 +7,7 @@ from question.reclassement.contrat_reclassement_llm import (
     evaluations_de_classification,
     schema_classification,
 )
-from services.fabrique_service_albert import lis_fichier_prompt
+from services.fichier_prompt import lis_fichier_prompt
 from unites_source_de_test import une_table_des_matieres, une_unite_source
 
 PROMPT = "prompt_reclassement_llm_classification.txt"

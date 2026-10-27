@@ -1,6 +1,7 @@
 import json
 import pytest
 
+from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from client_albert_de_test import (
     ClientAlbertMemoire,
     un_resultat_de_recherche,
@@ -27,17 +28,12 @@ from schemas.violations import (
     ViolationQuestionNonComprise,
     ViolationMeconnaissance,
 )
-from adaptateurs.bus_evenements import BusEvenementsEnMemoire, ErreurTechniqueSurvenue
 from services.exceptions import ErreurCommunicationModeleGeneration
-from services.service_albert import ServiceAlbert, Prompts
+from services.service_albert import ServiceAlbert
 from tests.conftest import AdaptateurExecuteurDeRequetesMemoire
 
 PROMPT_SYSTEME_ALTERNATIF = (
     "Vous êtes Alberito, un fan d'Albert. Utilisez ces documents:\n\n{chunks}"
-)
-PROMPTS = Prompts(
-    prompt_systeme=PROMPT_SYSTEME_ALTERNATIF,
-    prompt_reclassement="Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
 )
 QUESTION = "Quelle est la recette de la tartiflette ?"
 REPONSE = "Patates et reblochon"
@@ -58,7 +54,7 @@ def test_pose_question_leve_une_erreur_de_generation_si_la_communication_avec_le
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -87,7 +83,7 @@ def test_pose_question_publie_une_erreur_technique_sur_le_bus_si_la_generation_e
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -124,7 +120,7 @@ def test_pose_question_retourne_une_reponse(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -161,7 +157,7 @@ def test_recherche_paragraphes_propage_les_nouvelles_metadonnees_de_chunk(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -190,7 +186,7 @@ def test_recherche_paragraphes_utilise_des_metadonnees_par_defaut_pour_un_chunk_
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -232,7 +228,7 @@ def test_pose_question_enrichit_le_contexte_envoye_au_llm_avec_les_metadonnees_d
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -260,7 +256,7 @@ def test_pose_question_separe_la_question_de_l_utilisatrice_des_instructions_sys
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -329,7 +325,7 @@ def test_pose_question_recupere_les_details_du_document_depuis_MSC(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -372,7 +368,7 @@ def test_pose_question_envoie_contenu_et_reponse_pour_un_paragraphe_maitrise(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees.depuis_chemin(mapping_path),
         reclasseur=un_reclasseur,
@@ -409,7 +405,7 @@ def test_pose_question_les_documents_sont_ajoutes_aux_instructions_systeme(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -437,7 +433,7 @@ def test_pose_question_retourne_une_reponse_generique_et_pas_de_violation_si_alb
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -494,7 +490,7 @@ def test_pose_question_illegale(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -541,7 +537,7 @@ def test_le_score_reclassement_est_propage_sur_le_paragraphe(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,
@@ -611,7 +607,7 @@ def test_en_cas_de_reclassement_recherche_paragraphes_retourne_les_5_paragraphes
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,
@@ -682,7 +678,7 @@ def test_les_paragraphes_reclasses_sont_envoyes_a_albert(
         une_configuration_de_service_albert(),
         client_albert_memoire,
         False,
-        PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,
@@ -721,7 +717,7 @@ def test_retourne_20_paragraphes_en_effectuant_le_reclassement(
         ),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -749,7 +745,7 @@ def test_appelle_le_reclassement_uniquement_quand_active(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -772,7 +768,7 @@ def test_ne_reclasse_pas_si_la_recherche_de_paragraphes_retourne_un_resultat_vid
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -806,7 +802,7 @@ def test_retourne_les_resultats_de_recherche_si_le_reclassement_ne_retourne_pas_
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -847,7 +843,7 @@ def test_initie_une_conversation(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -907,7 +903,7 @@ def test_limite_l_historique_a_2_interactions_passees(
         configuration_service_albert=configuration_avec_fenetre_limitee,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -965,7 +961,7 @@ def test_peut_reformuler_une_question(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=ClientAlbertMemoire(),
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1000,7 +996,7 @@ def test_recherche_paragraphes_utilise_la_question_reformulee(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_recherche,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1043,7 +1039,7 @@ def test_reclassement_utilise_la_question_reformulee(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_recherche,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1089,7 +1085,7 @@ def test_pose_question_passe_la_conversation_au_reformulateur(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_recherche,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1150,7 +1146,7 @@ def test_recuperation_propositions_utilise_la_question_reformulee(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_recherche,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1207,7 +1203,7 @@ def test_pose_question_reformule_la_question_sans_les_violations_precedentes(
         configuration_service_albert=une_configuration_de_service_albert(),
         client=ClientAlbertMemoire(),
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1264,7 +1260,7 @@ def test_pose_question_recherche_les_paragraphes_sans_les_violations_precedentes
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_recherche,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1300,7 +1296,7 @@ def test_retourne_violation_question_non_comprise_si_reformulateur_retourne_QUES
         configuration_service_albert=une_configuration_de_service_albert(),
         client=client_albert_recherche,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=reformulateur,
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=un_reclasseur,
@@ -1333,7 +1329,7 @@ def test_recherche_paragraphes_retourne_un_paragraphe_de_reponse_maitrisee(
         configuration_service_albert=configuration,
         client=client_albert_memoire,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestion(client_albert_memoire, "", "", BusEvenementsEnMemoire()),
         mapping_reponses=MappingReponsesMaitrisees(
             {"quel-est-le-directeur-de-anssi": "Vincent Strubel"}
@@ -1367,25 +1363,21 @@ def construit_service(
 ) -> ServiceAlbert:
     reclasseur: Reclasseur
     if configuration.type_reclasseur == TypeReclasseur.BGE:
-        prompt_reclassement = "Question BGE : {QUESTION}"
         reclasseur = ReclasseurBGE(
             client,
             "modèle",
-            prompt_reclassement,
+            "Question BGE : {QUESTION}",
             5,
         )
     else:
-        prompt_reclassement = PROMPTS.prompt_reclassement
-        reclasseur = ReclasseurLLM(client, prompt_reclassement, BusEvenementsEnMemoire())
+        reclasseur = ReclasseurLLM(client, "Prompt de reclassement :\n\n{QUESTION}\n\n, fin prompt",
+                                   BusEvenementsEnMemoire())
 
     return ServiceAlbert(
         configuration_service_albert=configuration,
         client=client,
         utilise_recherche_hybride=False,
-        prompts=Prompts(
-            prompt_systeme=PROMPTS.prompt_systeme,
-            prompt_reclassement=prompt_reclassement,
-        ),
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees({}),
         reclasseur=reclasseur,
@@ -1478,7 +1470,7 @@ def test_reclasseur_filtre_les_reponses_maitrisees(
         ),
         client=client,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees(
             {"reponse-maitrisee": "La réponse maîtrisée complète."}
@@ -1541,7 +1533,7 @@ def test_reclasseur_ne_filtre_pas_les_reponses_maitrisees_sous_le_seuil(
         ),
         client=client,
         utilise_recherche_hybride=False,
-        prompts=PROMPTS,
+        prompt_syteme=PROMPT_SYSTEME_ALTERNATIF,
         reformulateur=ReformulateurDeQuestionDeTest(),
         mapping_reponses=MappingReponsesMaitrisees(
             {"reponse-maitrisee": "La réponse maîtrisée complète."}
