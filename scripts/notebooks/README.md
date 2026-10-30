@@ -1,18 +1,21 @@
 
 # Répertoire de prototypage ?
 
-Dans ce dossier, le code a pour objectif de prototyper rapidement un produit / fonctionnalité spécifique. Chaque prototype est développé à l'aide de la libraire python `jupyter notebook`.
-Pour cette raison, les dépendances python peuvent être différentes du projet principal, c'est pourquoi un autre environnement python `uv` est disponible.
+Dans ce dossier, le code a pour objectif de prototyper rapidement un produit / fonctionnalité spécifique. Chaque prototype est développé à l'aide de la bibliothèque python `jupyter notebook`.
+Pour cette raison, les dépendances python peuvent être différentes du projet principal : ce dossier a donc son propre environnement, et il n'a pas de `pyproject.toml`.
 
 ## 📦 Comment installer ?
 
-
 Il faut installer deux dépendances systèmes, `python` et `uv`.
-Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv` depuis le dossier `./scripts/notebooks`.
+Ensuite, la première fois il faut créer un environnement virtuel avec `uv venv` depuis le dossier `scripts/notebooks`.
 
-Dès lors, l'environnement est activable via `source .venv/bin/activate`.
-Les dépendances déclarées sont installables via `uv sync`, toujours depuis le répertoire `./srcipts/notebook`.
-L'environnement, une fois activé, apparaît sous le nom de `env-notebook`.
+Dès lors, l'environnement est activable via `source .venv/bin/activate` (sous Windows PowerShell : `.venv\Scripts\Activate.ps1`).
+
+Comme il n'y a pas de `pyproject.toml` dans ce dossier, `uv sync` ne s'applique pas. Il faut installer dans cet environnement les bibliothèques importées par les notebooks (`openai`, `requests`, `pandas`, `ipython`) et Jupyter :
+
+```bash
+uv pip install openai requests pandas ipython jupyter
+```
 
 ## 🚀 Comment l'utiliser ?
 
