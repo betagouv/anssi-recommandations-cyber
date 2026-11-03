@@ -112,13 +112,6 @@ Container_Boundary(api, "API") {
     Component(routeurs, "Routeurs API", "api/api_conversation, api_recherche, api_retour, api_avis", "Points d'entrée HTTP /api/…")
     Component(routeur_doc, "Routeur Document source", "api/route_document_source.py", "Redirection (/source) et proxy PDF (/source/proxy)")
 
-    Component(metier, "Couche métier Question", "question/question.py", "cree_conversation, ajoute_interaction, retours utilisateurs")
-    Component(reformulateur, "Reformulateur de question", "question/reformulateur_de_question.py", "Reconstruit la question à partir de l'historique")
-    Component(service_albert, "ServiceAlbert", "services/service_albert.py", "Orchestration : reformulation → recherche → reclassement → génération → analyse des violations")
-    Component(reclasseur, "Reclasseur", "services/reclasseur.py", "BGE (REST /rerank) ou LLM (SDK OpenAI)")
-    Component(mapping, "Mapping réponses maîtrisées", "infra/mapping_reponses_maitrisees.py", "Filtre FAQ au-delà d'un seuil")
-    Component(client_albert, "Client Albert", "infra/albert/client_albert.py", "SDK OpenAI + API REST d'Albert", $sprite="openai-icon")
-
     Component(config, "Configuration", "configuration.py", "Variables d'environnement, modes DEV/TEST/PROD")
     Component(adaptateur_bdd, "Adaptateur base de données", "adaptateurs/…postgres | …memoire", "Persistance des conversations")
     Component(adaptateur_journal, "Adaptateur journal", "adaptateurs/journal.py", "Événements ; identifiants hachés")
@@ -127,7 +120,31 @@ Container_Boundary(api, "API") {
     Component(bus_evenements, "Bus d'événements", "adaptateurs/bus_evenements.py", "En-process, synchrone — publie/souscris `ErreurTechniqueSurvenue`")
     Component(consommateur_sentry, "Consommateur Sentry", "adaptateurs/consommateur_sentry.py", "Abonné au bus, relaie l'exception à l'adaptateur Sentry")
     Component(adaptateur_http, "Adaptateur exécuteur de requêtes", "adaptateurs/adaptateur_executeur_de_requetes.py", "HTTP sortant : PDF sources, API MSC")
+    Component(client_albert, "Client Albert", "infra/albert/client_albert.py", "SDK OpenAI + API REST d'Albert", $sprite="openai-icon")
+
+    Container_Boundary(domaine, "Domaine") {
+        Component(metier, "Couche métier Question", "question/question.py", "cree_conversation, ajoute_interaction, retours utilisateurs")
+        Component(reformulateur, "Reformulateur de question", "question/reformulateur_de_question.py", "Reconstruit la question à partir de l'historique")
+        Component(service_albert, "ServiceAlbert", "services/service_albert.py", "Orchestration : reformulation → recherche  → enrichissement → contexte guides MSC → reclassement → génération → analyse des violations")
+        Component(reclassement, "Reclassement", "question/reclassement/reclassement.py", "BGE (REST /rerank) ou LLM (SDK OpenAI)")
+        Component(mapping, "Mapping réponses maîtrisées", "infra/mapping_reponses_maitrisees.py", "Filtre FAQ au-delà d'un seuil")
+
+        Container_Boundary(reclasseur, "Reclasseur") {
+            Component(instance_reclasseur, "Reclasseur", "", "Insrtance de instance_reclasseur")
+            Component(reclasseur_bge, "Reclasseur BGE", "question/reclassement/reclasseur_bge.py")
+            Component(reclasseur_llm, "Reclasseur LLM", "question/reclassement/reclasseur_llm.py")
+            Component(reclasseur_llm_parallele, "Reclasseur LLM en parallèle", "services/reclasseur_llm_en_parallele.py")
+
+            Rel_D(instance_reclasseur, reclasseur_bge, "Initialise")
+            Rel_D(instance_reclasseur, reclasseur_llm, "Initialise")
+            Rel_D(instance_reclasseur, reclasseur_llm_parallele, "Initialise")
+        }
+
+        Rel(reclassement, instance_reclasseur, "Initialise le reclasseur")
+    }
 }
+
+
 
 Rel(front, routeurs, "Appelle", "JSON, HTTPS")
 Rel(front, routeur_doc, "Ouvre les pages sources", "HTTPS")
@@ -148,23 +165,24 @@ Rel(metier, adaptateur_journal, "Consigne les événements")
 Rel(metier, adaptateur_chiffrement, "Hache les identifiants")
 
 Rel(service_albert, reformulateur, "Reformule")
-Rel(service_albert, reclasseur, "Reclasse")
+Rel(service_albert, reclassement, "Reclasse")
 Rel(service_albert, mapping, "Filtre les réponses maîtrisées")
 Rel(service_albert, client_albert, "Recherche + génération")
 Rel(service_albert, adaptateur_http, "Métadonnées des guides")
 Rel(reformulateur, client_albert, "Modèle de reformulation")
-Rel(reclasseur, client_albert, "Rerank / LLM")
+Rel(reclasseur_bge, client_albert, "Rerank / LLM")
+Rel(reclasseur_llm_parallele, client_albert, "Rerank / LLM")
 
 Rel(reformulateur, bus_evenements, "publie ErreurTechniqueSurvenue (échec reformulation)")
-Rel(reclasseur, bus_evenements, "publie ErreurTechniqueSurvenue (échec reclassement LLM)")
+Rel(reclassement, bus_evenements, "publie ErreurTechniqueSurvenue (échec reclassement LLM)")
 Rel(service_albert, bus_evenements, "publie ErreurTechniqueSurvenue (échec génération)")
 Rel(serveur, consommateur_sentry, "Abonne au bus")
 Rel(bus_evenements, consommateur_sentry, "ErreurTechniqueSurvenue")
 Rel(consommateur_sentry, adaptateur_sentry, "capture_exception")
 
 Rel(client_albert, albert, "HTTPS")
-Rel(adaptateur_http, msc, "GET /api/guides")
-Rel(adaptateur_http, guides, "GET PDF")
+Rel(adaptateur_http, msc, "Obtient le contexte et la description via GET /api/guides")
+Rel(adaptateur_http, guides, "Obtient le PDF pour générer la prévisualisation")
 Rel(adaptateur_bdd, bdd, "SQL")
 Rel(adaptateur_journal, journal, "SQL")
 Rel(adaptateur_sentry, sentry, "HTTPS")
