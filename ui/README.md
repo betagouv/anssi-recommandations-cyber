@@ -6,16 +6,21 @@ La partie client du service permettant d'interroger [Albert](https://albert.etal
 
 ### Directement sur l'hôte
 
-Il faut installer les dépendances système `node` (la version à installer est spécifiée dans le fichier `.nvmrc`) et `npm`.
-Ensuite, il faut installer les dépendances avec `npm ci`.
+Il faut installer `node` (la version à installer est spécifiée dans le fichier `.nvmrc`) et `pnpm` (la version est spécifiée dans le champ `packageManager` de `package.json`).
+Ensuite, il faut installer les dépendances avec `pnpm install`. Le script `preinstall` refuse `npm install` : le projet n'utilise pas `npm`.
 
 ### Dans un conteneur
 
 L'installation dans le projet parent est gérée directement par Docker compose, il faut donc se reporter à la section correspondante [🚀 Comment lancer l'application ?](../README.md#-comment-lancer-lapplication-)
 
+## ⚙️ Comment définir mes variables d'environnement ?
+
+Il faut créer un fichier `ui/.env` à partir de [`ui/.env.template`](./.env.template).
+Les variables `VITE_*` sont lues par Vite au démarrage du serveur de développement ou au build : elles ne sont pas lues dans le `.env` de la racine du projet.
+
 ## 🧪 Comment valider ?
 
-Dans un environnement virtuel :
+Depuis le dossier `ui/` :
 
 - utiliser `npm run lint:check` pour lancer les vérifications `eslint`, et `npm run lint:fix` pour réparer automatiquement certaines violations,
 - lancer `npm run check` pour vérifier la validité des annotations de types.

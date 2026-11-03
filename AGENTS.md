@@ -58,11 +58,11 @@ Front (depuis le dossier `ui/`) :
 
 Lancer l'application :
 
-- Sur l'hôte : `env $(cat .env) python src/main.py`.
+- Sur l'hôte : `uv run --env-file .env python src/main.py`.
 - En conteneur : 
    - Linux / MAC (nouveau docker compose) : `NODE_VERSION="$(cat ./ui/.nvmrc)" docker compose up` 
    - Linux / MAC (ancien docker compose) : `docker-compose up --build --force-recreate -d`.
-   - Powershell : `env:NODE_VERSION = (Get-Content ./ui/.nvmrc); docker compose up --build`
+   - Powershell : `$env:NODE_VERSION = (Get-Content ./ui/.nvmrc); docker compose up --build`
 - Migrations BDD : `PYTHONPATH=src uv run --env-file .env src/infra/postgres/execute_migration.py`.
 
 ## Organisation du code
@@ -70,8 +70,8 @@ Lancer l'application :
 Architecture en ports / adaptateurs (voir [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)) :
 
 - `src/api/` — routeurs FastAPI (`/api/conversation`, `/api/recherche`, `/api/retour`, `/api/avis`, documents sources).
-- `src/question/` — couche métier (`cree_conversation`, `ajoute_interaction`, reformulateur).
-- `src/services/` — `ServiceAlbert.pose_question()` et les reclasseurs (BGE / LLM).
+- `src/question/` : couche métier (`cree_conversation`, `ajoute_interaction`, reformulateur, reclasseurs dans `reclassement/`).
+- `src/services/` : `ServiceAlbert.pose_question()`, fabrique des reclasseurs (`bge`, `llm`, `llm_parallele`) et coordinateur du reclassement parallèle.
 - `src/infra/` et `src/adaptateurs/` — adaptateurs : client Albert, PostgreSQL / mémoire, chiffrement, journal, Sentry, horloge, migrateur.
 - `src/schemas/` — types (Albert, API, retours utilisateurs, violations).
 - `src/configuration.py`, `src/serveur.py` (`fabrique_serveur`), `src/main.py` — configuration et amorçage.
@@ -80,7 +80,7 @@ Architecture en ports / adaptateurs (voir [`docs/ARCHITECTURE.md`](docs/ARCHITEC
 
 ## Conventions
 
-- **Langue** : français partout — code, noms de symboles, commits, documentation (spell-check configuré pour `fr`).
+- **Langue** : français partout (code, noms de symboles, commits, documentation).
 - **Dates** : format ISO.
 - **Méthode** : TDD strict, un comportement à la fois → skill `tdd`.
 - **Tests** : fakes injectés (jamais de mock), noms en français traduisant l'intention métier → [`tests/AGENTS.md`](tests/AGENTS.md) (back) et [`ui/tests/AGENTS.md`](ui/tests/AGENTS.md) (front).
