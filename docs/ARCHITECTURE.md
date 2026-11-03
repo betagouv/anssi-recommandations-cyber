@@ -84,10 +84,10 @@ construits par des **fabriques**.
 |---|---|
 | `api/` | Routeurs FastAPI : `api_conversation` (`POST /api/conversation/`, `POST /api/conversation/{id_conversation}`), `api_recherche` (`/api/recherche/`), `api_retour`, `api_avis`, `route_document_source` (PDF sources). `api_developpement` expose `/api/sante` hors production. |
 | `question/` | Couche métier : `cree_conversation()`, `ajoute_interaction()`, `ajoute_retour_utilisatrice()`, `supprime_retour_utilisatrice()` ; `reformulateur_de_question.py`. Renvoie des objets `Resultat*` (succès, erreur, conversation inconnue). |
-| `services/` | `ServiceAlbert.pose_question()` orchestre le flux complet ; `reclasseur.py` (BGE / LLM) ; `client_albert.py`, `fabrique_service_albert.py` ; `exceptions.py` (`ErreurAlbert` et dérivées). |
+| `services/` | `ServiceAlbert.pose_question()` orchestre le flux complet ; `question/reclassement/` (BGE / LLM) ; `client_albert.py`, `fabrique_service_albert.py` ; `exceptions.py` (`ErreurAlbert` et dérivées). |
 | `infra/` | `albert/client_albert.py` (SDK OpenAI + REST) ; `postgres/` (migrations, encodeurs JSON) ; `chiffrement/` ; `logger.py` ; `mapping_reponses_maitrisees.py` ; `ui_kit/version_ui_kit.py` ; `fast_api/`. |
 | `adaptateurs/` | `adaptateur_base_de_donnees_postgres.py` / `_memoire.py`, `chiffrement.py`, `journal.py`, `sentry.py`, `horloge.py`, `migrateur.py`, `connecteur.py`. |
-| `schemas/` | Types : `albert.py` (`ReponseQuestion`…), `api.py`, `retour_utilisatrice.py` (`Conversation`, `Interaction`), `type_utilisateur.py`, `violations.py`. |
+| `schemas/` | Types : `albert.py` (`ReponseQuestion`…), `api.py`, `retour_utilisatrice.py` (`Conversation`, `Interaction`), `type_utilisateur.py`, `violations.py` , `msc.py`. |
 | `configuration.py` | `recupere_configuration()` : lecture des variables d'environnement, `Mode` (`DEVELOPPEMENT` / `TEST` / `PRODUCTION`), configuration Albert / BDD / chiffrement / Sentry. |
 | `serveur.py` | `fabrique_serveur()` : middlewares (rate limiting, proxy headers), en-têtes de sécurité + CSP à nonce, montage des routeurs et des ressources statiques, pages statiques, mode maintenance. |
 | `main.py` | Point d'entrée : charge la configuration, construit le serveur, lance `uvicorn`. |
